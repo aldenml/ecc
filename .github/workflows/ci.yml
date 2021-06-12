@@ -19,7 +19,7 @@ jobs:
       - name: install packages
         run: |
           sudo apt update
-          sudo apt install gcc autotools-dev autoconf make ninja-build npm
+          sudo apt install ninja-build npm
       - name: install nodejs
         run: |
           curl -fsSL https://deb.nodesource.com/setup_16.x | sudo -E bash -
@@ -27,6 +27,9 @@ jobs:
 
       - name: c tests
         run: |
+          cd libsodium
+          ./configure
+          make
           cmake -DCMAKE_BUILD_TYPE=Release -B build -G "Ninja" .
           cmake --build build --config Release --parallel 2
           ctest --build-and-test build -C "Release"
