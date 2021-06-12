@@ -25,18 +25,17 @@ jobs:
           curl -fsSL https://deb.nodesource.com/setup_16.x | sudo -E bash -
           sudo apt-get install -y nodejs
 
+      - name: c build
+        run: ./build-c.sh
       - name: c tests
         run: |
-          cd libsodium
-          ./configure
-          make
-          cmake -DCMAKE_BUILD_TYPE=Release -B build -G "Ninja" .
-          cmake --build build --config Release --parallel 2
-          ctest --build-and-test build -C "Release"
-
-      - name: js tests
-        run: |
-          ./build-wasm.sh
-          cd js/hash
-          npm install
-          npm test
+          cd build
+          ctest -C "Release"
+          cd ..
+#
+#      - name: js tests
+#        run: |
+#          ./build-wasm.sh
+#          cd js/hash
+#          npm install
+#          npm test
