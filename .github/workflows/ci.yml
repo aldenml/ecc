@@ -10,7 +10,7 @@ on:
 
 jobs:
 
-  x86_64-cmake:
+  tests:
     runs-on: ubuntu-20.04
     steps:
       - uses: actions/checkout@v2
@@ -19,7 +19,7 @@ jobs:
       - name: install packages
         run: |
           sudo apt update
-          sudo apt install ninja-build npm
+          sudo apt install gcc autotools-dev autoconf make ninja-build npm
       - name: install nodejs
         run: |
           curl -fsSL https://deb.nodesource.com/setup_16.x | sudo -E bash -
