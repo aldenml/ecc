@@ -42,10 +42,8 @@ jobs:
         run: |
           source ./emsdk/emsdk_env.sh
           ./build-js.sh
-#
-#      - name: js tests
-#        run: |
-#          ./build-wasm.sh
-#          cd js/hash
-#          npm install
-#          npm test
+      - name: js tests
+        run: |
+          cd js/hash
+          npm install
+          npm test
