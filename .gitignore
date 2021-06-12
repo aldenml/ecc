@@ -1,0 +1,10 @@
+.DS_Store
+*~
+/.idea
+/build
+/cmake-build*
+package-lock.json
+node_modules/
+
+# emscripten generated with build-wasm.sh
+/js/hash/hash.js
