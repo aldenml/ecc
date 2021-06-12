@@ -8,5 +8,9 @@ FetchContent_Declare(
 )
 
 set(WITH_STATIC_LIB ON CACHE BOOL "cmocka build static" FORCE)
+set(WITH_CMOCKERY_SUPPORT OFF CACHE BOOL "cmocka with cmockery" FORCE)
+set(WITH_EXAMPLES OFF CACHE BOOL "cmocka with examples" FORCE)
+set(UNIT_TESTING OFF CACHE BOOL "cmocka with unit testing" FORCE)
+set(PICKY_DEVELOPER OFF CACHE BOOL "cmocka with picky developer flags" FORCE)
 
 FetchContent_MakeAvailable(cmocka)
