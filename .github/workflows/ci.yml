@@ -23,7 +23,7 @@ jobs:
       - name: install nodejs
         run: |
           sudo npm install -g n
-          sudo n 12.14.1
+          sudo n 16.3.0
           node --version
       - name: install emscripten
         run: |
@@ -32,7 +32,9 @@ jobs:
           ./emsdk/emsdk activate latest
 
       - name: c build
-        run: ./build-c.sh
+        run: |
+          ./build-c.sh
+          readelf -d build/libecc.so
       - name: c tests
         run: |
           cd build
