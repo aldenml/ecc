@@ -1,6 +1,5 @@
-import hash_module from "./hash.js";
+import libecc_module from "./libecc.js";
 import assert from "assert";
-import {describe, it} from "mocha";
 
 function str2buf(s) {
     const encoder = new TextEncoder();
@@ -15,8 +14,10 @@ function buf2hex(buffer) {
 // https://www.di-mgt.com.au/sha_testvectors.html
 
 async function hash_ecc_hash_sha256(s) {
-    const hash = await hash_module();
-    return buf2hex(hash.ecc_hash_sha256(str2buf(s)));
+    const libecc = await libecc_module();
+    let out = new Uint8Array(32);
+    libecc.ecc_hash_sha256(out, str2buf(s));
+    return buf2hex(out);
 }
 
 describe("ecc_hash_sha256", () => {
@@ -59,8 +60,10 @@ describe("ecc_hash_sha256", () => {
 });
 
 async function hash_ecc_hash_sha512(s) {
-    const hash = await hash_module();
-    return buf2hex(hash.ecc_hash_sha512(str2buf(s)));
+    const libecc = await libecc_module();
+    let out = new Uint8Array(64);
+    libecc.ecc_hash_sha512(out, str2buf(s));
+    return buf2hex(out);
 }
 
 describe("ecc_hash_sha512", () => {

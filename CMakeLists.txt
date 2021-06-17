@@ -3,6 +3,12 @@ cmake_minimum_required(VERSION 3.16)
 set(CMAKE_C_STANDARD 11)
 set(CMAKE_C_VISIBILITY_PRESET hidden)
 
+if(EMSCRIPTEN)
+    set(BUILD_SHARED_LIBS OFF)
+else()
+    set(BUILD_SHARED_LIBS ON)
+endif()
+
 project(ecc LANGUAGES C)
 
 # libsodium
@@ -31,6 +37,7 @@ else()
             "CFLAGS=-DSODIUM_STATIC=1 -O2"
             --prefix=${CMAKE_CURRENT_SOURCE_DIR}/build/libsodium
             --disable-ssp
+            --disable-asm
             --disable-shared
             --without-pthreads
         PREFIX ${CMAKE_CURRENT_SOURCE_DIR}/build/libsodium
@@ -49,38 +56,24 @@ set_target_properties(libsodium PROPERTIES
     IMPORTED_LOCATION ${CMAKE_CURRENT_SOURCE_DIR}/build/libsodium/lib/libsodium.a
 )
 
-# hash
-add_library(hash STATIC
-    c/export.h
-    c/hash.h c/hash.c
+add_library(ecc
+    src/export.h
+    src/ecc.h src/ecc.c
+    src/hash.h src/hash.c
+    src/ed25519.h src/ed25519.c
+    src/ristretto255.h src/ristretto255.c
+    src/scalarmult.h src/scalarmult.c
+    src/sign.h src/sign.c
 )
 
-target_compile_features(hash PUBLIC c_std_11)
-target_link_libraries(hash PRIVATE libsodium)
+target_compile_features(ecc PUBLIC c_std_11)
+target_link_libraries(ecc PRIVATE libsodium)
 
-# ecc
-if(NOT DEFINED EMSCRIPTEN)
-    add_library(ecc SHARED
-        c/export.h
-        c/hash.h c/hash.c
-    )
+# oprf
+add_library(oprf
+    src/export.h
+    src/ecc.h src/ecc.c
+)
 
-    target_compile_features(ecc PUBLIC c_std_11)
-    target_link_libraries(ecc PRIVATE libsodium)
-
-    add_library(ecc_static STATIC
-        c/export.h
-        c/hash.h c/hash.c
-    )
-
-    target_compile_features(ecc_static PUBLIC c_std_11)
-    target_link_libraries(ecc_static PRIVATE libsodium)
-
-    include(cmake/FetchCmocka.cmake)
-
-    add_executable(hash_test c/test/hash_test.c)
-    target_link_libraries(hash_test PRIVATE hash cmocka-static)
-
-    enable_testing()
-    add_test(NAME hash_test COMMAND hash_test)
-endif()
+target_compile_features(oprf PUBLIC c_std_11)
+target_link_libraries(oprf PRIVATE libsodium)

@@ -1,24 +1,31 @@
 {
-  "name": "@aldenml/hash",
+  "name": "@aldenml/ecc",
   "version": "0.1.0",
-  "description": "crypto hash functions",
-  "main": "hash.js",
+  "description": "elliptic curves crypto functions",
+  "main": "index.js",
   "files": [
-    "hash.js",
+    "index.js",
+    "libecc.js",
     "package.json",
-    "test.js"
+    "ecc.test.js",
+    "hash.test.js",
+    "ed25519.test.js"
   ],
   "scripts": {
-    "test": "mocha"
+    "test": "mocha *.test.js"
   },
   "repository": {
     "type": "git",
     "url": "https://github.com/aldenml/ecc.git"
   },
   "keywords": [
+    "elliptic",
+    "curves",
     "crypto",
     "hash",
-    "sha256"
+    "sha256",
+    "sha512",
+    "ed25519"
   ],
   "author": "aldenml",
   "license": "MIT",
