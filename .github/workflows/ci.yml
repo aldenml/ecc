@@ -35,11 +35,6 @@ jobs:
         run: |
           ./build-c.sh
           readelf -d build/libecc.so
-      - name: c tests
-        run: |
-          cd build
-          ctest -C "Release"
-          cd ..
 
       - name: js build
         run: |
@@ -47,6 +42,6 @@ jobs:
           ./build-js.sh
       - name: js tests
         run: |
-          cd js/hash
+          cd js/ecc
           npm install
           npm test

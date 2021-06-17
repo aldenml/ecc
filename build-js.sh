@@ -30,5 +30,6 @@ EMCC_FLAGS="-Oz -flto --no-entry \
   -sTOTAL_STACK=65536 \
   -sINITIAL_MEMORY=131072"
 
-emcc -o js/hash/hash.js --post-js js/hash-post.js -sEXPORT_NAME=hash_module \
-  -Wl,--whole-archive build/libhash.a -Wl,--no-whole-archive ${EMCC_FLAGS}
+emcc -o js/ecc/libecc.js -sEXPORT_NAME=libecc_module \
+  --pre-js js/ecc/libecc-pre.js --post-js js/ecc/libecc-post.js \
+  -Wl,--whole-archive build/libecc.a -Wl,--no-whole-archive ${EMCC_FLAGS}
