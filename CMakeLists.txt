@@ -5,6 +5,8 @@ set(CMAKE_C_VISIBILITY_PRESET hidden)
 
 if(EMSCRIPTEN)
     set(BUILD_SHARED_LIBS OFF)
+else()
+    set(BUILD_SHARED_LIBS ON)
 endif()
 
 project(ecc LANGUAGES C)
