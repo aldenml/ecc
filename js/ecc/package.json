@@ -6,10 +6,14 @@
   "files": [
     "index.js",
     "libecc.js",
+    "util.js",
+    "oprf.js",
     "package.json",
     "ecc.test.js",
     "hash.test.js",
-    "ed25519.test.js"
+    "ed25519.test.js",
+    "util.test.js",
+    "LICENSE"
   ],
   "scripts": {
     "test": "mocha *.test.js"

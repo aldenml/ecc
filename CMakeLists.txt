@@ -1,3 +1,10 @@
+#
+# Copyright (c) 2021, Alden Torres
+#
+# Licensed under the terms of the MIT license.
+# Copy of the license at https://opensource.org/licenses/MIT
+#
+
 cmake_minimum_required(VERSION 3.16)
 
 set(CMAKE_C_STANDARD 11)
@@ -68,6 +75,7 @@ add_library(ecc
 
 target_compile_features(ecc PUBLIC c_std_11)
 target_link_libraries(ecc PRIVATE libsodium)
+target_compile_definitions(ecc PRIVATE ECC_ALL)
 
 # oprf
 add_library(oprf
@@ -77,3 +85,4 @@ add_library(oprf
 
 target_compile_features(oprf PUBLIC c_std_11)
 target_link_libraries(oprf PRIVATE libsodium)
+target_compile_definitions(oprf PRIVATE ECC_OPRF)

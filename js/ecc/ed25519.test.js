@@ -1,3 +1,10 @@
+/*
+ * Copyright (c) 2021, Alden Torres
+ *
+ * Licensed under the terms of the MIT license.
+ * Copy of the license at https://opensource.org/licenses/MIT
+ */
+
 import libecc_module from "./libecc.js";
 import assert from "assert";
 

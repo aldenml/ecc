@@ -1,13 +1,13 @@
 #!/usr/bin/env bash
 
-rm -rf build
-
-pushd libsodium
-make clean
-popd
-
-emcmake cmake -DCMAKE_BUILD_TYPE=Release -B build -G "Ninja" .
-cmake --build build --config Release --parallel 2
+#rm -rf build
+#
+#pushd libsodium
+#make clean
+#popd
+#
+#emcmake cmake -DCMAKE_BUILD_TYPE=Release -B build -G "Ninja" .
+#cmake --build build --config Release --parallel 2
 
 EMCC_FLAGS="-Oz -flto --no-entry \
   -Wl,--whole-archive build/libsodium/lib/libsodium.a -Wl,--no-whole-archive \

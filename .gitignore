@@ -6,5 +6,5 @@
 package-lock.json
 node_modules/
 
-# emscripten generated with build-wasm.sh
-/js/hash/hash.js
+# emscripten generated with build-js.sh
+/js/ecc/libecc.js
