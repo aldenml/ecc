@@ -74,3 +74,22 @@ export async function ristretto255_sha512_Blind(input) {
 
     return {blind: blind, blindedElement: blindedElement};
 }
+
+/**
+ * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-voprf-06#section-3.4.1.1
+ *
+ * @param {Uint8Array} skS
+ * @param {Uint8Array} blindedElement
+ * @returns {Uint8Array}
+ */
+export async function ristretto255_sha512_Evaluate(skS, blindedElement) {
+    const libecc = await libecc_module();
+
+    // R = GG.DeserializeElement(blindedElement)
+    // Z = skS * R
+    // evaluatedElement = GG.SerializeElement(Z)
+    let evaluatedElement = new Uint8Array(32);
+    libecc.ecc_scalarmult_ristretto255(evaluatedElement, skS, blindedElement);
+
+    return evaluatedElement;
+}

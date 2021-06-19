@@ -23,6 +23,7 @@ ECC_OPRF_EXPORT
 ECC_EXPORT
 int ecc_ristretto255_from_hash(BYTE *p, const BYTE *r);
 
+ECC_OPRF_EXPORT
 ECC_EXPORT
 void ecc_ristretto255_random(BYTE *p);
 
@@ -30,6 +31,7 @@ ECC_OPRF_EXPORT
 ECC_EXPORT
 void ecc_ristretto255_scalar_random(BYTE *r);
 
+ECC_OPRF_EXPORT
 ECC_EXPORT
 int ecc_ristretto255_scalar_invert(BYTE *recip, const BYTE *s);
 
