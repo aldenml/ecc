@@ -28,6 +28,7 @@ int ecc_scalarmult_ed25519_base(BYTE *q, const BYTE *n);
 ECC_EXPORT
 int ecc_scalarmult_ed25519_base_noclamp(BYTE *q, const BYTE *n);
 
+ECC_OPRF_EXPORT
 ECC_EXPORT
 int ecc_scalarmult_ristretto255(BYTE *q, const BYTE *n, const BYTE *p);
 

@@ -19,13 +19,23 @@ export function str2buf(s) {
 }
 
 /**
- * Converts a byte array in the hex string.
+ * Converts a byte array to the hex string.
  *
  * @param {Uint8Array} buffer
  * @returns {string}
  */
 export function buf2hex(buffer) {
-    return [...new Uint8Array(buffer)].map(x => x.toString(16).padStart(2, '0')).join('');
+    return buffer.reduce((s, b) => s + b.toString(16).padStart(2, '0'), '');
+}
+
+/**
+ * Converts an hex string to a byte array.
+ *
+ * @param {string} hex
+ * @returns {Uint8Array}
+ */
+export function hex2buf(hex) {
+    return new Uint8Array(hex.match(/.{1,2}/g).map(b => parseInt(b, 16)));
 }
 
 /**
