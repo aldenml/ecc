@@ -39,6 +39,15 @@ export function hex2buf(hex) {
 }
 
 /**
+ * Converts an hex string to a byte array.
+ *
+ * @param {Uint8Array} buf
+ * @returns {number}
+ */
+export function len(buf) {
+    return buf.length;
+}
+/**
  * Concatenates two byte arrays. Sames as a || b.
  *
  * a || b: denotes the concatenation of byte strings a and b. For

@@ -167,6 +167,20 @@ Module.ecc_ristretto255_scalar_random = (r) => {
     arraycopy(HEAPU8, 0, r, 0, 64);
 }
 
+/**
+ * @param {Uint8Array} recip
+ * @param {Uint8Array} s
+ * @returns {number}
+ */
+Module.ecc_ristretto255_scalar_invert = (recip, s) => {
+    arraycopy(s, 0, HEAPU8, 0, 64);
+    const pS = 0;
+    const pRecip = pS + 64;
+    const op = _ecc_ristretto255_scalar_invert(pRecip, pS);
+    arraycopy(HEAPU8, pRecip, recip, 0, 64);
+    return op;
+}
+
 // scalarmult
 
 /**
