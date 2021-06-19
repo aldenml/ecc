@@ -1,14 +1,13 @@
+/*
+ * Copyright (c) 2021, Alden Torres
+ *
+ * Licensed under the terms of the MIT license.
+ * Copy of the license at https://opensource.org/licenses/MIT
+ */
+
 import libecc_module from "./libecc.js";
+import {str2buf, buf2hex} from "./util.js";
 import assert from "assert";
-
-function str2buf(s) {
-    const encoder = new TextEncoder();
-    return encoder.encode(s);
-}
-
-function buf2hex(buffer) {
-    return [...new Uint8Array(buffer)].map(x => x.toString(16).padStart(2, '0')).join('');
-}
 
 // Test vectors
 // https://www.di-mgt.com.au/sha_testvectors.html
