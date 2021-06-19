@@ -139,7 +139,7 @@ Module.ecc_ed25519_is_valid_point = (p) => {
 Module.ecc_ed25519_random = (p) => {
     const pP = 0;
     _ecc_ed25519_random(pP);
-    arraycopy(HEAPU8, 0, p, 0, 32);
+    arraycopy(HEAPU8, pP, p, 0, 32);
 }
 
 // ristretto255
