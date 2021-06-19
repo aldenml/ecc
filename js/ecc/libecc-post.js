@@ -128,12 +128,62 @@ Module.ecc_hash_sha512 = (out, input) => {
  * @returns {number}
  */
 Module.ecc_ed25519_is_valid_point = (p) => {
-    return _ecc_ed25519_is_valid_point(p);
+    arraycopy(p, 0, HEAPU8, 0, 32);
+    const pP = 0;
+    return _ecc_ed25519_is_valid_point(pP);
 }
 
 /**
  * @param {Uint8Array} p
  */
 Module.ecc_ed25519_random = (p) => {
-    _ecc_ed25519_random(p);
+    const pP = 0;
+    _ecc_ed25519_random(pP);
+    arraycopy(HEAPU8, pP, p, 0, 32);
+}
+
+// ristretto255
+
+/**
+ * @param {Uint8Array} p
+ * @param {Uint8Array} r
+ * @returns {number}
+ */
+Module.ecc_ristretto255_from_hash = (p, r) => {
+    arraycopy(r, 0, HEAPU8, 0, 64);
+    const pR = 0;
+    const pP = pR + 64;
+    const op = _ecc_ristretto255_from_hash(pP, pR);
+    arraycopy(HEAPU8, pP, p, 0, 32);
+    return op;
+}
+
+/**
+ * @param {Uint8Array} r
+ */
+Module.ecc_ristretto255_scalar_random = (r) => {
+    const pR = 0;
+    _ecc_ristretto255_scalar_random(pR);
+    arraycopy(HEAPU8, 0, r, 0, 64);
+}
+
+// scalarmult
+
+/**
+ * @param {Uint8Array} q
+ * @param {Uint8Array} n
+ * @param {Uint8Array} p
+ * @returns {number}
+ */
+Module.ecc_scalarmult_ristretto255 = (q, n, p) => {
+    arraycopy(n, 0, HEAPU8, 0, 64);
+    arraycopy(p, 0, HEAPU8, 64, 32);
+
+    const pN = 0;
+    const pP = pN + 64;
+    const pQ = pP + 32;
+
+    const op = _ecc_scalarmult_ristretto255(pQ, pN, pP);
+    arraycopy(HEAPU8, pQ, q, 0, 32);
+    return op;
 }

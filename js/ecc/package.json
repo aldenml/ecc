@@ -13,6 +13,7 @@
     "hash.test.js",
     "ed25519.test.js",
     "util.test.js",
+    "oprf.test.js",
     "LICENSE"
   ],
   "scripts": {

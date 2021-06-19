@@ -29,10 +29,10 @@ describe("ecc_ed25519_is_valid_point", () => {
         assert.ok(r);
     });
 
-    it("test a random invalid point", async () => {
+    it("test an invalid point", async () => {
         const libecc = await libecc_module();
         let p = new Uint8Array(32);
-        libecc.ecc_ed25519_random(p);
+        libecc.ecc_increment(p, p.length);
         libecc.ecc_increment(p, p.length);
         let r = libecc.ecc_ed25519_is_valid_point(p);
         assert.ok(!r);

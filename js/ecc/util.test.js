@@ -24,6 +24,14 @@ describe("buf2hex", () => {
     });
 });
 
+describe("hex2buf", () => {
+
+    it("input 0001022a646566ff", async () => {
+        let buf = util.hex2buf("0001022a646566ff");
+        assert.equal(util.buf2hex(buf), "0001022a646566ff");
+    });
+});
+
 describe("I2OSP/OS2IP", () => {
 
     it("input x=1, xLen=1", async () => {
