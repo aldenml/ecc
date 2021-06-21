@@ -45,3 +45,6 @@ jobs:
           cd js/ecc
           npm install
           npm test
+          cd ../oprf
+          npm install
+          npm test
