@@ -1,0 +1,40 @@
+<html lang="en">
+<head>
+    <title>OPRF example</title>
+    <script src="ecc.min.js"></script>
+</head>
+<body>
+<h2>OPRF example</h2>
+<p>Enter your message input, you will get the result of a computation on
+    the server. The result is a random value that is a function or your input,
+    but the server never knows your input.</p>
+<label for="finput">Input: </label>
+<input type="text" id="finput" name="finput" size="80">
+<input type="submit" value="Submit" onclick="sendInput()"><br><br>
+<label>Blind: </label>
+<label id="fblind"></label><br><br>
+<label>Output: </label>
+<label id="foutput"></label>
+<script>
+    function sendInput() {
+        const input = ecc.str2buf(document.getElementById("finput").value);
+
+        (async () => {
+            const r = await ecc.oprf_ristretto255_sha512_Blind(input);
+
+            document.getElementById("fblind").innerText = ecc.buf2hex(r.blind);
+
+            const res = await fetch('/evaluate', {
+                method: 'POST',
+                body: ecc.buf2hex(r.blindedElement),
+            })
+            const evaluationElement = await res.text();
+            console.log("evaluationElement: " + evaluationElement);
+            const output = await ecc.oprf_ristretto255_sha512_Finalize(input, r.blind, ecc.hex2buf(evaluationElement));
+
+            document.getElementById("foutput").innerText = ecc.buf2hex(output);
+        })();
+    }
+</script>
+</body>
+</html>

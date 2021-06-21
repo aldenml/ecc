@@ -5,4 +5,9 @@
  * Copy of the license at https://opensource.org/licenses/MIT
  */
 
-export default from "./libecc.js";
+import * as libecc from "./libecc.js";
+
+export const libecc_module = libecc.default;
+
+export * from "./util.js";
+export * from "./oprf.js";

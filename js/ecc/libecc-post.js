@@ -164,7 +164,7 @@ Module.ecc_ristretto255_from_hash = (p, r) => {
 Module.ecc_ristretto255_scalar_random = (r) => {
     const pR = 0;
     _ecc_ristretto255_scalar_random(pR);
-    arraycopy(HEAPU8, 0, r, 0, 64);
+    arraycopy(HEAPU8, 0, r, 0, 32);
 }
 
 /**
@@ -173,11 +173,11 @@ Module.ecc_ristretto255_scalar_random = (r) => {
  * @returns {number}
  */
 Module.ecc_ristretto255_scalar_invert = (recip, s) => {
-    arraycopy(s, 0, HEAPU8, 0, 64);
+    arraycopy(s, 0, HEAPU8, 0, 32);
     const pS = 0;
-    const pRecip = pS + 64;
+    const pRecip = pS + 32;
     const op = _ecc_ristretto255_scalar_invert(pRecip, pS);
-    arraycopy(HEAPU8, pRecip, recip, 0, 64);
+    arraycopy(HEAPU8, pRecip, recip, 0, 32);
     return op;
 }
 
@@ -190,11 +190,11 @@ Module.ecc_ristretto255_scalar_invert = (recip, s) => {
  * @returns {number}
  */
 Module.ecc_scalarmult_ristretto255 = (q, n, p) => {
-    arraycopy(n, 0, HEAPU8, 0, 64);
-    arraycopy(p, 0, HEAPU8, 64, 32);
+    arraycopy(n, 0, HEAPU8, 0, 32);
+    arraycopy(p, 0, HEAPU8, 32, 32);
 
     const pN = 0;
-    const pP = pN + 64;
+    const pP = pN + 32;
     const pQ = pP + 32;
 
     const op = _ecc_scalarmult_ristretto255(pQ, pN, pP);

@@ -3,8 +3,5 @@
 /.idea
 /build
 /cmake-build*
-package-lock.json
 node_modules/
-
-# emscripten generated with build-js.sh
-/js/ecc/libecc.js
+/js/ecc/dist

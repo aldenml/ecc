@@ -10,9 +10,10 @@ import {
     hex2buf,
 } from "./util.js";
 import {
-    ristretto255_sha512_BlindWithScalar,
-    ristretto255_sha512_Evaluate,
-    ristretto255_sha512_Finalize,
+    oprf_ristretto255_sha512_BlindWithScalar,
+    oprf_ristretto255_sha512_HashToGroup,
+    oprf_ristretto255_sha512_Evaluate,
+    oprf_ristretto255_sha512_Finalize,
 } from "./oprf.js";
 import assert from "assert";
 
@@ -22,16 +23,16 @@ describe("OPRF(ristretto255, SHA-512)", () => {
 
     // https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-voprf-06#appendix-A.1.1
     const seed = hex2buf("aca1ae53bec831a1279b75ec6091b23d28034b59f77abeb0fa8f6d1a01340234");
-    const skSm = hex2buf("758cbac0e1eb4265d80f6e6489d9a74d788f7ddeda67d7fb3c08b08f44bda30a")
+    const skSm = hex2buf("758cbac0e1eb4265d80f6e6489d9a74d788f7ddeda67d7fb3c08b08f44bda30a");
 
     // https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-voprf-06#appendix-A.1.1.1
     it("input 00", async () => {
         const input = hex2buf("00");
         const blind = hex2buf("c604c785ada70d77a5256ae21767de8c3304115237d262134f5e46e512cf8e03");
 
-        const blindedElement = await ristretto255_sha512_BlindWithScalar(input, blind);
-        const evaluationElement = await ristretto255_sha512_Evaluate(skSm, blindedElement);
-        const output = await ristretto255_sha512_Finalize(input, blind, evaluationElement);
+        const blindedElement = await oprf_ristretto255_sha512_BlindWithScalar(input, blind);
+        const evaluationElement = await oprf_ristretto255_sha512_Evaluate(skSm, blindedElement);
+        const output = await oprf_ristretto255_sha512_Finalize(input, blind, evaluationElement);
 
         assert.equal(buf2hex(blindedElement), "3c7f2d901c0d4f245503a186086fbdf5d8b4408432b25c5163e8b5a19c258348");
         assert.equal(buf2hex(evaluationElement), "fc6c2b854553bf1ed6674072ed0bde1a9911e02b4bd64aa02cfb428f30251e77");
@@ -43,9 +44,9 @@ describe("OPRF(ristretto255, SHA-512)", () => {
         const input = hex2buf("5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a");
         const blind = hex2buf("5ed895206bfc53316d307b23e46ecc6623afb3086da74189a416012be037e50b");
 
-        const blindedElement = await ristretto255_sha512_BlindWithScalar(input, blind);
-        const evaluationElement = await ristretto255_sha512_Evaluate(skSm, blindedElement);
-        const output = await ristretto255_sha512_Finalize(input, blind, evaluationElement);
+        const blindedElement = await oprf_ristretto255_sha512_BlindWithScalar(input, blind);
+        const evaluationElement = await oprf_ristretto255_sha512_Evaluate(skSm, blindedElement);
+        const output = await oprf_ristretto255_sha512_Finalize(input, blind, evaluationElement);
 
         assert.equal(buf2hex(blindedElement), "28a5e797b710f76d20a52507145fbf320a574ec2c8ab0e33e65dd2c277d0ee56");
         assert.equal(buf2hex(evaluationElement), "345e140b707257ae83d4911f7ead3177891e7a62c54097732802c4c7a98ab25a");
