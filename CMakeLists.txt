@@ -81,6 +81,9 @@ target_compile_definitions(ecc PRIVATE ECC_ALL)
 add_library(oprf
     src/export.h
     src/ecc.h src/ecc.c
+    src/hash.h src/hash.c
+    src/ristretto255.h src/ristretto255.c
+    src/scalarmult.h src/scalarmult.c
 )
 
 target_compile_features(oprf PUBLIC c_std_11)

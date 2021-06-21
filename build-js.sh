@@ -34,3 +34,7 @@ EMCC_FLAGS="-Oz -flto --no-entry \
 emcc -o js/ecc/libecc.js -sEXPORT_NAME=libecc_module \
   --pre-js js/ecc/libecc-pre.js --post-js js/ecc/libecc-post.js \
   -Wl,--whole-archive build/libecc.a -Wl,--no-whole-archive ${EMCC_FLAGS}
+
+emcc -o js/oprf/liboprf.js -sEXPORT_NAME=liboprf_module \
+  --pre-js js/oprf/liboprf-pre.js --post-js js/oprf/liboprf-post.js \
+  -Wl,--whole-archive build/liboprf.a -Wl,--no-whole-archive ${EMCC_FLAGS}

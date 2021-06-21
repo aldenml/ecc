@@ -1,7 +1,7 @@
 <html lang="en">
 <head>
     <title>OPRF example</title>
-    <script src="ecc.min.js"></script>
+    <script src="oprf.min.js"></script>
 </head>
 <body>
 <h2>OPRF example</h2>
@@ -16,24 +16,23 @@
 <label>Output: </label>
 <label id="foutput"></label>
 <script>
-    function sendInput() {
-        const input = ecc.str2buf(document.getElementById("finput").value);
+    async function sendInput() {
+        const input = oprf.str2buf(document.getElementById("finput").value);
+        //const input = oprf.hex2buf("00");
 
-        (async () => {
-            const r = await ecc.oprf_ristretto255_sha512_Blind(input);
+        const r = await oprf.oprf_ristretto255_sha512_Blind(input);
 
-            document.getElementById("fblind").innerText = ecc.buf2hex(r.blind);
+        document.getElementById("fblind").innerText = oprf.buf2hex(r.blind);
 
-            const res = await fetch('/evaluate', {
-                method: 'POST',
-                body: ecc.buf2hex(r.blindedElement),
-            })
-            const evaluationElement = await res.text();
-            console.log("evaluationElement: " + evaluationElement);
-            const output = await ecc.oprf_ristretto255_sha512_Finalize(input, r.blind, ecc.hex2buf(evaluationElement));
+        const res = await fetch('/evaluate', {
+            method: 'POST',
+            body: oprf.buf2hex(r.blindedElement),
+        })
+        const evaluationElement = await res.text();
+        console.log("evaluationElement: " + evaluationElement);
+        const output = await oprf.oprf_ristretto255_sha512_Finalize(input, r.blind, oprf.hex2buf(evaluationElement));
 
-            document.getElementById("foutput").innerText = ecc.buf2hex(output);
-        })();
+        document.getElementById("foutput").innerText = oprf.buf2hex(output);
     }
 </script>
 </body>

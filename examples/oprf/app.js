@@ -7,9 +7,9 @@
 
 import express from "express";
 import bodyParser from "body-parser";
-import * as ecc from "@aldenml/ecc";
+import * as oprf from "@aldenml/oprf";
 
-const skSm = ecc.hex2buf("758cbac0e1eb4265d80f6e6489d9a74d788f7ddeda67d7fb3c08b08f44bda30a");
+const skSm = oprf.hex2buf("758cbac0e1eb4265d80f6e6489d9a74d788f7ddeda67d7fb3c08b08f44bda30a");
 
 const app = express()
 const port = 8000
@@ -19,8 +19,8 @@ app.use(express.static('public'));
 app.post('/evaluate', bodyParser.text(), async (req, res) => {
     const blindedElement = req.body;
     console.log("blindedElement: " + blindedElement);
-    const evaluationElement = await ecc.oprf_ristretto255_sha512_Evaluate(skSm, ecc.hex2buf(blindedElement));
-    res.send(ecc.buf2hex(evaluationElement));
+    const evaluationElement = await oprf.oprf_ristretto255_sha512_Evaluate(skSm, oprf.hex2buf(blindedElement));
+    res.send(oprf.buf2hex(evaluationElement));
 })
 
 app.listen(port, () => {
