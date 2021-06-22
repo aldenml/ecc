@@ -5,6 +5,12 @@ Oblivious pseudo-random function using ristretto255.
 This is an implementation of [draft-irtf-cfrg-voprf-06](https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-voprf-06)
 using [libsodium](https://doc.libsodium.org).
 
+It contains the following primitives (plus all the supporting functions):
+
+- `oprf_ristretto255_sha512_Blind` - client sends a masked secret input to the server.
+- `oprf_ristretto255_sha512_Evaluate` - server takes the masked secret and evaluates an "element" and sends it to the client.
+- `oprf_ristretto255_sha512_Finalize` - client takes the evaluated "element" and calculates the random output.
+
 ## Installation
 
 For node.js, use:

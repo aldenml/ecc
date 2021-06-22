@@ -201,3 +201,55 @@ Module.ecc_scalarmult_ristretto255 = (q, n, p) => {
     arraycopy(HEAPU8, pQ, q, 0, 32);
     return op;
 }
+
+// sign
+
+/**
+ * @param {Uint8Array} pk 32 bytes
+ * @param {Uint8Array} sk 64 bytes
+ * @returns {number}
+ */
+Module.ecc_sign_ed25519_keypair = (pk, sk) => {
+    const pPk = 0;
+    const pSk = pPk + 32;
+
+    const op = _ecc_sign_ed25519_keypair(pPk, pSk);
+    arraycopy(HEAPU8, pPk, pk, 0, 32);
+    arraycopy(HEAPU8, pSk, sk, 0, 64);
+    return op;
+}
+
+/**
+ * @param {Uint8Array} pk 32 bytes
+ * @param {Uint8Array} sk 64 bytes
+ * @param {Uint8Array} seed 32 bytes
+ * @returns {number}
+ */
+Module.ecc_sign_ed25519_seed_keypair = (pk, sk, seed) => {
+    arraycopy(seed, 0, HEAPU8, 0, 32);
+
+    const pSeed = 0;
+    const pPk = pSeed + 32;
+    const pSk = pPk + 32;
+
+    const op = _ecc_sign_ed25519_seed_keypair(pPk, pSk, pSeed);
+    arraycopy(HEAPU8, pPk, pk, 0, 32);
+    arraycopy(HEAPU8, pSk, sk, 0, 64);
+    return op;
+}
+
+/**
+ * @param {Uint8Array} curve25519_sk 32 bytes
+ * @param {Uint8Array} ed25519_sk 32 bytes
+ * @returns {number}
+ */
+Module.ecc_sign_ed25519_sk_to_curve25519 = (curve25519_sk, ed25519_sk) => {
+    arraycopy(ed25519_sk, 0, HEAPU8, 0, 32);
+
+    const pEd25519_sk = 0;
+    const pCurve25519_sk = pEd25519_sk + 32;
+
+    const op = _ecc_sign_ed25519_seed_keypair(pCurve25519_sk, pEd25519_sk);
+    arraycopy(HEAPU8, pCurve25519_sk, curve25519_sk, 0, 32);
+    return op;
+}
