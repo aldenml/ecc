@@ -36,6 +36,14 @@ if(EMSCRIPTEN)
         BUILD_COMMAND emmake make -j4
         BUILD_IN_SOURCE 1
     )
+    ExternalProject_Add(
+        blst-external
+        SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/deps/blst
+        CONFIGURE_COMMAND ""
+        BUILD_COMMAND AR=emar ./build.sh CC=emcc -D__BLST_PORTABLE__
+        BUILD_IN_SOURCE 1
+        INSTALL_COMMAND ""
+    )
 else()
     ExternalProject_Add(
         libsodium-external
@@ -51,6 +59,14 @@ else()
         BUILD_COMMAND make -j4
         BUILD_IN_SOURCE 1
     )
+    ExternalProject_Add(
+        blst-external
+        SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/deps/blst
+        CONFIGURE_COMMAND ""
+        BUILD_COMMAND ./build.sh -D__BLST_PORTABLE__
+        BUILD_IN_SOURCE 1
+        INSTALL_COMMAND ""
+    )
 endif()
 
 file(MAKE_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/build/libsodium/include)
@@ -63,6 +79,14 @@ set_target_properties(libsodium PROPERTIES
     IMPORTED_LOCATION ${CMAKE_CURRENT_SOURCE_DIR}/build/libsodium/lib/libsodium.a
 )
 
+add_library(blst STATIC IMPORTED GLOBAL)
+add_dependencies(blst blst-external)
+
+set_target_properties(blst PROPERTIES
+    INTERFACE_INCLUDE_DIRECTORIES ${CMAKE_CURRENT_SOURCE_DIR}/deps/blst/bindings
+    IMPORTED_LOCATION ${CMAKE_CURRENT_SOURCE_DIR}/deps/blst/libblst.a
+)
+
 add_library(ecc
     src/export.h
     src/ecc.h src/ecc.c
@@ -71,10 +95,11 @@ add_library(ecc
     src/ristretto255.h src/ristretto255.c
     src/scalarmult.h src/scalarmult.c
     src/sign.h src/sign.c
+    src/bls12_381.h src/bls12_381.c
 )
 
 target_compile_features(ecc PUBLIC c_std_11)
-target_link_libraries(ecc PRIVATE libsodium)
+target_link_libraries(ecc PRIVATE libsodium blst)
 target_compile_definitions(ecc PRIVATE ECC_ALL)
 
 # oprf
