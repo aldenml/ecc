@@ -12,6 +12,7 @@ cmake --build build --config Release --parallel 2
 
 EMCC_FLAGS="-Oz -flto --no-entry \
   -Wl,--whole-archive build/libsodium/lib/libsodium.a -Wl,--no-whole-archive \
+  -Wl,--whole-archive deps/blst/libblst.a -Wl,--no-whole-archive \
   -sWASM=1 \
   -sSTRICT=1 \
   -sSINGLE_FILE=1 \

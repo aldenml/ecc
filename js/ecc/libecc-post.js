@@ -253,3 +253,21 @@ Module.ecc_sign_ed25519_sk_to_curve25519 = (curve25519_sk, ed25519_sk) => {
     arraycopy(HEAPU8, pCurve25519_sk, curve25519_sk, 0, 32);
     return op;
 }
+
+// bls12_381
+
+/**
+ * @param {Uint8Array} out_SK 32 bytes
+ * @param {Uint8Array} IKM
+ * * @param {Uint8Array} IKM_len >= 32
+ * @returns {number}
+ */
+Module.ecc_bls12_381_keygen = (out_SK, IKM, IKM_len) => {
+    arraycopy(IKM, 0, HEAPU8, 0, IKM_len);
+
+    const pIKM = 0;
+    const pOut_SK = pIKM + IKM_len;
+
+    _ecc_bls12_381_keygen(pOut_SK, pIKM, IKM_len);
+    arraycopy(HEAPU8, pOut_SK, out_SK, 0, 32);
+}
