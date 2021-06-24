@@ -35,6 +35,8 @@ export function buf2hex(buffer) {
  * @returns {Uint8Array}
  */
 export function hex2buf(hex) {
+    if (hex.length === 0)
+        return new Uint8Array(0);
     return new Uint8Array(hex.match(/.{1,2}/g).map(b => parseInt(b, 16)));
 }
 
@@ -47,6 +49,7 @@ export function hex2buf(hex) {
 export function len(buf) {
     return buf.length;
 }
+
 /**
  * Concatenates two byte arrays. Sames as a || b.
  *

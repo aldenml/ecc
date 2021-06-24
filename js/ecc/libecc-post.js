@@ -10,6 +10,33 @@ function arraycopy(src, srcPos, dest, destPos, length) {
     dest.set(src.subarray(srcPos, srcPos + length), destPos);
 }
 
+/**
+ * @param {Uint8Array} src
+ * @param {number} pos
+ * @param {number} length
+ * @returns {number}
+ */
+function mput(src, pos, length) {
+    arraycopy(src, 0, HEAPU8, pos, length);
+    return pos;
+}
+
+/**
+ * @param {number} pos
+ * @param {Uint8Array} dest
+ * @param {number} length
+ */
+function mget(pos, dest, length) {
+    arraycopy(HEAPU8, pos, dest, 0, length);
+}
+
+/**
+ * @param {number} length
+ */
+function mzero(length) {
+    _ecc_memzero(0, length);
+}
+
 // ecc
 
 /**
@@ -119,6 +146,104 @@ Module.ecc_hash_sha512 = (out, input) => {
     _ecc_hash_sha512(pOut, pIn, len);
 
     arraycopy(HEAPU8, pOut, out, 0, 64);
+}
+
+// kdf
+
+/**
+ * @param {Uint8Array} prk
+ * @param {Uint8Array} salt
+ * @param {number} salt_len
+ * @param {Uint8Array} ikm
+ * @param {number} ikm_len
+ * @returns {number}
+ */
+Module.ecc_kdf_hkdf_sha256_extract = (prk, salt, salt_len, ikm, ikm_len) => {
+    const pSalt = mput(salt, 0, salt_len);
+    const pIkm = mput(ikm, pSalt + salt_len, ikm_len);
+    const pPrk = pIkm + ikm_len;
+
+    const op = _ecc_kdf_hkdf_sha256_extract(pPrk, pSalt, salt_len, pIkm, ikm_len);
+    mget(pPrk, prk, 32);
+    mzero(salt_len + ikm_len + 32);
+    return op;
+}
+
+/**
+ * @param {Uint8Array} prk
+ */
+Module.ecc_kdf_hkdf_sha256_keygen = (prk) => {
+    const pPrk = 0;
+    _ecc_kdf_hkdf_sha256_keygen(pPrk);
+    mget(pPrk, prk, 32);
+    mzero(32);
+}
+
+/**
+ * @param {Uint8Array} out
+ * @param {number} out_len
+ * @param {Uint8Array} ctx
+ * @param {number} ctx_len
+ * @param {Uint8Array} prk
+ * @returns {number}
+ */
+Module.ecc_kdf_hkdf_sha256_expand = (out, out_len, ctx, ctx_len, prk) => {
+    const pCtx = mput(ctx, 0, ctx_len);
+    const pPrk = mput(prk, pCtx + ctx_len, 32);
+    const pOut = pPrk + 32;
+
+    const op = _ecc_kdf_hkdf_sha256_expand(pOut, out_len, pCtx, ctx_len, pPrk);
+    mget(pOut, out, out_len);
+    mzero(ctx_len + 32 + out_len);
+    return op;
+}
+
+/**
+ * @param {Uint8Array} prk
+ * @param {Uint8Array} salt
+ * @param {number} salt_len
+ * @param {Uint8Array} ikm
+ * @param {number} ikm_len
+ * @returns {number}
+ */
+Module.ecc_kdf_hkdf_sha512_extract = (prk, salt, salt_len, ikm, ikm_len) => {
+    const pSalt = mput(salt, 0, salt_len);
+    const pIkm = mput(ikm, pSalt + salt_len, ikm_len);
+    const pPrk = pIkm + ikm_len;
+
+    const op = _ecc_kdf_hkdf_sha512_extract(pPrk, pSalt, salt_len, pIkm, ikm_len);
+    mget(pPrk, prk, 64);
+    mzero(salt_len + ikm_len + 64);
+    return op;
+}
+
+/**
+ * @param {Uint8Array} prk
+ */
+Module.ecc_kdf_hkdf_sha512_keygen = (prk) => {
+    const pPrk = 0;
+    _ecc_kdf_hkdf_sha512_keygen(pPrk);
+    mget(pPrk, prk, 64);
+    mzero(64);
+}
+
+/**
+ * @param {Uint8Array} out
+ * @param {number} out_len
+ * @param {Uint8Array} ctx
+ * @param {number} ctx_len
+ * @param {Uint8Array} prk
+ * @returns {number}
+ */
+Module.ecc_kdf_hkdf_sha512_expand = (out, out_len, ctx, ctx_len, prk) => {
+    const pCtx = mput(ctx, 0, ctx_len);
+    const pPrk = mput(prk, pCtx + ctx_len, 64);
+    const pOut = pPrk + 64;
+
+    const op = _ecc_kdf_hkdf_sha512_expand(pOut, out_len, pCtx, ctx_len, pPrk);
+    mget(pOut, out, out_len);
+    mzero(ctx_len + 64 + out_len);
+    return op;
 }
 
 // ed25519
