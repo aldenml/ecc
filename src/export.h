@@ -8,7 +8,11 @@
 #ifndef ECC_EXPORT_H
 #define ECC_EXPORT_H
 
-#define SYMBOL_EXPORT __attribute__((visibility("default"))) __attribute__((used))
+#ifdef __cplusplus
+    #define SYMBOL_EXPORT extern "C" __attribute__((visibility("default"))) __attribute__((used))
+#else
+    #define SYMBOL_EXPORT __attribute__((visibility("default"))) __attribute__((used))
+#endif
 
 #if defined ECC_OPRF
     #define ECC_OPRF_EXPORT SYMBOL_EXPORT

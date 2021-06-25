@@ -148,6 +148,140 @@ Module.ecc_hash_sha512 = (out, input) => {
     arraycopy(HEAPU8, pOut, out, 0, 64);
 }
 
+// mac
+
+/**
+ *
+ * @param {Uint8Array} k
+ */
+Module.ecc_mac_hmac_sha256_keygen = (k) => {
+    const pK = 0;
+    _ecc_mac_hmac_sha256_keygen(pK);
+    mget(pK, k, 32);
+    mzero(32);
+}
+
+/**
+ * @param {Uint8Array} out
+ * @param {Uint8Array} input
+ * @param {Uint8Array} k
+ */
+Module.ecc_mac_hmac_sha256 = (out, input, k) => {
+    const inlen = input.length;
+    const pIn = mput(input, 0, inlen);
+    const pK = mput(k, pIn + inlen, 32);
+    const pOut = pK + 32;
+
+    const r = _ecc_mac_hmac_sha256(pOut, pIn, inlen, pK);
+    mget(pOut, out, 32);
+    mzero(inlen + 32 + 32);
+    return r;
+}
+
+/**
+ * @param {Uint8Array} h
+ * @param {Uint8Array} input
+ * @param {Uint8Array} k
+ */
+Module.ecc_mac_hmac_sha256_verify = (h, input, k) => {
+    const inlen = input.length;
+    const pH = mput(h, 0, 32);
+    const pIn = mput(input, pH + 32, inlen);
+    const pK = mput(k, pIn + inlen, 32);
+
+    const r = _ecc_mac_hmac_sha256_verify(pH, pIn, inlen, pK);
+    mzero(32 + inlen + 32);
+    return r;
+}
+
+/**
+ *
+ * @param {Uint8Array} k
+ */
+Module.ecc_mac_hmac_sha512_keygen = (k) => {
+    const pK = 0;
+    _ecc_mac_hmac_sha512_keygen(pK);
+    mget(pK, k, 32);
+    mzero(32);
+}
+
+/**
+ * @param {Uint8Array} out
+ * @param {Uint8Array} input
+ * @param {Uint8Array} k
+ */
+Module.ecc_mac_hmac_sha512 = (out, input, k) => {
+    const inlen = input.length;
+    const pIn = mput(input, 0, inlen);
+    const pK = mput(k, pIn + inlen, 32);
+    const pOut = pK + 32;
+
+    const r = _ecc_mac_hmac_sha512(pOut, pIn, inlen, pK);
+    mget(pOut, out, 64);
+    mzero(inlen + 32 + 64);
+    return r;
+}
+
+/**
+ * @param {Uint8Array} h
+ * @param {Uint8Array} input
+ * @param {Uint8Array} k
+ */
+Module.ecc_mac_hmac_sha512_verify = (h, input, k) => {
+    const inlen = input.length;
+    const pH = mput(h, 0, 64);
+    const pIn = mput(input, pH + 64, inlen);
+    const pK = mput(k, pIn + inlen, 32);
+
+    const r = _ecc_mac_hmac_sha512_verify(pH, pIn, inlen, pK);
+    mzero(64 + inlen + 32);
+    return r;
+}
+
+/**
+ *
+ * @param {Uint8Array} k
+ */
+Module.ecc_mac_hmac_sha512256_keygen = (k) => {
+    const pK = 0;
+    _ecc_mac_hmac_sha512256_keygen(pK);
+    mget(pK, k, 32);
+    mzero(32);
+}
+
+/**
+ * @param {Uint8Array} out
+ * @param {Uint8Array} input
+ * @param {Uint8Array} k
+ */
+Module.ecc_mac_hmac_sha512256 = (out, input, k) => {
+    const inlen = input.length;
+    const pIn = mput(input, 0, inlen);
+    const pK = mput(k, pIn + inlen, 32);
+    const pOut = pK + 32;
+
+    const r = _ecc_mac_hmac_sha512256(pOut, pIn, inlen, pK);
+    mget(pOut, out, 32);
+    mzero(inlen + 32 + 32);
+    return r;
+}
+
+/**
+ * @param {Uint8Array} h
+ * @param {Uint8Array} input
+ * @param {Uint8Array} k
+ */
+Module.ecc_mac_hmac_sha512256_verify = (h, input, k) => {
+    const inlen = input.length;
+    const pH = mput(h, 0, 32);
+    const pIn = mput(input, pH + 32, inlen);
+    const pK = mput(k, pIn + inlen, 32);
+
+    const r = _ecc_mac_hmac_sha512256_verify(pH, pIn, inlen, pK);
+    mzero(32 + inlen + 32);
+    return r;
+}
+
 // kdf
 
 /**

@@ -91,6 +91,7 @@ add_library(ecc
     src/export.h
     src/ecc.h src/ecc.c
     src/hash.h src/hash.c
+    src/mac.h src/mac.c
     src/kdf.h src/kdf.c
     src/ed25519.h src/ed25519.c
     src/ristretto255.h src/ristretto255.c
