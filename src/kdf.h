@@ -14,10 +14,6 @@
 #define ecc_kdf_hkdf_sha256_SIZE_MIN 0U
 #define ecc_kdf_hkdf_sha256_SIZE_MAX (0xff * 32U)
 
-#define ecc_kdf_hkdf_sha512_KEYSIZE 64U
-#define ecc_kdf_hkdf_sha512_SIZE_MIN 0U
-#define ecc_kdf_hkdf_sha512_SIZE_MAX (0xff * 64U)
-
 ECC_EXPORT
 int ecc_kdf_hkdf_sha256_extract(BYTE *prk, const BYTE *salt, int salt_len, const BYTE *ikm, int ikm_len);
 
@@ -26,6 +22,10 @@ void ecc_kdf_hkdf_sha256_keygen(BYTE *prk);
 
 ECC_EXPORT
 int ecc_kdf_hkdf_sha256_expand(BYTE *out, int out_len, const BYTE *ctx, int ctx_len, const BYTE *prk);
+
+#define ecc_kdf_hkdf_sha512_KEYSIZE 64U
+#define ecc_kdf_hkdf_sha512_SIZE_MIN 0U
+#define ecc_kdf_hkdf_sha512_SIZE_MAX (0xff * 64U)
 
 ECC_OPAQUE_EXPORT
 ECC_EXPORT
