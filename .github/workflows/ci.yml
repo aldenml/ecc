@@ -35,6 +35,11 @@ jobs:
         run: |
           ./build-c.sh
           readelf -d build/libecc.so
+      - name: c tests
+        run: |
+          cd build
+          ctest -C "Release"
+          cd ..
 
       - name: js build
         run: |

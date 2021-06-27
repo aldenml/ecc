@@ -12,10 +12,6 @@ void ecc_randombytes(BYTE *buf, int n) {
     randombytes_buf(buf, n);
 }
 
-void ecc_memzero(BYTE *pnt, int len) {
-    sodium_memzero(pnt, len);
-}
-
 int ecc_compare(const BYTE *a, const BYTE *b, int len) {
     return sodium_compare(a, b, len);
 }

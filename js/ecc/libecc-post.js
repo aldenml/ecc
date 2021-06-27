@@ -518,7 +518,7 @@ Module.ecc_sign_ed25519_sk_to_curve25519 = (curve25519_sk, ed25519_sk) => {
 /**
  * @param {Uint8Array} out_SK 32 bytes
  * @param {Uint8Array} IKM
- * * @param {Uint8Array} IKM_len >= 32
+ * @param {Uint8Array} IKM_len >= 32
  * @returns {number}
  */
 Module.ecc_bls12_381_keygen = (out_SK, IKM, IKM_len) => {
@@ -529,4 +529,24 @@ Module.ecc_bls12_381_keygen = (out_SK, IKM, IKM_len) => {
 
     _ecc_bls12_381_keygen(pOut_SK, pIKM, IKM_len);
     arraycopy(HEAPU8, pOut_SK, out_SK, 0, 32);
+}
+
+// h2ec
+
+/**
+ * @param {Uint8Array} out
+ * @param {Uint8Array} msg a byte string
+ * @param {Uint8Array} dst a byte string of at most 255 bytes
+ */
+Module.ecc_h2ec_expand_message_xmd_sha512 = (out, msg, dst) => {
+    const msg_len = msg.length;
+    const dst_len = dst.length;
+    const len_in_bytes = out.length;
+    const pMsg = mput(msg, 0, msg_len);
+    const pDst = mput(dst, pMsg + msg_len, dst_len);
+    const pOut = pDst + dst_len;
+
+    _ecc_h2ec_expand_message_xmd_sha512(pOut, pMsg, msg_len, pDst, dst_len, len_in_bytes);
+    mget(pOut, out, len_in_bytes);
+    mzero(msg_len + dst_len + len_in_bytes);
 }

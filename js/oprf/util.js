@@ -150,87 +150,12 @@ export function strxor(str1, str2) {
  * @param {Uint8Array} msg a byte string
  * @param {Uint8Array} DST a byte string of at most 255 bytes
  * @param {number} len_in_bytes the length of the requested output in bytes
- * @returns {Uint8Array} a byte string
+ * @return {Uint8Array} a byte string
  */
 export async function expand_message_xmd_sha512(msg, DST, len_in_bytes) {
-
     const libecc = await libecc_module();
 
-    // from the irtf
-    //
-    // Parameters:
-    // - H, a hash function (see requirements above).
-    // - b_in_bytes, b / 8 for b the output size of H in bits.
-    //   For example, for b = 256, b_in_bytes = 32.
-    // - r_in_bytes, the input block size of H, measured in bytes (see
-    //   discussion above). For example, for SHA-256, r_in_bytes = 64.
-    //
-    // in our case
-    // - H = SHA-512
-    // - b_in_bytes = 64
-    // - r_in_bytes = 128
-
-    const b_in_bytes = 64;
-    const r_in_bytes = 128;
-
-    // Steps:
-    // 1.  ell = ceil(len_in_bytes / b_in_bytes)
-    // 2.  ABORT if ell > 255
-    // 3.  DST_prime = DST || I2OSP(len(DST), 1)
-    // 4.  Z_pad = I2OSP(0, r_in_bytes)
-    // 5.  l_i_b_str = I2OSP(len_in_bytes, 2)
-    // 6.  msg_prime = Z_pad || msg || l_i_b_str || I2OSP(0, 1) || DST_prime
-    // 7.  b_0 = H(msg_prime)
-    // 8.  b_1 = H(b_0 || I2OSP(1, 1) || DST_prime)
-    // 9.  for i in (2, ..., ell):
-    // 10.    b_i = H(strxor(b_0, b_(i - 1)) || I2OSP(i, 1) || DST_prime)
-    // 11. uniform_bytes = b_1 || ... || b_ell
-    // 12. return substr(uniform_bytes, 0, len_in_bytes)
-
-    // 1.  ell = ceil(len_in_bytes / b_in_bytes)
-    const ell = Math.ceil(len_in_bytes / b_in_bytes);
-
-    // 2.  ABORT if ell > 255
-    if (ell > 255)
-        throw "The length in bytes of the requested output is too large";
-
-    // 3.  DST_prime = DST || I2OSP(len(DST), 1)
-    const DST_prime = concat(DST, I2OSP(DST.length, 1));
-
-    // 4.  Z_pad = I2OSP(0, r_in_bytes)
-    const Z_pad = new Uint8Array(r_in_bytes); // already zeroed
-
-    // 5.  l_i_b_str = I2OSP(len_in_bytes, 2)
-    const l_i_b_str = I2OSP(len_in_bytes, 2);
-
-    // 6.  msg_prime = Z_pad || msg || l_i_b_str || I2OSP(0, 1) || DST_prime
-    const msg_prime = concat(Z_pad, concat(msg, concat(l_i_b_str, concat(I2OSP(0, 1), DST_prime))));
-
-    // 7.  b_0 = H(msg_prime)
-    let b_0 = new Uint8Array(64);
-    libecc.ecc_hash_sha512(b_0, msg_prime);
-
-    // 8.  b_1 = H(b_0 || I2OSP(1, 1) || DST_prime)
-    let b_1 = new Uint8Array(64);
-    let b_1_input = concat(b_0, concat(I2OSP(1, 1), DST_prime));
-    libecc.ecc_hash_sha512(b_1, b_1_input);
-
-    // 9.  for i in (2, ..., ell):
-    let b_arr = [b_0, b_1];
-    for (let i = 2; i <= ell; i++) {
-        // 10.    b_i = H(strxor(b_0, b_(i - 1)) || I2OSP(i, 1) || DST_prime)
-        let b_i_input = concat(strxor(b_0, b_arr[i - 1]), concat(I2OSP(i, 1), DST_prime));
-        let b_i = new Uint8Array(64);
-        libecc.ecc_hash_sha512(b_i, b_i_input);
-        b_arr.push(b_i);
-    }
-
-    // 11. uniform_bytes = b_1 || ... || b_ell
-    let uniform_bytes = new Uint8Array(0);
-    for (let i = 1; i <= ell; i++) {
-        uniform_bytes = concat(uniform_bytes, b_arr[i]);
-    }
-
-    // 12. return substr(uniform_bytes, 0, len_in_bytes)
-    return uniform_bytes.slice(0, len_in_bytes);
+    let uniform_bytes = new Uint8Array(len_in_bytes);
+    libecc.ecc_h2ec_expand_message_xmd_sha512(uniform_bytes, msg, DST);
+    return uniform_bytes;
 }
