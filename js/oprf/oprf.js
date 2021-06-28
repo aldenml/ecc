@@ -55,7 +55,7 @@ export async function oprf_ristretto255_sha512_BlindWithScalar(input, blind) {
 
     const P = await oprf_ristretto255_sha512_HashToGroup(input);
     let blindedElement = new Uint8Array(32);
-    libecc.ecc_scalarmult_ristretto255(blindedElement, blind, P);
+    libecc.ecc_ristretto255_scalarmult(blindedElement, blind, P);
 
     return blindedElement;
 }
@@ -73,7 +73,7 @@ export async function oprf_ristretto255_sha512_Blind(input) {
     libecc.ecc_ristretto255_scalar_random(blind);
     const P = await oprf_ristretto255_sha512_HashToGroup(input);
     let blindedElement = new Uint8Array(32);
-    libecc.ecc_scalarmult_ristretto255(blindedElement, blind, P);
+    libecc.ecc_ristretto255_scalarmult(blindedElement, blind, P);
 
     return {blind: blind, blindedElement: blindedElement};
 }
@@ -94,7 +94,7 @@ export async function oprf_ristretto255_sha512_Unblind(blind, evaluatedElement) 
     let invertedBlind = new Uint8Array(32);
     libecc.ecc_ristretto255_scalar_invert(invertedBlind, blind);
     let unblindedElement = new Uint8Array(32);
-    libecc.ecc_scalarmult_ristretto255(unblindedElement, invertedBlind, evaluatedElement);
+    libecc.ecc_ristretto255_scalarmult(unblindedElement, invertedBlind, evaluatedElement);
 
     return unblindedElement;
 }
@@ -151,7 +151,7 @@ export async function oprf_ristretto255_sha512_Evaluate(skS, blindedElement) {
     // Z = skS * R
     // evaluatedElement = GG.SerializeElement(Z)
     let evaluatedElement = new Uint8Array(32);
-    libecc.ecc_scalarmult_ristretto255(evaluatedElement, skS, blindedElement);
+    libecc.ecc_ristretto255_scalarmult(evaluatedElement, skS, blindedElement);
 
     return evaluatedElement;
 }

@@ -157,6 +157,6 @@ export async function expand_message_xmd_sha512(msg, DST, len_in_bytes) {
     const libecc = await libecc_module();
 
     let uniform_bytes = new Uint8Array(len_in_bytes);
-    libecc.ecc_h2ec_expand_message_xmd_sha512(uniform_bytes, msg, DST);
+    libecc.ecc_h2c_expand_message_xmd_sha512(uniform_bytes, msg, DST);
     return uniform_bytes;
 }

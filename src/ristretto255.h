@@ -10,6 +10,11 @@
 
 #include "export.h"
 
+#define ecc_ristretto255_SIZE 32
+#define ecc_ristretto255_HASHSIZE 64
+#define ecc_ristretto255_SCALARSIZE 32
+#define ecc_ristretto255_NONREDUCEDSCALARSIZE 64
+
 ECC_EXPORT
 int ecc_ristretto255_is_valid_point(const BYTE *p);
 
@@ -21,7 +26,7 @@ int ecc_ristretto255_sub(BYTE *r, const BYTE *p, const BYTE *q);
 
 ECC_OPRF_EXPORT
 ECC_EXPORT
-int ecc_ristretto255_from_hash(BYTE *p, const BYTE *r);
+int ecc_ristretto255_from_hash(byte_t *p, const byte_t *r);
 
 ECC_EXPORT
 void ecc_ristretto255_random(BYTE *p);
@@ -55,5 +60,12 @@ void ecc_ristretto255_scalar_mul(BYTE *z, const BYTE *x, const BYTE *y);
  */
 ECC_EXPORT
 void ecc_ristretto255_scalar_reduce(BYTE *r, const BYTE *s);
+
+ECC_OPRF_EXPORT
+ECC_EXPORT
+int ecc_ristretto255_scalarmult(byte_t *q, const byte_t *n, const byte_t *p);
+
+ECC_EXPORT
+int ecc_ristretto255_scalarmult_base(byte_t *q, const byte_t *n);
 
 #endif // ECC_RISTRETTO255_H
