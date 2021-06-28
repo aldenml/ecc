@@ -531,14 +531,14 @@ Module.ecc_bls12_381_keygen = (out_SK, IKM, IKM_len) => {
     arraycopy(HEAPU8, pOut_SK, out_SK, 0, 32);
 }
 
-// h2ec
+// h2c
 
 /**
  * @param {Uint8Array} out
  * @param {Uint8Array} msg a byte string
  * @param {Uint8Array} dst a byte string of at most 255 bytes
  */
-Module.ecc_h2ec_expand_message_xmd_sha512 = (out, msg, dst) => {
+Module.ecc_h2c_expand_message_xmd_sha512 = (out, msg, dst) => {
     const msg_len = msg.length;
     const dst_len = dst.length;
     const len_in_bytes = out.length;
@@ -546,7 +546,7 @@ Module.ecc_h2ec_expand_message_xmd_sha512 = (out, msg, dst) => {
     const pDst = mput(dst, pMsg + msg_len, dst_len);
     const pOut = pDst + dst_len;
 
-    _ecc_h2ec_expand_message_xmd_sha512(pOut, pMsg, msg_len, pDst, dst_len, len_in_bytes);
+    _ecc_h2c_expand_message_xmd_sha512(pOut, pMsg, msg_len, pDst, dst_len, len_in_bytes);
     mget(pOut, out, len_in_bytes);
     mzero(msg_len + dst_len + len_in_bytes);
 }

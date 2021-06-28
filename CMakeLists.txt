@@ -89,8 +89,8 @@ set_target_properties(blst PROPERTIES
 
 add_library(ecc
     src/export.h
-    src/util.h src/util.c
     src/ecc.h src/ecc.c
+    src/util.h src/util.c
     src/hash.h src/hash.c
     src/mac.h src/mac.c
     src/kdf.h src/kdf.c
@@ -99,7 +99,9 @@ add_library(ecc
     src/scalarmult.h src/scalarmult.c
     src/sign.h src/sign.c
     src/bls12_381.h src/bls12_381.c
-    src/h2ec.h src/h2ec.c
+    src/h2c.h src/h2c.c
+    src/oprf.h src/oprf.c
+    src/opaque.h src/opaque.c
 )
 
 target_compile_features(ecc PUBLIC c_std_11)
@@ -118,7 +120,7 @@ add_library(oprf
     src/hash.h src/hash.c
     src/ristretto255.h src/ristretto255.c
     src/scalarmult.h src/scalarmult.c
-    src/h2ec.h src/h2ec.c
+    src/h2c.h src/h2c.c
 )
 
 target_compile_features(oprf PUBLIC c_std_11)
@@ -131,10 +133,16 @@ if(NOT DEFINED EMSCRIPTEN)
     # tests executables
     add_executable(test_util test/test_util.c)
     target_link_libraries(test_util PRIVATE ecc cmocka-static)
-    add_executable(test_h2ec test/test_h2ec.c)
-    target_link_libraries(test_h2ec PRIVATE ecc cmocka-static)
+    add_executable(test_h2c test/test_h2c.c)
+    target_link_libraries(test_h2c PRIVATE ecc cmocka-static)
+    add_executable(test_oprf test/test_oprf.c)
+    target_link_libraries(test_oprf PRIVATE ecc cmocka-static)
+    add_executable(test_opaque test/test_opaque.c)
+    target_link_libraries(test_opaque PRIVATE ecc cmocka-static)
 
     enable_testing()
     add_test(NAME test_util COMMAND test_util)
-    add_test(NAME test_h2ec COMMAND test_h2ec)
+    add_test(NAME test_h2c COMMAND test_h2c)
+    add_test(NAME test_oprf COMMAND test_oprf)
+    add_test(NAME test_opaque COMMAND test_opaque)
 endif()

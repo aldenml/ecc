@@ -20,7 +20,7 @@ int ecc_ristretto255_sub(BYTE *r, const BYTE *p, const BYTE *q) {
     return crypto_core_ristretto255_sub(r, p, q);
 }
 
-int ecc_ristretto255_from_hash(BYTE *p, const BYTE *r) {
+int ecc_ristretto255_from_hash(byte_t *p, const byte_t *r) {
     return crypto_core_ristretto255_from_hash(p, r);
 }
 
@@ -62,4 +62,12 @@ void ecc_ristretto255_scalar_mul(BYTE *z, const BYTE *x, const BYTE *y) {
  */
 void ecc_ristretto255_scalar_reduce(BYTE *r, const BYTE *s) {
     crypto_core_ristretto255_scalar_reduce(r, s);
+}
+
+int ecc_ristretto255_scalarmult(byte_t *q, const byte_t *n, const byte_t *p) {
+    return crypto_scalarmult_ristretto255(q, n, p);
+}
+
+int ecc_ristretto255_scalarmult_base(byte_t *q, const byte_t *n) {
+    return crypto_scalarmult_ristretto255_base(q, n);
 }

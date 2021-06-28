@@ -5,13 +5,13 @@
  * Copy of the license at https://opensource.org/licenses/MIT
  */
 
-#include "h2ec.h"
+#include "h2c.h"
 #include <math.h>
 #include <string.h>
 #include <sodium.h>
 #include "util.h"
 
-void ecc_h2ec_expand_message_xmd_sha512(
+void ecc_h2c_expand_message_xmd_sha512(
     byte_t *out,
     const byte_t *msg, int msg_len,
     const byte_t *dst, int dst_len,
@@ -86,7 +86,7 @@ void ecc_h2ec_expand_message_xmd_sha512(
     ecc_I2OSP(tmp, dst_len, 1);
     crypto_hash_sha512_update(&h_state, tmp, 1);
     // b_0 = H(msg_prime)
-    byte_t b_0[64] = {0};
+    byte_t b_0[64];
     crypto_hash_sha512_final(&h_state, b_0);
 
     // 8.  b_1 = H(b_0 || I2OSP(1, 1) || DST_prime)
@@ -103,7 +103,7 @@ void ecc_h2ec_expand_message_xmd_sha512(
     ecc_I2OSP(tmp, dst_len, 1);
     crypto_hash_sha512_update(&h_state, tmp, 1);
     // b_1 = H(b_0 || I2OSP(1, 1) || DST_prime)
-    byte_t b_1[64] = {0};
+    byte_t b_1[64];
     crypto_hash_sha512_final(&h_state, b_1);
 
     // 9.  for i in (2, ..., ell):
@@ -137,7 +137,7 @@ void ecc_h2ec_expand_message_xmd_sha512(
     // 12. return substr(uniform_bytes, 0, len_in_bytes)
     memcpy(out, uniform_bytes, len_in_bytes);
 
-    // local memory cleanup
+    // stack memory cleanup
     ecc_memzero((byte_t *) &h_state, sizeof h_state);
     ecc_memzero(uniform_bytes, sizeof uniform_bytes);
 }

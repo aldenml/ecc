@@ -17,13 +17,13 @@
 const byte_t dst[27] = "QUUX-V01-CS02-with-expander";
 const int dst_len = 27;
 
-static void ecc_h2ec_expand_message_xmd_sha512_test1(void **state) {
+static void ecc_h2c_expand_message_xmd_sha512_test1(void **state) {
     const byte_t msg[0];
     const int msg_len = 0;
     const int len_in_bytes = 0x20;
     byte_t uniform_bytes[0x20];
 
-    ecc_h2ec_expand_message_xmd_sha512(uniform_bytes, msg, msg_len, dst, dst_len, len_in_bytes);
+    ecc_h2c_expand_message_xmd_sha512(uniform_bytes, msg, msg_len, dst, dst_len, len_in_bytes);
 
     char hex[0x40 + 1];
     ecc_bin2hex(hex, uniform_bytes, 0x20);
@@ -31,13 +31,13 @@ static void ecc_h2ec_expand_message_xmd_sha512_test1(void **state) {
                              "8cd62ac699ead642");
 }
 
-static void ecc_h2ec_expand_message_xmd_sha512_test2(void **state) {
+static void ecc_h2c_expand_message_xmd_sha512_test2(void **state) {
     const byte_t msg[3] = "abc";
     const int msg_len = 3;
     const int len_in_bytes = 0x20;
     byte_t uniform_bytes[0x20];
 
-    ecc_h2ec_expand_message_xmd_sha512(uniform_bytes, msg, msg_len, dst, dst_len, len_in_bytes);
+    ecc_h2c_expand_message_xmd_sha512(uniform_bytes, msg, msg_len, dst, dst_len, len_in_bytes);
 
     char hex[0x40 + 1];
     ecc_bin2hex(hex, uniform_bytes, 0x20);
@@ -45,13 +45,13 @@ static void ecc_h2ec_expand_message_xmd_sha512_test2(void **state) {
                              "08d2c13005553b0f");
 }
 
-static void ecc_h2ec_expand_message_xmd_sha512_test3(void **state) {
+static void ecc_h2c_expand_message_xmd_sha512_test3(void **state) {
     const byte_t msg[16] = "abcdef0123456789";
     const int msg_len = 16;
     const int len_in_bytes = 0x20;
     byte_t uniform_bytes[0x20];
 
-    ecc_h2ec_expand_message_xmd_sha512(uniform_bytes, msg, msg_len, dst, dst_len, len_in_bytes);
+    ecc_h2c_expand_message_xmd_sha512(uniform_bytes, msg, msg_len, dst, dst_len, len_in_bytes);
 
     char hex[0x40 + 1];
     ecc_bin2hex(hex, uniform_bytes, 0x20);
@@ -59,7 +59,7 @@ static void ecc_h2ec_expand_message_xmd_sha512_test3(void **state) {
                              "f4ca4b36e239b338");
 }
 
-static void ecc_h2ec_expand_message_xmd_sha512_test4(void **state) {
+static void ecc_h2c_expand_message_xmd_sha512_test4(void **state) {
     const byte_t msg[] = "q128_qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq"
                            "qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq"
                            "qqqqqqqqqqqqqqqqqqqqqqqqq";
@@ -67,7 +67,7 @@ static void ecc_h2ec_expand_message_xmd_sha512_test4(void **state) {
     const int len_in_bytes = 0x20;
     byte_t uniform_bytes[0x20];
 
-    ecc_h2ec_expand_message_xmd_sha512(uniform_bytes, msg, msg_len, dst, dst_len, len_in_bytes);
+    ecc_h2c_expand_message_xmd_sha512(uniform_bytes, msg, msg_len, dst, dst_len, len_in_bytes);
 
     char hex[0x40 + 1];
     ecc_bin2hex(hex, uniform_bytes, 0x20);
@@ -75,13 +75,13 @@ static void ecc_h2ec_expand_message_xmd_sha512_test4(void **state) {
                              "20f62ec66acc0197");
 }
 
-static void ecc_h2ec_expand_message_xmd_sha512_test5(void **state) {
+static void ecc_h2c_expand_message_xmd_sha512_test5(void **state) {
     const byte_t msg[0];
     const int msg_len = 0;
     const int len_in_bytes = 0x80;
     byte_t uniform_bytes[0x80];
 
-    ecc_h2ec_expand_message_xmd_sha512(uniform_bytes, msg, msg_len, dst, dst_len, len_in_bytes);
+    ecc_h2c_expand_message_xmd_sha512(uniform_bytes, msg, msg_len, dst, dst_len, len_in_bytes);
 
     char hex[0x100 + 1];
     ecc_bin2hex(hex, uniform_bytes, 0x80);
@@ -92,13 +92,13 @@ static void ecc_h2ec_expand_message_xmd_sha512_test5(void **state) {
                              "4e88dbde3b0ba619d6214f47212b628f3e1b537b66efcf");
 }
 
-static void ecc_h2ec_expand_message_xmd_sha512_test6(void **state) {
+static void ecc_h2c_expand_message_xmd_sha512_test6(void **state) {
     const byte_t msg[3] = "abc";
     const int msg_len = 3;
     const int len_in_bytes = 0x80;
     byte_t uniform_bytes[0x80];
 
-    ecc_h2ec_expand_message_xmd_sha512(uniform_bytes, msg, msg_len, dst, dst_len, len_in_bytes);
+    ecc_h2c_expand_message_xmd_sha512(uniform_bytes, msg, msg_len, dst, dst_len, len_in_bytes);
 
     char hex[0x100 + 1];
     ecc_bin2hex(hex, uniform_bytes, 0x80);
@@ -109,13 +109,13 @@ static void ecc_h2ec_expand_message_xmd_sha512_test6(void **state) {
                              "f0c95c1fdfaab384ce24a23427803dda1db0c7d8d5344a");
 }
 
-static void ecc_h2ec_expand_message_xmd_sha512_test7(void **state) {
+static void ecc_h2c_expand_message_xmd_sha512_test7(void **state) {
     const byte_t msg[16] = "abcdef0123456789";
     const int msg_len = 16;
     const int len_in_bytes = 0x80;
     byte_t uniform_bytes[0x80];
 
-    ecc_h2ec_expand_message_xmd_sha512(uniform_bytes, msg, msg_len, dst, dst_len, len_in_bytes);
+    ecc_h2c_expand_message_xmd_sha512(uniform_bytes, msg, msg_len, dst, dst_len, len_in_bytes);
 
     char hex[0x100 + 1];
     ecc_bin2hex(hex, uniform_bytes, 0x80);
@@ -126,7 +126,7 @@ static void ecc_h2ec_expand_message_xmd_sha512_test7(void **state) {
                              "c044130e480501046920ff090c1a091c88391502f0fbac");
 }
 
-static void ecc_h2ec_expand_message_xmd_sha512_test8(void **state) {
+static void ecc_h2c_expand_message_xmd_sha512_test8(void **state) {
     const byte_t msg[] = "q128_qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq"
                          "qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq"
                          "qqqqqqqqqqqqqqqqqqqqqqqqq";
@@ -134,7 +134,7 @@ static void ecc_h2ec_expand_message_xmd_sha512_test8(void **state) {
     const int len_in_bytes = 0x80;
     byte_t uniform_bytes[0x80];
 
-    ecc_h2ec_expand_message_xmd_sha512(uniform_bytes, msg, msg_len, dst, dst_len, len_in_bytes);
+    ecc_h2c_expand_message_xmd_sha512(uniform_bytes, msg, msg_len, dst, dst_len, len_in_bytes);
 
     char hex[0x100 + 1];
     ecc_bin2hex(hex, uniform_bytes, 0x80);
@@ -147,15 +147,15 @@ static void ecc_h2ec_expand_message_xmd_sha512_test8(void **state) {
 
 int main() {
     const struct CMUnitTest tests[] = {
-        // ecc_h2ec_expand_message_xmd_sha512
-        cmocka_unit_test(ecc_h2ec_expand_message_xmd_sha512_test1),
-        cmocka_unit_test(ecc_h2ec_expand_message_xmd_sha512_test2),
-        cmocka_unit_test(ecc_h2ec_expand_message_xmd_sha512_test3),
-        cmocka_unit_test(ecc_h2ec_expand_message_xmd_sha512_test4),
-        cmocka_unit_test(ecc_h2ec_expand_message_xmd_sha512_test5),
-        cmocka_unit_test(ecc_h2ec_expand_message_xmd_sha512_test6),
-        cmocka_unit_test(ecc_h2ec_expand_message_xmd_sha512_test7),
-        cmocka_unit_test(ecc_h2ec_expand_message_xmd_sha512_test8),
+        // ecc_h2c_expand_message_xmd_sha512
+        cmocka_unit_test(ecc_h2c_expand_message_xmd_sha512_test1),
+        cmocka_unit_test(ecc_h2c_expand_message_xmd_sha512_test2),
+        cmocka_unit_test(ecc_h2c_expand_message_xmd_sha512_test3),
+        cmocka_unit_test(ecc_h2c_expand_message_xmd_sha512_test4),
+        cmocka_unit_test(ecc_h2c_expand_message_xmd_sha512_test5),
+        cmocka_unit_test(ecc_h2c_expand_message_xmd_sha512_test6),
+        cmocka_unit_test(ecc_h2c_expand_message_xmd_sha512_test7),
+        cmocka_unit_test(ecc_h2c_expand_message_xmd_sha512_test8),
     };
 
     return cmocka_run_group_tests(tests, NULL, NULL);

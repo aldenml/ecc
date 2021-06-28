@@ -10,7 +10,11 @@
 
 #include "util.h"
 #include "hash.h"
-#include "h2ec.h"
+#include "mac.h"
+#include "kdf.h"
+#include "h2c.h"
+#include "oprf.h"
+#include "opaque.h"
 
 #include "export.h"
 
