@@ -113,6 +113,7 @@ target_include_directories(ecc PUBLIC
 # oprf
 add_library(oprf
     src/export.h
+    src/util.h src/util.c
     src/ecc.h src/ecc.c
     src/hash.h src/hash.c
     src/ristretto255.h src/ristretto255.c
