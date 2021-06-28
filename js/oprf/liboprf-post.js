@@ -10,6 +10,33 @@ function arraycopy(src, srcPos, dest, destPos, length) {
     dest.set(src.subarray(srcPos, srcPos + length), destPos);
 }
 
+/**
+ * @param {Uint8Array} src
+ * @param {number} pos
+ * @param {number} length
+ * @returns {number}
+ */
+function mput(src, pos, length) {
+    arraycopy(src, 0, HEAPU8, pos, length);
+    return pos;
+}
+
+/**
+ * @param {number} pos
+ * @param {Uint8Array} dest
+ * @param {number} length
+ */
+function mget(pos, dest, length) {
+    arraycopy(HEAPU8, pos, dest, 0, length);
+}
+
+/**
+ * @param {number} length
+ */
+function mzero(length) {
+    _ecc_memzero(0, length);
+}
+
 // ecc
 
 /**
@@ -98,4 +125,24 @@ Module.ecc_scalarmult_ristretto255 = (q, n, p) => {
     const op = _ecc_scalarmult_ristretto255(pQ, pN, pP);
     arraycopy(HEAPU8, pQ, q, 0, 32);
     return op;
+}
+
+// h2ec
+
+/**
+ * @param {Uint8Array} out
+ * @param {Uint8Array} msg a byte string
+ * @param {Uint8Array} dst a byte string of at most 255 bytes
+ */
+Module.ecc_h2ec_expand_message_xmd_sha512 = (out, msg, dst) => {
+    const msg_len = msg.length;
+    const dst_len = dst.length;
+    const len_in_bytes = out.length;
+    const pMsg = mput(msg, 0, msg_len);
+    const pDst = mput(dst, pMsg + msg_len, dst_len);
+    const pOut = pDst + dst_len;
+
+    _ecc_h2ec_expand_message_xmd_sha512(pOut, pMsg, msg_len, pDst, dst_len, len_in_bytes);
+    mget(pOut, out, len_in_bytes);
+    mzero(msg_len + dst_len + len_in_bytes);
 }
