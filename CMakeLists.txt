@@ -117,6 +117,7 @@ add_library(oprf
     src/hash.h src/hash.c
     src/ristretto255.h src/ristretto255.c
     src/scalarmult.h src/scalarmult.c
+    src/h2ec.h src/h2ec.c
 )
 
 target_compile_features(oprf PUBLIC c_std_11)
