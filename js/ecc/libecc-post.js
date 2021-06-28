@@ -448,7 +448,7 @@ Module.ecc_ristretto255_scalar_invert = (recip, s) => {
  * @param {Uint8Array} p
  * @returns {number}
  */
-Module.ecc_scalarmult_ristretto255 = (q, n, p) => {
+Module.ecc_ristretto255_scalarmult = (q, n, p) => {
     arraycopy(n, 0, HEAPU8, 0, 32);
     arraycopy(p, 0, HEAPU8, 32, 32);
 
@@ -456,7 +456,7 @@ Module.ecc_scalarmult_ristretto255 = (q, n, p) => {
     const pP = pN + 32;
     const pQ = pP + 32;
 
-    const op = _ecc_scalarmult_ristretto255(pQ, pN, pP);
+    const op = _ecc_ristretto255_scalarmult(pQ, pN, pP);
     arraycopy(HEAPU8, pQ, q, 0, 32);
     return op;
 }
