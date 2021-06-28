@@ -24,6 +24,7 @@ For the browser, use the included `dist/oprf.min.js` or `dist/oprf.dev.js`.
 Navigate to https://github.com/aldenml/ecc/tree/master/examples/oprf to see
 how to use this in both the client and the server. Run:
 ```
+npm install
 npm run app
 ```
 and open the browser at the url http://localhost:8000.
