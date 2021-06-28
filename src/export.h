@@ -26,8 +26,13 @@
     #define ECC_OPRF_EXPORT
     #define ECC_OPAQUE_EXPORT
     #define ECC_EXPORT SYMBOL_EXPORT
+#else
+    #define ECC_OPRF_EXPORT
+    #define ECC_OPAQUE_EXPORT
+    #define ECC_EXPORT
 #endif
 
 #define BYTE unsigned char
+typedef unsigned char byte_t;
 
 #endif // ECC_EXPORT_H

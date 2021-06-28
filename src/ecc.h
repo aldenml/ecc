@@ -8,6 +8,10 @@
 #ifndef ECC_ECC_H
 #define ECC_ECC_H
 
+#include "util.h"
+#include "hash.h"
+#include "h2ec.h"
+
 #include "export.h"
 
 /**
@@ -17,11 +21,6 @@ ECC_OPRF_EXPORT
 ECC_OPAQUE_EXPORT
 ECC_EXPORT
 void ecc_randombytes(BYTE *buf, int n);
-
-ECC_OPRF_EXPORT
-ECC_OPAQUE_EXPORT
-ECC_EXPORT
-void ecc_memzero(BYTE *pnt, int len);
 
 ECC_EXPORT
 int ecc_compare(const BYTE *a, const BYTE *b, int len);
