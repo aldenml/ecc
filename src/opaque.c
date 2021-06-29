@@ -9,27 +9,32 @@
 #include "util.h"
 #include "h2c.h"
 #include "ristretto255.h"
+#include "oprf.h"
 
-void ecc_opaque_ristretto255_sha512_HashToScalar(byte_t *out, const byte_t *msg, const int msg_len) {
-    // https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-voprf-06#section-3.2
-    // contextString = I2OSP(modeBase, 1) || I2OSP(suite.ID, 2)
-    // modeBase = 0x00
-    // suite id = 0x0001
-    byte_t contextString[3];
-    ecc_I2OSP(&contextString[0], 0x00, 1);
-    ecc_I2OSP(&contextString[1], 0x0001, 2);
+void ecc_opaque_ristretto255_sha512_CreateRegistrationRequestWithBlind(
+    byte_t *request,
+    const byte_t *password, const int password_len,
+    const byte_t *blind
+) {
+    // Steps:
+    // 1. (blind, M) = Blind(password)
+    // 2. Create RegistrationRequest request with M
+    // 3. Output (request, blind)
 
-    // domain separation tag (DST)
-    byte_t DST[19] = "OPAQUE-HashToScalar";
-    ecc_concat2(DST, DST, 21, contextString, 3);
+    ecc_oprf_ristretto255_sha512_BlindWithScalar(request, password, password_len, blind);
+}
 
-    byte_t expand_message[64];
-    ecc_h2c_expand_message_xmd_sha512(expand_message, msg, msg_len, DST, 24, 64);
+void ecc_opaque_ristretto255_sha512_CreateRegistrationRequest(
+    byte_t *request, byte_t *blind,
+    const byte_t *password, const int password_len
+) {
+    ecc_ristretto255_scalar_random(blind);
+    ecc_opaque_ristretto255_sha512_CreateRegistrationRequestWithBlind(request, password, password_len, blind);
+}
 
-    ecc_ristretto255_scalar_reduce(out, expand_message);
-
-    // stack memory cleanup
-    ecc_memzero(expand_message, sizeof expand_message);
+void ecc_opaque_ristretto255_sha512_HashToScalar(byte_t *out, const byte_t *input, const int input_len) {
+    byte_t dst[19] = "OPAQUE-HashToScalar";
+    ecc_oprf_ristretto255_sha512_HashToGroupWithDST(out, input, input_len, dst, 19);
 }
 
 void ecc_opaque_ristretto255_sha512_DeriveAuthKeyPair(
