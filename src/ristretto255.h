@@ -33,7 +33,7 @@ void ecc_ristretto255_random(BYTE *p);
 
 ECC_OPRF_EXPORT
 ECC_EXPORT
-void ecc_ristretto255_scalar_random(BYTE *r);
+void ecc_ristretto255_scalar_random(byte_t *r);
 
 ECC_OPRF_EXPORT
 ECC_EXPORT

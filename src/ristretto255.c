@@ -28,7 +28,7 @@ void ecc_ristretto255_random(BYTE *p) {
     crypto_core_ristretto255_random(p);
 }
 
-void ecc_ristretto255_scalar_random(BYTE *r) {
+void ecc_ristretto255_scalar_random(byte_t *r) {
     crypto_core_ristretto255_scalar_random(r);
 }
 

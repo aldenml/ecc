@@ -10,8 +10,22 @@
 
 #include "export.h"
 
+// https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-05#section-5.1.1.1
 ECC_EXPORT
-void ecc_opaque_ristretto255_sha512_HashToScalar(byte_t *out, const byte_t *msg, int msg_len);
+void ecc_opaque_ristretto255_sha512_CreateRegistrationRequestWithBlind(
+    byte_t *request,
+    const byte_t *password, int password_len,
+    const byte_t *blind
+);
+
+ECC_EXPORT
+void ecc_opaque_ristretto255_sha512_CreateRegistrationRequest(
+    byte_t *request, byte_t *blind,
+    const byte_t *password, int password_len
+);
+
+ECC_EXPORT
+void ecc_opaque_ristretto255_sha512_HashToScalar(byte_t *out, const byte_t *input, int input_len);
 
 // https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-05#section-4.3.1
 
