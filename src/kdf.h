@@ -35,8 +35,12 @@ ECC_OPAQUE_EXPORT
 ECC_EXPORT
 void ecc_kdf_hkdf_sha512_keygen(BYTE *prk);
 
-ECC_OPAQUE_EXPORT
 ECC_EXPORT
-int ecc_kdf_hkdf_sha512_expand(BYTE *out, int out_len, const BYTE *ctx, int ctx_len, const BYTE *prk);
+int ecc_kdf_hkdf_sha512_expand(
+    byte_t *out,
+    const byte_t *prk,
+    const byte_t *info, int info_len,
+    int len
+);
 
 #endif // ECC_KDF_H

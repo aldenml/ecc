@@ -53,4 +53,29 @@ void ecc_oprf_ristretto255_sha512_Blind(
     const byte_t *input, int input_len
 );
 
+// https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-voprf-06#section-3.4.3.2
+ECC_EXPORT
+void ecc_oprf_ristretto255_sha512_Unblind(
+    byte_t *unblinded_element,
+    const byte_t *blind,
+    const byte_t *evaluated_element
+);
+
+// https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-voprf-06#section-3.4.3.3
+ECC_EXPORT
+void ecc_oprf_ristretto255_sha512_Finalize(
+    byte_t *output,
+    const byte_t *input, int input_len,
+    const byte_t *blind,
+    const byte_t *evaluated_element,
+    int mode
+);
+
+// https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-voprf-06#section-3.4.1.1
+ECC_EXPORT
+void ecc_oprf_ristretto255_sha512_Evaluate(
+    byte_t *evaluated_element,
+    const byte_t *skS, const byte_t *blinded_element
+);
+
 #endif // ECC_OPRF_H
