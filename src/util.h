@@ -36,8 +36,8 @@ void ecc_hex2bin(byte_t *bin, const char *hex, int hex_len);
 ECC_EXPORT
 void ecc_concat2(
     byte_t *out,
-    byte_t *a1, int a1_len,
-    byte_t *a2, int a2_len
+    const byte_t *a1, int a1_len,
+    const byte_t *a2, int a2_len
 );
 
 ECC_EXPORT

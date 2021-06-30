@@ -363,20 +363,20 @@ Module.ecc_kdf_hkdf_sha512_keygen = (prk) => {
 
 /**
  * @param {Uint8Array} out
- * @param {number} out_len
- * @param {Uint8Array} ctx
- * @param {number} ctx_len
+ * @param {number} len
+ * @param {Uint8Array} info
  * @param {Uint8Array} prk
  * @returns {number}
  */
-Module.ecc_kdf_hkdf_sha512_expand = (out, out_len, ctx, ctx_len, prk) => {
-    const pCtx = mput(ctx, 0, ctx_len);
-    const pPrk = mput(prk, pCtx + ctx_len, 64);
-    const pOut = pPrk + 64;
+Module.ecc_kdf_hkdf_sha512_expand = (out, prk, info, len) => {
+    const info_len = info.length;
+    const pPrk = mput(prk, 0, 64);
+    const pInfo = mput(info, pPrk + 64, info_len);
+    const pOut = pInfo + info_len;
 
-    const op = _ecc_kdf_hkdf_sha512_expand(pOut, out_len, pCtx, ctx_len, pPrk);
-    mget(pOut, out, out_len);
-    mzero(ctx_len + 64 + out_len);
+    const op = _ecc_kdf_hkdf_sha512_expand(pOut, pPrk, pInfo, info_len, len);
+    mget(pOut, out, len);
+    mzero( 64 + info_len + len);
     return op;
 }
 

@@ -81,7 +81,7 @@ describe("ecc_kdf_hkdf_sha512", () => {
         const outLen = 10;
         let okm = new Uint8Array(outLen);
         context[0] = 10;
-        libecc.ecc_kdf_hkdf_sha512_expand(okm, outLen, context, context.length, prk512);
+        libecc.ecc_kdf_hkdf_sha512_expand(okm, prk512, context, outLen);
         assert.strictEqual(buf2hex(okm), "046f63a1e2d606d7893e");
     });
 });

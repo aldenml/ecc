@@ -91,18 +91,23 @@ void ecc_kdf_hkdf_sha512_keygen(BYTE *prk) {
     randombytes_buf(prk, ecc_kdf_hkdf_sha512_KEYSIZE);
 }
 
-int ecc_kdf_hkdf_sha512_expand(BYTE *out, int out_len, const BYTE *ctx, int ctx_len, const BYTE *prk) {
+int ecc_kdf_hkdf_sha512_expand(
+    byte_t *out,
+    const byte_t *prk,
+    const byte_t *info, int info_len,
+    const int len
+) {
     crypto_auth_hmacsha512_state st;
     unsigned char tmp[crypto_auth_hmacsha512_BYTES];
     size_t i;
     size_t left;
     unsigned char counter = 1U;
 
-    if (out_len > ecc_kdf_hkdf_sha512_SIZE_MAX) {
+    if (len > ecc_kdf_hkdf_sha512_SIZE_MAX) {
         //errno = EINVAL;
         return -1;
     }
-    for (i = (size_t) 0U; i + crypto_auth_hmacsha512_BYTES <= out_len;
+    for (i = (size_t) 0U; i + crypto_auth_hmacsha512_BYTES <= len;
          i += crypto_auth_hmacsha512_BYTES) {
         crypto_auth_hmacsha512_init(&st, prk, ecc_kdf_hkdf_sha512_KEYSIZE);
         if (i != (size_t) 0U) {
@@ -111,12 +116,12 @@ int ecc_kdf_hkdf_sha512_expand(BYTE *out, int out_len, const BYTE *ctx, int ctx_
                                           crypto_auth_hmacsha512_BYTES);
         }
         crypto_auth_hmacsha512_update(&st,
-                                      (const unsigned char *) ctx, ctx_len);
+                                      (const unsigned char *) info, info_len);
         crypto_auth_hmacsha512_update(&st, &counter, (size_t) 1U);
         crypto_auth_hmacsha512_final(&st, &out[i]);
         counter++;
     }
-    if ((left = out_len & (crypto_auth_hmacsha512_BYTES - 1U)) != (size_t) 0U) {
+    if ((left = len & (crypto_auth_hmacsha512_BYTES - 1U)) != (size_t) 0U) {
         crypto_auth_hmacsha512_init(&st, prk, ecc_kdf_hkdf_sha512_KEYSIZE);
         if (i != (size_t) 0U) {
             crypto_auth_hmacsha512_update(&st,
@@ -124,7 +129,7 @@ int ecc_kdf_hkdf_sha512_expand(BYTE *out, int out_len, const BYTE *ctx, int ctx_
                                           crypto_auth_hmacsha512_BYTES);
         }
         crypto_auth_hmacsha512_update(&st,
-                                      (const unsigned char *) ctx, ctx_len);
+                                      (const unsigned char *) info, info_len);
         crypto_auth_hmacsha512_update(&st, &counter, (size_t) 1U);
         crypto_auth_hmacsha512_final(&st, tmp);
         memcpy(&out[i], tmp, left);
