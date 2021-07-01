@@ -32,7 +32,7 @@ describe("HMAC-SHA-256, HMAC-SHA-512", () => {
     });
 
     // https://datatracker.ietf.org/doc/html/rfc4231#section-4.3
-    it("Test Case 1", async () => {
+    it("Test Case 2", async () => {
         const libecc = await libecc_module();
         const key = hex2buf("4a656665");
         const data = hex2buf("7768617420646f2079612077616e7420666f72206e6f7468696e673f");

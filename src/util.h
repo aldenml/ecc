@@ -13,7 +13,18 @@
 ECC_OPRF_EXPORT
 ECC_OPAQUE_EXPORT
 ECC_EXPORT
-void ecc_memzero(BYTE *p, int len);
+void ecc_memzero(byte_t *p, int len);
+
+ECC_EXPORT
+int ecc_compare(const byte_t *a, const byte_t *b, int len);
+
+/**
+ * Fills `n` bytes at buf with an unpredictable sequence of bytes.
+ */
+ECC_OPRF_EXPORT
+ECC_OPAQUE_EXPORT
+ECC_EXPORT
+void ecc_randombytes(byte_t *buf, int n);
 
 ECC_EXPORT
 void ecc_bin2hex(char *hex, const byte_t *bin, int bin_len);
@@ -34,7 +45,7 @@ void ecc_hex2bin(byte_t *bin, const char *hex, int hex_len);
  * @param b
  */
 ECC_EXPORT
-void ecc_concat2(
+byte_t *ecc_concat2(
     byte_t *out,
     const byte_t *a1, int a1_len,
     const byte_t *a2, int a2_len
@@ -43,28 +54,28 @@ void ecc_concat2(
 ECC_EXPORT
 void ecc_concat3(
     byte_t *out,
-    byte_t *a1, int a1_len,
-    byte_t *a2, int a2_len,
-    byte_t *a3, int a3_len
+    const byte_t *a1, int a1_len,
+    const byte_t *a2, int a2_len,
+    const byte_t *a3, int a3_len
 );
 
 ECC_EXPORT
 void ecc_concat4(
     byte_t *out,
-    byte_t *a1, int a1_len,
-    byte_t *a2, int a2_len,
-    byte_t *a3, int a3_len,
-    byte_t *a4, int a4_len
+    const byte_t *a1, int a1_len,
+    const byte_t *a2, int a2_len,
+    const byte_t *a3, int a3_len,
+    const byte_t *a4, int a4_len
 );
 
 ECC_EXPORT
 void ecc_concat5(
     byte_t *out,
-    byte_t *a1, int a1_len,
-    byte_t *a2, int a2_len,
-    byte_t *a3, int a3_len,
-    byte_t *a4, int a4_len,
-    byte_t *a5, int a5_len
+    const byte_t *a1, int a1_len,
+    const byte_t *a2, int a2_len,
+    const byte_t *a3, int a3_len,
+    const byte_t *a4, int a4_len,
+    const byte_t *a5, int a5_len
 );
 
 ECC_EXPORT

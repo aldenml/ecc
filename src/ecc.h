@@ -18,17 +18,6 @@
 
 #include "export.h"
 
-/**
- * Fills `n` bytes at buf with an unpredictable sequence of bytes.
- */
-ECC_OPRF_EXPORT
-ECC_OPAQUE_EXPORT
-ECC_EXPORT
-void ecc_randombytes(BYTE *buf, int n);
-
-ECC_EXPORT
-int ecc_compare(const BYTE *a, const BYTE *b, int len);
-
 ECC_EXPORT
 int ecc_is_zero(const BYTE *n, int len);
 
