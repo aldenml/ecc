@@ -23,8 +23,8 @@ include(ExternalProject)
 if(EMSCRIPTEN)
     ExternalProject_Add(
         libsodium-external
-        SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/libsodium
-        CONFIGURE_COMMAND emconfigure ${CMAKE_CURRENT_SOURCE_DIR}/libsodium/configure
+        SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/deps/libsodium
+        CONFIGURE_COMMAND emconfigure ${CMAKE_CURRENT_SOURCE_DIR}/deps/libsodium/configure
             "CFLAGS=-DSODIUM_STATIC=1 -Oz"
             --prefix=${CMAKE_CURRENT_SOURCE_DIR}/build/libsodium
             --disable-ssp
@@ -47,8 +47,8 @@ if(EMSCRIPTEN)
 else()
     ExternalProject_Add(
         libsodium-external
-        SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/libsodium
-        CONFIGURE_COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/libsodium/configure
+        SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/deps/libsodium
+        CONFIGURE_COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/deps/libsodium/configure
             "CFLAGS=-DSODIUM_STATIC=1 -O2"
             --prefix=${CMAKE_CURRENT_SOURCE_DIR}/build/libsodium
             --disable-ssp
@@ -89,7 +89,6 @@ set_target_properties(blst PROPERTIES
 
 add_library(ecc
     src/export.h
-    src/ecc.h src/ecc.c
     src/util.h src/util.c
     src/hash.h src/hash.c
     src/mac.h src/mac.c
@@ -102,6 +101,7 @@ add_library(ecc
     src/h2c.h src/h2c.c
     src/oprf.h src/oprf.c
     src/opaque.h src/opaque.c
+    src/ecc.h
 )
 
 target_compile_features(ecc PUBLIC c_std_11)
@@ -116,11 +116,11 @@ target_include_directories(ecc PUBLIC
 add_library(oprf
     src/export.h
     src/util.h src/util.c
-    src/ecc.h src/ecc.c
     src/hash.h src/hash.c
     src/ristretto255.h src/ristretto255.c
     src/scalarmult.h src/scalarmult.c
     src/h2c.h src/h2c.c
+    src/ecc.h
 )
 
 target_compile_features(oprf PUBLIC c_std_11)
