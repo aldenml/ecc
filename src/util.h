@@ -85,4 +85,16 @@ void strxor(byte_t *out, const byte_t *a, const byte_t *b, int len);
 ECC_EXPORT
 void ecc_I2OSP(byte_t *out, int x, int xLen);
 
+ECC_EXPORT
+int ecc_is_zero(const BYTE *n, int len);
+
+ECC_EXPORT
+void ecc_increment(BYTE *n, int len);
+
+ECC_EXPORT
+void ecc_add(BYTE *a, const BYTE *b, int len);
+
+ECC_EXPORT
+void ecc_sub(BYTE *a, const BYTE *b, int len);
+
 #endif // ECC_UTIL_H

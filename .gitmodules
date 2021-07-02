@@ -1,6 +1,6 @@
-[submodule "libsodium"]
-	path = libsodium
+[submodule "deps/libsodium"]
+	path = deps/libsodium
 	url = https://github.com/jedisct1/libsodium.git
 [submodule "deps/blst"]
 	path = deps/blst
-	url = https://github.com/supranational/blst
+	url = https://github.com/supranational/blst.git
