@@ -3,7 +3,7 @@ set -x
 
 rm -rf build
 
-pushd libsodium
+pushd deps/libsodium
 make clean
 popd
 
