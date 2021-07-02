@@ -9,8 +9,16 @@
 #include <string.h>
 #include <sodium.h>
 
-void ecc_memzero(BYTE *p, int len) {
+void ecc_memzero(byte_t *p, int len) {
     sodium_memzero(p, len);
+}
+
+int ecc_compare(const byte_t *a, const byte_t *b, int len) {
+    return sodium_compare(a, b, len);
+}
+
+void ecc_randombytes(byte_t *buf, int n) {
+    randombytes_buf(buf, n);
 }
 
 void ecc_bin2hex(char *hex, const byte_t *bin, int bin_len) {
@@ -21,20 +29,21 @@ void ecc_hex2bin(byte_t *bin, const char *hex, int hex_len) {
     sodium_hex2bin(bin, hex_len / 2, hex, hex_len, NULL, NULL, NULL);
 }
 
-void ecc_concat2(
+byte_t *ecc_concat2(
     byte_t *out,
     const byte_t *a1, const int a1_len,
     const byte_t *a2, const int a2_len
 ) {
     memcpy(out, a1, a1_len); out += a1_len;
-    memcpy(out, a2, a2_len);
+    memcpy(out, a2, a2_len); out += a2_len;
+    return out;
 }
 
 void ecc_concat3(
     byte_t *out,
-    byte_t *a1, int a1_len,
-    byte_t *a2, int a2_len,
-    byte_t *a3, int a3_len
+    const byte_t *a1, int a1_len,
+    const byte_t *a2, int a2_len,
+    const byte_t *a3, int a3_len
 ) {
     memcpy(out, a1, a1_len); out += a1_len;
     memcpy(out, a2, a2_len); out += a2_len;
@@ -43,10 +52,10 @@ void ecc_concat3(
 
 void ecc_concat4(
     byte_t *out,
-    byte_t *a1, int a1_len,
-    byte_t *a2, int a2_len,
-    byte_t *a3, int a3_len,
-    byte_t *a4, int a4_len
+    const byte_t *a1, int a1_len,
+    const byte_t *a2, int a2_len,
+    const byte_t *a3, int a3_len,
+    const byte_t *a4, int a4_len
 ) {
     memcpy(out, a1, a1_len); out += a1_len;
     memcpy(out, a2, a2_len); out += a2_len;
@@ -56,11 +65,11 @@ void ecc_concat4(
 
 void ecc_concat5(
     byte_t *out,
-    byte_t *a1, int a1_len,
-    byte_t *a2, int a2_len,
-    byte_t *a3, int a3_len,
-    byte_t *a4, int a4_len,
-    byte_t *a5, int a5_len
+    const byte_t *a1, int a1_len,
+    const byte_t *a2, int a2_len,
+    const byte_t *a3, int a3_len,
+    const byte_t *a4, int a4_len,
+    const byte_t *a5, int a5_len
 ) {
     memcpy(out, a1, a1_len); out += a1_len;
     memcpy(out, a2, a2_len); out += a2_len;

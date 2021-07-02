@@ -14,6 +14,7 @@ ECC_EXPORT
 void ecc_hash_sha256(BYTE *out, const BYTE *in, int len);
 
 ECC_OPRF_EXPORT
+ECC_OPAQUE_EXPORT
 ECC_EXPORT
 void ecc_hash_sha512(BYTE *out, const BYTE *in, int len);
 

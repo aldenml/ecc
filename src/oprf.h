@@ -42,7 +42,7 @@ void ecc_oprf_ristretto255_sha512_HashToScalar(
 
 ECC_EXPORT
 void ecc_oprf_ristretto255_sha512_BlindWithScalar(
-    byte_t *out,
+    byte_t *out, // 32
     const byte_t *input, int input_len,
     const byte_t *blind
 );

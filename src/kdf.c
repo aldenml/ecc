@@ -94,7 +94,7 @@ void ecc_kdf_hkdf_sha512_keygen(BYTE *prk) {
 int ecc_kdf_hkdf_sha512_expand(
     byte_t *out,
     const byte_t *prk,
-    const byte_t *info, int info_len,
+    const byte_t *info, const int info_len,
     const int len
 ) {
     crypto_auth_hmacsha512_state st;

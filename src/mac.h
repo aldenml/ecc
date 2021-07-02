@@ -10,43 +10,23 @@
 
 #include "export.h"
 
-#define ecc_mac_hmac_sha256_KEYSIZE 32U
-#define ecc_mac_hmac_sha256_SIZE 32U
+#define ecc_mac_hmac_sha256_SIZE 32
+#define ecc_mac_hmac_sha256_KEYSIZE 32
 
 ECC_EXPORT
-void ecc_mac_hmac_sha256_keygen(BYTE *k);
+void ecc_mac_hmac_sha256(byte_t *digest, const byte_t *text, int text_len, const byte_t *key);
 
 ECC_EXPORT
-int ecc_mac_hmac_sha256(BYTE *out, const BYTE *in, int inlen, const BYTE *k);
+int ecc_mac_hmac_sha256_verify(const byte_t *digest, const byte_t *text, int text_len, const byte_t *key);
 
-ECC_EXPORT
-int ecc_mac_hmac_sha256_verify(const BYTE *h, const BYTE *in, int inlen, const BYTE *k);
-
-#define ecc_mac_hmac_sha512_KEYSIZE 32U
-#define ecc_mac_hmac_sha512_SIZE 64U
+#define ecc_mac_hmac_sha512_SIZE 64
+#define ecc_mac_hmac_sha256_KEYBYTES 32
 
 ECC_OPAQUE_EXPORT
 ECC_EXPORT
-void ecc_mac_hmac_sha512_keygen(BYTE *k);
-
-ECC_OPAQUE_EXPORT
-ECC_EXPORT
-int ecc_mac_hmac_sha512(BYTE *out, const BYTE *in, int inlen, const BYTE *k);
-
-ECC_OPAQUE_EXPORT
-ECC_EXPORT
-int ecc_mac_hmac_sha512_verify(const BYTE *h, const BYTE *in, int inlen, const BYTE *k);
-
-#define ecc_mac_hmac_sha512256_KEYSIZE 32U
-#define ecc_mac_hmac_sha512256_SIZE 32U
+void ecc_mac_hmac_sha512(byte_t *digest, const byte_t *text, int text_len, const byte_t *key);
 
 ECC_EXPORT
-void ecc_mac_hmac_sha512256_keygen(BYTE *k);
-
-ECC_EXPORT
-int ecc_mac_hmac_sha512256(BYTE *out, const BYTE *in, int inlen, const BYTE *k);
-
-ECC_EXPORT
-int ecc_mac_hmac_sha512256_verify(const BYTE *h, const BYTE *in, int inlen, const BYTE *k);
+int ecc_mac_hmac_sha512_verify(const byte_t *digest, const byte_t *text, int text_len, const byte_t *key);
 
 #endif // ECC_MAC_H
