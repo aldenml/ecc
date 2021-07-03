@@ -103,7 +103,7 @@ Module.ecc_opaque_ristretto255_sha512_CreateRegistrationResponse = (
     const pResponse = pOprf_seed + 64;
     const pOprf_key = pResponse + 64;
 
-    ecc_opaque_ristretto255_sha512_CreateRegistrationResponse(
+    _ecc_opaque_ristretto255_sha512_CreateRegistrationResponse(
         pResponse,
         pOprf_key,
         pRequest,
@@ -114,4 +114,52 @@ Module.ecc_opaque_ristretto255_sha512_CreateRegistrationResponse = (
     mget(pResponse, response_raw, 64);
     mget(pOprf_key, oprf_key, 32);
     mzero(32 + 32 + credential_identifier_len + 64 + 64 + 32);
+}
+
+/**
+ *
+ * @param {Uint8Array} record_raw
+ * @param {Uint8Array} export_key
+ * @param {Uint8Array} client_private_key
+ * @param {Uint8Array} password
+ * @param {number} password_len
+ * @param {Uint8Array} blind
+ * @param {Uint8Array} response_raw
+ * @param {Uint8Array} server_identity
+ * @param {number} server_identity_len
+ * @param {Uint8Array} client_identity
+ * @param {number} client_identity_len
+ */
+Module.ecc_opaque_ristretto255_sha512_FinalizeRequest =(
+    record_raw, // RegistrationUpload_t
+    export_key,
+    client_private_key,
+    password, password_len,
+    blind,
+    response_raw, // RegistrationResponse_t
+    server_identity, server_identity_len,
+    client_identity, client_identity_len
+) => {
+    const pClient_private_key = mput(client_private_key, 0, 32);
+    const pPassword = mput(password, pClient_private_key + 32, password_len);
+    const pBlind = mput(blind, pPassword + password_len, 32);
+    const pResponse = mput(response_raw, pBlind + 32, 64);
+    const pServer_identity = mput(server_identity, pResponse + 64, server_identity_len);
+    const pClient_identity = mput(client_identity, pServer_identity + server_identity_len, client_identity_len);
+    const pRecord = pClient_identity + client_identity_len;
+    const pExport_key = pRecord + 192;
+
+    _ecc_opaque_ristretto255_sha512_FinalizeRequest(
+        pRecord,
+        pExport_key,
+        pClient_private_key,
+        pPassword, password_len,
+        pBlind,
+        pResponse,
+        pServer_identity, server_identity_len,
+        pClient_identity, client_identity_len
+    );
+    mget(pRecord, record_raw, 192);
+    mget(pExport_key, export_key, 64);
+    mzero(32 + password_len + 32 + 64 + server_identity_len + client_identity_len + 192 + 64);
 }
