@@ -121,7 +121,7 @@ void ecc_h2c_expand_message_xmd_sha512(
         crypto_hash_sha512_init(&st);
         // strxor(b_0, b_(i - 1))
         byte_t bxor[64];
-        strxor(bxor, b_0, b_prev, 64);
+        ecc_strxor(bxor, b_0, b_prev, 64);
         crypto_hash_sha512_update(&st, bxor, 64);
         // I2OSP(i, 1)
         ecc_I2OSP(tmp, i, 1);

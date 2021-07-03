@@ -10,34 +10,39 @@
 
 #include "export.h"
 
-#define ecc_kdf_hkdf_sha256_KEYSIZE 32U
-#define ecc_kdf_hkdf_sha256_SIZE_MIN 0U
-#define ecc_kdf_hkdf_sha256_SIZE_MAX (0xff * 32U)
+// https://datatracker.ietf.org/doc/html/rfc5869
+
+#define ecc_kdf_hkdf_sha256_KEYSIZE 32
 
 ECC_EXPORT
-int ecc_kdf_hkdf_sha256_extract(BYTE *prk, const BYTE *salt, int salt_len, const BYTE *ikm, int ikm_len);
+void ecc_kdf_hkdf_sha256_extract(
+    byte_t *prk,
+    const byte_t *salt, int salt_len,
+    const byte_t *ikm, int ikm_len
+);
 
 ECC_EXPORT
-void ecc_kdf_hkdf_sha256_keygen(BYTE *prk);
+void ecc_kdf_hkdf_sha256_expand(
+    byte_t *okm,
+    const byte_t *info, int info_len,
+    const byte_t *prk,
+    int len
+);
 
-ECC_EXPORT
-int ecc_kdf_hkdf_sha256_expand(BYTE *out, int out_len, const BYTE *ctx, int ctx_len, const BYTE *prk);
-
-#define ecc_kdf_hkdf_sha512_KEYSIZE 64U
-#define ecc_kdf_hkdf_sha512_SIZE_MIN 0U
-#define ecc_kdf_hkdf_sha512_SIZE_MAX (0xff * 64U)
+#define ecc_kdf_hkdf_sha512_KEYSIZE 64
 
 ECC_OPAQUE_EXPORT
 ECC_EXPORT
-int ecc_kdf_hkdf_sha512_extract(BYTE *prk, const BYTE *salt, int salt_len, const BYTE *ikm, int ikm_len);
+void ecc_kdf_hkdf_sha512_extract(
+    byte_t *prk,
+    const byte_t *salt, int salt_len,
+    const byte_t *ikm, int ikm_len
+);
 
 ECC_OPAQUE_EXPORT
 ECC_EXPORT
-void ecc_kdf_hkdf_sha512_keygen(BYTE *prk);
-
-ECC_EXPORT
-int ecc_kdf_hkdf_sha512_expand(
-    byte_t *out,
+void ecc_kdf_hkdf_sha512_expand(
+    byte_t *okm,
     const byte_t *prk,
     const byte_t *info, int info_len,
     int len
