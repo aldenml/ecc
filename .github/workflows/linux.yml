@@ -1,0 +1,32 @@
+name: linux
+
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    branches:
+      - master
+
+jobs:
+
+  tests:
+    runs-on: ubuntu-20.04
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          submodules: recursive
+      - name: install packages
+        run: |
+          sudo apt update
+          sudo apt install ninja-build
+
+      - name: c build
+        run: |
+          ./build-c.sh
+          readelf -d build/libecc.so
+      - name: c tests
+        run: |
+          cd build
+          ctest -C "Release"
+          cd ..
