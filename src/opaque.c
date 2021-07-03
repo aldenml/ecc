@@ -351,10 +351,14 @@ void ecc_opaque_ristretto255_sha512_GenerateAuthKeyPair(
 ) {
     byte_t seed[32];
     ecc_randombytes(seed, sizeof seed);
+
     ecc_opaque_ristretto255_sha512_DeriveAuthKeyPair(
         private_key, public_key,
         seed, sizeof seed
     );
+
+    // cleanup stack memory
+    ecc_memzero(seed, sizeof seed);
 }
 
 void ecc_opaque_ristretto255_sha512_DeriveAuthKeyPair(
@@ -402,6 +406,7 @@ void ecc_opaque_ristretto255_sha512_BuildInnerEnvelope(
     );
 
     // cleanup stack memory
+    ecc_memzero(seed_info, sizeof seed_info);
     ecc_memzero(seed, sizeof seed);
     ecc_memzero(ignore_key, sizeof ignore_key);
 }
@@ -420,13 +425,20 @@ void ecc_opaque_ristretto255_sha512_RecoverKeys(
 
     // 1. seed = Expand(randomized_pwd, concat(nonce, "PrivateKey"), Nsk)
     byte_t seed_label[10] = "PrivateKey";
-    byte_t seed_info[32 + 10];
-    ecc_concat2(seed_info, nonce, 32, seed_label, 10);
-    byte_t seed[32];
-    ecc_kdf_hkdf_sha512_expand(seed, randomized_pwd, seed_info, sizeof seed_info, 32);
+    byte_t seed_info[Nn + 10];
+    ecc_concat2(seed_info, nonce, Nn, seed_label, 10);
+    byte_t seed[Nsk];
+    ecc_kdf_hkdf_sha512_expand(seed, randomized_pwd, seed_info, sizeof seed_info, Nsk);
 
     // 2. client_private_key, client_public_key = DeriveAuthKeyPair(seed)
-    ecc_opaque_ristretto255_sha512_DeriveAuthKeyPair(client_private_key, client_public_key, seed, 32);
+    ecc_opaque_ristretto255_sha512_DeriveAuthKeyPair(
+        client_private_key, client_public_key,
+        seed, Nsk
+    );
+
+    // cleanup stack memory
+    ecc_memzero(seed_info, sizeof seed_info);
+    ecc_memzero(seed, sizeof seed);
 }
 
 void ecc_opaque_ristretto255_sha512_CreateRegistrationRequestWithBlind(
@@ -566,9 +578,8 @@ void ecc_opaque_ristretto255_sha512_FinalizeRequest(
 
     // 2. randomized_pwd = Extract("", Harden(y, params))
     byte_t randomized_pwd[64];
-    byte_t randomized_pwd_salt[0];
     // TODO: harden
-    ecc_kdf_hkdf_sha512_extract(randomized_pwd, randomized_pwd_salt, 0, y, sizeof y);
+    ecc_kdf_hkdf_sha512_extract(randomized_pwd, NULL, 0, y, sizeof y);
 
     // 3. (envelope, client_public_key, masking_key, export_key) =
     //     CreateEnvelope(randomized_pwd, response.server_public_key, client_private_key,
@@ -581,7 +592,8 @@ void ecc_opaque_ristretto255_sha512_FinalizeRequest(
         masking_key,
         export_key,
         randomized_pwd,
-        response->server_public_key, client_private_key,
+        response->server_public_key,
+        client_private_key,
         server_identity, server_identity_len,
         client_identity, client_identity_len
     );
@@ -591,6 +603,12 @@ void ecc_opaque_ristretto255_sha512_FinalizeRequest(
 
     memcpy(record->client_public_key, client_public_key, 32);
     memcpy(record->masking_key, masking_key, 64);
+
+    // cleanup stack memory
+    ecc_memzero(y, sizeof y);
+    ecc_memzero(randomized_pwd, sizeof randomized_pwd);
+    ecc_memzero(client_public_key, sizeof client_public_key);
+    ecc_memzero(masking_key, sizeof masking_key);
 }
 
 void ecc_opaque_ristretto255_sha512_CreateCredentialRequest(
@@ -657,8 +675,8 @@ void ecc_opaque_ristretto255_sha512_CreateCredentialResponse(
     // 5. credential_response_pad = Expand(record.masking_key,
     //      concat(masking_nonce, "CredentialResponsePad"), Npk + Ne)
     byte_t credential_response_pad_label[21] = "CredentialResponsePad";
-    byte_t credential_response_pad_info[32 + 21];
-    ecc_concat2(credential_response_pad_info, masking_nonce, 32, credential_response_pad_label, 21);
+    byte_t credential_response_pad_info[Nn + 21];
+    ecc_concat2(credential_response_pad_info, masking_nonce, Nn, credential_response_pad_label, 21);
     byte_t credential_response_pad[Npk + Ne];
     ecc_kdf_hkdf_sha512_expand(credential_response_pad, record->masking_key, credential_response_pad_info, sizeof credential_response_pad_info, Npk + Ne);
 
@@ -675,6 +693,18 @@ void ecc_opaque_ristretto255_sha512_CreateCredentialResponse(
     memcpy(response->data, Z, sizeof Z);
     memcpy(response->masking_nonce, masking_nonce, sizeof masking_nonce);
     memcpy(response->masked_response, masked_response, sizeof masked_response);
+
+    // cleanup stack memory
+    ecc_memzero(ikm_info, sizeof ikm_info);
+    ecc_memzero(ikm, sizeof ikm);
+    ecc_memzero(oprf_private_key, sizeof oprf_private_key);
+    ecc_memzero(oprf_key, sizeof oprf_key);
+    ecc_memzero(Z, sizeof Z);
+    ecc_memzero(masking_nonce, sizeof masking_nonce);
+    ecc_memzero(credential_response_pad_info, sizeof credential_response_pad_info);
+    ecc_memzero(credential_response_pad, sizeof credential_response_pad);
+    ecc_memzero(masked_response_xor, sizeof masked_response_xor);
+    ecc_memzero(masked_response, sizeof masked_response);
 }
 
 int ecc_opaque_ristretto255_sha512_RecoverCredentials(
@@ -713,9 +743,8 @@ int ecc_opaque_ristretto255_sha512_RecoverCredentials(
 
     // 2. randomized_pwd = Extract("", Harden(y, params))
     byte_t randomized_pwd[64];
-    byte_t randomized_pwd_salt[0];
     // TODO: harden
-    ecc_kdf_hkdf_sha512_extract(randomized_pwd, randomized_pwd_salt, 0, y, sizeof y);
+    ecc_kdf_hkdf_sha512_extract(randomized_pwd, NULL, 0, y, sizeof y);
 
     // 3. masking_key = Expand(randomized_pwd, "MaskingKey", Nh)
     byte_t masking_key_info[10] = "MaskingKey";
@@ -725,8 +754,8 @@ int ecc_opaque_ristretto255_sha512_RecoverCredentials(
     // 4. credential_response_pad = Expand(masking_key,
     //      concat(response.masking_nonce, "CredentialResponsePad"), Npk + Ne)
     byte_t credential_response_pad_label[21] = "CredentialResponsePad";
-    byte_t credential_response_pad_info[32 + 21];
-    ecc_concat2(credential_response_pad_info, res->masking_nonce, 32, credential_response_pad_label, 21);
+    byte_t credential_response_pad_info[Nn + 21];
+    ecc_concat2(credential_response_pad_info, res->masking_nonce, Nn, credential_response_pad_label, 21);
     byte_t credential_response_pad[Npk + Ne];
     ecc_kdf_hkdf_sha512_expand(credential_response_pad, masking_key, credential_response_pad_info, sizeof credential_response_pad_info, Npk + Ne);
 
@@ -734,7 +763,7 @@ int ecc_opaque_ristretto255_sha512_RecoverCredentials(
     //                                               response.masked_response)
     byte_t xor_result[Npk + Ne];
     ecc_strxor(xor_result, credential_response_pad, res->masked_response, Npk + Ne);
-    memcpy(server_public_key, xor_result, 32);
+    memcpy(server_public_key, xor_result, Npk);
     byte_t envelope[Ne];
     memcpy(envelope, &xor_result[Npk], Ne);
 
@@ -750,6 +779,15 @@ int ecc_opaque_ristretto255_sha512_RecoverCredentials(
         server_identity, server_identity_len,
         client_identity, client_identity_len
     );
+
+    // cleanup stack memory
+    ecc_memzero(y, sizeof y);
+    ecc_memzero(randomized_pwd, sizeof randomized_pwd);
+    ecc_memzero(masking_key, sizeof masking_key);
+    ecc_memzero(credential_response_pad_info, sizeof credential_response_pad_info);
+    ecc_memzero(credential_response_pad, sizeof credential_response_pad);
+    ecc_memzero(xor_result, sizeof xor_result);
+    ecc_memzero(envelope, sizeof envelope);
 
     // 7. Output (client_private_key, response.server_public_key, export_key)
     return ret;
@@ -784,6 +822,9 @@ void ecc_opaque_ristretto255_sha512_3DH_Expand_Label(
         context, context_len
     );
     ecc_kdf_hkdf_sha512_expand(out, secret, info, info_len, length);
+
+    // cleanup stack memory
+    ecc_memzero(info, sizeof info);
 }
 
 void ecc_opaque_ristretto255_sha512_3DH_Derive_Secret(
@@ -870,6 +911,11 @@ void ecc_opaque_ristretto255_sha512_3DH_TripleDHIKM(
         dh2, 32,
         dh3, 32
     );
+
+    // cleanup stack memory
+    ecc_memzero(dh1, sizeof dh1);
+    ecc_memzero(dh2, sizeof dh2);
+    ecc_memzero(dh3, sizeof dh3);
 }
 
 void ecc_opaque_ristretto255_sha512_3DH_DeriveKeys(
@@ -929,6 +975,11 @@ void ecc_opaque_ristretto255_sha512_3DH_DeriveKeys(
         km3_label, sizeof km3_label,
         NULL, 0
     );
+
+    // cleanup stack memory
+    ecc_memzero(prk, sizeof prk);
+    ecc_memzero(preamble_hash, sizeof preamble_hash);
+    ecc_memzero(handshake_secret, sizeof handshake_secret);
 }
 
 void ecc_opaque_ristretto255_sha512_3DH_ClientInit(
@@ -1015,6 +1066,10 @@ int ecc_opaque_ristretto255_sha512_3DH_ClientFinish(
         ke1_raw,
         ke2_raw
     );
+
+    // cleanup stack memory
+    ecc_memzero(client_private_key, sizeof client_private_key);
+    ecc_memzero(server_public_key, sizeof server_public_key);
 
     // 3. Output (ke3, session_key)
     if (ret_recover == 0 && ret_finalize == 0)
