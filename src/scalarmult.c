@@ -8,14 +8,6 @@
 #include "scalarmult.h"
 #include <sodium.h>
 
-int ecc_scalarmult_curve25519(BYTE *q, const BYTE *n, const BYTE *p) {
-    return crypto_scalarmult_curve25519(q, n, p);
-}
-
-int ecc_scalarmult_curve25519_base(BYTE *q, const BYTE *n) {
-    return crypto_scalarmult_curve25519_base(q, n);
-}
-
 int ecc_scalarmult_ed25519(BYTE *q, const BYTE *n, const BYTE *p) {
     return crypto_scalarmult_ed25519(q, n, p);
 }
