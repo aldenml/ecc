@@ -22,6 +22,10 @@
 // allocation. I have yet to adapt an existing implementation with some
 // restrictions to avoid malloc/free calls.
 //
+// In order to work with stack allocated memory (i.e. fixed and not dynamic
+// allocation), it's necessary to add the restriction on length of the
+// identities to less than 200 bytes.
+//
 // The OPAQUE workflow consist of two steps, registration and authentication
 // (you should read the draft/standard for a deep understanding).
 //
@@ -170,7 +174,26 @@ int ecc_opaque_ristretto255_sha512_CreateCleartextCredentials(
     const byte_t *client_identity, int client_identity_len
 );
 
-// https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-05#section-4.2
+/**
+ * Same as calling `ecc_opaque_ristretto255_sha512_CreateEnvelope` with an
+ * specified `nonce`.
+ *
+ * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-05#section-4.2
+ *
+ * @param envelope_raw
+ * @param client_public_key
+ * @param masking_key
+ * @param export_key
+ * @param randomized_pwd
+ * @param server_public_key
+ * @param client_private_key
+ * @param server_identity
+ * @param server_identity_len
+ * @param client_identity
+ * @param client_identity_len
+ * @param nonce
+ */
+ECC_OPAQUE_EXPORT
 ECC_EXPORT
 void ecc_opaque_ristretto255_sha512_CreateEnvelopeWithNonce(
     byte_t *envelope_raw,
@@ -178,12 +201,35 @@ void ecc_opaque_ristretto255_sha512_CreateEnvelopeWithNonce(
     byte_t *masking_key,
     byte_t *export_key,
     const byte_t *randomized_pwd,
-    const byte_t *server_public_key, const byte_t *client_private_key,
+    const byte_t *server_public_key,
+    const byte_t *client_private_key,
     const byte_t *server_identity, int server_identity_len,
     const byte_t *client_identity, int client_identity_len,
     const byte_t *nonce
 );
 
+/**
+ * Creates an "Envelope" at registration.
+ *
+ * In order to work with stack allocated memory (i.e. fixed and not dynamic
+ * allocation), it's necessary to add the restriction on length of the
+ * identities to less than 200 bytes.
+ *
+ * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-05#section-4.2
+ *
+ * @param envelope
+ * @param client_public_key
+ * @param masking_key
+ * @param export_key
+ * @param randomized_pwd
+ * @param server_public_key
+ * @param client_private_key
+ * @param server_identity
+ * @param server_identity_len
+ * @param client_identity
+ * @param client_identity_len
+ */
+ECC_OPAQUE_EXPORT
 ECC_EXPORT
 void ecc_opaque_ristretto255_sha512_CreateEnvelope(
     byte_t *envelope,
@@ -191,11 +237,30 @@ void ecc_opaque_ristretto255_sha512_CreateEnvelope(
     byte_t *masking_key,
     byte_t *export_key,
     const byte_t *randomized_pwd,
-    const byte_t *server_public_key, const byte_t *client_private_key,
+    const byte_t *server_public_key,
+    const byte_t *client_private_key,
     const byte_t *server_identity, int server_identity_len,
     const byte_t *client_identity, int client_identity_len
 );
 
+/**
+ * This functions attempts to recover the credentials from the input. On
+ * success returns 0, else -1.
+ *
+ * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-05#section-4.2
+ *
+ * @param client_private_key
+ * @param export_key
+ * @param randomized_pwd
+ * @param server_public_key
+ * @param envelope_raw
+ * @param server_identity
+ * @param server_identity_len
+ * @param client_identity
+ * @param client_identity_len
+ * @return on success returns 0, else -1.
+ */
+ECC_OPAQUE_EXPORT
 ECC_EXPORT
 int ecc_opaque_ristretto255_sha512_RecoverEnvelope(
     byte_t *client_private_key,
@@ -207,33 +272,45 @@ int ecc_opaque_ristretto255_sha512_RecoverEnvelope(
     const byte_t *client_identity, int client_identity_len
 );
 
-// https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-05#section-4.3.1
-
+/**
+ * Recover the public key related to the input "private_key".
+ *s
+ * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-05#section-2
+ *
+ * @param public_key
+ * @param private_key
+ */
+ECC_OPAQUE_EXPORT
 ECC_EXPORT
 void ecc_opaque_ristretto255_sha512_RecoverPublicKey(
     byte_t *public_key,
     const byte_t *private_key
 );
 
+ECC_OPAQUE_EXPORT
 ECC_EXPORT
 void ecc_opaque_ristretto255_sha512_GenerateAuthKeyPair(
     byte_t *private_key, byte_t *public_key
 );
 
+ECC_OPAQUE_EXPORT
 ECC_EXPORT
 void ecc_opaque_ristretto255_sha512_DeriveAuthKeyPair(
     byte_t *private_key, byte_t *public_key,
     const byte_t *seed, int seed_len
 );
 
+ECC_OPAQUE_EXPORT
 ECC_EXPORT
 void ecc_opaque_ristretto255_sha512_BuildInnerEnvelope(
-    byte_t *inner_env, byte_t *client_public_key,
+    byte_t *inner_env,
+    byte_t *client_public_key,
     const byte_t *randomized_pwd,
     const byte_t *nonce,
     const byte_t *client_private_key
 );
 
+ECC_OPAQUE_EXPORT
 ECC_EXPORT
 void ecc_opaque_ristretto255_sha512_RecoverKeys(
     byte_t *client_private_key,
@@ -244,6 +321,7 @@ void ecc_opaque_ristretto255_sha512_RecoverKeys(
 );
 
 // https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-05#section-5.1.1.1
+ECC_OPAQUE_EXPORT
 ECC_EXPORT
 void ecc_opaque_ristretto255_sha512_CreateRegistrationRequestWithBlind(
     byte_t *request_raw,
@@ -251,6 +329,7 @@ void ecc_opaque_ristretto255_sha512_CreateRegistrationRequestWithBlind(
     const byte_t *blind
 );
 
+ECC_OPAQUE_EXPORT
 ECC_EXPORT
 void ecc_opaque_ristretto255_sha512_CreateRegistrationRequest(
     byte_t *request,
@@ -270,6 +349,7 @@ void ecc_opaque_ristretto255_sha512_CreateRegistrationRequest(
  * @param credential_identifier_len
  * @param oprf_seed
  */
+ECC_OPAQUE_EXPORT
 ECC_EXPORT
 void ecc_opaque_ristretto255_sha512_CreateRegistrationResponseWithOprfKey(
     byte_t *response_raw,
@@ -292,6 +372,7 @@ void ecc_opaque_ristretto255_sha512_CreateRegistrationResponseWithOprfKey(
  * @param credential_identifier_len
  * @param oprf_seed
  */
+ECC_OPAQUE_EXPORT
 ECC_EXPORT
 void ecc_opaque_ristretto255_sha512_CreateRegistrationResponse(
     byte_t *response_raw,
@@ -302,6 +383,7 @@ void ecc_opaque_ristretto255_sha512_CreateRegistrationResponse(
     const byte_t *oprf_seed
 );
 
+ECC_OPAQUE_EXPORT
 ECC_EXPORT
 void ecc_opaque_ristretto255_sha512_FinalizeRequest(
     byte_t *record_raw, // RegistrationUpload_t
@@ -314,6 +396,7 @@ void ecc_opaque_ristretto255_sha512_FinalizeRequest(
     const byte_t *client_identity, int client_identity_len
 );
 
+ECC_OPAQUE_EXPORT
 ECC_EXPORT
 void ecc_opaque_ristretto255_sha512_CreateCredentialRequest(
     byte_t *request_raw,
@@ -332,6 +415,7 @@ void ecc_opaque_ristretto255_sha512_CreateCredentialRequest(
  * @param credential_identifier_len
  * @param oprf_seed
  */
+ECC_OPAQUE_EXPORT
 ECC_EXPORT
 void ecc_opaque_ristretto255_sha512_CreateCredentialResponse(
     byte_t *response_raw,
@@ -342,8 +426,9 @@ void ecc_opaque_ristretto255_sha512_CreateCredentialResponse(
     const byte_t *oprf_seed
 );
 
+ECC_OPAQUE_EXPORT
 ECC_EXPORT
-void ecc_opaque_ristretto255_sha512_RecoverCredentials(
+int ecc_opaque_ristretto255_sha512_RecoverCredentials(
     byte_t *client_private_key,
     byte_t *server_public_key,
     byte_t *export_key,
@@ -354,6 +439,7 @@ void ecc_opaque_ristretto255_sha512_RecoverCredentials(
     const byte_t *client_identity, int client_identity_len
 );
 
+ECC_OPAQUE_EXPORT
 ECC_EXPORT
 void ecc_opaque_ristretto255_sha512_3DH_Expand_Label(
     byte_t *out,
@@ -363,6 +449,7 @@ void ecc_opaque_ristretto255_sha512_3DH_Expand_Label(
     int length
 );
 
+ECC_OPAQUE_EXPORT
 ECC_EXPORT
 void ecc_opaque_ristretto255_sha512_3DH_Derive_Secret(
     byte_t *out,
@@ -371,6 +458,7 @@ void ecc_opaque_ristretto255_sha512_3DH_Derive_Secret(
     const byte_t *transcript_hash, int transcript_hash_len
 );
 
+ECC_OPAQUE_EXPORT
 ECC_EXPORT
 int ecc_opaque_ristretto255_sha512_3DH_Preamble(
     byte_t *preamble,
@@ -381,6 +469,7 @@ int ecc_opaque_ristretto255_sha512_3DH_Preamble(
     const byte_t *inner_ke2
 );
 
+ECC_OPAQUE_EXPORT
 ECC_EXPORT
 void ecc_opaque_ristretto255_sha512_3DH_TripleDHIKM(
     byte_t *ikm,
@@ -389,6 +478,7 @@ void ecc_opaque_ristretto255_sha512_3DH_TripleDHIKM(
     const byte_t *sk3, const byte_t *pk3
 );
 
+ECC_OPAQUE_EXPORT
 ECC_EXPORT
 void ecc_opaque_ristretto255_sha512_3DH_DeriveKeys(
     byte_t *km2, byte_t *km3,
@@ -397,6 +487,7 @@ void ecc_opaque_ristretto255_sha512_3DH_DeriveKeys(
     const byte_t *preamble, int preamble_len
 );
 
+ECC_OPAQUE_EXPORT
 ECC_EXPORT
 void ecc_opaque_ristretto255_sha512_3DH_ClientInit(
     byte_t *ke1_raw,
@@ -405,8 +496,9 @@ void ecc_opaque_ristretto255_sha512_3DH_ClientInit(
     const byte_t *password, int password_len
 );
 
+ECC_OPAQUE_EXPORT
 ECC_EXPORT
-void ecc_opaque_ristretto255_sha512_3DH_ClientFinish(
+int ecc_opaque_ristretto255_sha512_3DH_ClientFinish(
     byte_t *ke3_raw,
     byte_t *session_key,
     byte_t *export_key,
@@ -418,6 +510,7 @@ void ecc_opaque_ristretto255_sha512_3DH_ClientFinish(
     const byte_t *ke2_raw
 );
 
+ECC_OPAQUE_EXPORT
 ECC_EXPORT
 void ecc_opaque_ristretto255_sha512_3DH_Start(
     byte_t *ke1,
@@ -425,6 +518,7 @@ void ecc_opaque_ristretto255_sha512_3DH_Start(
     const byte_t *credential_request
 );
 
+ECC_OPAQUE_EXPORT
 ECC_EXPORT
 int ecc_opaque_ristretto255_sha512_3DH_ClientFinalize(
     byte_t *ke3,
@@ -437,6 +531,7 @@ int ecc_opaque_ristretto255_sha512_3DH_ClientFinalize(
     const byte_t *ke1, const byte_t *ke2
 );
 
+ECC_OPAQUE_EXPORT
 ECC_EXPORT
 void ecc_opaque_ristretto255_sha512_3DH_ServerInit(
     byte_t *ke2_raw,
@@ -449,6 +544,7 @@ void ecc_opaque_ristretto255_sha512_3DH_ServerInit(
     const byte_t *ke1_raw
 );
 
+ECC_OPAQUE_EXPORT
 ECC_EXPORT
 int ecc_opaque_ristretto255_sha512_3DH_ServerFinish(
     byte_t *session_key,
@@ -456,6 +552,7 @@ int ecc_opaque_ristretto255_sha512_3DH_ServerFinish(
     const byte_t *ke3_raw
 );
 
+ECC_OPAQUE_EXPORT
 ECC_EXPORT
 void ecc_opaque_ristretto255_sha512_3DH_Response(
     byte_t *ke2_raw,

@@ -143,7 +143,8 @@ void ecc_opaque_ristretto255_sha512_CreateEnvelopeWithNonce(
     byte_t *masking_key,
     byte_t *export_key, // 64
     const byte_t *randomized_pwd,
-    const byte_t *server_public_key, const byte_t *client_private_key,
+    const byte_t *server_public_key,
+    const byte_t *client_private_key,
     const byte_t *server_identity, int server_identity_len,
     const byte_t *client_identity, int client_identity_len,
     const byte_t *nonce // 32
@@ -173,13 +174,13 @@ void ecc_opaque_ristretto255_sha512_CreateEnvelopeWithNonce(
 
     // 3. export_key = Expand(randomized_pwd, concat(envelope_nonce, "ExportKey"), Nh)
     byte_t export_key_label[9] = "ExportKey";
-    byte_t export_key_info[32 + 9];
-    ecc_concat2(export_key_info, envelope_nonce, 32, export_key_label, 9);
-    ecc_kdf_hkdf_sha512_expand(export_key, randomized_pwd, export_key_info, sizeof export_key_info, 64);
+    byte_t export_key_info[Nn + 9];
+    ecc_concat2(export_key_info, envelope_nonce, Nn, export_key_label, 9);
+    ecc_kdf_hkdf_sha512_expand(export_key, randomized_pwd, export_key_info, sizeof export_key_info, Nh);
 
     // 4. masking_key = Expand(randomized_pwd, "MaskingKey", Nh)
     byte_t masking_key_info[10] = "MaskingKey";
-    ecc_kdf_hkdf_sha512_expand(masking_key, randomized_pwd, masking_key_info, sizeof masking_key_info, 64);
+    ecc_kdf_hkdf_sha512_expand(masking_key, randomized_pwd, masking_key_info, sizeof masking_key_info, Nh);
 
     // 5. inner_env, client_public_key = BuildInnerEnvelope(randomized_pwd, envelope_nonce, client_private_key)
     ecc_opaque_ristretto255_sha512_BuildInnerEnvelope(
@@ -197,19 +198,31 @@ void ecc_opaque_ristretto255_sha512_CreateEnvelopeWithNonce(
     );
 
     // 7. auth_tag = MAC(auth_key, concat(envelope_nonce, inner_env, cleartext_creds))
-    byte_t mac_input[512];
-    const int mac_input_len = 32 + 0 + cleartext_creds_len;
-    ecc_concat2(mac_input, envelope_nonce, 32, cleartext_creds, cleartext_creds_len);
-    byte_t auth_tag[64];
-    ecc_mac_hmac_sha512(auth_tag, mac_input, mac_input_len, auth_key);
+    byte_t auth_tag_mac_input[512];
+    const int auth_tag_mac_input_len = Nn + 0 + cleartext_creds_len;
+    ecc_concat3(
+        auth_tag_mac_input,
+        envelope_nonce, Nn,
+        NULL, 0,
+        cleartext_creds, cleartext_creds_len
+    );
+    ecc_mac_hmac_sha512(
+        envelope->auth_tag,
+        auth_tag_mac_input, auth_tag_mac_input_len,
+        auth_key
+    );
 
     // 8. Create Envelope envelope with (envelope_nonce, inner_env, auth_tag)
-    memcpy(envelope->nonce, envelope_nonce, 32);
-    memcpy(envelope->auth_tag, auth_tag, 64);
+    memcpy(envelope->nonce, envelope_nonce, Nn);
+    // inner_env is nil
+    // auth_tag is set in step 7
 
     // cleanup stack memory
     ecc_memzero(auth_key_info, sizeof auth_key_info);
     ecc_memzero(auth_key, sizeof auth_key);
+    ecc_memzero(export_key_info, sizeof export_key_info);
+    ecc_memzero(cleartext_creds, sizeof cleartext_creds);
+    ecc_memzero(auth_tag_mac_input, sizeof auth_tag_mac_input);
 }
 
 void ecc_opaque_ristretto255_sha512_CreateEnvelope(
@@ -218,7 +231,8 @@ void ecc_opaque_ristretto255_sha512_CreateEnvelope(
     byte_t *masking_key,
     byte_t *export_key, // 64
     const byte_t *randomized_pwd,
-    const byte_t *server_public_key, const byte_t *client_private_key,
+    const byte_t *server_public_key,
+    const byte_t *client_private_key,
     const byte_t *server_identity, int server_identity_len,
     const byte_t *client_identity, int client_identity_len
 ) {
@@ -237,6 +251,9 @@ void ecc_opaque_ristretto255_sha512_CreateEnvelope(
         client_identity, client_identity_len,
         envelope_nonce
     );
+
+    // cleanup stack memory
+    ecc_memzero(envelope_nonce, sizeof envelope_nonce);
 }
 
 int ecc_opaque_ristretto255_sha512_RecoverEnvelope(
@@ -264,16 +281,16 @@ int ecc_opaque_ristretto255_sha512_RecoverEnvelope(
 
     // 1. auth_key = Expand(randomized_pwd, concat(envelope.nonce, "AuthKey"), Nh)
     byte_t auth_key_label[7] = "AuthKey";
-    byte_t auth_key_info[32 + 7];
-    ecc_concat2(auth_key_info, envelope->nonce, 32, auth_key_label, 7);
-    byte_t auth_key[64];
-    ecc_kdf_hkdf_sha512_expand(auth_key, randomized_pwd, auth_key_info, sizeof auth_key_info, 64);
+    byte_t auth_key_info[Nn + 7];
+    ecc_concat2(auth_key_info, envelope->nonce, Nn, auth_key_label, 7);
+    byte_t auth_key[Nh];
+    ecc_kdf_hkdf_sha512_expand(auth_key, randomized_pwd, auth_key_info, sizeof auth_key_info, Nh);
 
     // 2. export_key = Expand(randomized_pwd, concat(envelope.nonce, "ExportKey", Nh)
     byte_t export_key_label[9] = "ExportKey";
-    byte_t export_key_info[32 + 9];
-    ecc_concat2(export_key_info, envelope->nonce, 32, export_key_label, 9);
-    ecc_kdf_hkdf_sha512_expand(export_key, randomized_pwd, export_key_info, sizeof export_key_info, 64);
+    byte_t export_key_info[Nn + 9];
+    ecc_concat2(export_key_info, envelope->nonce, Nn, export_key_label, 9);
+    ecc_kdf_hkdf_sha512_expand(export_key, randomized_pwd, export_key_info, sizeof export_key_info, Nh);
 
     // 3. (client_private_key, client_public_key) =
     //     RecoverKeys(randomized_pwd, envelope.nonce, envelope.inner_env)
@@ -291,15 +308,16 @@ int ecc_opaque_ristretto255_sha512_RecoverEnvelope(
     byte_t cleartext_creds[512];
     const int cleartext_creds_len = ecc_opaque_ristretto255_sha512_CreateCleartextCredentials(
         cleartext_creds,
-        server_public_key, client_public_key,
+        server_public_key,
+        client_public_key,
         server_identity, server_identity_len,
         client_identity, client_identity_len
     );
 
     // 5. expected_tag = MAC(auth_key, concat(envelope.nonce, inner_env, cleartext_creds))
     byte_t expected_tag_mac_input[512];
-    const int expected_tag_mac_input_input_len = 32 + 0 + cleartext_creds_len;
-    ecc_concat2(expected_tag_mac_input, envelope->nonce, 32, cleartext_creds, cleartext_creds_len);
+    const int expected_tag_mac_input_input_len = Nn + 0 + cleartext_creds_len;
+    ecc_concat2(expected_tag_mac_input, envelope->nonce, Nn, cleartext_creds, cleartext_creds_len);
     byte_t expected_tag[64];
     ecc_mac_hmac_sha512(expected_tag, expected_tag_mac_input, expected_tag_mac_input_input_len, auth_key);
 
@@ -307,6 +325,15 @@ int ecc_opaque_ristretto255_sha512_RecoverEnvelope(
     //      raise EnvelopeRecoveryError
     if (ecc_compare(envelope->auth_tag, expected_tag, 64))
         return -1;
+
+    // cleanup stack memory
+    ecc_memzero(auth_key_info, sizeof auth_key_info);
+    ecc_memzero(auth_key, sizeof auth_key);
+    ecc_memzero(export_key_info, sizeof export_key_info);
+    ecc_memzero(client_public_key, sizeof client_public_key);
+    ecc_memzero(cleartext_creds, sizeof cleartext_creds);
+    ecc_memzero(expected_tag_mac_input, sizeof expected_tag_mac_input);
+    ecc_memzero(expected_tag, sizeof expected_tag);
 
     // 7. Output (client_private_key, export_key)
     return 0;
@@ -340,12 +367,17 @@ void ecc_opaque_ristretto255_sha512_DeriveAuthKeyPair(
     // 3. Output (private_key, public_key)
 
     byte_t dst[19] = "OPAQUE-HashToScalar";
-    ecc_oprf_ristretto255_sha512_HashToScalarWithDST(private_key, seed, seed_len, dst, sizeof dst);
+    ecc_oprf_ristretto255_sha512_HashToScalarWithDST(
+        private_key,
+        seed, seed_len,
+        dst, sizeof dst
+    );
     ecc_ristretto255_scalarmult_base(public_key, private_key);
 }
 
 void ecc_opaque_ristretto255_sha512_BuildInnerEnvelope(
-    byte_t *inner_env, byte_t *client_public_key,
+    byte_t *inner_env,
+    byte_t *client_public_key,
     const byte_t *randomized_pwd,
     const byte_t *nonce, // 32
     const byte_t *client_private_key
@@ -357,14 +389,17 @@ void ecc_opaque_ristretto255_sha512_BuildInnerEnvelope(
 
     // 1. seed = Expand(randomized_pwd, concat(nonce, "PrivateKey"), Nsk)
     byte_t seed_label[10] = "PrivateKey";
-    byte_t seed_info[Nsk + 10];
-    ecc_concat2(seed_info, nonce, Nsk, seed_label, 10);
+    byte_t seed_info[Nn + 10];
+    ecc_concat2(seed_info, nonce, Nn, seed_label, 10);
     byte_t seed[Nsk];
     ecc_kdf_hkdf_sha512_expand(seed, randomized_pwd, seed_info, sizeof seed_info, Nsk);
 
     // 2. _, client_public_key = DeriveAuthKeyPair(seed)
-    byte_t ignore_key[32];
-    ecc_opaque_ristretto255_sha512_DeriveAuthKeyPair(ignore_key, client_public_key, seed, 32);
+    byte_t ignore_key[Npk];
+    ecc_opaque_ristretto255_sha512_DeriveAuthKeyPair(
+        ignore_key, client_public_key,
+        seed, Nsk
+    );
 
     // cleanup stack memory
     ecc_memzero(seed, sizeof seed);
@@ -534,7 +569,6 @@ void ecc_opaque_ristretto255_sha512_FinalizeRequest(
     byte_t randomized_pwd_salt[0];
     // TODO: harden
     ecc_kdf_hkdf_sha512_extract(randomized_pwd, randomized_pwd_salt, 0, y, sizeof y);
-    //log("FinalizeRequest:randomized_pwd", randomized_pwd, 64);
 
     // 3. (envelope, client_public_key, masking_key, export_key) =
     //     CreateEnvelope(randomized_pwd, response.server_public_key, client_private_key,
@@ -633,7 +667,7 @@ void ecc_opaque_ristretto255_sha512_CreateCredentialResponse(
     byte_t masked_response_xor[Npk + Ne];
     ecc_concat2(masked_response_xor, server_public_key, Npk, (byte_t *) &record->envelope, Ne);
     byte_t masked_response[Npk + Ne];
-    strxor(masked_response, credential_response_pad, masked_response_xor, Npk + Ne);
+    ecc_strxor(masked_response, credential_response_pad, masked_response_xor, Npk + Ne);
 
     // 7. Create CredentialResponse response with (Z, masking_nonce, masked_response)
     // 8. Output response
@@ -643,7 +677,7 @@ void ecc_opaque_ristretto255_sha512_CreateCredentialResponse(
     memcpy(response->masked_response, masked_response, sizeof masked_response);
 }
 
-void ecc_opaque_ristretto255_sha512_RecoverCredentials(
+int ecc_opaque_ristretto255_sha512_RecoverCredentials(
     byte_t *client_private_key,
     byte_t *server_public_key,
     byte_t *export_key, // 64
@@ -682,7 +716,6 @@ void ecc_opaque_ristretto255_sha512_RecoverCredentials(
     byte_t randomized_pwd_salt[0];
     // TODO: harden
     ecc_kdf_hkdf_sha512_extract(randomized_pwd, randomized_pwd_salt, 0, y, sizeof y);
-    //log("RecoverCredentials:randomized_pwd", randomized_pwd, 64);
 
     // 3. masking_key = Expand(randomized_pwd, "MaskingKey", Nh)
     byte_t masking_key_info[10] = "MaskingKey";
@@ -700,17 +733,15 @@ void ecc_opaque_ristretto255_sha512_RecoverCredentials(
     // 5. concat(server_public_key, envelope) = xor(credential_response_pad,
     //                                               response.masked_response)
     byte_t xor_result[Npk + Ne];
-    strxor(xor_result, credential_response_pad, res->masked_response, Npk + Ne);
-    // TODO: review here
+    ecc_strxor(xor_result, credential_response_pad, res->masked_response, Npk + Ne);
     memcpy(server_public_key, xor_result, 32);
-    //memcpy(server_public_key, res->data, 32);
     byte_t envelope[Ne];
     memcpy(envelope, &xor_result[Npk], Ne);
 
     // 6. (client_private_key, export_key) =
     //     RecoverEnvelope(randomized_pwd, server_public_key, envelope,
     //                     server_identity, client_identity)
-    ecc_opaque_ristretto255_sha512_RecoverEnvelope(
+    const int ret = ecc_opaque_ristretto255_sha512_RecoverEnvelope(
         client_private_key,
         export_key,
         randomized_pwd,
@@ -721,6 +752,7 @@ void ecc_opaque_ristretto255_sha512_RecoverCredentials(
     );
 
     // 7. Output (client_private_key, response.server_public_key, export_key)
+    return ret;
 }
 
 void ecc_opaque_ristretto255_sha512_3DH_Expand_Label(
@@ -929,7 +961,7 @@ void ecc_opaque_ristretto255_sha512_3DH_ClientInit(
     );
 }
 
-void ecc_opaque_ristretto255_sha512_3DH_ClientFinish(
+int ecc_opaque_ristretto255_sha512_3DH_ClientFinish(
     byte_t *ke3_raw,
     byte_t *session_key,
     byte_t *export_key, // 64
@@ -958,7 +990,7 @@ void ecc_opaque_ristretto255_sha512_3DH_ClientFinish(
     //                        server_identity, client_identity)
     byte_t client_private_key[32];
     byte_t server_public_key[32];
-    ecc_opaque_ristretto255_sha512_RecoverCredentials(
+    const int ret_recover = ecc_opaque_ristretto255_sha512_RecoverCredentials(
         client_private_key,
         server_public_key,
         export_key,
@@ -972,7 +1004,7 @@ void ecc_opaque_ristretto255_sha512_3DH_ClientFinish(
     // 2. (ke3, session_key) =
     //     ClientFinalize(client_identity, client_private_key, server_identity,
     //                     server_public_key, ke1, ke2)
-    ecc_opaque_ristretto255_sha512_3DH_ClientFinalize(
+    const int ret_finalize = ecc_opaque_ristretto255_sha512_3DH_ClientFinalize(
         ke3_raw,
         session_key,
         state_raw,
@@ -985,6 +1017,10 @@ void ecc_opaque_ristretto255_sha512_3DH_ClientFinish(
     );
 
     // 3. Output (ke3, session_key)
+    if (ret_recover == 0 && ret_finalize == 0)
+        return 0;
+    else
+        return -1;
 }
 
 void ecc_opaque_ristretto255_sha512_3DH_Start(

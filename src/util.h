@@ -79,7 +79,7 @@ void ecc_concat5(
 );
 
 ECC_EXPORT
-void strxor(byte_t *out, const byte_t *a, const byte_t *b, int len);
+void ecc_strxor(byte_t *out, const byte_t *a, const byte_t *b, int len);
 
 // https://datatracker.ietf.org/doc/html/rfc8017#section-4.1
 ECC_EXPORT

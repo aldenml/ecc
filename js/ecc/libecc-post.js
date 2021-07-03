@@ -236,31 +236,21 @@ Module.ecc_kdf_hkdf_sha256_extract = (prk, salt, salt_len, ikm, ikm_len) => {
 }
 
 /**
- * @param {Uint8Array} prk
- */
-Module.ecc_kdf_hkdf_sha256_keygen = (prk) => {
-    const pPrk = 0;
-    _ecc_kdf_hkdf_sha256_keygen(pPrk);
-    mget(pPrk, prk, 32);
-    mzero(32);
-}
-
-/**
  * @param {Uint8Array} out
- * @param {number} out_len
+ * @param {number} len
  * @param {Uint8Array} ctx
  * @param {number} ctx_len
  * @param {Uint8Array} prk
  * @returns {number}
  */
-Module.ecc_kdf_hkdf_sha256_expand = (out, out_len, ctx, ctx_len, prk) => {
+Module.ecc_kdf_hkdf_sha256_expand = (out, ctx, ctx_len, prk, len) => {
     const pCtx = mput(ctx, 0, ctx_len);
     const pPrk = mput(prk, pCtx + ctx_len, 32);
     const pOut = pPrk + 32;
 
-    const op = _ecc_kdf_hkdf_sha256_expand(pOut, out_len, pCtx, ctx_len, pPrk);
-    mget(pOut, out, out_len);
-    mzero(ctx_len + 32 + out_len);
+    const op = _ecc_kdf_hkdf_sha256_expand(pOut, pCtx, ctx_len, pPrk, len);
+    mget(pOut, out, len);
+    mzero(ctx_len + 32 + len);
     return op;
 }
 
@@ -281,16 +271,6 @@ Module.ecc_kdf_hkdf_sha512_extract = (prk, salt, salt_len, ikm, ikm_len) => {
     mget(pPrk, prk, 64);
     mzero(salt_len + ikm_len + 64);
     return op;
-}
-
-/**
- * @param {Uint8Array} prk
- */
-Module.ecc_kdf_hkdf_sha512_keygen = (prk) => {
-    const pPrk = 0;
-    _ecc_kdf_hkdf_sha512_keygen(pPrk);
-    mget(pPrk, prk, 64);
-    mzero(64);
 }
 
 /**

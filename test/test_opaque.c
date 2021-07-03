@@ -211,7 +211,7 @@ static void opaque_ristretto255_sha512_test1(void **state) {
     byte_t ke3[64];
     byte_t client_session_key[64];
     byte_t export_key2[64];
-    ecc_opaque_ristretto255_sha512_3DH_ClientFinish(
+    int client_finish_ret = ecc_opaque_ristretto255_sha512_3DH_ClientFinish(
         ke3,
         client_session_key,
         export_key2,
@@ -222,6 +222,7 @@ static void opaque_ristretto255_sha512_test1(void **state) {
         ke1,
         ke2
     );
+    assert_int_equal(client_finish_ret, 0);
 
     byte_t server_session_key[64];
     ecc_opaque_ristretto255_sha512_3DH_ServerFinish(

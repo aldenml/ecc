@@ -11,12 +11,6 @@
 #include "export.h"
 
 ECC_EXPORT
-int ecc_scalarmult_curve25519(BYTE *q, const BYTE *n, const BYTE *p);
-
-ECC_EXPORT
-int ecc_scalarmult_curve25519_base(BYTE *q, const BYTE *n);
-
-ECC_EXPORT
 int ecc_scalarmult_ed25519(BYTE *q, const BYTE *n, const BYTE *p);
 
 ECC_EXPORT

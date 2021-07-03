@@ -78,7 +78,7 @@ void ecc_concat5(
     memcpy(out, a5, a5_len);
 }
 
-void strxor(byte_t *out, const byte_t *a, const byte_t *b, int len) {
+void ecc_strxor(byte_t *out, const byte_t *a, const byte_t *b, int len) {
     for (int i = 0; i < len; i++) {
         out[i] = a[i] ^ b[i];
     }

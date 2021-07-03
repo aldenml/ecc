@@ -17,7 +17,11 @@
 // Can be replaced with a direct call once libsodium release the next stable version with the code
 // in master.
 
-int ecc_kdf_hkdf_sha256_extract(BYTE *prk, const BYTE *salt, int salt_len, const BYTE *ikm, int ikm_len) {
+void ecc_kdf_hkdf_sha256_extract(
+    byte_t *prk,
+    const byte_t *salt, int salt_len,
+    const byte_t *ikm, int ikm_len
+) {
     crypto_auth_hmacsha256_state st;
 
     crypto_auth_hmacsha256_init(&st, salt, salt_len);
@@ -25,58 +29,63 @@ int ecc_kdf_hkdf_sha256_extract(BYTE *prk, const BYTE *salt, int salt_len, const
     crypto_auth_hmacsha256_final(&st, prk);
     sodium_memzero(&st, sizeof st);
 
-    return 0;
+//    return 0;
 }
 
-void ecc_kdf_hkdf_sha256_keygen(BYTE *prk) {
-    randombytes_buf(prk, ecc_kdf_hkdf_sha256_KEYSIZE);
-}
-
-int ecc_kdf_hkdf_sha256_expand(BYTE *out, int out_len, const BYTE *ctx, int ctx_len, const BYTE *prk) {
+void ecc_kdf_hkdf_sha256_expand(
+    byte_t *okm,
+    const byte_t *info, int info_len,
+    const byte_t *prk,
+    int len
+) {
     crypto_auth_hmacsha256_state st;
     unsigned char tmp[crypto_auth_hmacsha256_BYTES];
     size_t i;
     size_t left;
     unsigned char counter = 1U;
 
-    if (out_len > ecc_kdf_hkdf_sha256_SIZE_MAX) {
-        //errno = EINVAL;
-        return -1;
-    }
-    for (i = (size_t) 0U; i + crypto_auth_hmacsha256_BYTES <= out_len;
+//    if (out_len > ecc_kdf_hkdf_sha256_SIZE_MAX) {
+//        errno = EINVAL;
+//        return -1;
+//    }
+    for (i = (size_t) 0U; i + crypto_auth_hmacsha256_BYTES <= len;
          i += crypto_auth_hmacsha256_BYTES) {
         crypto_auth_hmacsha256_init(&st, prk, ecc_kdf_hkdf_sha256_KEYSIZE);
         if (i != (size_t) 0U) {
             crypto_auth_hmacsha256_update(&st,
-                                          &out[i - crypto_auth_hmacsha256_BYTES],
+                                          &okm[i - crypto_auth_hmacsha256_BYTES],
                                           crypto_auth_hmacsha256_BYTES);
         }
         crypto_auth_hmacsha256_update(&st,
-                                      (const unsigned char *) ctx, ctx_len);
+                                      (const unsigned char *) info, info_len);
         crypto_auth_hmacsha256_update(&st, &counter, (size_t) 1U);
-        crypto_auth_hmacsha256_final(&st, &out[i]);
+        crypto_auth_hmacsha256_final(&st, &okm[i]);
         counter++;
     }
-    if ((left = out_len & (crypto_auth_hmacsha256_BYTES - 1U)) != (size_t) 0U) {
+    if ((left = len & (crypto_auth_hmacsha256_BYTES - 1U)) != (size_t) 0U) {
         crypto_auth_hmacsha256_init(&st, prk, ecc_kdf_hkdf_sha256_KEYSIZE);
         if (i != (size_t) 0U) {
             crypto_auth_hmacsha256_update(&st,
-                                          &out[i - crypto_auth_hmacsha256_BYTES],
+                                          &okm[i - crypto_auth_hmacsha256_BYTES],
                                           crypto_auth_hmacsha256_BYTES);
         }
         crypto_auth_hmacsha256_update(&st,
-                                      (const unsigned char *) ctx, ctx_len);
+                                      (const unsigned char *) info, info_len);
         crypto_auth_hmacsha256_update(&st, &counter, (size_t) 1U);
         crypto_auth_hmacsha256_final(&st, tmp);
-        memcpy(&out[i], tmp, left);
+        memcpy(&okm[i], tmp, left);
         sodium_memzero(tmp, sizeof tmp);
     }
     sodium_memzero(&st, sizeof st);
 
-    return 0;
+//    return 0;
 }
 
-int ecc_kdf_hkdf_sha512_extract(BYTE *prk, const BYTE *salt, int salt_len, const BYTE *ikm, int ikm_len) {
+void ecc_kdf_hkdf_sha512_extract(
+    byte_t *prk,
+    const byte_t *salt, int salt_len,
+    const byte_t *ikm, int ikm_len
+) {
     crypto_auth_hmacsha512_state st;
 
     crypto_auth_hmacsha512_init(&st, salt, salt_len);
@@ -84,15 +93,11 @@ int ecc_kdf_hkdf_sha512_extract(BYTE *prk, const BYTE *salt, int salt_len, const
     crypto_auth_hmacsha512_final(&st, prk);
     sodium_memzero(&st, sizeof st);
 
-    return 0;
+//    return 0;
 }
 
-void ecc_kdf_hkdf_sha512_keygen(BYTE *prk) {
-    randombytes_buf(prk, ecc_kdf_hkdf_sha512_KEYSIZE);
-}
-
-int ecc_kdf_hkdf_sha512_expand(
-    byte_t *out,
+void ecc_kdf_hkdf_sha512_expand(
+    byte_t *okm,
     const byte_t *prk,
     const byte_t *info, const int info_len,
     const int len
@@ -103,39 +108,39 @@ int ecc_kdf_hkdf_sha512_expand(
     size_t left;
     unsigned char counter = 1U;
 
-    if (len > ecc_kdf_hkdf_sha512_SIZE_MAX) {
-        //errno = EINVAL;
-        return -1;
-    }
+//    if (len > ecc_kdf_hkdf_sha512_SIZE_MAX) {
+//        errno = EINVAL;
+//        return -1;
+//    }
     for (i = (size_t) 0U; i + crypto_auth_hmacsha512_BYTES <= len;
          i += crypto_auth_hmacsha512_BYTES) {
         crypto_auth_hmacsha512_init(&st, prk, ecc_kdf_hkdf_sha512_KEYSIZE);
         if (i != (size_t) 0U) {
             crypto_auth_hmacsha512_update(&st,
-                                          &out[i - crypto_auth_hmacsha512_BYTES],
+                                          &okm[i - crypto_auth_hmacsha512_BYTES],
                                           crypto_auth_hmacsha512_BYTES);
         }
         crypto_auth_hmacsha512_update(&st,
                                       (const unsigned char *) info, info_len);
         crypto_auth_hmacsha512_update(&st, &counter, (size_t) 1U);
-        crypto_auth_hmacsha512_final(&st, &out[i]);
+        crypto_auth_hmacsha512_final(&st, &okm[i]);
         counter++;
     }
     if ((left = len & (crypto_auth_hmacsha512_BYTES - 1U)) != (size_t) 0U) {
         crypto_auth_hmacsha512_init(&st, prk, ecc_kdf_hkdf_sha512_KEYSIZE);
         if (i != (size_t) 0U) {
             crypto_auth_hmacsha512_update(&st,
-                                          &out[i - crypto_auth_hmacsha512_BYTES],
+                                          &okm[i - crypto_auth_hmacsha512_BYTES],
                                           crypto_auth_hmacsha512_BYTES);
         }
         crypto_auth_hmacsha512_update(&st,
                                       (const unsigned char *) info, info_len);
         crypto_auth_hmacsha512_update(&st, &counter, (size_t) 1U);
         crypto_auth_hmacsha512_final(&st, tmp);
-        memcpy(&out[i], tmp, left);
+        memcpy(&okm[i], tmp, left);
         sodium_memzero(tmp, sizeof tmp);
     }
     sodium_memzero(&st, sizeof st);
 
-    return 0;
+//    return 0;
 }
