@@ -41,92 +41,125 @@ function mzero(length) {
 
 /**
  * @param {Uint8Array} buf
+ * @param {number} n
  */
-Module.ecc_randombytes = (buf) => {
-    let pBuf = 0;
-    let n = buf.length;
+Module.ecc_randombytes = (buf, n) => {
+    const pBuf = 0;
     _ecc_randombytes(pBuf, n);
-    arraycopy(HEAPU8, 0, buf, 0, n);
+    mget(pBuf, buf, n);
+    mzero(n);
 }
 
-// hash
+// opaque
 
 /**
- * @param {Uint8Array} out
- * @param {Uint8Array} input
+ *
+ * @param {Uint8Array} request_raw
+ * @param {Uint8Array} blind
+ * @param {Uint8Array} password
+ * @param {number} password_len
  */
-Module.ecc_hash_sha512 = (out, input) => {
-    arraycopy(input, 0, HEAPU8, 0, input.length);
+Module.ecc_opaque_ristretto255_sha512_CreateRegistrationRequest = (
+    request_raw,
+    blind,
+    password, password_len
+) => {
+    const pPassword = mput(password, 0, password_len);
+    const pRequest = pPassword + password_len;
+    const pBlind = pRequest + 32;
 
-    let pIn = 0;
-    let len = input.length;
-    let pOut = pIn + len;
-
-    _ecc_hash_sha512(pOut, pIn, len);
-
-    arraycopy(HEAPU8, pOut, out, 0, 64);
-}
-
-// ristretto255
-
-/**
- * @param {Uint8Array} p
- * @param {Uint8Array} r
- * @returns {number}
- */
-Module.ecc_ristretto255_from_hash = (p, r) => {
-    arraycopy(r, 0, HEAPU8, 0, 64);
-    const pR = 0;
-    const pP = pR + 64;
-    const op = _ecc_ristretto255_from_hash(pP, pR);
-    arraycopy(HEAPU8, pP, p, 0, 32);
-    return op;
+    _ecc_opaque_ristretto255_sha512_CreateRegistrationRequest(
+        pRequest,
+        pBlind,
+        pPassword, password_len
+    );
+    mget(pRequest, request_raw, 32);
+    mget(pBlind, blind, 32);
+    mzero(password_len + 32 + 32);
 }
 
 /**
- * @param {Uint8Array} r
+ *
+ * @param {Uint8Array} response_raw
+ * @param {Uint8Array} oprf_key
+ * @param {Uint8Array} request_raw
+ * @param {Uint8Array} server_public_key
+ * @param {Uint8Array} credential_identifier
+ * @param {number} credential_identifier_len
+ * @param {Uint8Array} oprf_seed
  */
-Module.ecc_ristretto255_scalar_random = (r) => {
-    const pR = 0;
-    _ecc_ristretto255_scalar_random(pR);
-    arraycopy(HEAPU8, 0, r, 0, 32);
+Module.ecc_opaque_ristretto255_sha512_CreateRegistrationResponse = (
+    response_raw,
+    oprf_key,
+    request_raw,
+    server_public_key,
+    credential_identifier, credential_identifier_len,
+    oprf_seed
+) => {
+    const pRequest = mput(request_raw, 0, 32);
+    const pServer_public_key = mput(server_public_key, pRequest + 32, 32);
+    const pCredential_identifier = mput(credential_identifier, pServer_public_key + 32, credential_identifier_len);
+    const pOprf_seed = mput(oprf_seed, pCredential_identifier + credential_identifier_len, 64);
+    const pResponse = pOprf_seed + 64;
+    const pOprf_key = pResponse + 64;
+
+    _ecc_opaque_ristretto255_sha512_CreateRegistrationResponse(
+        pResponse,
+        pOprf_key,
+        pRequest,
+        pServer_public_key,
+        pCredential_identifier, credential_identifier_len,
+        pOprf_seed
+    );
+    mget(pResponse, response_raw, 64);
+    mget(pOprf_key, oprf_key, 32);
+    mzero(32 + 32 + credential_identifier_len + 64 + 64 + 32);
 }
 
 /**
- * @param {Uint8Array} q
- * @param {Uint8Array} n
- * @param {Uint8Array} p
- * @returns {number}
+ *
+ * @param {Uint8Array} record_raw
+ * @param {Uint8Array} export_key
+ * @param {Uint8Array} client_private_key
+ * @param {Uint8Array} password
+ * @param {number} password_len
+ * @param {Uint8Array} blind
+ * @param {Uint8Array} response_raw
+ * @param {Uint8Array} server_identity
+ * @param {number} server_identity_len
+ * @param {Uint8Array} client_identity
+ * @param {number} client_identity_len
  */
-Module.ecc_ristretto255_scalarmult = (q, n, p) => {
-    arraycopy(n, 0, HEAPU8, 0, 32);
-    arraycopy(p, 0, HEAPU8, 32, 32);
+Module.ecc_opaque_ristretto255_sha512_FinalizeRequest =(
+    record_raw, // RegistrationUpload_t
+    export_key,
+    client_private_key,
+    password, password_len,
+    blind,
+    response_raw, // RegistrationResponse_t
+    server_identity, server_identity_len,
+    client_identity, client_identity_len
+) => {
+    const pClient_private_key = mput(client_private_key, 0, 32);
+    const pPassword = mput(password, pClient_private_key + 32, password_len);
+    const pBlind = mput(blind, pPassword + password_len, 32);
+    const pResponse = mput(response_raw, pBlind + 32, 64);
+    const pServer_identity = mput(server_identity, pResponse + 64, server_identity_len);
+    const pClient_identity = mput(client_identity, pServer_identity + server_identity_len, client_identity_len);
+    const pRecord = pClient_identity + client_identity_len;
+    const pExport_key = pRecord + 192;
 
-    const pN = 0;
-    const pP = pN + 32;
-    const pQ = pP + 32;
-
-    const op = _ecc_ristretto255_scalarmult(pQ, pN, pP);
-    arraycopy(HEAPU8, pQ, q, 0, 32);
-    return op;
-}
-
-// h2c
-
-/**
- * @param {Uint8Array} out
- * @param {Uint8Array} msg a byte string
- * @param {Uint8Array} dst a byte string of at most 255 bytes
- */
-Module.ecc_h2c_expand_message_xmd_sha512 = (out, msg, dst) => {
-    const msg_len = msg.length;
-    const dst_len = dst.length;
-    const len_in_bytes = out.length;
-    const pMsg = mput(msg, 0, msg_len);
-    const pDst = mput(dst, pMsg + msg_len, dst_len);
-    const pOut = pDst + dst_len;
-
-    _ecc_h2c_expand_message_xmd_sha512(pOut, pMsg, msg_len, pDst, dst_len, len_in_bytes);
-    mget(pOut, out, len_in_bytes);
-    mzero(msg_len + dst_len + len_in_bytes);
+    _ecc_opaque_ristretto255_sha512_FinalizeRequest(
+        pRecord,
+        pExport_key,
+        pClient_private_key,
+        pPassword, password_len,
+        pBlind,
+        pResponse,
+        pServer_identity, server_identity_len,
+        pClient_identity, client_identity_len
+    );
+    mget(pRecord, record_raw, 192);
+    mget(pExport_key, export_key, 64);
+    mzero(32 + password_len + 32 + 64 + server_identity_len + client_identity_len + 192 + 64);
 }

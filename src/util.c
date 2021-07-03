@@ -63,21 +63,6 @@ void ecc_concat4(
     memcpy(out, a4, a4_len);
 }
 
-void ecc_concat5(
-    byte_t *out,
-    const byte_t *a1, int a1_len,
-    const byte_t *a2, int a2_len,
-    const byte_t *a3, int a3_len,
-    const byte_t *a4, int a4_len,
-    const byte_t *a5, int a5_len
-) {
-    memcpy(out, a1, a1_len); out += a1_len;
-    memcpy(out, a2, a2_len); out += a2_len;
-    memcpy(out, a3, a3_len); out += a3_len;
-    memcpy(out, a4, a4_len); out += a4_len;
-    memcpy(out, a5, a5_len);
-}
-
 void ecc_strxor(byte_t *out, const byte_t *a, const byte_t *b, int len) {
     for (int i = 0; i < len; i++) {
         out[i] = a[i] ^ b[i];

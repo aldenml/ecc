@@ -16,9 +16,12 @@
 #define ecc_h2c_expand_message_xmd_sha512_MAXSIZE 256
 #define ecc_h2c_expand_message_xmd_sha512_DSTMAXSIZE 256
 
-// https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-hash-to-curve-11#section-5.4.1
 /**
+ * Produces a uniformly random byte string using SHA-512.
+ *
  * In order to make this method to use only the stack, len should be <= 256.
+ *
+ * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-hash-to-curve-11#section-5.4.1
  *
  * @param out
  * @param msg

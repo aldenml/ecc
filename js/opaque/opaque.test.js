@@ -6,8 +6,8 @@
  */
 
 import {
-    buf2hex,
-    hex2buf,
+    bin2hex,
+    hex2bin,
 } from "./util.js";
 import assert from "assert";
 

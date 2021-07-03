@@ -10,6 +10,9 @@
 
 #include "export.h"
 
+// https://datatracker.ietf.org/doc/html/rfc2104
+// https://datatracker.ietf.org/doc/html/rfc4868
+
 #define ecc_mac_hmac_sha256_SIZE 32
 #define ecc_mac_hmac_sha256_KEYSIZE 32
 
