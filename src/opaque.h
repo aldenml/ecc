@@ -274,7 +274,7 @@ int ecc_opaque_ristretto255_sha512_RecoverEnvelope(
 
 /**
  * Recover the public key related to the input "private_key".
- *s
+ *
  * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-05#section-2
  *
  * @param public_key
@@ -287,12 +287,35 @@ void ecc_opaque_ristretto255_sha512_RecoverPublicKey(
     const byte_t *private_key
 );
 
+/**
+ * Returns a randomly generated private and public key pair.
+ *
+ * This is implemented by generating a random "seed", then
+ * calling DeriveAuthKeyPair.
+ *
+ * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-05#section-2
+ *
+ * @param private_key
+ * @param public_key
+ */
 ECC_OPAQUE_EXPORT
 ECC_EXPORT
 void ecc_opaque_ristretto255_sha512_GenerateAuthKeyPair(
     byte_t *private_key, byte_t *public_key
 );
 
+/**
+ * Derive a private and public authentication key pair deterministically
+ * from the input "seed".
+ *
+ * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-05#section-4.3.1
+ * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-05#section-2
+ *
+ * @param private_key
+ * @param public_key
+ * @param seed
+ * @param seed_len
+ */
 ECC_OPAQUE_EXPORT
 ECC_EXPORT
 void ecc_opaque_ristretto255_sha512_DeriveAuthKeyPair(
@@ -300,6 +323,15 @@ void ecc_opaque_ristretto255_sha512_DeriveAuthKeyPair(
     const byte_t *seed, int seed_len
 );
 
+/**
+ * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-05#section-4.3.1
+ *
+ * @param inner_env
+ * @param client_public_key
+ * @param randomized_pwd
+ * @param nonce
+ * @param client_private_key
+ */
 ECC_OPAQUE_EXPORT
 ECC_EXPORT
 void ecc_opaque_ristretto255_sha512_BuildInnerEnvelope(
@@ -310,6 +342,14 @@ void ecc_opaque_ristretto255_sha512_BuildInnerEnvelope(
     const byte_t *client_private_key
 );
 
+/**
+ *
+ * @param client_private_key
+ * @param client_public_key
+ * @param randomized_pwd
+ * @param nonce
+ * @param inner_env
+ */
 ECC_OPAQUE_EXPORT
 ECC_EXPORT
 void ecc_opaque_ristretto255_sha512_RecoverKeys(
@@ -320,7 +360,16 @@ void ecc_opaque_ristretto255_sha512_RecoverKeys(
     const byte_t *inner_env
 );
 
-// https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-05#section-5.1.1.1
+/**
+ * Same as calling CreateRegistrationRequest with a specified blind.
+ *
+ * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-05#section-5.1.1.1
+ *
+ * @param request_raw
+ * @param password
+ * @param password_len
+ * @param blind
+ */
 ECC_OPAQUE_EXPORT
 ECC_EXPORT
 void ecc_opaque_ristretto255_sha512_CreateRegistrationRequestWithBlind(
@@ -329,6 +378,14 @@ void ecc_opaque_ristretto255_sha512_CreateRegistrationRequestWithBlind(
     const byte_t *blind
 );
 
+/**
+ * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-05#section-5.1.1.1
+ *
+ * @param request (return) a RegistrationRequest structure.
+ * @param blind (return) an OPRF scalar value.
+ * @param password an opaque byte string containing the client's password.
+ * @param password_len the length of `password`.
+ */
 ECC_OPAQUE_EXPORT
 ECC_EXPORT
 void ecc_opaque_ristretto255_sha512_CreateRegistrationRequest(
@@ -337,10 +394,13 @@ void ecc_opaque_ristretto255_sha512_CreateRegistrationRequest(
     const byte_t *password, int password_len
 );
 
-// https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-05#section-5.1.1.2
 /**
+ * Same as calling CreateRegistrationResponse with an specific oprf_seed.
+ *
  * In order to make this method not to use dynamic memory allocation, there is a
  * limit of credential_identifier_len <= 200.
+ *
+ * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-05#section-5.1.1.2
  *
  * @param response
  * @param request
@@ -359,11 +419,11 @@ void ecc_opaque_ristretto255_sha512_CreateRegistrationResponseWithOprfKey(
     const byte_t *oprf_key
 );
 
-// TODO: try hard to unit test this function
-// https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-05#section-5.1.1.2
 /**
  * In order to make this method not to use dynamic memory allocation, there is a
  * limit of credential_identifier_len <= 200.
+ *
+ * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-05#section-5.1.1.2
  *
  * @param response
  * @param request
@@ -383,6 +443,25 @@ void ecc_opaque_ristretto255_sha512_CreateRegistrationResponse(
     const byte_t *oprf_seed
 );
 
+/**
+ * To create the user record used for further authentication, the client
+ * executes the following function. Since this works in the internal key mode, the
+ * "client_private_key" is null.
+ *
+ * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-05#section-5.1.1.3
+ *
+ * @param record_raw
+ * @param export_key
+ * @param client_private_key
+ * @param password
+ * @param password_len
+ * @param blind
+ * @param response_raw
+ * @param server_identity
+ * @param server_identity_len
+ * @param client_identity
+ * @param client_identity_len
+ */
 ECC_OPAQUE_EXPORT
 ECC_EXPORT
 void ecc_opaque_ristretto255_sha512_FinalizeRequest(
@@ -396,6 +475,14 @@ void ecc_opaque_ristretto255_sha512_FinalizeRequest(
     const byte_t *client_identity, int client_identity_len
 );
 
+/**
+ * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-05#section-6.1.2.1
+ *
+ * @param request_raw a CredentialRequest structure
+ * @param blind an OPRF scalar value.
+ * @param password an opaque byte string containing the client's password
+ * @param password_len the length of `password`
+ */
 ECC_OPAQUE_EXPORT
 ECC_EXPORT
 void ecc_opaque_ristretto255_sha512_CreateCredentialRequest(
@@ -407,6 +494,21 @@ void ecc_opaque_ristretto255_sha512_CreateCredentialRequest(
 /**
  * In order to make this method not to use dynamic memory allocation, there is a
  * limit of credential_identifier_len <= 200.
+ *
+ * There are two scenarios to handle for the construction of a
+ * CredentialResponse object: either the record for the client exists
+ * (corresponding to a properly registered client), or it was never
+ * created (corresponding to a client that has yet to register).
+ *
+ * In the case of a record that does not exist, the server SHOULD invoke
+ * the CreateCredentialResponse function where the record argument is
+ * configured so that:
+ *
+ *  - record.masking_key is set to a random byte string of length Nh, and
+ *  - record.envelope is set to the byte string consisting only of
+ *    zeros, of length Ne
+ *
+ * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-05#section-6.1.2.2
  *
  * @param response
  * @param request
@@ -426,6 +528,22 @@ void ecc_opaque_ristretto255_sha512_CreateCredentialResponse(
     const byte_t *oprf_seed
 );
 
+/**
+ * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-05#section-6.1.2.3
+ *
+ * @param client_private_key
+ * @param server_public_key
+ * @param export_key
+ * @param password
+ * @param password_len
+ * @param blind
+ * @param response
+ * @param server_identity
+ * @param server_identity_len
+ * @param client_identity
+ * @param client_identity_len
+ * @return
+ */
 ECC_OPAQUE_EXPORT
 ECC_EXPORT
 int ecc_opaque_ristretto255_sha512_RecoverCredentials(
@@ -439,6 +557,17 @@ int ecc_opaque_ristretto255_sha512_RecoverCredentials(
     const byte_t *client_identity, int client_identity_len
 );
 
+/**
+ * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-05#section-6.2.2.1
+ *
+ * @param out
+ * @param secret
+ * @param label
+ * @param label_len
+ * @param context
+ * @param context_len
+ * @param length
+ */
 ECC_OPAQUE_EXPORT
 ECC_EXPORT
 void ecc_opaque_ristretto255_sha512_3DH_Expand_Label(
@@ -449,6 +578,16 @@ void ecc_opaque_ristretto255_sha512_3DH_Expand_Label(
     int length
 );
 
+/**
+ * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-05#section-6.2.2.1
+ *
+ * @param out
+ * @param secret
+ * @param label
+ * @param label_len
+ * @param transcript_hash
+ * @param transcript_hash_len
+ */
 ECC_OPAQUE_EXPORT
 ECC_EXPORT
 void ecc_opaque_ristretto255_sha512_3DH_Derive_Secret(
@@ -458,6 +597,26 @@ void ecc_opaque_ristretto255_sha512_3DH_Derive_Secret(
     const byte_t *transcript_hash, int transcript_hash_len
 );
 
+/**
+ * The OPAQUE-3DH key schedule requires a preamble.
+ *
+ * OPAQUE-3DH can optionally include shared "context" information in the
+ * transcript, such as configuration parameters or application-specific
+ * info, e.g. "appXYZ-v1.2.3".
+ *
+ * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-05#section-6.2.2.1
+ *
+ * @param preamble
+ * @param context
+ * @param context_len
+ * @param client_identity
+ * @param client_identity_len
+ * @param ke1
+ * @param server_identity
+ * @param server_identity_len
+ * @param inner_ke2
+ * @return
+ */
 ECC_OPAQUE_EXPORT
 ECC_EXPORT
 int ecc_opaque_ristretto255_sha512_3DH_Preamble(
@@ -469,6 +628,20 @@ int ecc_opaque_ristretto255_sha512_3DH_Preamble(
     const byte_t *inner_ke2
 );
 
+/**
+ * Computes the OPAQUE-3DH shared secret derived during the key
+ * exchange protocol.
+ *
+ * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-05#section-6.2.2.2
+ *
+ * @param ikm
+ * @param sk1
+ * @param pk1
+ * @param sk2
+ * @param pk2
+ * @param sk3
+ * @param pk3
+ */
 ECC_OPAQUE_EXPORT
 ECC_EXPORT
 void ecc_opaque_ristretto255_sha512_3DH_TripleDHIKM(
@@ -478,15 +651,37 @@ void ecc_opaque_ristretto255_sha512_3DH_TripleDHIKM(
     const byte_t *sk3, const byte_t *pk3
 );
 
+/**
+ * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-05#section-6.2.2.2
+ *
+ * @param km2
+ * @param km3
+ * @param session_key
+ * @param ikm
+ * @param ikm_len
+ * @param preamble
+ * @param preamble_len
+ */
 ECC_OPAQUE_EXPORT
 ECC_EXPORT
 void ecc_opaque_ristretto255_sha512_3DH_DeriveKeys(
-    byte_t *km2, byte_t *km3,
+    byte_t *km2,
+    byte_t *km3,
     byte_t *session_key,
     const byte_t *ikm, int ikm_len,
     const byte_t *preamble, int preamble_len
 );
 
+/**
+ * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-05#section-6.2.3
+ *
+ * @param ke1_raw
+ * @param state_raw
+ * @param client_identity
+ * @param client_identity_len
+ * @param password
+ * @param password_len
+ */
 ECC_OPAQUE_EXPORT
 ECC_EXPORT
 void ecc_opaque_ristretto255_sha512_3DH_ClientInit(
@@ -496,6 +691,23 @@ void ecc_opaque_ristretto255_sha512_3DH_ClientInit(
     const byte_t *password, int password_len
 );
 
+/**
+ * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-05#section-6.2.3
+ *
+ * @param ke3_raw
+ * @param session_key
+ * @param export_key
+ * @param state_raw
+ * @param password
+ * @param password_len
+ * @param client_identity
+ * @param client_identity_len
+ * @param server_identity
+ * @param server_identity_len
+ * @param ke1_raw
+ * @param ke2_raw
+ * @return
+ */
 ECC_OPAQUE_EXPORT
 ECC_EXPORT
 int ecc_opaque_ristretto255_sha512_3DH_ClientFinish(
