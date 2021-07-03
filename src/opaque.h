@@ -389,7 +389,7 @@ void ecc_opaque_ristretto255_sha512_CreateRegistrationRequestWithBlind(
 ECC_OPAQUE_EXPORT
 ECC_EXPORT
 void ecc_opaque_ristretto255_sha512_CreateRegistrationRequest(
-    byte_t *request,
+    byte_t *request_raw,
     byte_t *blind, // 32
     const byte_t *password, int password_len
 );

@@ -69,16 +69,6 @@ void ecc_concat4(
 );
 
 ECC_EXPORT
-void ecc_concat5(
-    byte_t *out,
-    const byte_t *a1, int a1_len,
-    const byte_t *a2, int a2_len,
-    const byte_t *a3, int a3_len,
-    const byte_t *a4, int a4_len,
-    const byte_t *a5, int a5_len
-);
-
-ECC_EXPORT
 void ecc_strxor(byte_t *out, const byte_t *a, const byte_t *b, int len);
 
 // https://datatracker.ietf.org/doc/html/rfc8017#section-4.1

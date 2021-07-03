@@ -95,7 +95,6 @@ add_library(ecc
     src/kdf.h src/kdf.c
     src/ed25519.h src/ed25519.c
     src/ristretto255.h src/ristretto255.c
-    src/scalarmult.h src/scalarmult.c
     src/sign.h src/sign.c
     src/bls12_381.h src/bls12_381.c
     src/h2c.h src/h2c.c

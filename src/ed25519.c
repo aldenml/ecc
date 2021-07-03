@@ -63,3 +63,19 @@ void ecc_ed25519_scalar_mul(BYTE *z, const BYTE *x, const BYTE *y) {
 void ecc_ed25519_scalar_reduce(BYTE *r, const BYTE *s) {
     crypto_core_ed25519_scalar_reduce(r, s);
 }
+
+int ecc_ed25519_scalarmultx(byte_t *q, const byte_t *n, const byte_t *p) {
+    return crypto_scalarmult_ed25519(q, n, p);
+}
+
+int ecc_ed25519_scalarmult_noclamp(byte_t *q, const byte_t *n, const byte_t *p) {
+    return crypto_scalarmult_ed25519_noclamp(q, n, p);
+}
+
+int ecc_ed25519_scalarmult_base(byte_t *q, const byte_t *n) {
+    return crypto_scalarmult_ed25519_base(q, n);
+}
+
+int ecc_ed25519_scalarmult_base_noclamp(byte_t *q, const byte_t *n) {
+    return crypto_scalarmult_ed25519_base_noclamp(q, n);
+}

@@ -53,4 +53,16 @@ void ecc_ed25519_scalar_mul(BYTE *z, const BYTE *x, const BYTE *y);
 ECC_EXPORT
 void ecc_ed25519_scalar_reduce(BYTE *r, const BYTE *s);
 
+ECC_EXPORT
+int ecc_ed25519_scalarmult(byte_t *q, const byte_t *n, const byte_t *p);
+
+ECC_EXPORT
+int ecc_ed25519_scalarmult_noclamp(byte_t *q, const byte_t *n, const byte_t *p);
+
+ECC_EXPORT
+int ecc_ed25519_scalarmult_base(byte_t *q, const byte_t *n);
+
+ECC_EXPORT
+int ecc_ed25519_scalarmult_base_noclamp(byte_t *q, const byte_t *n);
+
 #endif // ECC_ED25519_H

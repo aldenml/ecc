@@ -459,12 +459,12 @@ void ecc_opaque_ristretto255_sha512_CreateRegistrationRequestWithBlind(
 }
 
 void ecc_opaque_ristretto255_sha512_CreateRegistrationRequest(
-    byte_t *request,
+    byte_t *request_raw,
     byte_t *blind, // 32
     const byte_t *password, const int password_len
 ) {
     ecc_ristretto255_scalar_random(blind);
-    ecc_opaque_ristretto255_sha512_CreateRegistrationRequestWithBlind(request, password, password_len, blind);
+    ecc_opaque_ristretto255_sha512_CreateRegistrationRequestWithBlind(request_raw, password, password_len, blind);
 }
 
 void ecc_opaque_ristretto255_sha512_CreateRegistrationResponseWithOprfKey(
