@@ -6,3 +6,4 @@
 node_modules/
 /js/ecc/dist
 /js/oprf/dist
+/js/opaque/dist

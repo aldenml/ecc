@@ -205,7 +205,8 @@ static void opaque_ristretto255_sha512_test1(void **state) {
         record,
         credential_identifier, sizeof credential_identifier,
         oprf_seed,
-        ke1
+        ke1,
+        NULL, 0
     );
 
     byte_t ke3[64];
@@ -219,7 +220,6 @@ static void opaque_ristretto255_sha512_test1(void **state) {
         password, sizeof password,
         NULL, 0,
         NULL, 0,
-        ke1,
         ke2
     );
     assert_int_equal(client_finish_ret, 0);

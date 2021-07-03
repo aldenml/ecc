@@ -118,14 +118,30 @@ add_library(oprf
     src/util.h src/util.c
     src/hash.h src/hash.c
     src/ristretto255.h src/ristretto255.c
-    src/scalarmult.h src/scalarmult.c
     src/h2c.h src/h2c.c
-    src/ecc.h
+    src/oprf.h src/oprf.c
 )
 
 target_compile_features(oprf PUBLIC c_std_11)
 target_link_libraries(oprf PRIVATE libsodium)
 target_compile_definitions(oprf PRIVATE ECC_OPRF)
+
+# opaque
+add_library(opaque
+    src/export.h
+    src/util.h src/util.c
+    src/hash.h src/hash.c
+    src/mac.h src/mac.c
+    src/kdf.h src/kdf.c
+    src/ristretto255.h src/ristretto255.c
+    src/h2c.h src/h2c.c
+    src/oprf.h src/oprf.c
+    src/opaque.h src/opaque.c
+)
+
+target_compile_features(opaque PUBLIC c_std_11)
+target_link_libraries(opaque PRIVATE libsodium)
+target_compile_definitions(opaque PRIVATE ECC_OPAQUE)
 
 if(NOT DEFINED EMSCRIPTEN)
     include(cmake/FetchCmocka.cmake)

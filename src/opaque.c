@@ -321,11 +321,6 @@ int ecc_opaque_ristretto255_sha512_RecoverEnvelope(
     byte_t expected_tag[64];
     ecc_mac_hmac_sha512(expected_tag, expected_tag_mac_input, expected_tag_mac_input_input_len, auth_key);
 
-    // 6. If !ct_equal(envelope.auth_tag, expected_tag),
-    //      raise EnvelopeRecoveryError
-    if (ecc_compare(envelope->auth_tag, expected_tag, 64))
-        return -1;
-
     // cleanup stack memory
     ecc_memzero(auth_key_info, sizeof auth_key_info);
     ecc_memzero(auth_key, sizeof auth_key);
@@ -333,7 +328,12 @@ int ecc_opaque_ristretto255_sha512_RecoverEnvelope(
     ecc_memzero(client_public_key, sizeof client_public_key);
     ecc_memzero(cleartext_creds, sizeof cleartext_creds);
     ecc_memzero(expected_tag_mac_input, sizeof expected_tag_mac_input);
-    ecc_memzero(expected_tag, sizeof expected_tag);
+    // NOTE: don't clean expected_tag, it is not a secret and it's still used
+
+    // 6. If !ct_equal(envelope.auth_tag, expected_tag),
+    //      raise EnvelopeRecoveryError
+    if (ecc_compare(envelope->auth_tag, expected_tag, 64))
+        return -1;
 
     // 7. Output (client_private_key, export_key)
     return 0;
@@ -1020,7 +1020,6 @@ int ecc_opaque_ristretto255_sha512_3DH_ClientFinish(
     const byte_t *password, int password_len,
     const byte_t *client_identity, int client_identity_len,
     const byte_t *server_identity, int server_identity_len,
-    const byte_t *ke1_raw,
     const byte_t *ke2_raw
 ) {
     // Steps:
@@ -1033,7 +1032,6 @@ int ecc_opaque_ristretto255_sha512_3DH_ClientFinish(
     // 3. Output (ke3, session_key)
 
     ClientState_t *state = (ClientState_t *) state_raw;
-    KE1_t *ke1 = (KE1_t *) ke1_raw;
     KE2_t *ke2 = (KE2_t *) ke2_raw;
 
     // 1. (client_private_key, server_public_key, export_key) =
@@ -1041,7 +1039,7 @@ int ecc_opaque_ristretto255_sha512_3DH_ClientFinish(
     //                        server_identity, client_identity)
     byte_t client_private_key[32];
     byte_t server_public_key[32];
-    const int ret_recover = ecc_opaque_ristretto255_sha512_RecoverCredentials(
+    const int recover_ret = ecc_opaque_ristretto255_sha512_RecoverCredentials(
         client_private_key,
         server_public_key,
         export_key,
@@ -1055,7 +1053,7 @@ int ecc_opaque_ristretto255_sha512_3DH_ClientFinish(
     // 2. (ke3, session_key) =
     //     ClientFinalize(client_identity, client_private_key, server_identity,
     //                     server_public_key, ke1, ke2)
-    const int ret_finalize = ecc_opaque_ristretto255_sha512_3DH_ClientFinalize(
+    const int finalize_ret = ecc_opaque_ristretto255_sha512_3DH_ClientFinalize(
         ke3_raw,
         session_key,
         state_raw,
@@ -1063,8 +1061,8 @@ int ecc_opaque_ristretto255_sha512_3DH_ClientFinish(
         client_private_key,
         server_identity, server_identity_len,
         server_public_key,
-        ke1_raw,
-        ke2_raw
+        ke2_raw,
+        NULL, 0
     );
 
     // cleanup stack memory
@@ -1072,15 +1070,15 @@ int ecc_opaque_ristretto255_sha512_3DH_ClientFinish(
     ecc_memzero(server_public_key, sizeof server_public_key);
 
     // 3. Output (ke3, session_key)
-    if (ret_recover == 0 && ret_finalize == 0)
+    if (recover_ret == 0 && finalize_ret == 0)
         return 0;
     else
         return -1;
 }
 
 void ecc_opaque_ristretto255_sha512_3DH_Start(
-    byte_t *ke1,
-    const byte_t *state,
+    byte_t *ke1_raw,
+    const byte_t *state_raw,
     const byte_t *credential_request
 ) {
     // Steps:
@@ -1090,7 +1088,7 @@ void ecc_opaque_ristretto255_sha512_3DH_Start(
     // 4. state.client_secret = client_secret
     // 5. Output (ke1, client_secret)
 
-    ClientState_t *st = (ClientState_t *) state;
+    ClientState_t *state = (ClientState_t *) state_raw;
 
     // 1. client_nonce = random(Nn)
     byte_t client_nonce[Nn];
@@ -1102,27 +1100,33 @@ void ecc_opaque_ristretto255_sha512_3DH_Start(
     ecc_opaque_ristretto255_sha512_GenerateAuthKeyPair(client_secret, client_keyshare);
 
     // 3. Create KE1 ke1 with (credential_request, client_nonce, client_keyshare)
-    KE1_t *k1 = (KE1_t *) ke1;
-    memcpy(k1->request.data, credential_request, 32);
-    memcpy(k1->client_nonce, client_nonce, 32);
-    memcpy(k1->client_keyshare, client_keyshare, 32);
+    KE1_t *ke1 = (KE1_t *) ke1_raw;
+    memcpy(ke1->request.data, credential_request, 32);
+    memcpy(ke1->client_nonce, client_nonce, 32);
+    memcpy(ke1->client_keyshare, client_keyshare, 32);
 
     // 4. state.client_secret = client_secret
     // 5. Output (ke1, client_secret)
-    memcpy(st->client_secret, client_secret, 32);
-    // TODO: review this copy/reference
-    memcpy(&st->ke1, k1, sizeof(KE1_t));
+    memcpy(state->client_secret, client_secret, 32);
+    // save KE1 in the client state
+    memcpy(&state->ke1, ke1, sizeof(KE1_t));
+
+    // cleanup stack memory
+    ecc_memzero(client_nonce, sizeof client_nonce);
+    ecc_memzero(client_secret, sizeof client_secret);
+    ecc_memzero(client_keyshare, sizeof client_keyshare);
 }
 
 int ecc_opaque_ristretto255_sha512_3DH_ClientFinalize(
-    byte_t *ke3, // 64
+    byte_t *ke3_raw, // 64
     byte_t *session_key,
-    const byte_t *state,
+    const byte_t *state_raw,
     const byte_t *client_identity, int client_identity_len,
     const byte_t *client_private_key,
     const byte_t *server_identity, int server_identity_len,
     const byte_t *server_public_key,
-    const byte_t *ke1, const byte_t *ke2
+    const byte_t *ke2_raw,
+    const byte_t *context, int context_len
 ) {
     // Steps:
     // 1. ikm = TripleDHIKM(state.client_secret, ke2.server_keyshare,
@@ -1136,28 +1140,28 @@ int ecc_opaque_ristretto255_sha512_3DH_ClientFinalize(
     // 7. Create KE3 ke3 with client_mac
     // 8. Output (ke3, session_key)
 
-    ClientState_t *st = (ClientState_t *) state;
-    KE2_t *k2 = (KE2_t *) ke2;
+    ClientState_t *state = (ClientState_t *) state_raw;
+    KE2_t *ke2 = (KE2_t *) ke2_raw;
 
     // 1. ikm = TripleDHIKM(state.client_secret, ke2.server_keyshare,
     //     state.client_secret, server_public_key, client_private_key, ke2.server_keyshare)
     byte_t ikm[96];
     ecc_opaque_ristretto255_sha512_3DH_TripleDHIKM(
         ikm,
-        st->client_secret, k2->inner_ke2.server_keyshare,
-        st->client_secret, server_public_key,
-        client_private_key, k2->inner_ke2.server_keyshare
+        state->client_secret, ke2->inner_ke2.server_keyshare,
+        state->client_secret, server_public_key,
+        client_private_key, ke2->inner_ke2.server_keyshare
     );
 
     // 2. preamble = Preamble(client_identity, state.ke1, server_identity, ke2.inner_ke2)
     byte_t preamble[512];
     int preamble_len = ecc_opaque_ristretto255_sha512_3DH_Preamble(
         preamble,
-        NULL, 0,
+        context, context_len,
         client_identity, client_identity_len,
-        (byte_t *) &st->ke1,
+        (byte_t *) &state->ke1,
         server_identity, server_identity_len,
-        (byte_t *) &k2->inner_ke2
+        (byte_t *) &ke2->inner_ke2
     );
 
     // 3. Km2, Km3, session_key = DeriveKeys(ikm, preamble)
@@ -1182,8 +1186,16 @@ int ecc_opaque_ristretto255_sha512_3DH_ClientFinalize(
 
     // 5. If !ct_equal(ke2.server_mac, expected_server_mac),
     //      raise HandshakeError
-    if (ecc_compare(k2->server_mac, expected_server_mac, 64))
+    if (ecc_compare(ke2->server_mac, expected_server_mac, 64)) {
+        // cleanup stack memory
+        ecc_memzero(ikm, sizeof ikm);
+        ecc_memzero(preamble, sizeof preamble);
+        ecc_memzero(km2, sizeof km2);
+        ecc_memzero(km3, sizeof km3);
+        ecc_memzero(preamble_hash, sizeof preamble_hash);
+        ecc_memzero(expected_server_mac, sizeof expected_server_mac);
         return -1;
+    }
 
     // 6. client_mac = MAC(Km3, Hash(concat(preamble, expected_server_mac))
     byte_t client_mac_input[64];
@@ -1201,7 +1213,17 @@ int ecc_opaque_ristretto255_sha512_3DH_ClientFinalize(
 
     // 7. Create KE3 ke3 with client_mac
     // 8. Output (ke3, session_key)
-    memcpy(ke3, client_mac, sizeof client_mac);
+    memcpy(ke3_raw, client_mac, sizeof client_mac);
+
+    // cleanup stack memory
+    ecc_memzero(ikm, sizeof ikm);
+    ecc_memzero(preamble, sizeof preamble);
+    ecc_memzero(km2, sizeof km2);
+    ecc_memzero(km3, sizeof km3);
+    ecc_memzero(preamble_hash, sizeof preamble_hash);
+    ecc_memzero(expected_server_mac, sizeof expected_server_mac);
+    ecc_memzero(client_mac_input, sizeof client_mac_input);
+    ecc_memzero(client_mac, sizeof client_mac);
 
     return 0;
 }
@@ -1210,11 +1232,13 @@ void ecc_opaque_ristretto255_sha512_3DH_ServerInit(
     byte_t *ke2_raw,
     const byte_t *state_raw,
     const byte_t *server_identity, int server_identity_len,
-    const byte_t *server_private_key, const byte_t *server_public_key,
+    const byte_t *server_private_key,
+    const byte_t *server_public_key,
     const byte_t *record_raw,
     const byte_t *credential_identifier, int credential_identifier_len,
     const byte_t *oprf_seed,
-    const byte_t *ke1_raw
+    const byte_t *ke1_raw,
+    const byte_t *context, int context_len
 ) {
     // Steps:
     // 1. response = CreateCredentialResponse(ke1.request, server_public_key, record,
@@ -1241,10 +1265,11 @@ void ecc_opaque_ristretto255_sha512_3DH_ServerInit(
         state_raw,
         server_identity, server_identity_len,
         server_private_key,
-        NULL, 0, // TODO: review here
+        NULL, 0,
         record->client_public_key,
         ke1_raw,
-        (byte_t *) &response
+        (byte_t *) &response,
+        NULL, 0
     );
 }
 
@@ -1277,7 +1302,8 @@ void ecc_opaque_ristretto255_sha512_3DH_Response(
     const byte_t *client_identity, int client_identity_len,
     const byte_t *client_public_key,
     const byte_t *ke1_raw,
-    const byte_t *credential_response_raw
+    const byte_t *credential_response_raw,
+    const byte_t *context, int context_len
 ) {
     // Steps:
     // 1. server_nonce = random(Nn)
@@ -1311,7 +1337,7 @@ void ecc_opaque_ristretto255_sha512_3DH_Response(
     byte_t preamble[512];
     int preamble_len = ecc_opaque_ristretto255_sha512_3DH_Preamble(
         preamble,
-        NULL, 0,
+        context, context_len,
         client_identity, client_identity_len,
         ke1_raw,
         server_identity, server_identity_len,
@@ -1371,4 +1397,18 @@ void ecc_opaque_ristretto255_sha512_3DH_Response(
     // 10. Create KE2 ke2 with (ike2, server_mac)
     // 11. Output ke2
     memcpy(ke2->server_mac, server_mac, sizeof server_mac);
+
+    // cleanup stack memory
+    ecc_memzero(server_nonce, sizeof server_nonce);
+    ecc_memzero(server_secret, sizeof server_secret);
+    ecc_memzero(server_keyshare, sizeof server_keyshare);
+    ecc_memzero(preamble, sizeof preamble);
+    ecc_memzero(ikm, sizeof ikm);
+    ecc_memzero(km2, sizeof km2);
+    ecc_memzero(km3, sizeof km3);
+    ecc_memzero(session_key, sizeof session_key);
+    ecc_memzero(preamble_hash, sizeof preamble_hash);
+    ecc_memzero(server_mac, sizeof server_mac);
+    ecc_memzero(expected_client_mac_input, sizeof expected_client_mac_input);
+    ecc_memzero(expected_client_mac, sizeof expected_client_mac);
 }

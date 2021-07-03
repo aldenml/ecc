@@ -1,0 +1,51 @@
+{
+  "name": "@aldenml/opaque",
+  "version": "1.0.0",
+  "description": "The OPAQUE asymmetric PAKE protocol using ristretto255",
+  "main": "index.js",
+  "files": [
+    "index.js",
+    "libopaque.js",
+    "util.js",
+    "opaque.js",
+    "package.json",
+    "opaque.test.js",
+    "README.md",
+    "LICENSE",
+    "dist/opaque.dev.js",
+    "dist/opaque.min.js"
+  ],
+  "scripts": {
+    "test": "mocha *.test.js",
+    "pack:dev": "webpack --config webpack.config.cjs --env=mode=dev",
+    "pack:prod": "webpack --config webpack.config.cjs --env=mode=prod",
+    "pack": "npm run pack:dev && npm run pack:prod"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/aldenml/ecc.git"
+  },
+  "keywords": [
+    "elliptic",
+    "curves",
+    "crypto",
+    "hash",
+    "sha256",
+    "sha512",
+    "ristretto255",
+    "oprf",
+    "opaque"
+  ],
+  "author": "aldenml",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/aldenml/ecc/issues"
+  },
+  "homepage": "https://github.com/aldenml/ecc",
+  "type": "module",
+  "devDependencies": {
+    "mocha": "9.0.1",
+    "webpack": "5.39.1",
+    "webpack-cli": "4.7.2"
+  }
+}

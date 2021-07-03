@@ -704,7 +704,6 @@ void ecc_opaque_ristretto255_sha512_3DH_ClientInit(
  * @param client_identity_len
  * @param server_identity
  * @param server_identity_len
- * @param ke1_raw
  * @param ke2_raw
  * @return
  */
@@ -718,44 +717,90 @@ int ecc_opaque_ristretto255_sha512_3DH_ClientFinish(
     const byte_t *password, int password_len,
     const byte_t *client_identity, int client_identity_len,
     const byte_t *server_identity, int server_identity_len,
-    const byte_t *ke1_raw,
     const byte_t *ke2_raw
 );
 
+/**
+ * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-05#section-6.2.3.1
+ *
+ * @param ke1_raw
+ * @param state_raw
+ * @param credential_request
+ */
 ECC_OPAQUE_EXPORT
 ECC_EXPORT
 void ecc_opaque_ristretto255_sha512_3DH_Start(
-    byte_t *ke1,
-    const byte_t *state,
+    byte_t *ke1_raw,
+    const byte_t *state_raw,
     const byte_t *credential_request
 );
 
+/**
+ * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-05#section-6.2.3.1
+ * @param ke3_raw
+ * @param session_key
+ * @param state_raw
+ * @param client_identity
+ * @param client_identity_len
+ * @param client_private_key
+ * @param server_identity
+ * @param server_identity_len
+ * @param server_public_key
+ * @param ke2_raw
+ * @return
+ */
 ECC_OPAQUE_EXPORT
 ECC_EXPORT
 int ecc_opaque_ristretto255_sha512_3DH_ClientFinalize(
-    byte_t *ke3,
+    byte_t *ke3_raw,
     byte_t *session_key,
-    const byte_t *state,
+    const byte_t *state_raw,
     const byte_t *client_identity, int client_identity_len,
     const byte_t *client_private_key,
     const byte_t *server_identity, int server_identity_len,
     const byte_t *server_public_key,
-    const byte_t *ke1, const byte_t *ke2
+    const byte_t *ke2_raw,
+    const byte_t *context, int context_len
 );
 
+/**
+ * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-05#section-6.2.4
+ *
+ * @param ke2_raw
+ * @param state_raw
+ * @param server_identity
+ * @param server_identity_len
+ * @param server_private_key
+ * @param server_public_key
+ * @param record_raw
+ * @param credential_identifier
+ * @param credential_identifier_len
+ * @param oprf_seed
+ * @param ke1_raw
+ */
 ECC_OPAQUE_EXPORT
 ECC_EXPORT
 void ecc_opaque_ristretto255_sha512_3DH_ServerInit(
     byte_t *ke2_raw,
     const byte_t *state_raw,
     const byte_t *server_identity, int server_identity_len,
-    const byte_t *server_private_key, const byte_t *server_public_key,
+    const byte_t *server_private_key,
+    const byte_t *server_public_key,
     const byte_t *record_raw,
     const byte_t *credential_identifier, int credential_identifier_len,
     const byte_t *oprf_seed,
-    const byte_t *ke1_raw
+    const byte_t *ke1_raw,
+    const byte_t *context, int context_len
 );
 
+/**
+ * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-05#section-6.2.4
+ *
+ * @param session_key
+ * @param state_raw
+ * @param ke3_raw
+ * @return
+ */
 ECC_OPAQUE_EXPORT
 ECC_EXPORT
 int ecc_opaque_ristretto255_sha512_3DH_ServerFinish(
@@ -764,6 +809,20 @@ int ecc_opaque_ristretto255_sha512_3DH_ServerFinish(
     const byte_t *ke3_raw
 );
 
+/**
+ * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-05#section-6.2.4
+ *
+ * @param ke2_raw
+ * @param state_raw
+ * @param server_identity
+ * @param server_identity_len
+ * @param server_private_key
+ * @param client_identity
+ * @param client_identity_len
+ * @param client_public_key
+ * @param ke1_raw
+ * @param credential_response_raw
+ */
 ECC_OPAQUE_EXPORT
 ECC_EXPORT
 void ecc_opaque_ristretto255_sha512_3DH_Response(
@@ -774,7 +833,8 @@ void ecc_opaque_ristretto255_sha512_3DH_Response(
     const byte_t *client_identity, int client_identity_len,
     const byte_t *client_public_key,
     const byte_t *ke1_raw,
-    const byte_t *credential_response_raw
+    const byte_t *credential_response_raw,
+    const byte_t *context, int context_len
 );
 
 #endif // ECC_OPAQUE_H

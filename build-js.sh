@@ -39,3 +39,7 @@ emcc -o js/ecc/libecc.js -sEXPORT_NAME=libecc_module \
 emcc -o js/oprf/liboprf.js -sEXPORT_NAME=liboprf_module \
   --pre-js js/oprf/liboprf-pre.js --post-js js/oprf/liboprf-post.js \
   -Wl,--whole-archive build/liboprf.a -Wl,--no-whole-archive ${EMCC_FLAGS}
+
+emcc -o js/opaque/libopaque.js -sEXPORT_NAME=libopaque_module \
+  --pre-js js/opaque/libopaque-pre.js --post-js js/opaque/libopaque-post.js \
+  -Wl,--whole-archive build/libopaque.a -Wl,--no-whole-archive ${EMCC_FLAGS}
