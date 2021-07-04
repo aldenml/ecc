@@ -52,14 +52,14 @@ ECC_EXPORT
 void ecc_ristretto255_scalar_sub(BYTE *z, const BYTE *x, const BYTE *y);
 
 ECC_EXPORT
-void ecc_ristretto255_scalar_mul(BYTE *z, const BYTE *x, const BYTE *y);
+void ecc_ristretto255_scalar_mul(byte_t *z, const byte_t *x, const byte_t *y);
 
 /*
  * The interval `s` is sampled from should be at least 317 bits to
  * ensure almost uniformity of `r` over `L`.
  */
 ECC_EXPORT
-void ecc_ristretto255_scalar_reduce(BYTE *r, const BYTE *s);
+void ecc_ristretto255_scalar_reduce(byte_t *r, const byte_t *s);
 
 ECC_OPRF_EXPORT
 ECC_EXPORT

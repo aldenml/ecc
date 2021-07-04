@@ -114,11 +114,11 @@ int ecc_opaque_ristretto255_sha512_CreateCleartextCredentials(
     //    with (server_public_key, server_identity, client_identity)
     // 6. Output cleartext_credentials
 
-    if (server_identity == NULL) {
+    if (server_identity == NULL || server_identity_len == 0) {
         server_identity = server_public_key;
         server_identity_len = Npk;
     }
-    if (client_identity == NULL) {
+    if (client_identity == NULL || client_identity_len == 0) {
         client_identity = client_public_key;
         client_identity_len = Npk;
     }
@@ -1269,7 +1269,7 @@ void ecc_opaque_ristretto255_sha512_3DH_ServerInit(
         record->client_public_key,
         ke1_raw,
         (byte_t *) &response,
-        NULL, 0
+        context, context_len
     );
 }
 

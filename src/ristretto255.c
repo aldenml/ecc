@@ -52,7 +52,7 @@ void ecc_ristretto255_scalar_sub(BYTE *z, const BYTE *x, const BYTE *y) {
     crypto_core_ristretto255_scalar_sub(z, x, y);
 }
 
-void ecc_ristretto255_scalar_mul(BYTE *z, const BYTE *x, const BYTE *y) {
+void ecc_ristretto255_scalar_mul(byte_t *z, const byte_t *x, const byte_t *y) {
     crypto_core_ristretto255_scalar_mul(z, x, y);
 }
 
