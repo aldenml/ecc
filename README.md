@@ -6,4 +6,5 @@
 Set of libraries to work with elliptic-curve cryptography based on libsodium.
 
 OPRF implementation at [js/oprf](js/oprf).
+
 OPAQUE implementation at [js/opaque](js/opaque).
