@@ -65,4 +65,28 @@ int ecc_ed25519_scalarmult_base(byte_t *q, const byte_t *n);
 ECC_EXPORT
 int ecc_ed25519_scalarmult_base_noclamp(byte_t *q, const byte_t *n);
 
+ECC_EXPORT
+int ecc_ed25519_sign(BYTE *sm, int *smlen_p, const BYTE *m, int mlen, const BYTE *sk);
+
+ECC_EXPORT
+int ecc_ed25519_sign_open(BYTE *m, int *mlen_p, const BYTE *sm, int smlen, const BYTE *pk);
+
+ECC_EXPORT
+int ecc_ed25519_sign_detached(BYTE *sig, int *siglen_p, const BYTE *m, int mlen, const BYTE *sk);
+
+ECC_EXPORT
+int ecc_ed25519_sign_verify_detached(const BYTE *sig, const BYTE *m, int mlen, const BYTE *pk);
+
+ECC_EXPORT
+int ecc_ed25519_sign_keypair(BYTE *pk, BYTE *sk);
+
+ECC_EXPORT
+int ecc_ed25519_sign_seed_keypair(BYTE *pk, BYTE *sk, const BYTE *seed);
+
+ECC_EXPORT
+int ecc_ed25519_sign_sk_to_seed(BYTE *seed, const BYTE *sk);
+
+ECC_EXPORT
+int ecc_ed25519_sign_sk_to_pk(BYTE *pk, const BYTE *sk);
+
 #endif // ECC_ED25519_H
