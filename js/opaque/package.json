@@ -34,7 +34,10 @@
     "sha512",
     "ristretto255",
     "oprf",
-    "opaque"
+    "opaque",
+    "pake",
+    "apake",
+    "authentication"
   ],
   "author": "aldenml",
   "license": "MIT",

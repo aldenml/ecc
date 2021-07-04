@@ -328,12 +328,13 @@ int ecc_opaque_ristretto255_sha512_RecoverEnvelope(
     ecc_memzero(client_public_key, sizeof client_public_key);
     ecc_memzero(cleartext_creds, sizeof cleartext_creds);
     ecc_memzero(expected_tag_mac_input, sizeof expected_tag_mac_input);
-    // NOTE: don't clean expected_tag, it is not a secret and it's still used
 
     // 6. If !ct_equal(envelope.auth_tag, expected_tag),
     //      raise EnvelopeRecoveryError
-    if (ecc_compare(envelope->auth_tag, expected_tag, 64))
+    if (ecc_compare(envelope->auth_tag, expected_tag, 64)) {
+        ecc_memzero(expected_tag, sizeof expected_tag);
         return -1;
+    }
 
     // 7. Output (client_private_key, export_key)
     return 0;

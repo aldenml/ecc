@@ -141,6 +141,12 @@ target_compile_features(opaque PUBLIC c_std_11)
 target_link_libraries(opaque PRIVATE libsodium)
 target_compile_definitions(opaque PRIVATE ECC_OPAQUE)
 
+if(EMSCRIPTEN)
+    target_compile_options(ecc PRIVATE -Oz)
+    target_compile_options(oprf PRIVATE -Oz)
+    target_compile_options(opaque PRIVATE -Oz)
+endif()
+
 if(NOT DEFINED EMSCRIPTEN)
     include(cmake/FetchCmocka.cmake)
 

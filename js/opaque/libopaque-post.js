@@ -40,8 +40,10 @@ function mzero(length) {
 // ecc
 
 /**
- * @param {Uint8Array} buf
- * @param {number} n
+ * Fills `n` bytes at buf with an unpredictable sequence of bytes.
+ *
+ * @param {Uint8Array} buf the byte array to fill
+ * @param {number} n the number of bytes to fill
  */
 Module.ecc_randombytes = (buf, n) => {
     const pBuf = 0;
@@ -53,11 +55,35 @@ Module.ecc_randombytes = (buf, n) => {
 // opaque
 
 /**
+ * Returns a randomly generated private and public key pair.
  *
- * @param {Uint8Array} request_raw
- * @param {Uint8Array} blind
- * @param {Uint8Array} password
- * @param {number} password_len
+ * This is implemented by generating a random "seed", then
+ * calling internally DeriveAuthKeyPair.
+ *
+ * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-05#section-2
+ *
+ * @param {Uint8Array} private_key (output) a private key
+ * @param {Uint8Array} public_key (output) the associated public key
+ */
+Module.ecc_opaque_ristretto255_sha512_GenerateAuthKeyPair = (
+    private_key,
+    public_key
+) => {
+    const pPrivate_key = 0;
+    const pPublic_key = 32;
+    _ecc_opaque_ristretto255_sha512_GenerateAuthKeyPair(pPrivate_key, pPublic_key);
+    mget(pPrivate_key, private_key, 32);
+    mget(pPublic_key, public_key, 32);
+    mzero(32 + 32);
+}
+
+/**
+ * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-05#section-5.1.1.1
+ *
+ * @param {Uint8Array} request_raw (output) a RegistrationRequest structure
+ * @param {Uint8Array} blind (output) an OPRF scalar value
+ * @param {Uint8Array} password an opaque byte string containing the client's password
+ * @param {number} password_len the length of `password`
  */
 Module.ecc_opaque_ristretto255_sha512_CreateRegistrationRequest = (
     request_raw,
@@ -79,14 +105,18 @@ Module.ecc_opaque_ristretto255_sha512_CreateRegistrationRequest = (
 }
 
 /**
+ * In order to make this method not to use dynamic memory allocation, there is a
+ * limit of credential_identifier_len <= 200.
  *
- * @param {Uint8Array} response_raw
- * @param {Uint8Array} oprf_key
- * @param {Uint8Array} request_raw
- * @param {Uint8Array} server_public_key
- * @param {Uint8Array} credential_identifier
- * @param {number} credential_identifier_len
- * @param {Uint8Array} oprf_seed
+ * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-05#section-5.1.1.2
+ *
+ * @param {Uint8Array} response_raw (output) a RegistrationResponse structure
+ * @param {Uint8Array} oprf_key (output) the per-client OPRF key known only to the server
+ * @param {Uint8Array} request_raw a RegistrationRequest structure
+ * @param {Uint8Array} server_public_key the server's public key
+ * @param {Uint8Array} credential_identifier an identifier that uniquely represents the credential being registered
+ * @param {number} credential_identifier_len the length of `credential_identifier`
+ * @param {Uint8Array} oprf_seed the server-side seed of Nh bytes used to generate an oprf_key
  */
 Module.ecc_opaque_ristretto255_sha512_CreateRegistrationResponse = (
     response_raw,
@@ -117,18 +147,23 @@ Module.ecc_opaque_ristretto255_sha512_CreateRegistrationResponse = (
 }
 
 /**
+ * To create the user record used for further authentication, the client
+ * executes the following function. Since this works in the internal key mode, the
+ * "client_private_key" is null.
  *
- * @param {Uint8Array} record_raw
- * @param {Uint8Array} export_key
- * @param {Uint8Array} client_private_key
- * @param {Uint8Array} password
- * @param {number} password_len
- * @param {Uint8Array} blind
- * @param {Uint8Array} response_raw
- * @param {Uint8Array} server_identity
- * @param {number} server_identity_len
- * @param {Uint8Array} client_identity
- * @param {number} client_identity_len
+ * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-05#section-5.1.1.3
+ *
+ * @param {Uint8Array} record_raw (output) a RegistrationUpload structure
+ * @param {Uint8Array} export_key (output) an additional client key
+ * @param {Uint8Array} client_private_key the client's private key (always null, internal mode)
+ * @param {Uint8Array} password an opaque byte string containing the client's password
+ * @param {number} password_len the length of `password`
+ * @param {Uint8Array} blind the OPRF scalar value used for blinding
+ * @param {Uint8Array} response_raw a RegistrationResponse structure
+ * @param {Uint8Array} server_identity the optional encoded server identity
+ * @param {number} server_identity_len the length of `server_identity`
+ * @param {Uint8Array} client_identity the optional encoded client identity
+ * @param {number} client_identity_len the length of `client_identity`
  */
 Module.ecc_opaque_ristretto255_sha512_FinalizeRequest =(
     record_raw, // RegistrationUpload_t
@@ -165,13 +200,14 @@ Module.ecc_opaque_ristretto255_sha512_FinalizeRequest =(
 }
 
 /**
+ * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-05#section-6.2.3
  *
- * @param {Uint8Array} ke1_raw
- * @param {Uint8Array} state_raw
- * @param {Uint8Array} client_identity
- * @param {number} client_identity_len
- * @param {Uint8Array} password
- * @param {number} password_len
+ * @param {Uint8Array} ke1_raw (output) a KE1 message structure
+ * @param {Uint8Array} state_raw a ClientState structure
+ * @param {Uint8Array} client_identity the optional encoded client identity, which is null if not specified
+ * @param {number} client_identity_len the length of `client_identity`
+ * @param {Uint8Array} password an opaque byte string containing the client's password
+ * @param {number} password_len the length of `password`
  */
 Module.ecc_opaque_ristretto255_sha512_3DH_ClientInit = (
     ke1_raw,
@@ -196,20 +232,79 @@ Module.ecc_opaque_ristretto255_sha512_3DH_ClientInit = (
 }
 
 /**
+ * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-05#section-6.2.3
  *
- * @param {Uint8Array} ke2_raw
- * @param {Uint8Array} state_raw
- * @param {Uint8Array} server_identity
- * @param {number} server_identity_len
- * @param {Uint8Array} server_private_key
- * @param {Uint8Array} server_public_key
- * @param {Uint8Array} record_raw
- * @param {Uint8Array} credential_identifier
- * @param {number} credential_identifier_len
- * @param {Uint8Array} oprf_seed
- * @param {Uint8Array} ke1_raw
- * @param {Uint8Array} context
- * @param {number} context_len
+ * @param {Uint8Array} ke3_raw (output) a KE3 message structure
+ * @param {Uint8Array} session_key (output) the session's shared secret
+ * @param {Uint8Array} export_key (output) an additional client key
+ * @param {Uint8Array} state_raw a ClientState structure
+ * @param {Uint8Array} password an opaque byte string containing the client's password
+ * @param {number} password_len the length of `password`
+ * @param {Uint8Array} client_identity the optional encoded client identity, which is set
+ * to client_public_key if not specified
+ * @param {number} client_identity_len the length of `client_identity`
+ * @param {Uint8Array} server_identity the optional encoded server identity, which is set
+ * to server_public_key if not specified
+ * @param {number} server_identity_len the length of `server_identity`
+ * @param {Uint8Array} ke2_raw a KE2 message structure
+ * @return {number} 0 if is able to recover credentials and authenticate with the
+ * server, else -1
+ */
+Module.ecc_opaque_ristretto255_sha512_3DH_ClientFinish = (
+    ke3_raw,
+    session_key,
+    export_key,
+    state_raw,
+    password, password_len,
+    client_identity, client_identity_len,
+    server_identity, server_identity_len,
+    ke2_raw
+) => {
+    const pSate = mput(state_raw, 0, 160);
+    const pPassword = mput(password, pSate + 160, password_len);
+    const pClient_identity = mput(client_identity, pPassword + password_len, client_identity_len);
+    const pServer_identity = mput(server_identity, pClient_identity + client_identity_len, server_identity_len);
+    const pKe2 = mput(ke2_raw, pServer_identity + server_identity_len, 320);
+    const pKe3 = pKe2 + 320;
+    const pSession_key = pKe3 + 64;
+    const pExport_key = pSession_key + 64;
+
+    const r = _ecc_opaque_ristretto255_sha512_3DH_ClientFinish(
+        pKe3,
+        pSession_key,
+        pExport_key,
+        pSate,
+        pPassword, password_len,
+        pClient_identity, client_identity_len,
+        pServer_identity, server_identity_len,
+        pKe2
+    );
+    mget(pSate, state_raw, 160);
+    mget(pKe3, ke3_raw, 64);
+    mget(pSession_key, session_key, 64);
+    mget(pExport_key, export_key, 64);
+    mzero(160 + password_len + client_identity_len + server_identity_len + 320 + 64 + 64 + 64);
+    return r;
+}
+
+/**
+ * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-05#section-6.2.4
+ *
+ * @param {Uint8Array} ke2_raw (output) a KE2 structure
+ * @param {Uint8Array} state_raw a ServerState structure
+ * @param {Uint8Array} server_identity the optional encoded server identity, which is set to
+ * server_public_key if null
+ * @param {number} server_identity_len the length of `server_identity`
+ * @param {Uint8Array} server_private_key the server's private key
+ * @param {Uint8Array} server_public_key the server's public key
+ * @param {Uint8Array} record_raw the client's RegistrationUpload structure
+ * @param {Uint8Array} credential_identifier an identifier that uniquely represents the credential
+ * being registered
+ * @param {number} credential_identifier_len the length of `credential_identifier`
+ * @param {Uint8Array} oprf_seed the server-side seed of Nh bytes used to generate an oprf_key
+ * @param {Uint8Array} ke1_raw a KE1 message structure
+ * @param {Uint8Array} context the application specific context
+ * @param {number} context_len the length of `context_len`
  */
 Module.ecc_opaque_ristretto255_sha512_3DH_ServerInit = (
     ke2_raw,
@@ -252,63 +347,12 @@ Module.ecc_opaque_ristretto255_sha512_3DH_ServerInit = (
 }
 
 /**
+ * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-05#section-6.2.4
  *
- * @param {Uint8Array} ke3_raw
- * @param {Uint8Array} session_key
- * @param {Uint8Array} export_key
- * @param {Uint8Array} state_raw
- * @param {Uint8Array} password
- * @param {number} password_len
- * @param {Uint8Array} client_identity
- * @param {number} client_identity_len
- * @param {Uint8Array} server_identity
- * @param {number} server_identity_len
- * @param {Uint8Array} ke2_raw
- * @return {number}
- */
-Module.ecc_opaque_ristretto255_sha512_3DH_ClientFinish = (
-    ke3_raw,
-    session_key,
-    export_key,
-    state_raw,
-    password, password_len,
-    client_identity, client_identity_len,
-    server_identity, server_identity_len,
-    ke2_raw
-) => {
-    const pSate = mput(state_raw, 0, 160);
-    const pPassword = mput(password, pSate + 160, password_len);
-    const pClient_identity = mput(client_identity, pPassword + password_len, client_identity_len);
-    const pServer_identity = mput(server_identity, pClient_identity + client_identity_len, server_identity_len);
-    const pKe2 = mput(ke2_raw, pServer_identity + server_identity_len, 320);
-    const pKe3 = pKe2 + 320;
-    const pSession_key = pKe3 + 64;
-    const pExport_key = pSession_key + 64;
-
-    const r = _ecc_opaque_ristretto255_sha512_3DH_ClientFinish(
-        pKe3,
-        pSession_key,
-        pExport_key,
-        pSate,
-        pPassword, password_len,
-        pClient_identity, client_identity_len,
-        pServer_identity, server_identity_len,
-        pKe2
-    );
-    mget(pSate, state_raw, 160);
-    mget(pKe3, ke3_raw, 64);
-    mget(pSession_key, session_key, 64);
-    mget(pExport_key, export_key, 64);
-    mzero(160 + password_len + client_identity_len + server_identity_len + 320 + 64 + 64 + 64);
-    return r;
-}
-
-/**
- *
- * @param {Uint8Array} session_key
- * @param {Uint8Array} state_raw
- * @param {Uint8Array} ke3_raw
- * @return {number}
+ * @param {Uint8Array} session_key (output) the shared session secret if and only if KE3 is valid
+ * @param {Uint8Array} state_raw a ServerState structure
+ * @param {Uint8Array} ke3_raw a KE3 structure
+ * @return {number} 0 if the user was authenticated, else -1
  */
 Module.ecc_opaque_ristretto255_sha512_3DH_ServerFinish = (
     session_key,
