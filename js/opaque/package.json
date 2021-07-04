@@ -3,23 +3,29 @@
   "version": "1.0.0",
   "description": "The OPAQUE asymmetric PAKE protocol using ristretto255",
   "main": "index.js",
+  "types": "./dist/index.d.ts",
   "files": [
     "index.js",
     "libopaque.js",
     "util.js",
     "opaque.js",
     "package.json",
+    "tsconfig.json",
     "opaque.test.js",
     "README.md",
     "LICENSE",
     "dist/opaque.dev.js",
-    "dist/opaque.min.js"
+    "dist/opaque.min.js",
+    "dist/index.d.ts",
+    "dist/libopaque.d.ts",
+    "dist/opaque.d.ts",
+    "dist/util.d.ts"
   ],
   "scripts": {
     "test": "mocha *.test.js",
     "pack:dev": "webpack --config webpack.config.cjs --env=mode=dev",
     "pack:prod": "webpack --config webpack.config.cjs --env=mode=prod",
-    "pack": "npm run pack:dev && npm run pack:prod"
+    "pack": "npm run pack:dev && npm run pack:prod && npx tsc"
   },
   "repository": {
     "type": "git",
@@ -48,6 +54,7 @@
   "type": "module",
   "devDependencies": {
     "mocha": "9.0.1",
+    "typescript": "4.3.5",
     "webpack": "5.39.1",
     "webpack-cli": "4.7.2"
   }
