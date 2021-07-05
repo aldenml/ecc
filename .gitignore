@@ -7,3 +7,7 @@ node_modules/
 /js/ecc/dist
 /js/oprf/dist
 /js/opaque/dist
+/jvm/.gradle
+/jvm/.idea
+/jvm/build
+/jvm/libecc-jvm.dylib

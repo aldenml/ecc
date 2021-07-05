@@ -108,14 +108,14 @@
  */
 #define ecc_opaque_ristretto255_sha512_Ne 96
 #define ecc_opaque_ristretto255_sha512_REGISTRATIONREQUESTSIZE \
-    ecc_opaque_ristretto255_sha512_Noe
+    ecc_opaque_ristretto255_sha512_Noe // 32
 #define ecc_opaque_ristretto255_sha512_REGISTRATIONRESPONSESIZE \
     ecc_opaque_ristretto255_sha512_Noe +                        \
-    ecc_opaque_ristretto255_sha512_Npk
+    ecc_opaque_ristretto255_sha512_Npk // 64
 #define ecc_opaque_ristretto255_sha512_REGISTRATIONUPLOADSIZE \
     ecc_opaque_ristretto255_sha512_Npk +                      \
     ecc_opaque_ristretto255_sha512_Nh +                       \
-    ecc_opaque_ristretto255_sha512_Ne
+    ecc_opaque_ristretto255_sha512_Ne // 192
 #define ecc_opaque_ristretto255_sha512_CREDENTIALREQUESTSIZE  \
     ecc_opaque_ristretto255_sha512_Noe
 #define ecc_opaque_ristretto255_sha512_CREDENTIALRESPONSESIZE \
@@ -126,21 +126,21 @@
 #define ecc_opaque_ristretto255_sha512_KE1SIZE             \
     ecc_opaque_ristretto255_sha512_CREDENTIALREQUESTSIZE + \
     ecc_opaque_ristretto255_sha512_Nn +                    \
-    ecc_opaque_ristretto255_sha512_Npk
+    ecc_opaque_ristretto255_sha512_Npk // 96
 #define ecc_opaque_ristretto255_sha512_KE2SIZE              \
     ecc_opaque_ristretto255_sha512_CREDENTIALRESPONSESIZE + \
     ecc_opaque_ristretto255_sha512_Nn +                     \
     ecc_opaque_ristretto255_sha512_Npk +                    \
-    ecc_opaque_ristretto255_sha512_Nm
+    ecc_opaque_ristretto255_sha512_Nm // 320
 #define ecc_opaque_ristretto255_sha512_KE3SIZE  \
-    ecc_opaque_ristretto255_sha512_Nm
+    ecc_opaque_ristretto255_sha512_Nm // 64
 #define ecc_opaque_ristretto255_sha512_CLIENTSTATESIZE \
     ecc_opaque_ristretto255_sha512_Nok +               \
     ecc_opaque_ristretto255_sha512_Nsk +               \
-    ecc_opaque_ristretto255_sha512_KE1SIZE
+    ecc_opaque_ristretto255_sha512_KE1SIZE // 160
 #define ecc_opaque_ristretto255_sha512_SERVERSTATESIZE \
     ecc_opaque_ristretto255_sha512_Nm +               \
-    ecc_opaque_ristretto255_sha512_Nx
+    ecc_opaque_ristretto255_sha512_Nx // 128
 
 /**
  * Constructs a "CleartextCredentials" structure given application

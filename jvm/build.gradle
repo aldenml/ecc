@@ -1,0 +1,50 @@
+/*
+ * Copyright (c) 2021, Alden Torres
+ *
+ * Licensed under the terms of the MIT license.
+ * Copy of the license at https://opensource.org/licenses/MIT
+ */
+
+import org.gradle.api.tasks.testing.logging.TestExceptionFormat
+
+plugins {
+    id "java"
+}
+
+group = "org.ssohub"
+version = "1.0.0"
+
+java {
+    sourceCompatibility = JavaVersion.VERSION_1_8
+    targetCompatibility = JavaVersion.VERSION_1_8
+
+    withJavadocJar()
+    withSourcesJar()
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    testImplementation "org.junit.jupiter:junit-jupiter-api:5.7.2"
+    testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:5.7.2"
+}
+
+test {
+    useJUnitPlatform()
+}
+
+tasks.test {
+    testLogging {
+        events "passed", "skipped", "failed", "standard_out"
+
+        exceptionFormat = TestExceptionFormat.FULL
+        showExceptions = true
+        showCauses = true
+        showStackTraces = true
+    }
+
+    systemProperty("java.library.path", file(".").absolutePath)
+    environment("LD_LIBRARY_PATH", file(".").absolutePath)
+}
