@@ -13,8 +13,10 @@
 ECC_OPRF_EXPORT
 ECC_OPAQUE_EXPORT
 ECC_EXPORT
-void ecc_memzero(byte_t *p, int len);
+void ecc_memzero(byte_t *buf, int len);
 
+ECC_OPRF_EXPORT
+ECC_OPAQUE_EXPORT
 ECC_EXPORT
 int ecc_compare(const byte_t *a, const byte_t *b, int len);
 

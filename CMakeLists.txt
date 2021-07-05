@@ -147,6 +147,16 @@ if(EMSCRIPTEN)
     target_compile_options(opaque PRIVATE -Oz)
 endif()
 
+# jvm
+add_library(ecc-jvm
+    jvm/jni.h
+    jvm/libecc.c
+)
+
+target_compile_features(ecc-jvm PUBLIC c_std_11)
+target_link_libraries(ecc-jvm PRIVATE ecc)
+target_compile_definitions(ecc-jvm PRIVATE ECC_ALL)
+
 if(NOT DEFINED EMSCRIPTEN)
     include(cmake/FetchCmocka.cmake)
 

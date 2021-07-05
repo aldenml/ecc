@@ -9,8 +9,8 @@
 #include <string.h>
 #include <sodium.h>
 
-void ecc_memzero(byte_t *p, int len) {
-    sodium_memzero(p, len);
+void ecc_memzero(byte_t *buf, int len) {
+    sodium_memzero(buf, len);
 }
 
 int ecc_compare(const byte_t *a, const byte_t *b, int len) {
