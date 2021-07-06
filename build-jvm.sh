@@ -12,4 +12,4 @@ cmake --build build --config Release --parallel 2 --target libsodium-external
 cmake --build build --config Release --parallel 2 --target blst-external
 cmake --build build --config Release --parallel 2
 
-cp build/libecc-jvm.{dylib,so} jvm/ 2>/dev/null
+cp build/libecc-jvm.{dylib,so} jvm/ 2>/dev/null || :

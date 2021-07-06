@@ -232,8 +232,8 @@ static void opaque_ristretto255_sha512_test1(void **state) {
     );
     assert_int_equal(server_finish_ret, 0);
 
-    log("client_session_key", client_session_key, sizeof client_session_key);
-    log("server_session_key", server_session_key, sizeof server_session_key);
+    logd("client_session_key", client_session_key, sizeof client_session_key);
+    logd("server_session_key", server_session_key, sizeof server_session_key);
     assert_memory_equal(client_session_key, server_session_key, 64);
 }
 
