@@ -87,7 +87,7 @@ set_target_properties(blst PROPERTIES
     IMPORTED_LOCATION ${CMAKE_CURRENT_SOURCE_DIR}/deps/blst/libblst.a
 )
 
-add_library(ecc
+set(ecc_src_files
     src/export.h
     src/util.h src/util.c
     src/hash.h src/hash.c
@@ -102,10 +102,23 @@ add_library(ecc
     src/ecc.h
 )
 
+# ecc shared
+add_library(ecc SHARED ${ecc_src_files})
+
 target_compile_features(ecc PUBLIC c_std_11)
 target_link_libraries(ecc PRIVATE libsodium blst)
 target_compile_definitions(ecc PRIVATE ECC_ALL)
 target_include_directories(ecc PUBLIC
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src>
+    $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
+)
+
+# ecc static
+add_library(ecc_static STATIC ${ecc_src_files})
+
+target_compile_features(ecc_static PUBLIC c_std_11)
+target_link_libraries(ecc_static PRIVATE libsodium blst)
+target_include_directories(ecc_static PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src>
     $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
 )
@@ -154,8 +167,7 @@ add_library(ecc-jvm
 )
 
 target_compile_features(ecc-jvm PUBLIC c_std_11)
-target_link_libraries(ecc-jvm PRIVATE ecc)
-target_compile_definitions(ecc-jvm PRIVATE ECC_ALL)
+target_link_libraries(ecc-jvm PRIVATE ecc_static)
 
 if(NOT DEFINED EMSCRIPTEN)
     include(cmake/FetchCmocka.cmake)

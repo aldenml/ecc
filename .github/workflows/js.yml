@@ -46,3 +46,4 @@ jobs:
           cd ../opaque
           npm install
           npm test
+          cd ../..

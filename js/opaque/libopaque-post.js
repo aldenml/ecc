@@ -14,7 +14,7 @@ function arraycopy(src, srcPos, dest, destPos, length) {
  * @param {Uint8Array} src
  * @param {number} pos
  * @param {number} length
- * @returns {number}
+ * @return {number}
  */
 function mput(src, pos, length) {
     arraycopy(src, 0, HEAPU8, pos, length);
@@ -37,12 +37,12 @@ function mzero(length) {
     _ecc_memzero(0, length);
 }
 
-// ecc
+// util
 
 /**
  * Fills `n` bytes at buf with an unpredictable sequence of bytes.
  *
- * @param {Uint8Array} buf the byte array to fill
+ * @param {Uint8Array} buf (output) the byte array to fill
  * @param {number} n the number of bytes to fill
  */
 Module.ecc_randombytes = (buf, n) => {

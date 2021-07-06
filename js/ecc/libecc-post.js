@@ -14,7 +14,7 @@ function arraycopy(src, srcPos, dest, destPos, length) {
  * @param {Uint8Array} src
  * @param {number} pos
  * @param {number} length
- * @returns {number}
+ * @return {number}
  */
 function mput(src, pos, length) {
     arraycopy(src, 0, HEAPU8, pos, length);
@@ -37,16 +37,19 @@ function mzero(length) {
     _ecc_memzero(0, length);
 }
 
-// ecc
+// util
 
 /**
- * @param {Uint8Array} buf
+ * Fills `n` bytes at buf with an unpredictable sequence of bytes.
+ *
+ * @param {Uint8Array} buf (output) the byte array to fill
+ * @param {number} n the number of bytes to fill
  */
-Module.ecc_randombytes = (buf) => {
-    let pBuf = 0;
-    let n = buf.length;
+Module.ecc_randombytes = (buf, n) => {
+    const pBuf = 0;
     _ecc_randombytes(pBuf, n);
-    arraycopy(HEAPU8, 0, buf, 0, n);
+    mget(pBuf, buf, n);
+    mzero(n);
 }
 
 /**
@@ -288,7 +291,7 @@ Module.ecc_kdf_hkdf_sha512_expand = (out, prk, info, len) => {
 
     const op = _ecc_kdf_hkdf_sha512_expand(pOut, pPrk, pInfo, info_len, len);
     mget(pOut, out, len);
-    mzero( 64 + info_len + len);
+    mzero(64 + info_len + len);
     return op;
 }
 
@@ -446,19 +449,96 @@ Module.ecc_bls12_381_keygen = (out_SK, IKM, IKM_len) => {
 // h2c
 
 /**
- * @param {Uint8Array} out
+ * Produces a uniformly random byte string using SHA-512.
+ *
+ * In order to make this method to use only the stack, len should be <= 256.
+ *
+ * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-hash-to-curve-11#section-5.4.1
+ *
+ * @param {Uint8Array} out (output) a byte string, should be at least of size `len`
  * @param {Uint8Array} msg a byte string
+ * @param {number} msg_len the length of `msg`
  * @param {Uint8Array} dst a byte string of at most 255 bytes
+ * @param {number} dst_len the length of `dst`, should be <= 256
+ * @param {number} len the length of the requested output in bytes, should be <= 256
  */
-Module.ecc_h2c_expand_message_xmd_sha512 = (out, msg, dst) => {
-    const msg_len = msg.length;
-    const dst_len = dst.length;
-    const len_in_bytes = out.length;
+Module.ecc_h2c_expand_message_xmd_sha512 = (
+    out,
+    msg, msg_len,
+    dst, dst_len,
+    len
+) => {
     const pMsg = mput(msg, 0, msg_len);
     const pDst = mput(dst, pMsg + msg_len, dst_len);
     const pOut = pDst + dst_len;
 
-    _ecc_h2c_expand_message_xmd_sha512(pOut, pMsg, msg_len, pDst, dst_len, len_in_bytes);
-    mget(pOut, out, len_in_bytes);
-    mzero(msg_len + dst_len + len_in_bytes);
+    _ecc_h2c_expand_message_xmd_sha512(
+        pOut,
+        pMsg, msg_len,
+        pDst, dst_len,
+        len
+    );
+
+    mget(pOut, out, len);
+    mzero(msg_len + dst_len + len);
+}
+
+// oprf
+
+/**
+ * Same as calling `ecc_oprf_ristretto255_sha512_Blind` with an
+ * specified scalar blind.
+ *
+ * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-voprf-06#section-3.4.3.1
+ *
+ * @param {Uint8Array} blinded_element (output) blinded element
+ * @param {Uint8Array} input message to blind
+ * @param {number} input_len length of `input`
+ * @param {Uint8Array} blind scalar to use in the blind operation
+ */
+Module.ecc_oprf_ristretto255_sha512_BlindWithScalar = (
+    blinded_element, // 32
+    input, input_len,
+    blind // 32
+) => {
+    const pInput = mput(input, 0, input_len);
+    const pBlind = mput(blind, pInput + input_len, 32);
+    const pBlinded_element = pBlind + 32;
+
+    _ecc_oprf_ristretto255_sha512_BlindWithScalar(
+        pBlinded_element,
+        pInput, input_len,
+        pBlind
+    );
+
+    mget(pBlinded_element, blinded_element, 32);
+    mzero(input_len + 32 + 32);
+}
+
+/**
+ * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-voprf-06#section-3.4.3.1
+ *
+ * @param {Uint8Array} blinded_element (output) blinded element
+ * @param {Uint8Array} blind (output) scalar used in the blind operation
+ * @param {Uint8Array} input message to blind
+ * @param {number} input_len length of `input`
+ */
+Module.ecc_oprf_ristretto255_sha512_Blind = (
+    blinded_element, // 32
+    blind, // 32
+    input, input_len
+) => {
+    const pInput = mput(input, 0, input_len);
+    const pBlinded_element = pInput + input_len;
+    const pBlind = pBlinded_element + 32;
+
+    _ecc_oprf_ristretto255_sha512_Blind(
+        pBlinded_element,
+        pBlind,
+        pInput, input_len
+    );
+
+    mget(pBlinded_element, blinded_element, 32);
+    mget(pBlind, blind, 32);
+    mzero(input_len + 32 + 32);
 }

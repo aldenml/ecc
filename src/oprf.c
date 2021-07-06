@@ -78,24 +78,30 @@ void ecc_oprf_ristretto255_sha512_HashToScalar(
 }
 
 void ecc_oprf_ristretto255_sha512_BlindWithScalar(
-    byte_t *out, // 32
+    byte_t *blinded_element, // 32
     const byte_t *input, const int input_len,
-    const byte_t *blind
+    const byte_t *blind // 32
 ) {
+    // using modeBase=0x00
     byte_t P[32];
     ecc_oprf_ristretto255_sha512_HashToGroup(P, input, input_len, 0x00);
-    ecc_ristretto255_scalarmult(out, blind, P);
+    ecc_ristretto255_scalarmult(blinded_element, blind, P);
 
     // stack memory cleanup
     ecc_memzero(P, sizeof P);
 }
 
 void ecc_oprf_ristretto255_sha512_Blind(
-    byte_t *out, byte_t *blind,
-    const byte_t *input, int input_len
+    byte_t *blinded_element, // 32
+    byte_t *blind, // 32
+    const byte_t *input, const int input_len
 ) {
     ecc_ristretto255_scalar_random(blind);
-    ecc_oprf_ristretto255_sha512_BlindWithScalar(out, input, input_len, blind);
+    ecc_oprf_ristretto255_sha512_BlindWithScalar(
+        blinded_element,
+        input, input_len,
+        blind
+    );
 }
 
 void ecc_oprf_ristretto255_sha512_Unblind(

@@ -10,9 +10,7 @@
 
 #include "ecc.h"
 
-#define ECC_UNUSED(x) (void)(x)
-
-static void log(const char *label, const byte_t *data, const int data_len) {
+static void logd(const char *label, const byte_t *data, const int data_len) {
     char hex[512] = {0};
     ecc_bin2hex(hex, data, data_len);
     printf("%s: %s\n", label, hex);
