@@ -20,7 +20,7 @@ app.post('/evaluate', bodyParser.text(), async (req, res) => {
     const blindedElement = req.body;
     console.log("blindedElement: " + blindedElement);
     const evaluationElement = await oprf.oprf_ristretto255_sha512_Evaluate(skSm, oprf.hex2buf(blindedElement));
-    res.send(oprf.buf2hex(evaluationElement));
+    res.send(oprf.bin2hex(evaluationElement));
 })
 
 app.listen(port, () => {

@@ -5,30 +5,31 @@
  * Copy of the license at https://opensource.org/licenses/MIT
  */
 
+import libecc_module from "./libecc.js";
 import * as util from "./util.js";
 import assert from "assert";
 
 describe("str2buf", () => {
 
     it("input abcd", async () => {
-        let buf = util.str2buf("abcd");
+        let buf = util.str2bin("abcd");
         assert.deepEqual(buf, Uint8Array.of(97, 98, 99, 100));
     });
 });
 
-describe("buf2hex", () => {
+describe("bin2hex", () => {
 
     it("input abcd", async () => {
-        let buf = util.str2buf("abcd");
-        assert.equal(util.buf2hex(buf), "61626364");
+        let buf = util.str2bin("abcd");
+        assert.equal(util.bin2hex(buf), "61626364");
     });
 });
 
-describe("hex2buf", () => {
+describe("hex2bin", () => {
 
     it("input 0001022a646566ff", async () => {
-        let buf = util.hex2buf("0001022a646566ff");
-        assert.equal(util.buf2hex(buf), "0001022a646566ff");
+        let buf = util.hex2bin("0001022a646566ff");
+        assert.equal(util.bin2hex(buf), "0001022a646566ff");
     });
 });
 
@@ -62,20 +63,20 @@ describe("I2OSP/OS2IP", () => {
 describe("strxor", () => {
 
     it("input str1=abc, str2=XYZ", async () => {
-        let str1 = util.str2buf("abc");
-        let str2 = util.str2buf("XYZ");
+        let str1 = util.str2bin("abc");
+        let str2 = util.str2bin("XYZ");
         let buf = util.strxor(str1, str2);
-        assert.deepEqual(buf, util.str2buf("9;9"));
+        assert.deepEqual(buf, util.str2bin("9;9"));
     });
 });
 
 describe("concat", () => {
 
     it("input a=ABC, b=DEF", async () => {
-        let a = util.str2buf("ABC");
-        let b = util.str2buf("DEF");
+        let a = util.str2bin("ABC");
+        let b = util.str2bin("DEF");
         let buf = util.concat(a, b);
-        assert.deepEqual(buf, util.str2buf("ABCDEF"));
+        assert.deepEqual(buf, util.str2bin("ABCDEF"));
     });
 });
 
@@ -84,10 +85,12 @@ describe("concat", () => {
 describe("expand_message_xmd_sha512", () => {
 
     async function uniformBytesHex(s) {
-        const msg = util.str2buf(s);
-        const DST = util.str2buf("QUUX-V01-CS02-with-expander");
-        let buf = await util.expand_message_xmd_sha512(msg, DST, 0x20);
-        return util.buf2hex(buf);
+        const libecc = await libecc_module();
+        const msg = util.str2bin(s);
+        const DST = util.str2bin("QUUX-V01-CS02-with-expander");
+        let buf = new Uint8Array(0x20);
+        libecc.ecc_h2c_expand_message_xmd_sha512(buf, msg, msg.length, DST, DST.length, 0x20);
+        return util.bin2hex(buf);
     }
 
     it("input empty string", async () => {

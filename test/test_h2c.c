@@ -11,6 +11,7 @@
 #include <string.h>
 #include <cmocka.h>
 #include <stdio.h>
+#include "test_util.h"
 
 // https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-hash-to-curve-11#appendix-K.2
 
@@ -18,6 +19,8 @@ const byte_t dst[27] = "QUUX-V01-CS02-with-expander";
 const int dst_len = 27;
 
 static void ecc_h2c_expand_message_xmd_sha512_test1(void **state) {
+    ECC_UNUSED(state);
+
     const byte_t msg[0];
     const int msg_len = 0;
     const int len_in_bytes = 0x20;
@@ -31,7 +34,23 @@ static void ecc_h2c_expand_message_xmd_sha512_test1(void **state) {
                              "8cd62ac699ead642");
 }
 
+static void ecc_h2c_expand_message_xmd_sha512_test1_null(void **state) {
+    ECC_UNUSED(state);
+
+    const int len_in_bytes = 0x20;
+    byte_t uniform_bytes[0x20];
+
+    ecc_h2c_expand_message_xmd_sha512(uniform_bytes, NULL, 0, dst, dst_len, len_in_bytes);
+
+    char hex[0x40 + 1];
+    ecc_bin2hex(hex, uniform_bytes, 0x20);
+    assert_string_equal(hex, "2eaa1f7b5715f4736e6a5dbe288257abf1faa028680c1d93"
+                             "8cd62ac699ead642");
+}
+
 static void ecc_h2c_expand_message_xmd_sha512_test2(void **state) {
+    ECC_UNUSED(state);
+
     const byte_t msg[3] = "abc";
     const int msg_len = 3;
     const int len_in_bytes = 0x20;
@@ -46,6 +65,8 @@ static void ecc_h2c_expand_message_xmd_sha512_test2(void **state) {
 }
 
 static void ecc_h2c_expand_message_xmd_sha512_test3(void **state) {
+    ECC_UNUSED(state);
+
     const byte_t msg[16] = "abcdef0123456789";
     const int msg_len = 16;
     const int len_in_bytes = 0x20;
@@ -60,6 +81,8 @@ static void ecc_h2c_expand_message_xmd_sha512_test3(void **state) {
 }
 
 static void ecc_h2c_expand_message_xmd_sha512_test4(void **state) {
+    ECC_UNUSED(state);
+
     const byte_t msg[] = "q128_qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq"
                            "qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq"
                            "qqqqqqqqqqqqqqqqqqqqqqqqq";
@@ -76,6 +99,8 @@ static void ecc_h2c_expand_message_xmd_sha512_test4(void **state) {
 }
 
 static void ecc_h2c_expand_message_xmd_sha512_test5(void **state) {
+    ECC_UNUSED(state);
+
     const byte_t msg[0];
     const int msg_len = 0;
     const int len_in_bytes = 0x80;
@@ -93,6 +118,8 @@ static void ecc_h2c_expand_message_xmd_sha512_test5(void **state) {
 }
 
 static void ecc_h2c_expand_message_xmd_sha512_test6(void **state) {
+    ECC_UNUSED(state);
+
     const byte_t msg[3] = "abc";
     const int msg_len = 3;
     const int len_in_bytes = 0x80;
@@ -110,6 +137,8 @@ static void ecc_h2c_expand_message_xmd_sha512_test6(void **state) {
 }
 
 static void ecc_h2c_expand_message_xmd_sha512_test7(void **state) {
+    ECC_UNUSED(state);
+
     const byte_t msg[16] = "abcdef0123456789";
     const int msg_len = 16;
     const int len_in_bytes = 0x80;
@@ -127,6 +156,8 @@ static void ecc_h2c_expand_message_xmd_sha512_test7(void **state) {
 }
 
 static void ecc_h2c_expand_message_xmd_sha512_test8(void **state) {
+    ECC_UNUSED(state);
+
     const byte_t msg[] = "q128_qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq"
                          "qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq"
                          "qqqqqqqqqqqqqqqqqqqqqqqqq";
@@ -149,6 +180,7 @@ int main() {
     const struct CMUnitTest tests[] = {
         // ecc_h2c_expand_message_xmd_sha512
         cmocka_unit_test(ecc_h2c_expand_message_xmd_sha512_test1),
+        cmocka_unit_test(ecc_h2c_expand_message_xmd_sha512_test1_null),
         cmocka_unit_test(ecc_h2c_expand_message_xmd_sha512_test2),
         cmocka_unit_test(ecc_h2c_expand_message_xmd_sha512_test3),
         cmocka_unit_test(ecc_h2c_expand_message_xmd_sha512_test4),

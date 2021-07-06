@@ -10,6 +10,8 @@
 
 #include "export.h"
 
+#define ECC_UNUSED(x) (void)(x)
+
 ECC_OPRF_EXPORT
 ECC_OPAQUE_EXPORT
 ECC_EXPORT
@@ -22,15 +24,32 @@ int ecc_compare(const byte_t *a, const byte_t *b, int len);
 
 /**
  * Fills `n` bytes at buf with an unpredictable sequence of bytes.
+ *
+ * @param buf (output) the byte array to fill
+ * @param n the number of bytes to fill
  */
 ECC_OPRF_EXPORT
 ECC_OPAQUE_EXPORT
 ECC_EXPORT
 void ecc_randombytes(byte_t *buf, int n);
 
+/**
+ * Converts a byte array to the hex string.
+ *
+ * @param hex (output) the hex encoded string
+ * @param bin the input byte array
+ * @param bin_len the length of `bin`
+ */
 ECC_EXPORT
 void ecc_bin2hex(char *hex, const byte_t *bin, int bin_len);
 
+/**
+ * Converts an hex string to a byte array.
+ *
+ * @param bin (output) the byte array
+ * @param hex the input hex string
+ * @param hex_len the length of `hex`
+ */
 ECC_EXPORT
 void ecc_hex2bin(byte_t *bin, const char *hex, int hex_len);
 

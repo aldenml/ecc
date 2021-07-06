@@ -23,15 +23,13 @@
  *
  * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-hash-to-curve-11#section-5.4.1
  *
- * @param out
- * @param msg
- * @param msg_len
- * @param dst
- * @param dst_len should be <= 256
- * @param len should be <= 256
+ * @param out (output) a byte string, should be at least of size `len`
+ * @param msg a byte string
+ * @param msg_len the length of `msg`
+ * @param dst a byte string of at most 255 bytes
+ * @param dst_len the length of `dst`, should be <= 256
+ * @param len the length of the requested output in bytes, should be <= 256
  */
-ECC_OPRF_EXPORT
-ECC_OPAQUE_EXPORT
 ECC_EXPORT
 void ecc_h2c_expand_message_xmd_sha512(
     byte_t *out,

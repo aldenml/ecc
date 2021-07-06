@@ -8,8 +8,7 @@
 import liboprf_module from "./liboprf.js";
 import {
     I2OSP,
-    expand_message_xmd_sha512,
-    str2buf,
+    str2bin,
     len,
     concat,
 } from "./util.js";
@@ -19,43 +18,25 @@ const libecc_module = liboprf_module;
 // https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-voprf-06#section-5.1
 
 /**
- * @param {Uint8Array} input
- * @returns {Uint8Array}
- */
-export async function oprf_ristretto255_sha512_HashToGroup(input) {
-
-    const libecc = await libecc_module();
-
-    // https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-voprf-06#section-3.2
-    // contextString = I2OSP(modeBase, 1) || I2OSP(suite.ID, 2)
-    // modeBase = 0x00
-    // suite id = 0x0001
-    const contextString = concat(I2OSP(0x00, 1), I2OSP(0x0001, 2));
-
-    // domain separation tag (DST)
-    const DST = concat(str2buf("VOPRF06-HashToGroup-"), contextString);
-
-    const expand_message = await expand_message_xmd_sha512(input, DST, 64);
-
-    let buf = new Uint8Array(32);
-    libecc.ecc_ristretto255_from_hash(buf, expand_message);
-
-    return buf;
-}
-
-/**
+ * Same as calling `oprf_ristretto255_sha512_Blind` with an
+ * specified scalar blind.
+ *
  * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-voprf-06#section-3.4.3.1
  *
- * @param {Uint8Array} input
- * @param {Uint8Array} blind
- * @returns {Uint8Array}
+ * @param {Uint8Array} input message to blind
+ * @param {Uint8Array} blind scalar to use in the blind operation
+ * @return {Uint8Array} blinded element
  */
 export async function oprf_ristretto255_sha512_BlindWithScalar(input, blind) {
     const libecc = await libecc_module();
 
-    const P = await oprf_ristretto255_sha512_HashToGroup(input);
     let blindedElement = new Uint8Array(32);
-    libecc.ecc_ristretto255_scalarmult(blindedElement, blind, P);
+
+    await libecc.ecc_oprf_ristretto255_sha512_BlindWithScalar(
+        blindedElement,
+        input, input.length,
+        blind,
+    );
 
     return blindedElement;
 }
@@ -63,17 +44,20 @@ export async function oprf_ristretto255_sha512_BlindWithScalar(input, blind) {
 /**
  * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-voprf-06#section-3.4.3.1
  *
- * @param {Uint8Array} input
- * @returns
+ * @param {Uint8Array} input message to blind
+ * @return object {blind, blindedElement}
  */
 export async function oprf_ristretto255_sha512_Blind(input) {
     const libecc = await libecc_module();
 
-    let blind = new Uint8Array(32);
-    libecc.ecc_ristretto255_scalar_random(blind);
-    const P = await oprf_ristretto255_sha512_HashToGroup(input);
     let blindedElement = new Uint8Array(32);
-    libecc.ecc_ristretto255_scalarmult(blindedElement, blind, P);
+    let blind = new Uint8Array(32);
+
+    await libecc.ecc_oprf_ristretto255_sha512_BlindWithScalar(
+        blindedElement,
+        blind,
+        input, input.length,
+    );
 
     return {blind: blind, blindedElement: blindedElement};
 }
@@ -127,7 +111,7 @@ export async function oprf_ristretto255_sha512_Finalize(input, blind, evaluatedE
     const contextString = concat(I2OSP(0x00, 1), I2OSP(0x0001, 2));
 
     // domain separation tag (DST)
-    const finalizeDST = concat(str2buf("VOPRF06-Finalize-"), contextString);
+    const finalizeDST = concat(str2bin("VOPRF06-Finalize-"), contextString);
     const hashInput = concat(I2OSP(len(input), 2), concat(input,
         concat(I2OSP(len(unblindedElement), 2), concat(unblindedElement,
             concat(I2OSP(len(finalizeDST), 2), finalizeDST)))));
