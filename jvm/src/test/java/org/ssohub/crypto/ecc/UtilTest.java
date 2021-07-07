@@ -20,7 +20,7 @@ import static org.ssohub.crypto.ecc.libecc.ecc_randombytes;
 public class UtilTest {
 
     @Test
-    void memzero() {
+    void ecc_memzero_test1() {
         byte[] buf = new byte[100];
         ecc_randombytes(buf, buf.length);
         ecc_memzero(buf, buf.length);
@@ -32,7 +32,7 @@ public class UtilTest {
     }
 
     @Test
-    void randombytes() {
+    void ecc_randombytes_test1() {
         byte[] buf = new byte[10];
         ecc_randombytes(buf, buf.length);
         int count = 0;

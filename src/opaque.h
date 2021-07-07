@@ -365,10 +365,10 @@ void ecc_opaque_ristretto255_sha512_RecoverKeys(
  *
  * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-05#section-5.1.1.1
  *
- * @param request_raw
- * @param password
- * @param password_len
- * @param blind
+ * @param request_raw (output) a RegistrationRequest structure
+ * @param password an opaque byte string containing the client's password
+ * @param password_len the length of `password`
+ * @param blind the OPRF scalar value to use
  */
 ECC_OPAQUE_EXPORT
 ECC_EXPORT

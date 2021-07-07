@@ -138,54 +138,54 @@ Module.ecc_ristretto255_scalarmult = (q, n, p) => {
  *
  * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-voprf-06#section-3.4.3.1
  *
- * @param {Uint8Array} blinded_element (output) blinded element
+ * @param {Uint8Array} blindedElement (output) blinded element
  * @param {Uint8Array} input message to blind
  * @param {number} input_len length of `input`
  * @param {Uint8Array} blind scalar to use in the blind operation
  */
 Module.ecc_oprf_ristretto255_sha512_BlindWithScalar = (
-    blinded_element, // 32
+    blindedElement, // 32
     input, input_len,
     blind // 32
 ) => {
     const pInput = mput(input, 0, input_len);
     const pBlind = mput(blind, pInput + input_len, 32);
-    const pBlinded_element = pBlind + 32;
+    const pBlindedElement = pBlind + 32;
 
     _ecc_oprf_ristretto255_sha512_BlindWithScalar(
-        pBlinded_element,
+        pBlindedElement,
         pInput, input_len,
         pBlind
     );
 
-    mget(pBlinded_element, blinded_element, 32);
+    mget(pBlindedElement, blindedElement, 32);
     mzero(input_len + 32 + 32);
 }
 
 /**
  * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-voprf-06#section-3.4.3.1
  *
- * @param {Uint8Array} blinded_element (output) blinded element
+ * @param {Uint8Array} blindedElement (output) blinded element
  * @param {Uint8Array} blind (output) scalar used in the blind operation
  * @param {Uint8Array} input message to blind
  * @param {number} input_len length of `input`
  */
 Module.ecc_oprf_ristretto255_sha512_Blind = (
-    blinded_element, // 32
+    blindedElement, // 32
     blind, // 32
     input, input_len
 ) => {
     const pInput = mput(input, 0, input_len);
-    const pBlinded_element = pInput + input_len;
-    const pBlind = pBlinded_element + 32;
+    const pBlindedElement = pInput + input_len;
+    const pBlind = pBlindedElement + 32;
 
     _ecc_oprf_ristretto255_sha512_Blind(
-        pBlinded_element,
+        pBlindedElement,
         pBlind,
         pInput, input_len
     );
 
-    mget(pBlinded_element, blinded_element, 32);
+    mget(pBlindedElement, blindedElement, 32);
     mget(pBlind, blind, 32);
     mzero(input_len + 32 + 32);
 }

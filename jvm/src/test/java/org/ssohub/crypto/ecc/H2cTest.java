@@ -23,7 +23,7 @@ public class H2cTest {
     int dst_len = 27;
 
     @Test
-    void expand_message_xmd_sha512_test1() {
+    void ecc_expand_message_xmd_sha512_test1() {
         byte[] msg = new byte[0];
         int msg_len = 0;
         int len_in_bytes = 0x20;
@@ -41,7 +41,7 @@ public class H2cTest {
     }
 
     @Test
-    void expand_message_xmd_sha512_test2() {
+    void ecc_expand_message_xmd_sha512_test2() {
         byte[] msg = str2bin("abc");
         int msg_len = 3;
         int len_in_bytes = 0x20;
@@ -59,7 +59,7 @@ public class H2cTest {
     }
 
     @Test
-    void expand_message_xmd_sha512_test3() {
+    void ecc_expand_message_xmd_sha512_test3() {
         byte[] msg = str2bin("abcdef0123456789");
         int msg_len = 16;
         int len_in_bytes = 0x20;
@@ -77,7 +77,7 @@ public class H2cTest {
     }
 
     @Test
-    void expand_message_xmd_sha512_test4() {
+    void ecc_expand_message_xmd_sha512_test4() {
         byte[] msg = str2bin(
             "q128_qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq" +
                 "qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq" +
@@ -99,7 +99,7 @@ public class H2cTest {
     }
 
     @Test
-    void expand_message_xmd_sha512_test5() {
+    void ecc_expand_message_xmd_sha512_test5() {
         byte[] msg = new byte[0];
         int msg_len = 0;
         int len_in_bytes = 0x80;
@@ -124,7 +124,7 @@ public class H2cTest {
     }
 
     @Test
-    void expand_message_xmd_sha512_test6() {
+    void ecc_expand_message_xmd_sha512_test6() {
         byte[] msg = str2bin("abc");
         int msg_len = 3;
         int len_in_bytes = 0x80;
@@ -149,7 +149,7 @@ public class H2cTest {
     }
 
     @Test
-    void expand_message_xmd_sha512_test7() {
+    void ecc_expand_message_xmd_sha512_test7() {
         byte[] msg = str2bin("abcdef0123456789");
         int msg_len = 16;
         int len_in_bytes = 0x80;
@@ -174,7 +174,7 @@ public class H2cTest {
     }
 
     @Test
-    void expand_message_xmd_sha512_test8() {
+    void ecc_expand_message_xmd_sha512_test8() {
         byte[] msg = str2bin(
             "q128_qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq" +
                 "qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq" +

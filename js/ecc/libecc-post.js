@@ -491,54 +491,139 @@ Module.ecc_h2c_expand_message_xmd_sha512 = (
  *
  * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-voprf-06#section-3.4.3.1
  *
- * @param {Uint8Array} blinded_element (output) blinded element
+ * @param {Uint8Array} blindedElement (output) blinded element
  * @param {Uint8Array} input message to blind
  * @param {number} input_len length of `input`
  * @param {Uint8Array} blind scalar to use in the blind operation
  */
 Module.ecc_oprf_ristretto255_sha512_BlindWithScalar = (
-    blinded_element, // 32
+    blindedElement, // 32
     input, input_len,
     blind // 32
 ) => {
     const pInput = mput(input, 0, input_len);
     const pBlind = mput(blind, pInput + input_len, 32);
-    const pBlinded_element = pBlind + 32;
+    const pBlindedElement = pBlind + 32;
 
     _ecc_oprf_ristretto255_sha512_BlindWithScalar(
-        pBlinded_element,
+        pBlindedElement,
         pInput, input_len,
         pBlind
     );
 
-    mget(pBlinded_element, blinded_element, 32);
+    mget(pBlindedElement, blindedElement, 32);
     mzero(input_len + 32 + 32);
 }
 
 /**
  * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-voprf-06#section-3.4.3.1
  *
- * @param {Uint8Array} blinded_element (output) blinded element
+ * @param {Uint8Array} blindedElement (output) blinded element
  * @param {Uint8Array} blind (output) scalar used in the blind operation
  * @param {Uint8Array} input message to blind
  * @param {number} input_len length of `input`
  */
 Module.ecc_oprf_ristretto255_sha512_Blind = (
-    blinded_element, // 32
+    blindedElement, // 32
     blind, // 32
     input, input_len
 ) => {
     const pInput = mput(input, 0, input_len);
-    const pBlinded_element = pInput + input_len;
-    const pBlind = pBlinded_element + 32;
+    const pBlindedElement = pInput + input_len;
+    const pBlind = pBlindedElement + 32;
 
     _ecc_oprf_ristretto255_sha512_Blind(
-        pBlinded_element,
+        pBlindedElement,
         pBlind,
         pInput, input_len
     );
 
-    mget(pBlinded_element, blinded_element, 32);
+    mget(pBlindedElement, blindedElement, 32);
     mget(pBlind, blind, 32);
     mzero(input_len + 32 + 32);
+}
+
+// opaque
+
+/**
+ * Returns a randomly generated private and public key pair.
+ *
+ * This is implemented by generating a random "seed", then
+ * calling internally DeriveAuthKeyPair.
+ *
+ * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-05#section-2
+ *
+ * @param {Uint8Array} private_key (output) a private key
+ * @param {Uint8Array} public_key (output) the associated public key
+ */
+Module.ecc_opaque_ristretto255_sha512_GenerateAuthKeyPair = (
+    private_key,
+    public_key
+) => {
+    const pPrivate_key = 0;
+    const pPublic_key = 32;
+
+    _ecc_opaque_ristretto255_sha512_GenerateAuthKeyPair(pPrivate_key, pPublic_key);
+
+    mget(pPrivate_key, private_key, 32);
+    mget(pPublic_key, public_key, 32);
+    mzero(32 + 32);
+}
+
+/**
+ * Same as calling CreateRegistrationRequest with a specified blind.
+ *
+ * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-05#section-5.1.1.1
+ *
+ * @param {Uint8Array} request_raw (output) a RegistrationRequest structure
+ * @param {Uint8Array} password an opaque byte string containing the client's password
+ * @param {number} password_len the length of `password`
+ * @param {Uint8Array} blind the OPRF scalar value to use
+ */
+Module.ecc_opaque_ristretto255_sha512_CreateRegistrationRequestWithBlind = (
+    request_raw,
+    password, password_len,
+    blind,
+) => {
+    const pPassword = mput(password, 0, password_len);
+    const pBlind = mput(blind, pPassword + password_len, 32);
+    const pRequest = pBlind + 32;
+
+    _ecc_opaque_ristretto255_sha512_CreateRegistrationRequestWithBlind(
+        pRequest,
+        pPassword, password_len,
+        pBlind,
+    );
+
+    mget(pRequest, request_raw, 32);
+    mget(pBlind, blind, 32);
+    mzero(password_len + 32 + 32);
+}
+
+/**
+ * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-05#section-5.1.1.1
+ *
+ * @param {Uint8Array} request_raw (output) a RegistrationRequest structure
+ * @param {Uint8Array} blind (output) an OPRF scalar value
+ * @param {Uint8Array} password an opaque byte string containing the client's password
+ * @param {number} password_len the length of `password`
+ */
+Module.ecc_opaque_ristretto255_sha512_CreateRegistrationRequest = (
+    request_raw,
+    blind,
+    password, password_len
+) => {
+    const pPassword = mput(password, 0, password_len);
+    const pRequest = pPassword + password_len;
+    const pBlind = pRequest + 32;
+
+    _ecc_opaque_ristretto255_sha512_CreateRegistrationRequest(
+        pRequest,
+        pBlind,
+        pPassword, password_len
+    );
+
+    mget(pRequest, request_raw, 32);
+    mget(pBlind, blind, 32);
+    mzero(password_len + 32 + 32);
 }
