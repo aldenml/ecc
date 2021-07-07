@@ -136,6 +136,8 @@ static void opaque_ristretto255_sha512_CreateRegistrationRequestWithBlind_test2(
 }
 
 static void opaque_ristretto255_sha512_test1(void **state) {
+    ECC_UNUSED(state);
+
     // client
     byte_t password[25];
     ecc_hex2bin(password, "436f7272656374486f72736542617474657279537461706c65", 50);

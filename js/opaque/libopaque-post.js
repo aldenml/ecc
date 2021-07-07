@@ -71,7 +71,9 @@ Module.ecc_opaque_ristretto255_sha512_GenerateAuthKeyPair = (
 ) => {
     const pPrivate_key = 0;
     const pPublic_key = 32;
+
     _ecc_opaque_ristretto255_sha512_GenerateAuthKeyPair(pPrivate_key, pPublic_key);
+
     mget(pPrivate_key, private_key, 32);
     mget(pPublic_key, public_key, 32);
     mzero(32 + 32);
@@ -99,6 +101,7 @@ Module.ecc_opaque_ristretto255_sha512_CreateRegistrationRequest = (
         pBlind,
         pPassword, password_len
     );
+
     mget(pRequest, request_raw, 32);
     mget(pBlind, blind, 32);
     mzero(password_len + 32 + 32);
@@ -141,6 +144,7 @@ Module.ecc_opaque_ristretto255_sha512_CreateRegistrationResponse = (
         pCredential_identifier, credential_identifier_len,
         pOprf_seed
     );
+
     mget(pResponse, response_raw, 64);
     mget(pOprf_key, oprf_key, 32);
     mzero(32 + 32 + credential_identifier_len + 64 + 64 + 32);
@@ -194,6 +198,7 @@ Module.ecc_opaque_ristretto255_sha512_FinalizeRequest =(
         pServer_identity, server_identity_len,
         pClient_identity, client_identity_len
     );
+
     mget(pRecord, record_raw, 192);
     mget(pExport_key, export_key, 64);
     mzero(32 + password_len + 32 + 64 + server_identity_len + client_identity_len + 192 + 64);
@@ -226,6 +231,7 @@ Module.ecc_opaque_ristretto255_sha512_3DH_ClientInit = (
         pClient_identity, client_identity_len,
         pPassword, password_len
     );
+
     mget(pSate, state_raw, 160);
     mget(pKe1, ke1_raw, 96);
     mzero(160 + client_identity_len + password_len + 96);
@@ -279,6 +285,7 @@ Module.ecc_opaque_ristretto255_sha512_3DH_ClientFinish = (
         pServer_identity, server_identity_len,
         pKe2
     );
+
     mget(pSate, state_raw, 160);
     mget(pKe3, ke3_raw, 64);
     mget(pSession_key, session_key, 64);
@@ -341,6 +348,7 @@ Module.ecc_opaque_ristretto255_sha512_3DH_ServerInit = (
         pKe1,
         pContext, context_len
     );
+
     mget(pSate, state_raw, 128);
     mget(pKe2, ke2_raw, 320);
     mzero(128 + server_identity_len + 32 + 32 + 192 + credential_identifier_len + 64 + 96 + context_len + 320);
@@ -368,6 +376,7 @@ Module.ecc_opaque_ristretto255_sha512_3DH_ServerFinish = (
         pSate,
         pKe3
     );
+
     mget(pSate, state_raw, 128);
     mget(pSession_key, session_key, 64);
     mzero(128 + 64 + 64);

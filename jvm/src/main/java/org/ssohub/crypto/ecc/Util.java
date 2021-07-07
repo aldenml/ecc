@@ -74,4 +74,17 @@ public final class Util {
 
         return out;
     }
+
+    /**
+     * Returns a buffer of length `n` with an unpredictable sequence of bytes.
+     *
+     * @param n the length of the buffer to return
+     * @return the buffer with random elements
+     */
+    public static byte[] randombytes(int n) {
+        byte[] buf = new byte[n];
+        libecc.ecc_randombytes(buf, n);
+
+        return buf;
+    }
 }

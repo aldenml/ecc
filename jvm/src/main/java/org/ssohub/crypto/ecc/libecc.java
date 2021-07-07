@@ -74,4 +74,51 @@ public final class libecc {
         byte[] dst, int dst_len,
         int len
     );
+
+    // opaque
+
+    /**
+     * Returns a randomly generated private and public key pair.
+     * <p>
+     * This is implemented by generating a random "seed", then
+     * calling internally DeriveAuthKeyPair.
+     * <p>
+     * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-05#section-2
+     *
+     * @param private_key (output) a private key
+     * @param public_key  (output) the associated public key
+     */
+    public static native void ecc_opaque_ristretto255_sha512_GenerateAuthKeyPair(
+        byte[] private_key, byte[] public_key
+    );
+
+    /**
+     * Same as calling CreateRegistrationRequest with a specified blind.
+     * <p>
+     * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-05#section-5.1.1.1
+     *
+     * @param request_raw  (output) a RegistrationRequest structure
+     * @param password     an opaque byte string containing the client's password
+     * @param password_len the length of `password`
+     * @param blind        the OPRF scalar value to use
+     */
+    public static native void ecc_opaque_ristretto255_sha512_CreateRegistrationRequestWithBlind(
+        byte[] request_raw,
+        byte[] password, int password_len,
+        byte[] blind
+    );
+
+    /**
+     * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-05#section-5.1.1.1
+     *
+     * @param request_raw  (output) a RegistrationRequest structure
+     * @param blind        (output) an OPRF scalar value
+     * @param password     an opaque byte string containing the client's password
+     * @param password_len the length of `password`
+     */
+    public static native void ecc_opaque_ristretto255_sha512_CreateRegistrationRequest(
+        byte[] request_raw,
+        byte[] blind, // 32
+        byte[] password, int password_len
+    );
 }

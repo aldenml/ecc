@@ -71,7 +71,7 @@ void ecc_oprf_ristretto255_sha512_HashToScalar(
  *
  * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-voprf-06#section-3.4.3.1
  *
- * @param blinded_element (output) blinded element
+ * @param blindedElement (output) blinded element
  * @param input message to blind
  * @param input_len length of `input`
  * @param blind scalar to use in the blind operation
@@ -79,7 +79,7 @@ void ecc_oprf_ristretto255_sha512_HashToScalar(
 ECC_OPRF_EXPORT
 ECC_EXPORT
 void ecc_oprf_ristretto255_sha512_BlindWithScalar(
-    byte_t *blinded_element, // 32
+    byte_t *blindedElement, // 32
     const byte_t *input, int input_len,
     const byte_t *blind // 32
 );
@@ -87,7 +87,7 @@ void ecc_oprf_ristretto255_sha512_BlindWithScalar(
 /**
  * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-voprf-06#section-3.4.3.1
  *
- * @param blinded_element (output) blinded element
+ * @param blindedElement (output) blinded element
  * @param blind (output) scalar used in the blind operation
  * @param input message to blind
  * @param input_len length of `input`
@@ -95,7 +95,7 @@ void ecc_oprf_ristretto255_sha512_BlindWithScalar(
 ECC_OPRF_EXPORT
 ECC_EXPORT
 void ecc_oprf_ristretto255_sha512_Blind(
-    byte_t *blinded_element, // 32
+    byte_t *blindedElement, // 32
     byte_t *blind, // 32
     const byte_t *input, int input_len
 );
