@@ -41,6 +41,24 @@ public class H2cTest {
     }
 
     @Test
+    void ecc_expand_message_xmd_sha512_test1_null() {
+        byte[] msg = null;
+        int msg_len = 0;
+        int len_in_bytes = 0x20;
+        byte[] uniform_bytes = new byte[0x20];
+
+        ecc_h2c_expand_message_xmd_sha512(
+            uniform_bytes,
+            msg, msg_len,
+            dst, dst_len,
+            len_in_bytes
+        );
+
+        String hex = bin2hex(uniform_bytes);
+        assertEquals("2eaa1f7b5715f4736e6a5dbe288257abf1faa028680c1d938cd62ac699ead642", hex);
+    }
+
+    @Test
     void ecc_expand_message_xmd_sha512_test2() {
         byte[] msg = str2bin("abc");
         int msg_len = 3;
