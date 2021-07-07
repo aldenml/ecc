@@ -141,3 +141,18 @@ export function strxor(str1, str2) {
 
     return buf;
 }
+
+/**
+ * Returns a buffer of length `n` with an unpredictable sequence of bytes.
+ *
+ * @param {number} n the length of the buffer to return
+ * @return {Promise<Uint8Array>} the buffer with random elements
+ */
+export async function randombytes(n) {
+    const libecc = await libecc_module();
+
+    const buf = new Uint8Array(n);
+    await libecc.ecc_randombytes(buf, n);
+
+    return buf;
+}
