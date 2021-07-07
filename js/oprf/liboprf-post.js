@@ -158,7 +158,7 @@ Module.ecc_oprf_ristretto255_sha512_BlindWithScalar = (
         pBlind
     );
 
-    mget(pBlinded_element, blindedElement, 32);
+    mget(pBlindedElement, blindedElement, 32);
     mzero(input_len + 32 + 32);
 }
 
