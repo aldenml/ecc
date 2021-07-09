@@ -845,11 +845,11 @@ void ecc_opaque_ristretto255_sha512_3DH_Derive_Secret(
 
 int ecc_opaque_ristretto255_sha512_3DH_Preamble(
     byte_t *preamble,
-    const byte_t *context, int context_len,
-    const byte_t *client_identity, int client_identity_len,
-    const byte_t *ke1,
-    const byte_t *server_identity, int server_identity_len,
-    const byte_t *inner_ke2
+    const byte_t *context, const int context_len,
+    const byte_t *client_identity, const int client_identity_len,
+    const byte_t *ke1, const int ke1_len,
+    const byte_t *server_identity, const int server_identity_len,
+    const byte_t *inner_ke2, const int inner_ke2_len
 ) {
     // Steps:
     // 1. preamble = concat("RFCXXXX",
@@ -865,24 +865,24 @@ int ecc_opaque_ristretto255_sha512_3DH_Preamble(
     byte_t *p = preamble;
     int n = 0;
 
-    p = ecc_concat2(p, preamble_label, sizeof preamble_label, NULL, 0);
+    ecc_concat2(p + n, preamble_label, sizeof preamble_label, NULL, 0);
     n += sizeof preamble_label;
-    ecc_I2OSP(p, context_len, 2); p += 2;
+    ecc_I2OSP(p + n, context_len, 2);
     n += 2;
-    p = ecc_concat2(p, context, context_len, NULL, 0);
+    ecc_concat2(p + n, context, context_len, NULL, 0);
     n += context_len;
-    ecc_I2OSP(p, client_identity_len, 2); p += 2;
+    ecc_I2OSP(p + n, client_identity_len, 2);
     n += 2;
-    p = ecc_concat2(p, client_identity, client_identity_len, NULL, 0);
+    ecc_concat2(p + n, client_identity, client_identity_len, NULL, 0);
     n += client_identity_len;
-    p = ecc_concat2(p, ke1, sizeof(KE1_t), NULL, 0);
-    n += sizeof(KE1_t);
-    ecc_I2OSP(p, server_identity_len, 2); p += 2;
+    ecc_concat2(p + n, ke1, ke1_len, NULL, 0);
+    n += ke1_len;
+    ecc_I2OSP(p + n, server_identity_len, 2);
     n += 2;
-    p = ecc_concat2(p, server_identity, server_identity_len, NULL, 0);
+    ecc_concat2(p + n, server_identity, server_identity_len, NULL, 0);
     n += server_identity_len;
-    ecc_concat2(p, inner_ke2, sizeof(KE2_t) - Nm, NULL, 0);
-    n += sizeof(KE2_t) - Nm;
+    ecc_concat2(p + n, inner_ke2, inner_ke2_len, NULL, 0);
+    n += inner_ke2_len;
 
     return n;
 }
@@ -1160,9 +1160,9 @@ int ecc_opaque_ristretto255_sha512_3DH_ClientFinalize(
         preamble,
         context, context_len,
         client_identity, client_identity_len,
-        (byte_t *) &state->ke1,
+        (byte_t *) &state->ke1, sizeof(KE1_t),
         server_identity, server_identity_len,
-        (byte_t *) &ke2->inner_ke2
+        (byte_t *) &ke2->inner_ke2, sizeof(KE2_t) - Nm
     );
 
     // 3. Km2, Km3, session_key = DeriveKeys(ikm, preamble)
@@ -1340,9 +1340,9 @@ void ecc_opaque_ristretto255_sha512_3DH_Response(
         preamble,
         context, context_len,
         client_identity, client_identity_len,
-        ke1_raw,
+        ke1_raw, sizeof(KE1_t),
         server_identity, server_identity_len,
-        (byte_t *) &ke2->inner_ke2
+        (byte_t *) &ke2->inner_ke2, sizeof(KE2_t) - Nm
     );
 
     // 5. ikm = TripleDHIKM(server_secret, ke1.client_keyshare, server_private_key, ke1.client_keyshare, server_secret, client_public_key)

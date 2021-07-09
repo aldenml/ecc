@@ -40,6 +40,17 @@ function mzero(length) {
 // util
 
 /**
+ * Zero the array `buf` up to `len` elements.
+ *
+ * @param {Uint8Array} buf the byte array
+ * @param {number} n the amount of elements to zero
+ */
+Module.ecc_memzero = (buf, n) => {
+    for (let i = 0; i < n; i++)
+        buf[i] = 0;
+}
+
+/**
  * Fills `n` bytes at buf with an unpredictable sequence of bytes.
  *
  * @param {Uint8Array} buf (output) the byte array to fill
@@ -53,246 +64,460 @@ Module.ecc_randombytes = (buf, n) => {
 }
 
 /**
- * @param {Uint8Array} a
- * @param {Uint8Array} b
- * @param {number} len
- * @returns {number}
+ * Concatenates two byte arrays. Sames as a || b.
+ *
+ * a || b: denotes the concatenation of byte strings a and b. For
+ * example, "ABC" || "DEF" == "ABCDEF".
+ *
+ * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-hash-to-curve-11#section-4
+ *
+ * @param {Uint8Array} out (output) result of the concatenation
+ * @param {Uint8Array} a1 first byte array
+ * @param {number} a1_len the length of `a1`
+ * @param {Uint8Array} a2 second byte array
+ * @param {number} a2_len the length of `a2`
+ */
+Module.ecc_concat2 = (
+    out,
+    a1, a1_len,
+    a2, a2_len
+) => {
+    const pA1 = mput(a1, 0, a1_len);
+    const pA2 = mput(a2, pA1 + a1_len, a2_len);
+    const pOut = pA2 + a2_len;
+
+    _ecc_concat2(pOut,
+        pA1, a1_len,
+        pA2, a2_len
+    );
+
+    mget(pOut, out, a1_len + a2_len);
+    mzero(2 * (a1_len + a2_len));
+}
+
+/**
+ * Same as calling ecc_concat2 but with three byte arrays.
+ *
+ * @param {Uint8Array} out (output) result of the concatenation
+ * @param {Uint8Array} a1 first byte array
+ * @param {number} a1_len the length of `a1`
+ * @param {Uint8Array} a2 second byte array
+ * @param {number} a2_len the length of `a2`
+ * @param {Uint8Array} a3 third byte array
+ * @param {number} a3_len the length of `a3`
+ */
+Module.ecc_concat3 = (
+    out,
+    a1, a1_len,
+    a2, a2_len,
+    a3, a3_len
+) => {
+    const pA1 = mput(a1, 0, a1_len);
+    const pA2 = mput(a2, pA1 + a1_len, a2_len);
+    const pA3 = mput(a3, pA2 + a2_len, a3_len);
+    const pOut = pA3 + a3_len;
+
+    _ecc_concat3(pOut,
+        pA1, a1_len,
+        pA2, a2_len,
+        pA3, a3_len
+    );
+
+    mget(pOut, out, a1_len + a2_len + a3_len);
+    mzero(2 * (a1_len + a2_len + a3_len));
+}
+
+/**
+ * Same as calling ecc_concat2 but with four byte arrays.
+ *
+ * @param {Uint8Array} out (output) result of the concatenation
+ * @param {Uint8Array} a1 first byte array
+ * @param {number} a1_len the length of `a1`
+ * @param {Uint8Array} a2 second byte array
+ * @param {number} a2_len the length of `a2`
+ * @param {Uint8Array} a3 third byte array
+ * @param {number} a3_len the length of `a3`
+ * @param {Uint8Array} a4 third byte array
+ * @param {number} a4_len the length of `a3`
+ */
+Module.ecc_concat4 = (
+    out,
+    a1, a1_len,
+    a2, a2_len,
+    a3, a3_len,
+    a4, a4_len
+) => {
+    const pA1 = mput(a1, 0, a1_len);
+    const pA2 = mput(a2, pA1 + a1_len, a2_len);
+    const pA3 = mput(a3, pA2 + a2_len, a3_len);
+    const pA4 = mput(a4, pA3 + a3_len, a4_len);
+    const pOut = pA4 + a4_len;
+
+    _ecc_concat4(pOut,
+        pA1, a1_len,
+        pA2, a2_len,
+        pA3, a3_len,
+        pA4, a4_len
+    );
+
+    mget(pOut, out, a1_len + a2_len);
+    mzero(2 * (a1_len + a2_len));
+}
+
+/**
+ * For byte strings a and b, ecc_strxor(a, b) returns the bitwise XOR of
+ * the two byte strings. For example, ecc_strxor("abc", "XYZ") == "9;9" (the
+ * strings in this example are ASCII literals, but ecc_strxor is defined for
+ * arbitrary byte strings).
+ *
+ * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-hash-to-curve-11#section-4
+ *
+ * @param {Uint8Array} out (output) result of the operation
+ * @param {Uint8Array} a first byte array
+ * @param {Uint8Array} b second byte array
+ * @param {number} len length of both `a` and `b`
+ */
+Module.ecc_strxor = (out, a, b, len) => {
+    const pA = mput(a, 0, len);
+    const pB = mput(a, pA + len, len);
+    const pOut = pB + len;
+
+    _ecc_strxor(pOut, pA, pB, len);
+
+    mget(pOut, out, len);
+    mzero(len + len + len);
+}
+
+/**
+ * I2OSP converts a nonnegative integer to an octet string of a
+ * specified length.
+ *
+ * See https://datatracker.ietf.org/doc/html/rfc8017#section-4.1
+ *
+ * @param {Uint8Array} out (output) corresponding octet string of length xLen
+ * @param {number} x nonnegative integer to be converted
+ * @param {number} xLen intended length of the resulting octet string
+ */
+Module.ecc_I2OSP = (out, x, xLen) => {
+    const pOut = 0;
+
+    _ecc_I2OSP(pOut, x, xLen);
+
+    mget(pOut, out, xLen);
+    mzero(xLen);
+}
+
+/**
+ * Takes two pointers to unsigned numbers encoded in little-endian
+ * format and returns:
+ *
+ * -1 if a < b
+ * 0 if a == b
+ * 1 if a > b
+ *
+ * The comparison is done in constant time
+ *
+ * @param {Uint8Array} a first unsigned integer argument
+ * @param {Uint8Array} b second unsigned integer argument
+ * @param {number} len the length of both `a` and `b`
  */
 Module.ecc_compare = (a, b, len) => {
-    arraycopy(a, 0, HEAPU8, 0, len);
-    arraycopy(b, 0, HEAPU8, len, len);
-    let pA = 0;
-    let pB = len;
-    return _ecc_compare(pA, pB, len);
+    const pA = mput(a, 0, len);
+    const pB = mput(b, pA + len, len);
+
+    const r = _ecc_compare(pA, pB, len);
+
+    mzero(len + len);
+    return r;
 }
 
 /**
- * @param {Uint8Array} n
- * @param {number} len
- * @returns {number}
+ * Takes a byte array and test if it contains only zeros. It runs
+ * in constant-time.
+ *
+ * @param {Uint8Array} n the byte array
+ * @param {number} len the length of `n`
+ * @return 0 if non-zero bits are found
  */
 Module.ecc_is_zero = (n, len) => {
-    arraycopy(n, 0, HEAPU8, 0, len);
-    let pN = 0;
-    return _ecc_is_zero(pN, len);
+    const pN = mput(n, 0, len);
+
+    const r = _ecc_is_zero(pN, len);
+
+    mzero(len);
+    return r;
 }
 
 /**
- * @param {Uint8Array} n
- * @param {number} len
- * @returns {number}
+ * Takes a pointer to an arbitrary-long unsigned integer encoded in
+ * little-endian format, and increments it. It runs in constant-time.
+ *
+ * Can be used to increment nonces in constant time.
+ *
+ * @param {Uint8Array} n (input/output) unsigned integer
+ * @param {number} len length of `n`
  */
 Module.ecc_increment = (n, len) => {
-    arraycopy(n, 0, HEAPU8, 0, len);
-    let pN = 0;
+    const pN = mput(n, 0, len);
+
     _ecc_increment(pN, len);
-    arraycopy(HEAPU8, pN, n, 0, len);
+
+    mget(pN, n, len);
+    mzero(len);
 }
 
 /**
- * @param {Uint8Array} a
- * @param {Uint8Array} b
- * @param {number} len
+ * Takes two pointers to unsigned numbers encoded in little-endian
+ * format, computes (a + b) mod 2^(8*len) and store the result in `a`.
+ * It runs in constant-time.
+ *
+ * @param {Uint8Array} a (input/output) first unsigned integer argument
+ * @param {Uint8Array} b second unsigned integer argument
+ * @param {number} len the length of both `a` and `b`
  */
 Module.ecc_add = (a, b, len) => {
-    arraycopy(a, 0, HEAPU8, 0, len);
-    arraycopy(b, 0, HEAPU8, len, len);
-    let pA = 0;
-    let pB = len;
+    const pA = mput(a, 0, len);
+    const pB = mput(b, pA + len, len);
+
     _ecc_add(pA, pB, len);
-    arraycopy(HEAPU8, pA, a, 0, len);
+
+    mget(pA, a, len);
+    mzero(len + len);
 }
 
 /**
- * @param {Uint8Array} a
- * @param {Uint8Array} b
- * @param {number} len
+ * Takes two pointers to unsigned numbers encoded in little-endian
+ * format, computes (a - b) mod 2^(8*len) and store the result in `a`.
+ * It runs in constant-time.
+ *
+ * @param {Uint8Array} a (input/output) first unsigned integer argument
+ * @param {Uint8Array} b second unsigned integer argument
+ * @param {number} len the length of both `a` and `b`
  */
 Module.ecc_sub = (a, b, len) => {
-    arraycopy(a, 0, HEAPU8, 0, len);
-    arraycopy(b, 0, HEAPU8, len, len);
-    let pA = 0;
-    let pB = len;
+    const pA = mput(a, 0, len);
+    const pB = mput(b, pA + len, len);
+
     _ecc_sub(pA, pB, len);
-    arraycopy(HEAPU8, pA, a, 0, len);
+
+    mget(pA, a, len);
+    mzero(len + len);
 }
 
 // hash
 
 /**
- * @param {Uint8Array} out
- * @param {Uint8Array} input
+ * Computes the SHA-256 of a given input.
+ *
+ * See https://en.wikipedia.org/wiki/SHA-2
+ *
+ * @param {Uint8Array} digest (output) the SHA-256 of the input
+ * @param {Uint8Array} input the input message
+ * @param {number} input_len the length of `input`
  */
-Module.ecc_hash_sha256 = (out, input) => {
-    arraycopy(input, 0, HEAPU8, 0, input.length);
+Module.ecc_hash_sha256 = (digest, input, input_len) => {
+    const pInput = mput(input, 0, input_len);
+    const pDigest = pInput + input_len;
 
-    let pIn = 0;
-    let len = input.length;
-    let pOut = pIn + len;
+    _ecc_hash_sha256(pDigest, pInput, input_len);
 
-    _ecc_hash_sha256(pOut, pIn, len);
-
-    arraycopy(HEAPU8, pOut, out, 0, 32);
+    mget(pDigest, digest, 32);
+    mzero(input_len + 32);
 }
 
 /**
- * @param {Uint8Array} out
- * @param {Uint8Array} input
+ * Computes the SHA-512 of a given input.
+ *
+ * See https://en.wikipedia.org/wiki/SHA-2
+ *
+ * @param {Uint8Array} digest (output) the SHA-512 of the input
+ * @param {Uint8Array} input the input message
+ * @param {number} input_len the length of `input`
  */
-Module.ecc_hash_sha512 = (out, input) => {
-    arraycopy(input, 0, HEAPU8, 0, input.length);
+Module.ecc_hash_sha512 = (digest, input, input_len) => {
+    const pInput = mput(input, 0, input_len);
+    const pDigest = pInput + input_len;
 
-    let pIn = 0;
-    let len = input.length;
-    let pOut = pIn + len;
+    _ecc_hash_sha512(pDigest, pInput, input_len);
 
-    _ecc_hash_sha512(pOut, pIn, len);
-
-    arraycopy(HEAPU8, pOut, out, 0, 64);
+    mget(pDigest, digest, 64);
+    mzero(input_len + 64);
 }
 
 // mac
 
 /**
- * @param {Uint8Array} digest
- * @param {Uint8Array} text
- * @param {Uint8Array} key
+ * Computes the HMAC-SHA-256 of the input stream.
+ *
+ * See https://datatracker.ietf.org/doc/html/rfc2104
+ * See https://datatracker.ietf.org/doc/html/rfc4868
+ *
+ * @param {Uint8Array} digest (output) the HMAC-SHA-256 of the input
+ * @param {Uint8Array} text the input message
+ * @param {number} text_len the length of `input`
+ * @param {Uint8Array} key authentication key
  */
-Module.ecc_mac_hmac_sha256 = (digest, text, key) => {
-    const text_len = text.length;
+Module.ecc_mac_hmac_sha256 = (
+    digest,
+    text, text_len,
+    key
+) => {
     const pText = mput(text, 0, text_len);
     const pKey = mput(key, pText + text_len, 32);
     const pDigest = pKey + 32;
 
     _ecc_mac_hmac_sha256(pDigest, pText, text_len, pKey);
+
     mget(pDigest, digest, 32);
     mzero(text_len + 32 + 32);
 }
 
 /**
- * @param {Uint8Array} h
- * @param {Uint8Array} input
- * @param {Uint8Array} k
+ * Computes the HMAC-SHA-512 of the input stream.
+ *
+ * See https://datatracker.ietf.org/doc/html/rfc2104
+ * See https://datatracker.ietf.org/doc/html/rfc4868
+ *
+ * @param {Uint8Array} digest (output) the HMAC-SHA-512 of the input
+ * @param {Uint8Array} text the input message
+ * @param {number} text_len the length of `input`
+ * @param {Uint8Array} key authentication key
  */
-Module.ecc_mac_hmac_sha256_verify = (h, input, k) => {
-    const inlen = input.length;
-    const pH = mput(h, 0, 32);
-    const pIn = mput(input, pH + 32, inlen);
-    const pK = mput(k, pIn + inlen, 32);
-
-    const r = _ecc_mac_hmac_sha256_verify(pH, pIn, inlen, pK);
-    mzero(32 + inlen + 32);
-    return r;
-}
-
-/**
- * @param {Uint8Array} digest
- * @param {Uint8Array} text
- * @param {Uint8Array} key
- */
-Module.ecc_mac_hmac_sha512 = (digest, text, key) => {
-    const text_len = text.length;
+Module.ecc_mac_hmac_sha512 = (
+    digest,
+    text, text_len,
+    key
+) => {
     const pText = mput(text, 0, text_len);
     const pKey = mput(key, pText + text_len, 32);
     const pDigest = pKey + 32;
 
     _ecc_mac_hmac_sha512(pDigest, pText, text_len, pKey);
+
     mget(pDigest, digest, 64);
     mzero(text_len + 32 + 64);
-}
-
-/**
- * @param {Uint8Array} h
- * @param {Uint8Array} input
- * @param {Uint8Array} k
- */
-Module.ecc_mac_hmac_sha512_verify = (h, input, k) => {
-    const inlen = input.length;
-    const pH = mput(h, 0, 64);
-    const pIn = mput(input, pH + 64, inlen);
-    const pK = mput(k, pIn + inlen, 32);
-
-    const r = _ecc_mac_hmac_sha512_verify(pH, pIn, inlen, pK);
-    mzero(64 + inlen + 32);
-    return r;
 }
 
 // kdf
 
 /**
- * @param {Uint8Array} prk
- * @param {Uint8Array} salt
- * @param {number} salt_len
- * @param {Uint8Array} ikm
- * @param {number} ikm_len
- * @returns {number}
+ * Computes the HKDF-SHA-256 extract of the input using a key material.
+ *
+ * See https://datatracker.ietf.org/doc/html/rfc5869
+ *
+ * @param {Uint8Array} prk (output) a pseudorandom key
+ * @param {Uint8Array} salt optional salt value (a non-secret random value)
+ * @param {number} salt_len the length of `salt`
+ * @param {Uint8Array} ikm input keying material
+ * @param {number} ikm_len the length of `ikm`
  */
-Module.ecc_kdf_hkdf_sha256_extract = (prk, salt, salt_len, ikm, ikm_len) => {
+Module.ecc_kdf_hkdf_sha256_extract = (
+    prk,
+    salt, salt_len,
+    ikm, ikm_len
+) => {
     const pSalt = mput(salt, 0, salt_len);
     const pIkm = mput(ikm, pSalt + salt_len, ikm_len);
     const pPrk = pIkm + ikm_len;
 
-    const op = _ecc_kdf_hkdf_sha256_extract(pPrk, pSalt, salt_len, pIkm, ikm_len);
+    const r = _ecc_kdf_hkdf_sha256_extract(pPrk, pSalt, salt_len, pIkm, ikm_len);
+
     mget(pPrk, prk, 32);
     mzero(salt_len + ikm_len + 32);
-    return op;
+    return r;
 }
 
 /**
- * @param {Uint8Array} out
- * @param {number} len
- * @param {Uint8Array} ctx
- * @param {number} ctx_len
- * @param {Uint8Array} prk
- * @returns {number}
+ * Computes the HKDF-SHA-256 expand of the input using a key.
+ *
+ * See https://datatracker.ietf.org/doc/html/rfc5869
+ *
+ * @param {Uint8Array} okm (output) output keying material of length `len`
+ * @param {Uint8Array} prk a pseudorandom key
+ * @param {Uint8Array} info optional context and application specific information
+ * @param {number} info_len length of `info`
+ * @param {number} len length of output keying material in octets
  */
-Module.ecc_kdf_hkdf_sha256_expand = (out, ctx, ctx_len, prk, len) => {
-    const pCtx = mput(ctx, 0, ctx_len);
-    const pPrk = mput(prk, pCtx + ctx_len, 32);
-    const pOut = pPrk + 32;
+Module.ecc_kdf_hkdf_sha256_expand = (
+    okm,
+    prk,
+    info, info_len,
+    len
+) => {
+    const pPrk = mput(prk, 0, 32);
+    const pInfo = mput(info, pPrk + 32, info_len);
+    const pOkm = pInfo + info_len;
 
-    const op = _ecc_kdf_hkdf_sha256_expand(pOut, pCtx, ctx_len, pPrk, len);
-    mget(pOut, out, len);
-    mzero(ctx_len + 32 + len);
-    return op;
+    const r = _ecc_kdf_hkdf_sha256_expand(
+        pOkm,
+        pPrk,
+        pInfo, info_len,
+        len
+    );
+
+    mget(pOkm, okm, len);
+    mzero(32 + info_len + len);
+    return r;
 }
 
 /**
- * @param {Uint8Array} prk
- * @param {Uint8Array} salt
- * @param {number} salt_len
- * @param {Uint8Array} ikm
- * @param {number} ikm_len
- * @returns {number}
+ * Computes the HKDF-SHA-512 extract of the input using a key material.
+ *
+ * See https://datatracker.ietf.org/doc/html/rfc5869
+ *
+ * @param {Uint8Array} prk (output) a pseudorandom key
+ * @param {Uint8Array} salt optional salt value (a non-secret random value)
+ * @param {number} salt_len the length of `salt`
+ * @param {Uint8Array} ikm input keying material
+ * @param {number} ikm_len the length of `ikm`
  */
-Module.ecc_kdf_hkdf_sha512_extract = (prk, salt, salt_len, ikm, ikm_len) => {
+Module.ecc_kdf_hkdf_sha512_extract = (
+    prk,
+    salt, salt_len,
+    ikm, ikm_len
+) => {
     const pSalt = mput(salt, 0, salt_len);
     const pIkm = mput(ikm, pSalt + salt_len, ikm_len);
     const pPrk = pIkm + ikm_len;
 
-    const op = _ecc_kdf_hkdf_sha512_extract(pPrk, pSalt, salt_len, pIkm, ikm_len);
+    const r = _ecc_kdf_hkdf_sha512_extract(pPrk, pSalt, salt_len, pIkm, ikm_len);
+
     mget(pPrk, prk, 64);
     mzero(salt_len + ikm_len + 64);
-    return op;
+    return r;
 }
 
 /**
- * @param {Uint8Array} out
- * @param {number} len
- * @param {Uint8Array} info
- * @param {Uint8Array} prk
- * @returns {number}
+ * Computes the HKDF-SHA-512 expand of the input using a key.
+ *
+ * See https://datatracker.ietf.org/doc/html/rfc5869
+ *
+ * @param {Uint8Array} okm (output) output keying material of length `len`
+ * @param {Uint8Array} prk a pseudorandom key
+ * @param {Uint8Array} info optional context and application specific information
+ * @param {number} info_len length of `info`
+ * @param {number} len length of output keying material in octets
  */
-Module.ecc_kdf_hkdf_sha512_expand = (out, prk, info, len) => {
-    const info_len = info.length;
+Module.ecc_kdf_hkdf_sha512_expand = (
+    okm,
+    prk,
+    info, info_len,
+    len
+) => {
     const pPrk = mput(prk, 0, 64);
     const pInfo = mput(info, pPrk + 64, info_len);
-    const pOut = pInfo + info_len;
+    const pOkm = pInfo + info_len;
 
-    const op = _ecc_kdf_hkdf_sha512_expand(pOut, pPrk, pInfo, info_len, len);
-    mget(pOut, out, len);
+    const r = _ecc_kdf_hkdf_sha512_expand(
+        pOkm,
+        pPrk,
+        pInfo, info_len,
+        len
+    );
+
+    mget(pOkm, okm, len);
     mzero(64 + info_len + len);
-    return op;
+    return r;
 }
 
 // ed25519
@@ -315,68 +540,6 @@ Module.ecc_ed25519_random = (p) => {
     _ecc_ed25519_random(pP);
     arraycopy(HEAPU8, pP, p, 0, 32);
 }
-
-// ristretto255
-
-/**
- * @param {Uint8Array} p
- * @param {Uint8Array} r
- * @returns {number}
- */
-Module.ecc_ristretto255_from_hash = (p, r) => {
-    arraycopy(r, 0, HEAPU8, 0, 64);
-    const pR = 0;
-    const pP = pR + 64;
-    const op = _ecc_ristretto255_from_hash(pP, pR);
-    arraycopy(HEAPU8, pP, p, 0, 32);
-    return op;
-}
-
-/**
- * @param {Uint8Array} r
- */
-Module.ecc_ristretto255_scalar_random = (r) => {
-    const pR = 0;
-    _ecc_ristretto255_scalar_random(pR);
-    arraycopy(HEAPU8, 0, r, 0, 32);
-}
-
-/**
- * @param {Uint8Array} recip
- * @param {Uint8Array} s
- * @returns {number}
- */
-Module.ecc_ristretto255_scalar_invert = (recip, s) => {
-    arraycopy(s, 0, HEAPU8, 0, 32);
-    const pS = 0;
-    const pRecip = pS + 32;
-    const op = _ecc_ristretto255_scalar_invert(pRecip, pS);
-    arraycopy(HEAPU8, pRecip, recip, 0, 32);
-    return op;
-}
-
-// scalarmult
-
-/**
- * @param {Uint8Array} q
- * @param {Uint8Array} n
- * @param {Uint8Array} p
- * @returns {number}
- */
-Module.ecc_ristretto255_scalarmult = (q, n, p) => {
-    arraycopy(n, 0, HEAPU8, 0, 32);
-    arraycopy(p, 0, HEAPU8, 32, 32);
-
-    const pN = 0;
-    const pP = pN + 32;
-    const pQ = pP + 32;
-
-    const op = _ecc_ristretto255_scalarmult(pQ, pN, pP);
-    arraycopy(HEAPU8, pQ, q, 0, 32);
-    return op;
-}
-
-// sign
 
 /**
  * @param {Uint8Array} pk 32 bytes
@@ -425,6 +588,64 @@ Module.ecc_ed25519_sign_sk_to_curve25519 = (curve25519_sk, ed25519_sk) => {
 
     const op = _ecc_ed25519_sign_seed_keypair(pCurve25519_sk, pEd25519_sk);
     arraycopy(HEAPU8, pCurve25519_sk, curve25519_sk, 0, 32);
+    return op;
+}
+
+// ristretto255
+
+/**
+ * @param {Uint8Array} p
+ * @param {Uint8Array} r
+ * @returns {number}
+ */
+Module.ecc_ristretto255_from_hash = (p, r) => {
+    arraycopy(r, 0, HEAPU8, 0, 64);
+    const pR = 0;
+    const pP = pR + 64;
+    const op = _ecc_ristretto255_from_hash(pP, pR);
+    arraycopy(HEAPU8, pP, p, 0, 32);
+    return op;
+}
+
+/**
+ * @param {Uint8Array} r
+ */
+Module.ecc_ristretto255_scalar_random = (r) => {
+    const pR = 0;
+    _ecc_ristretto255_scalar_random(pR);
+    arraycopy(HEAPU8, 0, r, 0, 32);
+}
+
+/**
+ * @param {Uint8Array} recip
+ * @param {Uint8Array} s
+ * @returns {number}
+ */
+Module.ecc_ristretto255_scalar_invert = (recip, s) => {
+    arraycopy(s, 0, HEAPU8, 0, 32);
+    const pS = 0;
+    const pRecip = pS + 32;
+    const op = _ecc_ristretto255_scalar_invert(pRecip, pS);
+    arraycopy(HEAPU8, pRecip, recip, 0, 32);
+    return op;
+}
+
+/**
+ * @param {Uint8Array} q
+ * @param {Uint8Array} n
+ * @param {Uint8Array} p
+ * @returns {number}
+ */
+Module.ecc_ristretto255_scalarmult = (q, n, p) => {
+    arraycopy(n, 0, HEAPU8, 0, 32);
+    arraycopy(p, 0, HEAPU8, 32, 32);
+
+    const pN = 0;
+    const pP = pN + 32;
+    const pQ = pP + 32;
+
+    const op = _ecc_ristretto255_scalarmult(pQ, pN, pP);
+    arraycopy(HEAPU8, pQ, q, 0, 32);
     return op;
 }
 
@@ -486,6 +707,35 @@ Module.ecc_h2c_expand_message_xmd_sha512 = (
 // oprf
 
 /**
+ * Evaluates serialized representations of blinded group elements from the
+ * client as inputs.
+ *
+ * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-voprf-06#section-3.4.1.1
+ *
+ * @param {Uint8Array} evaluatedElement (output) evaluated element
+ * @param {Uint8Array} skS private key
+ * @param {Uint8Array} blindedElement blinded element
+ */
+Module.ecc_oprf_ristretto255_sha512_Evaluate = (
+    evaluatedElement, // 32
+    skS, // 32
+    blindedElement // 32
+) => {
+    const pSkS = mput(skS, 0, 32);
+    const pBlindedElement = mput(blindedElement, pSkS + 32, 32);
+    const pEvaluatedElement = pBlindedElement + 32;
+
+    _ecc_oprf_ristretto255_sha512_Evaluate(
+        pEvaluatedElement,
+        pSkS,
+        pBlindedElement
+    );
+
+    mget(pEvaluatedElement, evaluatedElement, 32);
+    mzero(32 + 32 + 32);
+}
+
+/**
  * Same as calling `ecc_oprf_ristretto255_sha512_Blind` with an
  * specified scalar blind.
  *
@@ -541,6 +791,40 @@ Module.ecc_oprf_ristretto255_sha512_Blind = (
     mget(pBlindedElement, blindedElement, 32);
     mget(pBlind, blind, 32);
     mzero(input_len + 32 + 32);
+}
+
+/**
+ * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-voprf-06#section-3.4.3.3
+ *
+ * @param {Uint8Array} output (output)
+ * @param {Uint8Array} input the input message
+ * @param {number} input_len the length of `blind`
+ * @param {Uint8Array} blind
+ * @param {Uint8Array} evaluatedElement
+ * @param {number} mode mode to build the internal DST string (modeBase=0x00, modeVerifiable=0x01)
+ */
+Module.ecc_oprf_ristretto255_sha512_Finalize = (
+    output,
+    input, input_len,
+    blind,
+    evaluatedElement,
+    mode
+) => {
+    const pInput = mput(input, 0, input_len);
+    const pBlind = mput(blind, pInput + input_len, 32);
+    const pEvaluatedElement = mput(evaluatedElement, pBlind + 32, 32);
+    const pOutput = pEvaluatedElement + 32;
+
+    _ecc_oprf_ristretto255_sha512_Finalize(
+        pOutput,
+        pInput, input_len,
+        pBlind,
+        pEvaluatedElement,
+        mode
+    );
+
+    mget(pOutput, output, 64);
+    mzero(input_len + 32 + 32 + 64);
 }
 
 // opaque

@@ -38,10 +38,15 @@ public final class libecc {
 
     // util
 
+    /**
+     * Zero the array `buf` up to `len` elements.
+     *
+     * @param buf the byte array
+     * @param len the amount of elements to zero
+     */
     public static void ecc_memzero(byte[] buf, int len) {
-        for (int i = 0; i < len; i++) {
+        for (int i = 0; i < len; i++)
             buf[i] = 0;
-        }
     }
 
     /**
@@ -51,6 +56,283 @@ public final class libecc {
      * @param len the number of bytes to fill
      */
     public static native void ecc_randombytes(byte[] buf, int len);
+
+    /**
+     * Concatenates two byte arrays. Sames as a || b.
+     * <p>
+     * a || b: denotes the concatenation of byte strings a and b. For
+     * example, "ABC" || "DEF" == "ABCDEF".
+     * <p>
+     * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-hash-to-curve-11#section-4
+     *
+     * @param out    (output) result of the concatenation
+     * @param a1     first byte array
+     * @param a1_len the length of `a1`
+     * @param a2     second byte array
+     * @param a2_len the length of `a2`
+     */
+    public static native void ecc_concat2(
+        byte[] out,
+        byte[] a1, int a1_len,
+        byte[] a2, int a2_len
+    );
+
+    /**
+     * Same as calling ecc_concat2 but with three byte arrays.
+     *
+     * @param out    (output) result of the concatenation
+     * @param a1     first byte array
+     * @param a1_len the length of `a1`
+     * @param a2     second byte array
+     * @param a2_len the length of `a2`
+     * @param a3     third byte array
+     * @param a3_len the length of `a3`
+     */
+    public static native void ecc_concat3(
+        byte[] out,
+        byte[] a1, int a1_len,
+        byte[] a2, int a2_len,
+        byte[] a3, int a3_len
+    );
+
+    /**
+     * Same as calling ecc_concat2 but with four byte arrays.
+     *
+     * @param out    (output) result of the concatenation
+     * @param a1     first byte array
+     * @param a1_len the length of `a1`
+     * @param a2     second byte array
+     * @param a2_len the length of `a2`
+     * @param a3     third byte array
+     * @param a3_len the length of `a4`
+     * @param a4     fourth byte array
+     * @param a4_len the length of `a4`
+     */
+    public static native void ecc_concat4(
+        byte[] out,
+        byte[] a1, int a1_len,
+        byte[] a2, int a2_len,
+        byte[] a3, int a3_len,
+        byte[] a4, int a4_len
+    );
+
+    /**
+     * For byte strings a and b, ecc_strxor(a, b) returns the bitwise XOR of
+     * the two byte strings. For example, ecc_strxor("abc", "XYZ") == "9;9" (the
+     * strings in this example are ASCII literals, but ecc_strxor is defined for
+     * arbitrary byte strings).
+     * <p>
+     * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-hash-to-curve-11#section-4
+     *
+     * @param out (output) result of the operation
+     * @param a   first byte array
+     * @param b   second byte array
+     * @param len length of both `a` and `b`
+     */
+    public static native void ecc_strxor(byte[] out, byte[] a, byte[] b, int len);
+
+    /**
+     * I2OSP converts a nonnegative integer to an octet string of a
+     * specified length.
+     * <p>
+     * See https://datatracker.ietf.org/doc/html/rfc8017#section-4.1
+     *
+     * @param out  (output) corresponding octet string of length xLen
+     * @param x    nonnegative integer to be converted
+     * @param xLen intended length of the resulting octet string
+     */
+    public static native void ecc_I2OSP(byte[] out, int x, int xLen);
+
+    /**
+     * Takes two pointers to unsigned numbers encoded in little-endian
+     * format and returns:
+     * <p>
+     * -1 if a < b
+     * 0 if a == b
+     * 1 if a > b
+     * <p>
+     * The comparison is done in constant time
+     *
+     * @param a   first unsigned integer argument
+     * @param b   second unsigned integer argument
+     * @param len the length of both `a` and `b`
+     */
+    public static native int ecc_compare(byte[] a, byte[] b, int len);
+
+    /**
+     * Takes a byte array and test if it contains only zeros. It runs
+     * in constant-time.
+     *
+     * @param n   the byte array
+     * @param len the length of `n`
+     * @return 0 if non-zero bits are found
+     */
+    public static native int ecc_is_zero(byte[] n, int len);
+
+    /**
+     * Takes a pointer to an arbitrary-long unsigned integer encoded in
+     * little-endian format, and increments it. It runs in constant-time.
+     * <p>
+     * Can be used to increment nonces in constant time.
+     *
+     * @param n   (input/output) unsigned integer
+     * @param len length of `n`
+     */
+    public static native void ecc_increment(byte[] n, int len);
+
+    /**
+     * Takes two pointers to unsigned numbers encoded in little-endian
+     * format, computes (a + b) mod 2^(8*len) and store the result in `a`.
+     * It runs in constant-time.
+     *
+     * @param a   (input/output) first unsigned integer argument
+     * @param b   second unsigned integer argument
+     * @param len the length of both `a` and `b`
+     */
+    public static native void ecc_add(byte[] a, byte[] b, int len);
+
+    /**
+     * Takes two pointers to unsigned numbers encoded in little-endian
+     * format, computes (a - b) mod 2^(8*len) and store the result in `a`.
+     * It runs in constant-time.
+     *
+     * @param a   (input/output) first unsigned integer argument
+     * @param b   second unsigned integer argument
+     * @param len the length of both `a` and `b`
+     */
+    public static native void ecc_sub(byte[] a, byte[] b, int len);
+
+    // hash
+
+    /**
+     * Computes the SHA-256 of a given input.
+     * <p>
+     * See https://en.wikipedia.org/wiki/SHA-2
+     *
+     * @param digest    (output) the SHA-256 of the input
+     * @param input     the input message
+     * @param input_len the length of `input`
+     */
+    public static native void ecc_hash_sha256(byte[] digest, byte[] input, int input_len);
+
+    /**
+     * Computes the SHA-512 of a given input.
+     * <p>
+     * See https://en.wikipedia.org/wiki/SHA-2
+     *
+     * @param digest    (output) the SHA-512 of the input
+     * @param input     the input message
+     * @param input_len the length of `input`
+     */
+    public static native void ecc_hash_sha512(byte[] digest, byte[] input, int input_len);
+
+    // mac
+
+    /**
+     * Computes the HMAC-SHA-256 of the input stream.
+     * <p>
+     * See https://datatracker.ietf.org/doc/html/rfc2104
+     * See https://datatracker.ietf.org/doc/html/rfc4868
+     *
+     * @param digest   (output) the HMAC-SHA-256 of the input
+     * @param text     the input message
+     * @param text_len the length of `input`
+     * @param key      authentication key
+     */
+    public static native void ecc_mac_hmac_sha256(
+        byte[] digest,
+        byte[] text, int text_len,
+        byte[] key
+    );
+
+    /**
+     * Computes the HMAC-SHA-512 of the input stream.
+     * <p>
+     * See https://datatracker.ietf.org/doc/html/rfc2104
+     * See https://datatracker.ietf.org/doc/html/rfc4868
+     *
+     * @param digest   (output) the HMAC-SHA-512 of the input
+     * @param text     the input message
+     * @param text_len the length of `input`
+     * @param key      authentication key
+     */
+    public static native void ecc_mac_hmac_sha512(
+        byte[] digest,
+        byte[] text, int text_len,
+        byte[] key
+    );
+
+    // kdf
+
+    /**
+     * Computes the HKDF-SHA-256 extract of the input using a key material.
+     * <p>
+     * See https://datatracker.ietf.org/doc/html/rfc5869
+     *
+     * @param prk      (output) a pseudorandom key
+     * @param salt     optional salt value (a non-secret random value)
+     * @param salt_len the length of `salt`
+     * @param ikm      input keying material
+     * @param ikm_len  the length of `ikm`
+     */
+    public static native void ecc_kdf_hkdf_sha256_extract(
+        byte[] prk,
+        byte[] salt, int salt_len,
+        byte[] ikm, int ikm_len
+    );
+
+    /**
+     * Computes the HKDF-SHA-256 expand of the input using a key.
+     * <p>
+     * See https://datatracker.ietf.org/doc/html/rfc5869
+     *
+     * @param okm      (output) output keying material of length `len`
+     * @param prk      a pseudorandom key
+     * @param info     optional context and application specific information
+     * @param info_len length of `info`
+     * @param len      length of output keying material in octets
+     */
+    public static native void ecc_kdf_hkdf_sha256_expand(
+        byte[] okm,
+        byte[] prk,
+        byte[] info, int info_len,
+        int len
+    );
+
+    /**
+     * Computes the HKDF-SHA-512 extract of the input using a key material.
+     * <p>
+     * See https://datatracker.ietf.org/doc/html/rfc5869
+     *
+     * @param prk      (output) a pseudorandom key
+     * @param salt     optional salt value (a non-secret random value)
+     * @param salt_len the length of `salt`
+     * @param ikm      input keying material
+     * @param ikm_len  the length of `ikm`
+     */
+    public static native void ecc_kdf_hkdf_sha512_extract(
+        byte[] prk,
+        byte[] salt, int salt_len,
+        byte[] ikm, int ikm_len
+    );
+
+    /**
+     * Computes the HKDF-SHA-512 expand of the input using a key.
+     * <p>
+     * See https://datatracker.ietf.org/doc/html/rfc5869
+     *
+     * @param okm      (output) output keying material of length `len`
+     * @param prk      a pseudorandom key
+     * @param info     optional context and application specific information
+     * @param info_len length of `info`
+     * @param len      length of output keying material in octets
+     */
+    public static native void ecc_kdf_hkdf_sha512_expand(
+        byte[] okm,
+        byte[] prk,
+        byte[] info, int info_len,
+        int len
+    );
 
     // h2c
 
@@ -73,6 +355,42 @@ public final class libecc {
         byte[] msg, int msg_len,
         byte[] dst, int dst_len,
         int len
+    );
+
+    // oprf
+
+    /**
+     * Evaluates serialized representations of blinded group elements from the
+     * client as inputs.
+     * <p>
+     * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-voprf-06#section-3.4.1.1
+     *
+     * @param evaluatedElement (output) evaluated element
+     * @param skS              private key
+     * @param blindedElement   blinded element
+     */
+    public static native void ecc_oprf_ristretto255_sha512_Evaluate(
+        byte[] evaluatedElement,
+        byte[] skS,
+        byte[] blindedElement
+    );
+
+    /**
+     * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-voprf-06#section-3.4.3.3
+     *
+     * @param output           (output)
+     * @param input            the input message
+     * @param input_len        the length of `blind`
+     * @param blind
+     * @param evaluatedElement
+     * @param mode             mode to build the internal DST string (modeBase=0x00, modeVerifiable=0x01)
+     */
+    public static native void ecc_oprf_ristretto255_sha512_Finalize(
+        byte[] output,
+        byte[] input, int input_len,
+        byte[] blind,
+        byte[] evaluatedElement,
+        int mode
     );
 
     // opaque

@@ -6,16 +6,27 @@
  */
 
 import liboprf_module from "./liboprf.js";
-import {
-    I2OSP,
-    str2bin,
-    len,
-    concat,
-} from "./util.js";
 
 const libecc_module = liboprf_module;
 
-// https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-voprf-06#section-5.1
+/**
+ * Evaluates serialized representations of blinded group elements from the
+ * client as inputs.
+ *
+ * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-voprf-06#section-3.4.1.1
+ *
+ * @param {Uint8Array} skS private key
+ * @param {Uint8Array} blindedElement blinded element
+ * @return {Promise<Uint8Array>} evaluated element
+ */
+export async function oprf_ristretto255_sha512_Evaluate(skS, blindedElement) {
+    const libecc = await libecc_module();
+
+    let evaluatedElement = new Uint8Array(32);
+    libecc.ecc_oprf_ristretto255_sha512_Evaluate(evaluatedElement, skS, blindedElement);
+
+    return evaluatedElement;
+}
 
 /**
  * Same as calling `oprf_ristretto255_sha512_Blind` with an
@@ -63,79 +74,23 @@ export async function oprf_ristretto255_sha512_Blind(input) {
 }
 
 /**
- * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-voprf-06#section-3.4.3.2
- *
- * @param {Uint8Array} blind
- * @param {Uint8Array} evaluatedElement
- * @returns {Uint8Array} unblindedElement
- */
-export async function oprf_ristretto255_sha512_Unblind(blind, evaluatedElement) {
-    const libecc = await libecc_module();
-
-    // Z = GG.DeserializeElement(evaluatedElement)
-    // N = (blind^(-1)) * Z
-    // unblindedElement = GG.SerializeElement(N)
-    let invertedBlind = new Uint8Array(32);
-    libecc.ecc_ristretto255_scalar_invert(invertedBlind, blind);
-    let unblindedElement = new Uint8Array(32);
-    libecc.ecc_ristretto255_scalarmult(unblindedElement, invertedBlind, evaluatedElement);
-
-    return unblindedElement;
-}
-
-/**
  * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-voprf-06#section-3.4.3.3
  *
- * @param {Uint8Array} input
- * @param {Uint8Array} blind
- * @param {Uint8Array} evaluatedElement
- * @returns {Uint8Array} opaque output
+ * @param input the input message
+ * @param blind
+ * @param evaluatedElement
  */
 export async function oprf_ristretto255_sha512_Finalize(input, blind, evaluatedElement) {
     const libecc = await libecc_module();
 
-    // unblindedElement = Unblind(blind, evaluatedElement)
-    //
-    // finalizeDST = "VOPRF06-Finalize-" || self.contextString
-    // hashInput = I2OSP(len(input), 2) || input ||
-    //             I2OSP(len(unblindedElement), 2) || unblindedElement ||
-    //             I2OSP(len(finalizeDST), 2) || finalizeDST
-    // return Hash(hashInput)
-
-    const unblindedElement = await oprf_ristretto255_sha512_Unblind(blind, evaluatedElement);
-
-    // https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-voprf-06#section-3.2
-    // contextString = I2OSP(modeBase, 1) || I2OSP(suite.ID, 2)
-    // modeBase = 0x00
-    // suite id = 0x0001
-    const contextString = concat(I2OSP(0x00, 1), I2OSP(0x0001, 2));
-
-    // domain separation tag (DST)
-    const finalizeDST = concat(str2bin("VOPRF06-Finalize-"), contextString);
-    const hashInput = concat(I2OSP(len(input), 2), concat(input,
-        concat(I2OSP(len(unblindedElement), 2), concat(unblindedElement,
-            concat(I2OSP(len(finalizeDST), 2), finalizeDST)))));
-
     let output = new Uint8Array(64);
-    libecc.ecc_hash_sha512(output, hashInput);
+    libecc.ecc_oprf_ristretto255_sha512_Finalize(
+        output,
+        input, input.length,
+        blind,
+        evaluatedElement,
+        0x00
+    );
+
     return output;
-}
-
-/**
- * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-voprf-06#section-3.4.1.1
- *
- * @param {Uint8Array} skS
- * @param {Uint8Array} blindedElement
- * @returns {Uint8Array}
- */
-export async function oprf_ristretto255_sha512_Evaluate(skS, blindedElement) {
-    const libecc = await libecc_module();
-
-    // R = GG.DeserializeElement(blindedElement)
-    // Z = skS * R
-    // evaluatedElement = GG.SerializeElement(Z)
-    let evaluatedElement = new Uint8Array(32);
-    libecc.ecc_ristretto255_scalarmult(evaluatedElement, skS, blindedElement);
-
-    return evaluatedElement;
 }

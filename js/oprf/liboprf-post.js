@@ -52,85 +52,36 @@ Module.ecc_randombytes = (buf, n) => {
     mzero(n);
 }
 
-// hash
-
-/**
- * @param {Uint8Array} out
- * @param {Uint8Array} input
- */
-Module.ecc_hash_sha512 = (out, input) => {
-    arraycopy(input, 0, HEAPU8, 0, input.length);
-
-    let pIn = 0;
-    let len = input.length;
-    let pOut = pIn + len;
-
-    _ecc_hash_sha512(pOut, pIn, len);
-
-    arraycopy(HEAPU8, pOut, out, 0, 64);
-}
-
-// ristretto255
-
-/**
- * @param {Uint8Array} p
- * @param {Uint8Array} r
- * @returns {number}
- */
-Module.ecc_ristretto255_from_hash = (p, r) => {
-    arraycopy(r, 0, HEAPU8, 0, 64);
-    const pR = 0;
-    const pP = pR + 64;
-    const op = _ecc_ristretto255_from_hash(pP, pR);
-    arraycopy(HEAPU8, pP, p, 0, 32);
-    return op;
-}
-
-/**
- * @param {Uint8Array} r
- */
-Module.ecc_ristretto255_scalar_random = (r) => {
-    const pR = 0;
-    _ecc_ristretto255_scalar_random(pR);
-    arraycopy(HEAPU8, 0, r, 0, 32);
-}
-
-/**
- * @param {Uint8Array} recip
- * @param {Uint8Array} s
- * @returns {number}
- */
-Module.ecc_ristretto255_scalar_invert = (recip, s) => {
-    arraycopy(s, 0, HEAPU8, 0, 32);
-    const pS = 0;
-    const pRecip = pS + 32;
-    const op = _ecc_ristretto255_scalar_invert(pRecip, pS);
-    arraycopy(HEAPU8, pRecip, recip, 0, 32);
-    return op;
-}
-
-// scalarmult
-
-/**
- * @param {Uint8Array} q
- * @param {Uint8Array} n
- * @param {Uint8Array} p
- * @returns {number}
- */
-Module.ecc_ristretto255_scalarmult = (q, n, p) => {
-    arraycopy(n, 0, HEAPU8, 0, 32);
-    arraycopy(p, 0, HEAPU8, 32, 32);
-
-    const pN = 0;
-    const pP = pN + 32;
-    const pQ = pP + 32;
-
-    const op = _ecc_ristretto255_scalarmult(pQ, pN, pP);
-    arraycopy(HEAPU8, pQ, q, 0, 32);
-    return op;
-}
-
 // oprf
+
+/**
+ * Evaluates serialized representations of blinded group elements from the
+ * client as inputs.
+ *
+ * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-voprf-06#section-3.4.1.1
+ *
+ * @param {Uint8Array} evaluatedElement (output) evaluated element
+ * @param {Uint8Array} skS private key
+ * @param {Uint8Array} blindedElement blinded element
+ */
+Module.ecc_oprf_ristretto255_sha512_Evaluate = (
+    evaluatedElement, // 32
+    skS, // 32
+    blindedElement // 32
+) => {
+    const pSkS = mput(skS, 0, 32);
+    const pBlindedElement = mput(blindedElement, pSkS + 32, 32);
+    const pEvaluatedElement = pBlindedElement + 32;
+
+    _ecc_oprf_ristretto255_sha512_Evaluate(
+        pEvaluatedElement,
+        pSkS,
+        pBlindedElement
+    );
+
+    mget(pEvaluatedElement, evaluatedElement, 32);
+    mzero(32 + 32 + 32);
+}
 
 /**
  * Same as calling `ecc_oprf_ristretto255_sha512_Blind` with an
@@ -188,4 +139,38 @@ Module.ecc_oprf_ristretto255_sha512_Blind = (
     mget(pBlindedElement, blindedElement, 32);
     mget(pBlind, blind, 32);
     mzero(input_len + 32 + 32);
+}
+
+/**
+ * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-voprf-06#section-3.4.3.3
+ *
+ * @param {Uint8Array} output (output)
+ * @param {Uint8Array} input the input message
+ * @param {number} input_len the length of `blind`
+ * @param {Uint8Array} blind
+ * @param {Uint8Array} evaluatedElement
+ * @param {number} mode mode to build the internal DST string (modeBase=0x00, modeVerifiable=0x01)
+ */
+Module.ecc_oprf_ristretto255_sha512_Finalize = (
+    output,
+    input, input_len,
+    blind,
+    evaluatedElement,
+    mode
+) => {
+    const pInput = mput(input, 0, input_len);
+    const pBlind = mput(blind, pInput + input_len, 32);
+    const pEvaluatedElement = mput(evaluatedElement, pBlind + 32, 32);
+    const pOutput = pEvaluatedElement + 32;
+
+    _ecc_oprf_ristretto255_sha512_Finalize(
+        pOutput,
+        pInput, input_len,
+        pBlind,
+        pEvaluatedElement,
+        mode
+    );
+
+    mget(pOutput, output, 64);
+    mzero(input_len + 32 + 32 + 64);
 }
