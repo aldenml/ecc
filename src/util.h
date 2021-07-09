@@ -10,17 +10,20 @@
 
 #include "export.h"
 
+// internal
 #define ECC_UNUSED(x) (void)(x)
 
+/**
+ * Tries to effectively zero the memory pointed by `buf` even
+ * if optimizations are being applied to the compiler.
+ *
+ * @param buf the memory pointer
+ * @param len the length of `buf`
+ */
 ECC_OPRF_EXPORT
 ECC_OPAQUE_EXPORT
 ECC_EXPORT
 void ecc_memzero(byte_t *buf, int len);
-
-ECC_OPRF_EXPORT
-ECC_OPAQUE_EXPORT
-ECC_EXPORT
-int ecc_compare(const byte_t *a, const byte_t *b, int len);
 
 /**
  * Fills `n` bytes at buf with an unpredictable sequence of bytes.
@@ -61,17 +64,30 @@ void ecc_hex2bin(byte_t *bin, const char *hex, int hex_len);
  *
  * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-hash-to-curve-11#section-4
  *
- * @param out
- * @param a
- * @param b
+ * @param out (output) result of the concatenation
+ * @param a1 first byte array
+ * @param a1_len the length of `a1`
+ * @param a2 second byte array
+ * @param a2_len the length of `a2`
  */
 ECC_EXPORT
-byte_t *ecc_concat2(
+void ecc_concat2(
     byte_t *out,
     const byte_t *a1, int a1_len,
     const byte_t *a2, int a2_len
 );
 
+/**
+ * Same as calling ecc_concat2 but with three byte arrays.
+ *
+ * @param out (output) result of the concatenation
+ * @param a1 first byte array
+ * @param a1_len the length of `a1`
+ * @param a2 second byte array
+ * @param a2_len the length of `a2`
+ * @param a3 third byte array
+ * @param a3_len the length of `a3`
+ */
 ECC_EXPORT
 void ecc_concat3(
     byte_t *out,
@@ -80,6 +96,19 @@ void ecc_concat3(
     const byte_t *a3, int a3_len
 );
 
+/**
+ * Same as calling ecc_concat2 but with four byte arrays.
+ *
+ * @param out (output) result of the concatenation
+ * @param a1 first byte array
+ * @param a1_len the length of `a1`
+ * @param a2 second byte array
+ * @param a2_len the length of `a2`
+ * @param a3 third byte array
+ * @param a3_len the length of `a4`
+ * @param a4 fourth byte array
+ * @param a4_len the length of `a4`
+ */
 ECC_EXPORT
 void ecc_concat4(
     byte_t *out,
@@ -89,23 +118,97 @@ void ecc_concat4(
     const byte_t *a4, int a4_len
 );
 
+/**
+ * For byte strings a and b, ecc_strxor(a, b) returns the bitwise XOR of
+ * the two byte strings. For example, ecc_strxor("abc", "XYZ") == "9;9" (the
+ * strings in this example are ASCII literals, but ecc_strxor is defined for
+ * arbitrary byte strings).
+ *
+ * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-hash-to-curve-11#section-4
+ *
+ * @param out (output) result of the operation
+ * @param a first byte array
+ * @param b second byte array
+ * @param len length of both `a` and `b`
+ */
 ECC_EXPORT
 void ecc_strxor(byte_t *out, const byte_t *a, const byte_t *b, int len);
 
-// https://datatracker.ietf.org/doc/html/rfc8017#section-4.1
+/**
+ * I2OSP converts a nonnegative integer to an octet string of a
+ * specified length.
+ *
+ * See https://datatracker.ietf.org/doc/html/rfc8017#section-4.1
+ *
+ * @param out (output) corresponding octet string of length xLen
+ * @param x nonnegative integer to be converted
+ * @param xLen intended length of the resulting octet string
+ */
 ECC_EXPORT
 void ecc_I2OSP(byte_t *out, int x, int xLen);
 
+/**
+ * Takes two pointers to unsigned numbers encoded in little-endian
+ * format and returns:
+ *
+ * -1 if a < b
+ * 0 if a == b
+ * 1 if a > b
+ *
+ * The comparison is done in constant time
+ *
+ * @param a first unsigned integer argument
+ * @param b second unsigned integer argument
+ * @param len the length of both `a` and `b`
+ */
 ECC_EXPORT
-int ecc_is_zero(const BYTE *n, int len);
+int ecc_compare(const byte_t *a, const byte_t *b, int len);
 
+/**
+ * Takes a byte array and test if it contains only zeros. It runs
+ * in constant-time.
+ *
+ * @param n the byte array
+ * @param len the length of `n`
+ * @return 0 if non-zero bits are found
+ */
 ECC_EXPORT
-void ecc_increment(BYTE *n, int len);
+int ecc_is_zero(const byte_t *n, int len);
 
+/**
+ * Takes a pointer to an arbitrary-long unsigned integer encoded in
+ * little-endian format, and increments it. It runs in constant-time.
+ *
+ * Can be used to increment nonces in constant time.
+ *
+ * @param n (input/output) unsigned integer
+ * @param len length of `n`
+ */
 ECC_EXPORT
-void ecc_add(BYTE *a, const BYTE *b, int len);
+void ecc_increment(byte_t *n, int len);
 
+/**
+ * Takes two pointers to unsigned numbers encoded in little-endian
+ * format, computes (a + b) mod 2^(8*len) and store the result in `a`.
+ * It runs in constant-time.
+ *
+ * @param a (input/output) first unsigned integer argument
+ * @param b second unsigned integer argument
+ * @param len the length of both `a` and `b`
+ */
 ECC_EXPORT
-void ecc_sub(BYTE *a, const BYTE *b, int len);
+void ecc_add(byte_t *a, const byte_t *b, int len);
+
+/**
+ * Takes two pointers to unsigned numbers encoded in little-endian
+ * format, computes (a - b) mod 2^(8*len) and store the result in `a`.
+ * It runs in constant-time.
+ *
+ * @param a (input/output) first unsigned integer argument
+ * @param b second unsigned integer argument
+ * @param len the length of both `a` and `b`
+ */
+ECC_EXPORT
+void ecc_sub(byte_t *a, const byte_t *b, int len);
 
 #endif // ECC_UTIL_H

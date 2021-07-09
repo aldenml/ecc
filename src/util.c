@@ -13,10 +13,6 @@ void ecc_memzero(byte_t *buf, int len) {
     sodium_memzero(buf, len);
 }
 
-int ecc_compare(const byte_t *a, const byte_t *b, int len) {
-    return sodium_compare(a, b, len);
-}
-
 void ecc_randombytes(byte_t *buf, int n) {
     randombytes_buf(buf, n);
 }
@@ -29,14 +25,13 @@ void ecc_hex2bin(byte_t *bin, const char *hex, int hex_len) {
     sodium_hex2bin(bin, hex_len / 2, hex, hex_len, NULL, NULL, NULL);
 }
 
-byte_t *ecc_concat2(
+void ecc_concat2(
     byte_t *out,
     const byte_t *a1, const int a1_len,
     const byte_t *a2, const int a2_len
 ) {
     memcpy(out, a1, a1_len); out += a1_len;
-    memcpy(out, a2, a2_len); out += a2_len;
-    return out;
+    memcpy(out, a2, a2_len);
 }
 
 void ecc_concat3(
@@ -76,18 +71,22 @@ void ecc_I2OSP(byte_t *out, int x, int xLen) {
     }
 }
 
-int ecc_is_zero(const BYTE *n, int len) {
+int ecc_compare(const byte_t *a, const byte_t *b, int len) {
+    return sodium_compare(a, b, len);
+}
+
+int ecc_is_zero(const byte_t *n, int len) {
     return sodium_is_zero(n, len);
 }
 
-void ecc_increment(BYTE *n, int len) {
+void ecc_increment(byte_t *n, int len) {
     return sodium_increment(n, len);
 }
 
-void ecc_add(BYTE *a, const BYTE *b, int len) {
+void ecc_add(byte_t *a, const byte_t *b, int len) {
     sodium_add(a, b, len);
 }
 
-void ecc_sub(BYTE *a, const BYTE *b, int len) {
+void ecc_sub(byte_t *a, const byte_t *b, int len) {
     sodium_sub(a, b, len);
 }

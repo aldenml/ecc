@@ -34,8 +34,8 @@ void ecc_kdf_hkdf_sha256_extract(
 
 void ecc_kdf_hkdf_sha256_expand(
     byte_t *okm,
-    const byte_t *info, int info_len,
     const byte_t *prk,
+    const byte_t *info, int info_len,
     int len
 ) {
     crypto_auth_hmacsha256_state st;

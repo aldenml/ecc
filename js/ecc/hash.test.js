@@ -17,8 +17,9 @@ import assert from "assert";
 
 async function hash_ecc_hash_sha256(s) {
     const libecc = await libecc_module();
+    let input = str2bin(s);
     let out = new Uint8Array(32);
-    libecc.ecc_hash_sha256(out, str2bin(s));
+    libecc.ecc_hash_sha256(out, input, input.length);
     return bin2hex(out);
 }
 
@@ -64,7 +65,8 @@ describe("ecc_hash_sha256", () => {
 async function hash_ecc_hash_sha512(s) {
     const libecc = await libecc_module();
     let out = new Uint8Array(64);
-    libecc.ecc_hash_sha512(out, str2bin(s));
+    let input = str2bin(s);
+    libecc.ecc_hash_sha512(out, input, input.length);
     return bin2hex(out);
 }
 

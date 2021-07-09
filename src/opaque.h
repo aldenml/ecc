@@ -607,16 +607,18 @@ void ecc_opaque_ristretto255_sha512_3DH_Derive_Secret(
  *
  * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-05#section-6.2.2.1
  *
- * @param preamble
- * @param context
- * @param context_len
- * @param client_identity
- * @param client_identity_len
- * @param ke1
- * @param server_identity
- * @param server_identity_len
- * @param inner_ke2
- * @return
+ * @param preamble (output) the protocol transcript with identities and messages
+ * @param context optional shared context information
+ * @param context_len the length of `context`
+ * @param client_identity the optional encoded client identity
+ * @param client_identity_len the length of `client_identity`
+ * @param ke1 a KE1 message structure
+ * @param ke1_len the length of `ke1`
+ * @param server_identity the optional encoded server identity
+ * @param server_identity_len the length of `server_identity`
+ * @param inner_ke2 an inner_ke2 structure as defined in KE2
+ * @param inner_ke2_len the length of `inner_ke2`
+ * @return the protocol transcript with identities and messages
  */
 ECC_OPAQUE_EXPORT
 ECC_EXPORT
@@ -624,9 +626,9 @@ int ecc_opaque_ristretto255_sha512_3DH_Preamble(
     byte_t *preamble,
     const byte_t *context, int context_len,
     const byte_t *client_identity, int client_identity_len,
-    const byte_t *ke1,
+    const byte_t *ke1, int ke1_len,
     const byte_t *server_identity, int server_identity_len,
-    const byte_t *inner_ke2
+    const byte_t *inner_ke2, int inner_ke2_len
 );
 
 /**

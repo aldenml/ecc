@@ -26,7 +26,7 @@ describe("ecc_kdf_hkdf_sha256", () => {
         let prk = new Uint8Array(32);
         libecc.ecc_kdf_hkdf_sha256_extract(prk, salt, salt.length, ikm, ikm.length);
         let okm = new Uint8Array(outLen);
-        libecc.ecc_kdf_hkdf_sha256_expand(okm, info, info.length, prk, outLen);
+        libecc.ecc_kdf_hkdf_sha256_expand(okm, prk, info, info.length, outLen);
 
         assert.strictEqual(bin2hex(prk), "077709362c2e32df0ddc3f0dc47bba6390b6c73bb50f9c3122ec844ad7c2b3e5");
         assert.strictEqual(bin2hex(okm), "3cb25f25faacd57a90434f64d0362f2a2d2d0a90cf1a5a4c5db02d56ecc4c5bf34007208d5b887185865");
@@ -42,7 +42,7 @@ describe("ecc_kdf_hkdf_sha256", () => {
         let prk = new Uint8Array(32);
         libecc.ecc_kdf_hkdf_sha256_extract(prk, salt, salt.length, ikm, ikm.length);
         let okm = new Uint8Array(outLen);
-        libecc.ecc_kdf_hkdf_sha256_expand(okm, info, info.length, prk, outLen);
+        libecc.ecc_kdf_hkdf_sha256_expand(okm, prk, info, info.length, outLen);
 
         assert.strictEqual(bin2hex(prk), "19ef24a32c717b167f33a91d6f648bdf96596776afdb6377ac434c1c293ccb04");
         assert.strictEqual(bin2hex(okm), "8da4e775a563c18f715f802a063c5a31b8a11f5c5ee1879ec3454e5f3c738d2d9d201395faa4b61a96c8");
@@ -84,7 +84,7 @@ describe("ecc_kdf_hkdf_sha512", () => {
         const outLen = 10;
         let okm = new Uint8Array(outLen);
         context[0] = 10;
-        libecc.ecc_kdf_hkdf_sha512_expand(okm, prk512, context, outLen);
+        libecc.ecc_kdf_hkdf_sha512_expand(okm, prk512, context, context.length, outLen);
         assert.strictEqual(bin2hex(okm), "046f63a1e2d606d7893e");
     });
 });

@@ -11,7 +11,6 @@ import {
 } from "./util.js";
 import {
     oprf_ristretto255_sha512_BlindWithScalar,
-    oprf_ristretto255_sha512_HashToGroup,
     oprf_ristretto255_sha512_Evaluate,
     oprf_ristretto255_sha512_Finalize,
 } from "./oprf.js";

@@ -48,6 +48,29 @@ static void opaque_CreateCleartextCredentials_test(void **state) {
     assert_int_equal(creds[65], 'd');
 }
 
+static void ecc_opaque_ristretto255_sha512_3DH_Preamble_test1(void **state) {
+    ECC_UNUSED(state);
+
+    byte_t context[4] = "abcd";
+    byte_t client_identity[7] = "client1";
+    byte_t ke1[3] = "111";
+    byte_t server_identity[7] = "server1";
+    byte_t inner_ke2[3] = "222";
+
+    byte_t preamble[256];
+    int len = ecc_opaque_ristretto255_sha512_3DH_Preamble(
+        preamble,
+        context, sizeof context,
+        client_identity, sizeof client_identity,
+        ke1, sizeof ke1,
+        server_identity, sizeof server_identity,
+        inner_ke2, sizeof inner_ke2
+    );
+
+    assert_memory_equal(preamble, "RFCXXXX\0\4abcd\0\7client1111\0\7server1222", len);
+    assert_int_equal(len, 37);
+}
+
 // https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-05#appendix-C.1
 
 static void opaque_ristretto255_sha512_CreateRegistrationRequestWithBlind_test1(void **state) {
@@ -258,6 +281,7 @@ static void opaque_ristretto255_sha512_RecoverPublicKey_test1(void **state) {
 int main() {
     const struct CMUnitTest tests[] = {
         cmocka_unit_test(opaque_CreateCleartextCredentials_test),
+        cmocka_unit_test(ecc_opaque_ristretto255_sha512_3DH_Preamble_test1),
         // ecc_opaque_ristretto255_sha512_CreateRegistrationRequestWithBlind
         cmocka_unit_test(opaque_ristretto255_sha512_CreateRegistrationRequestWithBlind_test1),
         cmocka_unit_test(opaque_ristretto255_sha512_CreateRegistrationRequestWithBlind_test2),

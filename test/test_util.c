@@ -10,9 +10,9 @@
 #include <setjmp.h>
 #include <string.h>
 #include <cmocka.h>
-#include <stdio.h>
 
 static void ecc_bin2hex_test1(void **state) {
+    ECC_UNUSED(state);
     const byte_t bin[2] = {0xab, 0xcd};
     char hex[5];
     ecc_bin2hex(hex, bin, 2);
@@ -20,6 +20,7 @@ static void ecc_bin2hex_test1(void **state) {
 }
 
 static void ecc_hex2bin_test1(void **state) {
+    ECC_UNUSED(state);
     const char hex[4] = "abcd";
     byte_t bin[2];
     ecc_hex2bin(bin, hex, 4);
@@ -28,6 +29,7 @@ static void ecc_hex2bin_test1(void **state) {
 }
 
 static void ecc_concat3_test1(void **state) {
+    ECC_UNUSED(state);
     byte_t a1[2] = "a1";
     byte_t a2[3] = "b22";
     byte_t a3[4] = "c333";
@@ -37,7 +39,29 @@ static void ecc_concat3_test1(void **state) {
     assert_memory_equal(r1, r2, 9);
 }
 
+static void ecc_concat4_test1(void **state) {
+    ECC_UNUSED(state);
+    byte_t a1[2] = "a1";
+    byte_t a2[3] = "b22";
+    byte_t a3[4] = "c333";
+    byte_t a4[5] = "d4444";
+    byte_t r1[14];
+    ecc_concat4(r1, a1, 2, a2, 3, a3, 4, a4, 5);
+    const byte_t r2[14] = "a1b22c333d4444";
+    assert_memory_equal(r1, r2, 14);
+}
+
+static void ecc_strxor_test1(void **state) {
+    ECC_UNUSED(state);
+    byte_t a[3] = "abc";
+    byte_t b[3] = "XYZ";
+    byte_t r[3];
+    ecc_strxor(r, a, b, 3);
+    assert_memory_equal(r, "9;9", 2);
+}
+
 static void ecc_I2OSP_test1(void **state) {
+    ECC_UNUSED(state);
     const char hex[4] = "abcd";
     byte_t bin[2];
     ecc_hex2bin(bin, hex, 4);
@@ -47,13 +71,11 @@ static void ecc_I2OSP_test1(void **state) {
 
 int main() {
     const struct CMUnitTest tests[] = {
-        // ecc_bin2hex
         cmocka_unit_test(ecc_bin2hex_test1),
-        // ecc_hex2bin
         cmocka_unit_test(ecc_hex2bin_test1),
-        // concat
         cmocka_unit_test(ecc_concat3_test1),
-        // ecc_I2OSP
+        cmocka_unit_test(ecc_concat4_test1),
+        cmocka_unit_test(ecc_strxor_test1),
         cmocka_unit_test(ecc_I2OSP_test1),
     };
 
