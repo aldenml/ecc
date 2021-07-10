@@ -8,7 +8,9 @@
 import org.gradle.api.tasks.testing.logging.TestExceptionFormat
 
 plugins {
-    id "java"
+    id "java-library"
+    id "maven-publish"
+    id "signing"
 }
 
 group = "org.ssohub"
@@ -47,4 +49,57 @@ tasks.test {
 
     systemProperty("java.library.path", file(".").absolutePath)
     environment("LD_LIBRARY_PATH", file(".").absolutePath)
+}
+
+jar {
+
+    from("../build") {
+        include("libecc-jvm.dylib")
+        into("lib")
+    }
+}
+
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            from components.java
+            pom {
+                name = "ecc"
+                description = "elliptic-curve cryptography"
+                url = "https://github.com/aldenml/ecc"
+                scm {
+                    connection = "scm:git:git://github.com/aldenml/ecc.git"
+                    developerConnection = "scm:git:ssh:git@github.com/aldenml/ecc.git"
+                    url = "https://github.com/aldenml/ecc"
+                }
+                licenses {
+                    license {
+                        name = "The MIT License"
+                        url = "https://github.com/aldenml/ecc/blob/master/LICENSE"
+                    }
+                }
+                developers {
+                    developer {
+                        id = "aldenml"
+                        name = "Alden Torres"
+                        email = "aldenml@gmail.com"
+                    }
+                }
+            }
+        }
+    }
+
+    repositories {
+        maven {
+            credentials {
+                username = property("ossrhUsername").toString()
+                password = property("ossrhPassword").toString()
+            }
+            url = uri("https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/")
+        }
+    }
+}
+
+signing {
+    sign publishing.publications.mavenJava
 }

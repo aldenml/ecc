@@ -97,7 +97,7 @@ public final class Opaque {
 
     /**
      * In order to make this method not to use dynamic memory allocation, there is a
-     * limit of credential_identifier to length <= 200.
+     * limit of credential_identifier to length &lt;= 200.
      * <p>
      * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-05#section-5.1.1.2
      *
