@@ -10,6 +10,6 @@ and [blst](https://github.com/supranational/blst).
 | Library |   |   |
 |---|---|---|
 | Java binding | [jvm](jvm) | [![maven](https://img.shields.io/maven-central/v/org.ssohub/ecc.svg?label=maven)](https://search.maven.org/search?q=g:%22org.ssohub%22%20AND%20a:%22ecc%22) |
-| Javascript binding | [js/ecc](js/ecc) | [![npmjs](https://img.shields.io/npm/v/@aldenml/ecc?label=npmjs)](https://www.npmjs.com/package/@aldenml/ecc) |
-| OPAQUE Asymmetric PAKE Protocol | [js/opaque](js/opaque) | [![npmjs](https://img.shields.io/npm/v/@aldenml/opaque?label=npmjs)](https://www.npmjs.com/package/@aldenml/opaque) |
-| OPRF Oblivious pseudo-random | [js/oprf](js/oprf) | [![npmjs](https://img.shields.io/npm/v/@aldenml/oprf?label=npmjs)](https://www.npmjs.com/package/@aldenml/oprf) |
+| Javascript binding | [js/ecc](js/ecc) | [![npm](https://img.shields.io/npm/v/@aldenml/ecc)](https://www.npmjs.com/package/@aldenml/ecc) |
+| OPAQUE Asymmetric PAKE Protocol | [js/opaque](js/opaque) | [![npm](https://img.shields.io/npm/v/@aldenml/opaque)](https://www.npmjs.com/package/@aldenml/opaque) |
+| OPRF Oblivious pseudo-random | [js/oprf](js/oprf) | [![npm](https://img.shields.io/npm/v/@aldenml/oprf)](https://www.npmjs.com/package/@aldenml/oprf) |

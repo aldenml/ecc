@@ -1,6 +1,6 @@
 # OPAQUE
 
-[![npmjs](https://img.shields.io/npm/v/@aldenml/opaque?label=npmjs)](https://www.npmjs.com/package/@aldenml/opaque)
+[![npm](https://img.shields.io/npm/v/@aldenml/opaque)](https://www.npmjs.com/package/@aldenml/opaque)
 
 The OPAQUE Asymmetric PAKE Protocol.
 

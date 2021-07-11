@@ -1,6 +1,6 @@
 # OPRF
 
-[![npmjs](https://img.shields.io/npm/v/@aldenml/oprf?label=npmjs)](https://www.npmjs.com/package/@aldenml/oprf)
+[![npm](https://img.shields.io/npm/v/@aldenml/oprf)](https://www.npmjs.com/package/@aldenml/oprf)
 
 Oblivious pseudo-random function using ristretto255.
 
