@@ -1,5 +1,7 @@
 # OPRF
 
+[![npmjs](https://img.shields.io/npm/v/@aldenml/oprf?label=npmjs)](https://www.npmjs.com/package/@aldenml/oprf)
+
 Oblivious pseudo-random function using ristretto255.
 
 This is an implementation of [draft-irtf-cfrg-voprf-06](https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-voprf-06)

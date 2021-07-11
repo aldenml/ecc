@@ -1,5 +1,7 @@
 # OPAQUE
 
+[![npmjs](https://img.shields.io/npm/v/@aldenml/opaque?label=npmjs)](https://www.npmjs.com/package/@aldenml/opaque)
+
 The OPAQUE Asymmetric PAKE Protocol.
 
 This is an implementation of [draft-irtf-cfrg-opaque-05](https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-05#section-6.2.4)
