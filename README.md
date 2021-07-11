@@ -2,6 +2,7 @@
 
 [![c](https://github.com/aldenml/ecc/actions/workflows/c.yml/badge.svg?branch=master)](https://github.com/aldenml/ecc/actions/workflows/c.yml)
 [![js](https://github.com/aldenml/ecc/actions/workflows/js.yml/badge.svg?branch=master)](https://github.com/aldenml/ecc/actions/workflows/js.yml)
+[![Codacy Badge](https://app.codacy.com/project/badge/Grade/5fac0b504c25497ca621938007bc1cf6)](https://app.codacy.com/gh/aldenml/ecc/dashboard)
 
 Set of libraries to work with elliptic-curve cryptography based on [libsodium](https://github.com/jedisct1/libsodium)
 and [blst](https://github.com/supranational/blst).
