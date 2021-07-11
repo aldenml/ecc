@@ -33,7 +33,6 @@ jobs:
 
       - name: jvm tests
         run: |
-          ./build-jvm.sh
           readelf -d jvm/libecc-jvm.so
           cd jvm
           ./gradlew test

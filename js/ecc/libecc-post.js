@@ -523,130 +523,144 @@ Module.ecc_kdf_hkdf_sha512_expand = (
 // ed25519
 
 /**
- * @param {Uint8Array} p
- * @returns {number}
+ * Checks that p represents a point on the edwards25519 curve, in canonical
+ * form, on the main subgroup, and that the point doesn't have a small order.
+ *
+ * @param {Uint8Array} p potential point to test
+ * @returns {number} 1 on success, and 0 if the checks didn't pass
  */
 Module.ecc_ed25519_is_valid_point = (p) => {
-    arraycopy(p, 0, HEAPU8, 0, 32);
-    const pP = 0;
-    return _ecc_ed25519_is_valid_point(pP);
+    const pP = mput(p, 0, 32);
+
+    const r = _ecc_ed25519_is_valid_point(pP);
+
+    mzero(32);
+    return r;
 }
 
 /**
- * @param {Uint8Array} p
+ * Fills p with the representation of a random group element.
+ *
+ * @param {Uint8Array} p (output) random group element
  */
 Module.ecc_ed25519_random = (p) => {
     const pP = 0;
+
     _ecc_ed25519_random(pP);
-    arraycopy(HEAPU8, pP, p, 0, 32);
+
+    mget(pP, p, 32);
+    mzero(32);
 }
 
 /**
- * @param {Uint8Array} pk 32 bytes
- * @param {Uint8Array} sk 64 bytes
- * @returns {number}
+ * Generates a random key pair of public and private keys.
+ *
+ * @param {Uint8Array} pk (output) public key
+ * @param {Uint8Array} sk (output) private key
  */
 Module.ecc_ed25519_sign_keypair = (pk, sk) => {
     const pPk = 0;
     const pSk = pPk + 32;
 
-    const op = _ecc_ed25519_sign_keypair(pPk, pSk);
-    arraycopy(HEAPU8, pPk, pk, 0, 32);
-    arraycopy(HEAPU8, pSk, sk, 0, 64);
-    return op;
+    _ecc_ed25519_sign_keypair(pPk, pSk);
+
+    mget(pPk, pk, 32);
+    mget(pSk, sk, 64);
+    mzero(32 + 64);
 }
 
 /**
- * @param {Uint8Array} pk 32 bytes
- * @param {Uint8Array} sk 64 bytes
- * @param {Uint8Array} seed 32 bytes
- * @returns {number}
+ * Generates a random key pair of public and private keys derived
+ * from a seed.
+ *
+ * @param {Uint8Array} pk (output) public key
+ * @param {Uint8Array} sk (output) private key
+ * @param {Uint8Array} seed seed to generate the keys
  */
 Module.ecc_ed25519_sign_seed_keypair = (pk, sk, seed) => {
-    arraycopy(seed, 0, HEAPU8, 0, 32);
-
-    const pSeed = 0;
+    const pSeed = mput(seed, 0, 32);
     const pPk = pSeed + 32;
     const pSk = pPk + 32;
 
-    const op = _ecc_ed25519_sign_seed_keypair(pPk, pSk, pSeed);
-    arraycopy(HEAPU8, pPk, pk, 0, 32);
-    arraycopy(HEAPU8, pSk, sk, 0, 64);
-    return op;
-}
+    _ecc_ed25519_sign_seed_keypair(pPk, pSk, pSeed);
 
-/**
- * @param {Uint8Array} curve25519_sk 32 bytes
- * @param {Uint8Array} ed25519_sk 32 bytes
- * @returns {number}
- */
-Module.ecc_ed25519_sign_sk_to_curve25519 = (curve25519_sk, ed25519_sk) => {
-    arraycopy(ed25519_sk, 0, HEAPU8, 0, 32);
-
-    const pEd25519_sk = 0;
-    const pCurve25519_sk = pEd25519_sk + 32;
-
-    const op = _ecc_ed25519_sign_seed_keypair(pCurve25519_sk, pEd25519_sk);
-    arraycopy(HEAPU8, pCurve25519_sk, curve25519_sk, 0, 32);
-    return op;
+    mget(pPk, pk, 32);
+    mget(pSk, sk, 64);
+    mzero(32 + 32 + 64);
 }
 
 // ristretto255
 
 /**
- * @param {Uint8Array} p
- * @param {Uint8Array} r
- * @returns {number}
+ * Maps a 64 bytes vector r (usually the output of a hash function) to
+ * a group element, and stores its representation into p.
+ *
+ * @param {Uint8Array} p (output) group element
+ * @param {Uint8Array} r bytes vector hash
  */
 Module.ecc_ristretto255_from_hash = (p, r) => {
-    arraycopy(r, 0, HEAPU8, 0, 64);
-    const pR = 0;
+    const pR = mput(r, 0, 64);
     const pP = pR + 64;
-    const op = _ecc_ristretto255_from_hash(pP, pR);
-    arraycopy(HEAPU8, pP, p, 0, 32);
-    return op;
+
+    _ecc_ristretto255_from_hash(pP, pR);
+
+    mget(pP, p, 32);
+    mzero(64 + 32);
 }
 
 /**
- * @param {Uint8Array} r
+ * Fills r with a bytes representation of the scalar in
+ * the ]0..L[ interval where L is the order of the
+ * group (2^252 + 27742317777372353535851937790883648493).
+ *
+ * @param {Uint8Array} r (output) random scalar
  */
 Module.ecc_ristretto255_scalar_random = (r) => {
     const pR = 0;
+
     _ecc_ristretto255_scalar_random(pR);
-    arraycopy(HEAPU8, 0, r, 0, 32);
+
+    mget(pR, r, 32);
+    mzero(32);
 }
 
 /**
- * @param {Uint8Array} recip
- * @param {Uint8Array} s
- * @returns {number}
+ * Computes the multiplicative inverse of s over L, and puts it into recip.
+ *
+ * @param {Uint8Array} recip (output) the result
+ * @param {Uint8Array} s an scalar
+ * @returns {number} 0 on success, or -1 if s is zero
  */
 Module.ecc_ristretto255_scalar_invert = (recip, s) => {
-    arraycopy(s, 0, HEAPU8, 0, 32);
-    const pS = 0;
+    const pS = mput(s, 0, 32);
     const pRecip = pS + 32;
-    const op = _ecc_ristretto255_scalar_invert(pRecip, pS);
-    arraycopy(HEAPU8, pRecip, recip, 0, 32);
-    return op;
+
+    const r = _ecc_ristretto255_scalar_invert(pRecip, pS);
+
+    mget(pRecip, recip, 32);
+    mzero(32 + 32);
+    return r;
 }
 
 /**
- * @param {Uint8Array} q
- * @param {Uint8Array} n
- * @param {Uint8Array} p
- * @returns {number}
+ * Multiplies an element represented by p by a valid scalar n
+ * and puts the resulting element into q.
+ *
+ * @param {Uint8Array} q (output) the result
+ * @param {Uint8Array} n the valid input scalar
+ * @param {Uint8Array} p the point on the curve
+ * @returns {number} 0 on success, or -1 if q is the identity element.
  */
 Module.ecc_ristretto255_scalarmult = (q, n, p) => {
-    arraycopy(n, 0, HEAPU8, 0, 32);
-    arraycopy(p, 0, HEAPU8, 32, 32);
-
-    const pN = 0;
-    const pP = pN + 32;
+    const pN = mput(n, 0, 32);
+    const pP = mput(p, pN + 32, 32);
     const pQ = pP + 32;
 
-    const op = _ecc_ristretto255_scalarmult(pQ, pN, pP);
-    arraycopy(HEAPU8, pQ, q, 0, 32);
-    return op;
+    const r = _ecc_ristretto255_scalarmult(pQ, pN, pP);
+
+    mget(pQ, q, 32);
+    mzero(32 + 32 + 32);
+    return r;
 }
 
 // bls12_381
@@ -654,17 +668,16 @@ Module.ecc_ristretto255_scalarmult = (q, n, p) => {
 /**
  * @param {Uint8Array} out_SK 32 bytes
  * @param {Uint8Array} IKM
- * @param {Uint8Array} IKM_len >= 32
- * @returns {number}
+ * @param {number} IKM_len the length of `IKM`, must be >= 32
  */
 Module.ecc_bls12_381_keygen = (out_SK, IKM, IKM_len) => {
-    arraycopy(IKM, 0, HEAPU8, 0, IKM_len);
-
-    const pIKM = 0;
+    const pIKM = mput(IKM, 0, IKM_len);
     const pOut_SK = pIKM + IKM_len;
 
     _ecc_bls12_381_keygen(pOut_SK, pIKM, IKM_len);
-    arraycopy(HEAPU8, pOut_SK, out_SK, 0, 32);
+
+    mget(pOut_SK, out_SK, 32);
+    mzero(IKM_len + 32);
 }
 
 // h2c
