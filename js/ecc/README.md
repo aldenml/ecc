@@ -7,7 +7,7 @@ This is the javascript version of the [ecc](https://github.com/aldenml/ecc) libr
 It is a WebAssembly compilation with a thin layer on
 top to expose the cryptographic primitives. It also provides
 the same protocol implementations as the more specialized
-(and a lot smaller) libraries:
+(and a lot smaller) libraries.
 
 | Library |   |
 |---|---|

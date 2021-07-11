@@ -1,4 +1,4 @@
-name: linux
+name: c
 
 on:
   push:
@@ -25,6 +25,7 @@ jobs:
         run: |
           ./build-c.sh
           readelf -d build/libecc.so
+
       - name: c tests
         run: |
           cd build
@@ -37,3 +38,11 @@ jobs:
           cd jvm
           ./gradlew test
           cd ..
+
+      - uses: actions/upload-artifact@v2
+        with:
+          name: ecc-linux
+          path: |
+            build/libecc.so
+            build/libecc-jvm.so
+          retention-days: 5
