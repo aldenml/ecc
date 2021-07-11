@@ -3,17 +3,23 @@
   "version": "1.0.2",
   "description": "Oblivious pseudo-random function using ristretto255",
   "main": "index.js",
+  "types": "./dist/index.d.ts",
   "files": [
     "index.js",
     "liboprf.js",
     "util.js",
     "oprf.js",
     "package.json",
+    "tsconfig.json",
     "oprf.test.js",
     "README.md",
     "LICENSE",
     "dist/oprf.dev.js",
-    "dist/oprf.min.js"
+    "dist/oprf.min.js",
+    "dist/index.d.ts",
+    "dist/liboprf.d.ts",
+    "dist/oprf.d.ts",
+    "dist/util.d.ts"
   ],
   "scripts": {
     "test": "mocha *.test.js",
@@ -40,10 +46,11 @@
   "bugs": {
     "url": "https://github.com/aldenml/ecc/issues"
   },
-  "homepage": "https://github.com/aldenml/ecc",
+  "homepage": "https://github.com/aldenml/ecc/tree/master/js/oprf",
   "type": "module",
   "devDependencies": {
     "mocha": "9.0.1",
+    "typescript": "4.3.5",
     "webpack": "5.39.1",
     "webpack-cli": "4.7.2"
   }

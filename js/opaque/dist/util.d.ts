@@ -15,8 +15,8 @@ export function bin2hex(bin: Uint8Array): string;
 /**
  * Converts an hex string to a byte array.
  *
- * @param {string} hex
- * @returns {Uint8Array}
+ * @param {string} hex the input hex string
+ * @return {Uint8Array} the byte array
  */
 export function hex2bin(hex: string): Uint8Array;
 /**
