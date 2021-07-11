@@ -6,8 +6,11 @@
  */
 
 #include "bls12_381.h"
+#include <assert.h>
 #include <blst.h>
 
-void ecc_bls12_381_keygen(BYTE *out_SK, const BYTE *IKM, int IKM_len) {
+static_assert(sizeof(blst_scalar) == ecc_bls12_381_SCALARSIZE, "");
+
+void ecc_bls12_381_keygen(byte_t *out_SK, const byte_t *IKM, int IKM_len) {
     blst_keygen((blst_scalar *) out_SK, IKM, IKM_len, 0, 0);
 }

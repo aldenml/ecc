@@ -32,7 +32,6 @@
     #define ECC_EXPORT
 #endif
 
-#define BYTE unsigned char
 typedef unsigned char byte_t;
 
 #endif // ECC_EXPORT_H

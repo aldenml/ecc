@@ -155,16 +155,15 @@
  *
  * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-05#section-4
  *
- * @param cleartext_credentials
- * @param server_public_key
- * @param client_public_key
- * @param server_identity
- * @param server_identity_len
- * @param client_identity
- * @param client_identity_len
- * @return
+ * @param cleartext_credentials (output) a CleartextCredentials structure
+ * @param server_public_key the encoded server public key for the AKE protocol
+ * @param client_public_key the encoded client public key for the AKE protocol
+ * @param server_identity the optional encoded server identity
+ * @param server_identity_len the length of `server_identity`
+ * @param client_identity the optional encoded client identity
+ * @param client_identity_len the length of `client_identity`
+ * @return the size of the serialized structure
  */
-ECC_OPAQUE_EXPORT
 ECC_EXPORT
 int ecc_opaque_ristretto255_sha512_CreateCleartextCredentials(
     byte_t *cleartext_credentials,
@@ -193,7 +192,6 @@ int ecc_opaque_ristretto255_sha512_CreateCleartextCredentials(
  * @param client_identity_len
  * @param nonce
  */
-ECC_OPAQUE_EXPORT
 ECC_EXPORT
 void ecc_opaque_ristretto255_sha512_CreateEnvelopeWithNonce(
     byte_t *envelope_raw,
@@ -229,7 +227,6 @@ void ecc_opaque_ristretto255_sha512_CreateEnvelopeWithNonce(
  * @param client_identity
  * @param client_identity_len
  */
-ECC_OPAQUE_EXPORT
 ECC_EXPORT
 void ecc_opaque_ristretto255_sha512_CreateEnvelope(
     byte_t *envelope,
@@ -260,7 +257,6 @@ void ecc_opaque_ristretto255_sha512_CreateEnvelope(
  * @param client_identity_len
  * @return on success returns 0, else -1.
  */
-ECC_OPAQUE_EXPORT
 ECC_EXPORT
 int ecc_opaque_ristretto255_sha512_RecoverEnvelope(
     byte_t *client_private_key,
@@ -280,7 +276,6 @@ int ecc_opaque_ristretto255_sha512_RecoverEnvelope(
  * @param public_key
  * @param private_key
  */
-ECC_OPAQUE_EXPORT
 ECC_EXPORT
 void ecc_opaque_ristretto255_sha512_RecoverPublicKey(
     byte_t *public_key,
@@ -316,7 +311,6 @@ void ecc_opaque_ristretto255_sha512_GenerateAuthKeyPair(
  * @param seed pseudo-random byte sequence used as a seed
  * @param seed_len the length of `seed_len`
  */
-ECC_OPAQUE_EXPORT
 ECC_EXPORT
 void ecc_opaque_ristretto255_sha512_DeriveAuthKeyPair(
     byte_t *private_key, byte_t *public_key,
@@ -332,7 +326,6 @@ void ecc_opaque_ristretto255_sha512_DeriveAuthKeyPair(
  * @param nonce
  * @param client_private_key
  */
-ECC_OPAQUE_EXPORT
 ECC_EXPORT
 void ecc_opaque_ristretto255_sha512_BuildInnerEnvelope(
     byte_t *inner_env,
@@ -350,7 +343,6 @@ void ecc_opaque_ristretto255_sha512_BuildInnerEnvelope(
  * @param nonce
  * @param inner_env
  */
-ECC_OPAQUE_EXPORT
 ECC_EXPORT
 void ecc_opaque_ristretto255_sha512_RecoverKeys(
     byte_t *client_private_key,
@@ -370,7 +362,6 @@ void ecc_opaque_ristretto255_sha512_RecoverKeys(
  * @param password_len the length of `password`
  * @param blind the OPRF scalar value to use
  */
-ECC_OPAQUE_EXPORT
 ECC_EXPORT
 void ecc_opaque_ristretto255_sha512_CreateRegistrationRequestWithBlind(
     byte_t *request_raw,
@@ -409,7 +400,6 @@ void ecc_opaque_ristretto255_sha512_CreateRegistrationRequest(
  * @param credential_identifier_len
  * @param oprf_seed
  */
-ECC_OPAQUE_EXPORT
 ECC_EXPORT
 void ecc_opaque_ristretto255_sha512_CreateRegistrationResponseWithOprfKey(
     byte_t *response_raw,
@@ -484,7 +474,6 @@ void ecc_opaque_ristretto255_sha512_FinalizeRequest(
  * @param password an opaque byte string containing the client's password
  * @param password_len the length of `password`
  */
-ECC_OPAQUE_EXPORT
 ECC_EXPORT
 void ecc_opaque_ristretto255_sha512_CreateCredentialRequest(
     byte_t *request_raw,
@@ -518,7 +507,6 @@ void ecc_opaque_ristretto255_sha512_CreateCredentialRequest(
  * @param credential_identifier_len
  * @param oprf_seed
  */
-ECC_OPAQUE_EXPORT
 ECC_EXPORT
 void ecc_opaque_ristretto255_sha512_CreateCredentialResponse(
     byte_t *response_raw,
@@ -545,7 +533,6 @@ void ecc_opaque_ristretto255_sha512_CreateCredentialResponse(
  * @param client_identity_len
  * @return
  */
-ECC_OPAQUE_EXPORT
 ECC_EXPORT
 int ecc_opaque_ristretto255_sha512_RecoverCredentials(
     byte_t *client_private_key,
@@ -569,7 +556,6 @@ int ecc_opaque_ristretto255_sha512_RecoverCredentials(
  * @param context_len
  * @param length
  */
-ECC_OPAQUE_EXPORT
 ECC_EXPORT
 void ecc_opaque_ristretto255_sha512_3DH_Expand_Label(
     byte_t *out,
@@ -589,7 +575,6 @@ void ecc_opaque_ristretto255_sha512_3DH_Expand_Label(
  * @param transcript_hash
  * @param transcript_hash_len
  */
-ECC_OPAQUE_EXPORT
 ECC_EXPORT
 void ecc_opaque_ristretto255_sha512_3DH_Derive_Secret(
     byte_t *out,
@@ -620,7 +605,6 @@ void ecc_opaque_ristretto255_sha512_3DH_Derive_Secret(
  * @param inner_ke2_len the length of `inner_ke2`
  * @return the protocol transcript with identities and messages
  */
-ECC_OPAQUE_EXPORT
 ECC_EXPORT
 int ecc_opaque_ristretto255_sha512_3DH_Preamble(
     byte_t *preamble,
@@ -645,7 +629,6 @@ int ecc_opaque_ristretto255_sha512_3DH_Preamble(
  * @param sk3
  * @param pk3
  */
-ECC_OPAQUE_EXPORT
 ECC_EXPORT
 void ecc_opaque_ristretto255_sha512_3DH_TripleDHIKM(
     byte_t *ikm,
@@ -665,7 +648,6 @@ void ecc_opaque_ristretto255_sha512_3DH_TripleDHIKM(
  * @param preamble
  * @param preamble_len
  */
-ECC_OPAQUE_EXPORT
 ECC_EXPORT
 void ecc_opaque_ristretto255_sha512_3DH_DeriveKeys(
     byte_t *km2,
@@ -733,7 +715,6 @@ int ecc_opaque_ristretto255_sha512_3DH_ClientFinish(
  * @param state_raw
  * @param credential_request
  */
-ECC_OPAQUE_EXPORT
 ECC_EXPORT
 void ecc_opaque_ristretto255_sha512_3DH_Start(
     byte_t *ke1_raw,
@@ -755,7 +736,6 @@ void ecc_opaque_ristretto255_sha512_3DH_Start(
  * @param ke2_raw
  * @return
  */
-ECC_OPAQUE_EXPORT
 ECC_EXPORT
 int ecc_opaque_ristretto255_sha512_3DH_ClientFinalize(
     byte_t *ke3_raw,
@@ -833,7 +813,6 @@ int ecc_opaque_ristretto255_sha512_3DH_ServerFinish(
  * @param ke1_raw
  * @param credential_response_raw
  */
-ECC_OPAQUE_EXPORT
 ECC_EXPORT
 void ecc_opaque_ristretto255_sha512_3DH_Response(
     byte_t *ke2_raw,

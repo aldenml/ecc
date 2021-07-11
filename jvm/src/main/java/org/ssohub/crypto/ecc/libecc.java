@@ -335,6 +335,91 @@ public final class libecc {
         int len
     );
 
+    // ed25519
+
+    /**
+     * Checks that p represents a point on the edwards25519 curve, in canonical
+     * form, on the main subgroup, and that the point doesn't have a small order.
+     *
+     * @param p potential point to test
+     * @return 1 on success, and 0 if the checks didn't pass
+     */
+    public static native int ecc_ed25519_is_valid_point(byte[] p);
+
+    /**
+     * Fills p with the representation of a random group element.
+     *
+     * @param p (output) random group element
+     */
+    public static native void ecc_ed25519_random(byte[] p);
+
+    /**
+     * Generates a random key pair of public and private keys.
+     *
+     * @param pk (output) public key
+     * @param sk (output) private key
+     */
+    public static native void ecc_ed25519_sign_keypair(byte[] pk, byte[] sk);
+
+    /**
+     * Generates a random key pair of public and private keys derived
+     * from a seed.
+     *
+     * @param pk   (output) public key
+     * @param sk   (output) private key
+     * @param seed seed to generate the keys
+     */
+    public static native void ecc_ed25519_sign_seed_keypair(byte[] pk, byte[] sk, byte[] seed);
+
+    // ristretto255
+
+    /**
+     * Maps a 64 bytes vector r (usually the output of a hash function) to
+     * a group element, and stores its representation into p.
+     *
+     * @param p (output) group element
+     * @param r bytes vector hash
+     */
+    public static native void ecc_ristretto255_from_hash(byte[] p, byte[] r);
+
+    /**
+     * Fills r with a bytes representation of the scalar in
+     * the ]0..L[ interval where L is the order of the
+     * group (2^252 + 27742317777372353535851937790883648493).
+     *
+     * @param r (output) random scalar
+     */
+    public static native void ecc_ristretto255_scalar_random(byte[] r);
+
+    /**
+     * Computes the multiplicative inverse of s over L, and puts it into recip.
+     *
+     * @param recip (output) the result
+     * @param s     an scalar
+     * @return 0 on success, or -1 if s is zero
+     */
+    public static native int ecc_ristretto255_scalar_invert(byte[] recip, byte[] s);
+
+    /**
+     * Multiplies an element represented by p by a valid scalar n
+     * and puts the resulting element into q.
+     *
+     * @param q (output) the result
+     * @param n the valid input scalar
+     * @param p the point on the curve
+     * @return 0 on success, or -1 if q is the identity element.
+     */
+    public static native int ecc_ristretto255_scalarmult(byte[] q, byte[] n, byte[] p);
+
+    // bls12_381
+
+    /**
+     * @param out_SK
+     * @param IKM
+     * @param IKM_len
+     */
+    public static native void ecc_bls12_381_keygen(byte[] out_SK, byte[] IKM, int IKM_len);
+
     // h2c
 
     /**
