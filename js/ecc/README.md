@@ -16,7 +16,7 @@ the same protocol implementations as the more specialized
 
 ### BLS12-381 Pairing
 
-In the context of pairing friendly elliptic curves, a pairing is a map e: G1xG2 -> GT such
+In the context of pairing friendly elliptic curves, a pairing is a map `e: G1xG2 -> GT` such
 that for each a, b, P and Q
 ```
 e(a * P, b * Q) = e(P, Q)^(a * b)
