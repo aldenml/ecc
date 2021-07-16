@@ -414,11 +414,82 @@ public final class libecc {
     // bls12_381
 
     /**
-     * @param out_SK
-     * @param IKM
-     * @param IKM_len
+     * Size of a an element in G1.
      */
-    public static native void ecc_bls12_381_keygen(byte[] out_SK, byte[] IKM, int IKM_len);
+    public static final int ecc_bls12_381_G1SIZE = 96;
+
+    /**
+     * Size of an element in G2.
+     */
+    public static final int ecc_bls12_381_G2SIZE = 192;
+
+    /**
+     * Size of the scalar used in the curve operations.
+     */
+    public static final int ecc_bls12_381_SCALARSIZE = 32;
+
+    /**
+     * Size of an element in Fp12.
+     */
+    public static final int ecc_bls12_381_FP12SIZE = 576;
+
+    /**
+     * Multiplies the generator by a valid scalar n and puts the resulting
+     * element into q.
+     *
+     * @param q (output) the result
+     * @param n the valid input scalar
+     */
+    public static native void ecc_bls12_381_g1_scalarmult_base(byte[] q, byte[] n);
+
+    /**
+     * Multiplies the generator by a valid scalar n and puts the resulting
+     * element into q.
+     *
+     * @param q (output) the result
+     * @param n the valid input scalar
+     */
+    public static native void ecc_bls12_381_g2_scalarmult_base(byte[] q, byte[] n);
+
+    /**
+     * Fills r with a bytes representation of an scalar.
+     *
+     * @param r (output) random scalar
+     */
+    public static native void ecc_bls12_381_scalar_random(byte[] r);
+
+    /**
+     * Evaluates a pairing of BLS12-381.
+     * <p>
+     * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-pairing-friendly-curves-09#section-2.2
+     * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-pairing-friendly-curves-09#section-2.4
+     * <p>
+     * G1 is a subgroup of E(GF(p)) of order r.
+     * G2 is a subgroup of E'(GF(p^2)) of order r.
+     * GT is a subgroup of a multiplicative group (GF(p^12))^* of order r.
+     *
+     * @param ret   (output) the result of the pairing evaluation in GT
+     * @param p1_g1 point in G1
+     * @param p2_g2 point in G2
+     */
+    public static native void ecc_bls12_381_pairing(byte[] ret, byte[] p1_g1, byte[] p2_g2);
+
+    /**
+     * Perform the verification of a pairing match. Useful if the
+     * inputs are raw output values from the miller loop.
+     *
+     * @param a the first argument to verify
+     * @param b the second argument to verify
+     * @return 1 if it's a pairing match, else 0
+     */
+    public static native int ecc_bls12_381_pairing_final_verify(byte[] a, byte[] b);
+
+    /**
+     * @param sk
+     * @param ikm
+     * @param ikm_len
+     */
+    public static native void ecc_bls12_381_sign_keygen(byte[] sk, byte[] ikm, int ikm_len);
 
     // h2c
 

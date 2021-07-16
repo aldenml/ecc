@@ -663,23 +663,122 @@ JNIEXPORT int JNICALL Java_org_ssohub_crypto_ecc_libecc_ecc_1ristretto255_1scala
 
 // bls12_381
 
-JNIEXPORT void JNICALL Java_org_ssohub_crypto_ecc_libecc_ecc_1bls12_1381_1keygen(
+JNIEXPORT void JNICALL Java_org_ssohub_crypto_ecc_libecc_ecc_1bls12_1381_1g1_1scalarmult_1base(
     JNIEnv *env, jclass cls,
-    jbyteArray out_SK,
-    jbyteArray IKM,
-    jint IKM_len
+    jbyteArray q,
+    jbyteArray n
 ) {
     ECC_UNUSED(cls);
 
-    const int heap_size = IKM_len + 32;
+    const int heap_size = 32 + 96;
     ALLOC_HEAP;
 
-    byte_t *pIKM = mput(env, IKM, heap, IKM_len);
-    byte_t *pOut_SK = pIKM + IKM_len;
+    byte_t *pN = mput(env, n, heap, 32);
+    byte_t *pQ = pN + 32;
 
-    ecc_bls12_381_keygen(pOut_SK, pIKM, IKM_len);
+    ecc_bls12_381_g1_scalarmult_base(pQ, pN);
 
-    mget(env, pOut_SK, out_SK, 32);
+    mget(env, pQ, q, 96);
+
+    FREE_HEAP;
+}
+
+JNIEXPORT void JNICALL Java_org_ssohub_crypto_ecc_libecc_ecc_1bls12_1381_1g2_1scalarmult_1base(
+    JNIEnv *env, jclass cls,
+    jbyteArray q,
+    jbyteArray n
+) {
+    ECC_UNUSED(cls);
+
+    const int heap_size = 32 + 192;
+    ALLOC_HEAP;
+
+    byte_t *pN = mput(env, n, heap, 32);
+    byte_t *pQ = pN + 32;
+
+    ecc_bls12_381_g2_scalarmult_base(pQ, pN);
+
+    mget(env, pQ, q, 192);
+
+    FREE_HEAP;
+}
+
+JNIEXPORT void JNICALL Java_org_ssohub_crypto_ecc_libecc_ecc_1bls12_1381_1scalar_1random(
+    JNIEnv *env, jclass cls,
+    jbyteArray r
+) {
+    ECC_UNUSED(cls);
+
+    const int heap_size = 32;
+    ALLOC_HEAP;
+
+    byte_t *pR = heap;
+
+    ecc_bls12_381_scalar_random(pR);
+
+    mget(env, pR, r, 32);
+
+    FREE_HEAP;
+}
+
+JNIEXPORT void JNICALL Java_org_ssohub_crypto_ecc_libecc_ecc_1bls12_1381_1pairing(
+    JNIEnv *env, jclass cls,
+    jbyteArray ret,
+    jbyteArray p1_g1,
+    jbyteArray p2_g2
+) {
+    ECC_UNUSED(cls);
+
+    const int heap_size = 96 + 192 + 576;
+    ALLOC_HEAP;
+
+    byte_t *pP1_g1 = mput(env, p1_g1, heap, 96);
+    byte_t *pP2_g2 = mput(env, p2_g2, pP1_g1 + 96, 192);
+    byte_t *pRet = pP2_g2 + 192;
+
+    ecc_bls12_381_pairing(pRet, pP1_g1, pP2_g2);
+
+    mget(env, pRet, ret, 576);
+
+    FREE_HEAP;
+}
+
+JNIEXPORT int JNICALL Java_org_ssohub_crypto_ecc_libecc_ecc_1bls12_1381_1pairing_1final_1verify(
+    JNIEnv *env, jclass cls,
+    jbyteArray a,
+    jbyteArray b
+) {
+    ECC_UNUSED(cls);
+
+    const int heap_size = 576 + 576;
+    ALLOC_HEAP_RET;
+
+    byte_t *pA = mput(env, a, heap, 576);
+    byte_t *pB = mput(env, b, pA + 576, 576);
+
+    int r = ecc_bls12_381_pairing_final_verify(pA, pB);
+
+    FREE_HEAP;
+    return r;
+}
+
+JNIEXPORT void JNICALL Java_org_ssohub_crypto_ecc_libecc_ecc_1bls12_1381_1sign_1keygen(
+    JNIEnv *env, jclass cls,
+    jbyteArray sk,
+    jbyteArray ikm,
+    jint ikm_len
+) {
+    ECC_UNUSED(cls);
+
+    const int heap_size = ikm_len + 32;
+    ALLOC_HEAP;
+
+    byte_t *pIkm = mput(env, ikm, heap, ikm_len);
+    byte_t *pSk = pIkm + ikm_len;
+
+    ecc_bls12_381_sign_keygen(pSk, pIkm, ikm_len);
+
+    mget(env, pSk, sk, 32);
 
     FREE_HEAP;
 }

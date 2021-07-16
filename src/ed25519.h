@@ -67,7 +67,7 @@ int ecc_ed25519_sub(byte_t *r, const byte_t *p, const byte_t *q);
  * representation into p. The point is guaranteed to be on the main
  * subgroup.
  *
- * This function directly exposes the Elligator 2 map, uses the high
+ * This function directly exposes the Elligator 2 map. Uses the high
  * bit to set the sign of the X coordinate, and the resulting point is
  * multiplied by the cofactor.
  *
@@ -168,12 +168,8 @@ ECC_EXPORT
 void ecc_ed25519_scalar_reduce(byte_t *r, const byte_t *s);
 
 /**
- * Multiplies a point p by a valid scalar n (no clamped) and puts the
- * Y coordinate of the resulting point into q.
- *
- * Note that n is "clamped" (the 3 low bits are cleared to make it
- * a multiple of the cofactor, bit 254 is set and bit 255 is cleared
- * to respect the original design).
+ * Multiplies a point p by a valid scalar n (without clamping) and puts
+ * the Y coordinate of the resulting point into q.
  *
  * This function returns 0 on success, or -1 if n is 0 or if p is not
  * on the curve, not on the main subgroup, is a point of small order,
@@ -188,8 +184,8 @@ ECC_EXPORT
 int ecc_ed25519_scalarmult(byte_t *q, const byte_t *n, const byte_t *p);
 
 /**
- * Multiplies the base point (x, 4/5) by a scalar n (no clamped) and puts the
- * Y coordinate of the resulting point into q.
+ * Multiplies the base point (x, 4/5) by a scalar n (without clamping) and puts
+ * the Y coordinate of the resulting point into q.
  *
  * @param q (output) the result
  * @param n the valid input scalar
