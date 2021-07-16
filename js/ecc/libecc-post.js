@@ -666,18 +666,122 @@ Module.ecc_ristretto255_scalarmult = (q, n, p) => {
 // bls12_381
 
 /**
- * @param {Uint8Array} out_SK 32 bytes
- * @param {Uint8Array} IKM
- * @param {number} IKM_len the length of `IKM`, must be >= 32
+ * Multiplies the generator by a valid scalar n and puts the resulting
+ * element into q.
+ *
+ * @param {Uint8Array} q (output) the result
+ * @param {Uint8Array} n the valid input scalar
  */
-Module.ecc_bls12_381_keygen = (out_SK, IKM, IKM_len) => {
-    const pIKM = mput(IKM, 0, IKM_len);
-    const pOut_SK = pIKM + IKM_len;
+Module.ecc_bls12_381_g1_scalarmult_base = (
+    q,
+    n
+) => {
+    const pN = mput(n, 0, 32);
+    const pQ = pN + 32;
 
-    _ecc_bls12_381_keygen(pOut_SK, pIKM, IKM_len);
+    _ecc_bls12_381_g1_scalarmult_base(pQ, pN);
 
-    mget(pOut_SK, out_SK, 32);
-    mzero(IKM_len + 32);
+    mget(pQ, q, 96);
+    mzero(32 + 96);
+}
+
+/**
+ * Multiplies the generator by a valid scalar n and puts the resulting
+ * element into q.
+ *
+ * @param {Uint8Array} q (output) the result
+ * @param {Uint8Array} n the valid input scalar
+ */
+Module.ecc_bls12_381_g2_scalarmult_base = (
+    q,
+    n
+) => {
+    const pN = mput(n, 0, 32);
+    const pQ = pN + 32;
+
+    _ecc_bls12_381_g2_scalarmult_base(pQ, pN);
+
+    mget(pQ, q, 192);
+    mzero(32 + 192);
+}
+
+/**
+ * Fills r with a bytes representation of an scalar.
+ *
+ * @param {Uint8Array} r (output) random scalar
+ */
+Module.ecc_bls12_381_scalar_random = (r) => {
+    const pR = 0;
+
+    _ecc_bls12_381_scalar_random(pR);
+
+    mget(pR, r, 32);
+    mzero(32);
+}
+
+/**
+ * Evaluates a pairing of BLS12-381.
+ *
+ * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-pairing-friendly-curves-09#section-2.2
+ * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-pairing-friendly-curves-09#section-2.4
+ *
+ * G1 is a subgroup of E(GF(p)) of order r.
+ * G2 is a subgroup of E'(GF(p^2)) of order r.
+ * GT is a subgroup of a multiplicative group (GF(p^12))^* of order r.
+ *
+ * @param {Uint8Array} ret (output) the result of the pairing evaluation in GT
+ * @param {Uint8Array} p1_g1 point in G1
+ * @param {Uint8Array} p2_g2 point in G2
+ */
+Module.ecc_bls12_381_pairing = (
+    ret,
+    p1_g1,
+    p2_g2
+) => {
+    const pP1_g1 = mput(p1_g1, 0, 96);
+    const pP2_g2 = mput(p2_g2, pP1_g1 + 96, 192);
+    const pRet = pP2_g2 + 192;
+
+    _ecc_bls12_381_pairing(pRet, pP1_g1, pP2_g2);
+
+    mget(pRet, ret, 576);
+    mzero(96 + 192 + 576);
+}
+
+/**
+ * Perform the verification of a pairing match. Useful if the
+ * inputs are raw output values from the miller loop.
+ *
+ * @param {Uint8Array} a the first argument to verify
+ * @param {Uint8Array} b the second argument to verify
+ * @return {number} 1 if it's a pairing match, else 0
+ */
+Module.ecc_bls12_381_pairing_final_verify = (
+    a,
+    b
+) => {
+    const pA = mput(a, 0, 576);
+    const pB = mput(b, pA + 576, 576);
+
+    const r = _ecc_bls12_381_pairing_final_verify(pA, pB);
+
+    mzero(576 + 576);
+    return r;
+}
+
+/**
+ * @param {Uint8Array} sk 32 bytes
+ * @param {Uint8Array} ikm
+ * @param {number} ikm_len the length of `ikm`, must be >= 32
+ */
+Module.ecc_bls12_381_sign_keygen = (sk, ikm, ikm_len) => {
+    const pIkm = mput(ikm, 0, ikm_len);
+    const pSk = pIkm + ikm_len;
+
+    _ecc_bls12_381_sign_keygen(pSk, pIkm, ikm_len);
+
+    mget(pSk, sk, 32);
+    mzero(ikm_len + 32);
 }
 
 // h2c
