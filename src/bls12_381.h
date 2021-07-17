@@ -26,9 +26,24 @@
 #define ecc_bls12_381_SCALARSIZE 32
 
 /**
+ * Size of an element in Fp.
+ */
+#define ecc_bls12_381_FPSIZE 48
+
+/**
  * Size of an element in Fp12.
  */
 #define ecc_bls12_381_FP12SIZE 576
+
+// Fp operations
+
+/**
+ * Computes a random element of BLS12-381 Fp.
+ *
+ * @param ret (output) the result
+ */
+ECC_EXPORT
+void ecc_bls12_381_fp_random(byte_t *ret);
 
 // Fp12 operations
 
@@ -44,8 +59,36 @@ void ecc_bls12_381_fp12_inverse(byte_t *ret, const byte_t *a);
 ECC_EXPORT
 void ecc_bls12_381_fp12_sqr(byte_t *ret, const byte_t *a);
 
+/**
+ * Perform a * b in Fp12.
+ *
+ * @param ret (output) the result
+ * @param a input group element
+ * @param b input group element
+ */
 ECC_EXPORT
 void ecc_bls12_381_fp12_mul(byte_t *ret, const byte_t *a, const byte_t *b);
+
+/**
+ * This is a naive implementation of an iterative exponentiation by squaring.
+ *
+ * NOTE: This method is not side-channel attack resistant on `n`, the algorithm
+ * leaks information about it, don't use this if `n` is a secret.
+ *
+ * @param ret (output) the result
+ * @param a the base
+ * @param n the exponent
+ */
+ECC_EXPORT
+void ecc_bls12_381_fp12_pow(byte_t *ret, const byte_t *a, int n);
+
+/**
+ * Computes a random element of BLS12-381 Fp12.
+ *
+ * @param ret (output) the result
+ */
+ECC_EXPORT
+void ecc_bls12_381_fp12_random(byte_t *ret);
 
 // G1 operations
 
@@ -99,7 +142,7 @@ ECC_EXPORT
 void ecc_bls12_381_pairing(byte_t *ret, const byte_t *p1_g1, const byte_t *p2_g2);
 
 ECC_EXPORT
-int ecc_bls12_381_pairing_miller_loop(byte_t *ret, const byte_t *p1_g1, const byte_t *p2_g2);
+void ecc_bls12_381_pairing_miller_loop(byte_t *ret, const byte_t *p1_g1, const byte_t *p2_g2);
 
 ECC_EXPORT
 void ecc_bls12_381_pairing_final_exp(byte_t *ret, const byte_t *a);
