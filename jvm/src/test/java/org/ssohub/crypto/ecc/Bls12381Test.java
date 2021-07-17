@@ -9,11 +9,15 @@ package org.ssohub.crypto.ecc;
 
 import org.junit.jupiter.api.Test;
 
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.ssohub.crypto.ecc.libecc.ecc_bls12_381_FP12SIZE;
 import static org.ssohub.crypto.ecc.libecc.ecc_bls12_381_G1SIZE;
 import static org.ssohub.crypto.ecc.libecc.ecc_bls12_381_G2SIZE;
 import static org.ssohub.crypto.ecc.libecc.ecc_bls12_381_SCALARSIZE;
+import static org.ssohub.crypto.ecc.libecc.ecc_bls12_381_fp12_mul;
+import static org.ssohub.crypto.ecc.libecc.ecc_bls12_381_fp12_pow;
+import static org.ssohub.crypto.ecc.libecc.ecc_bls12_381_fp12_random;
 import static org.ssohub.crypto.ecc.libecc.ecc_bls12_381_g1_scalarmult_base;
 import static org.ssohub.crypto.ecc.libecc.ecc_bls12_381_g2_scalarmult_base;
 import static org.ssohub.crypto.ecc.libecc.ecc_bls12_381_pairing;
@@ -26,6 +30,57 @@ import static org.ssohub.crypto.ecc.libecc.ecc_randombytes;
  * @author aldenml
  */
 public class Bls12381Test {
+
+    @Test
+    public void ecc_bls12_381_fp12_pow_test() {
+        byte[] a = new byte[ecc_bls12_381_FP12SIZE];
+        ecc_bls12_381_fp12_random(a);
+
+        byte[] r2 = new byte[ecc_bls12_381_FP12SIZE];
+        ecc_bls12_381_fp12_pow(r2, a, 2);
+        byte[] r3 = new byte[ecc_bls12_381_FP12SIZE];
+        ecc_bls12_381_fp12_pow(r3, a, 3);
+
+        byte[] x = new byte[ecc_bls12_381_FP12SIZE];
+        ecc_bls12_381_fp12_mul(x, a, a);
+        assertArrayEquals(x, r2);
+        ecc_bls12_381_fp12_mul(a, x, a);
+        assertArrayEquals(a, r3);
+    }
+
+    @Test
+    public void ecc_bls12_381_pairing_test() {
+        byte[] a = new byte[ecc_bls12_381_SCALARSIZE];
+        byte[] b = new byte[ecc_bls12_381_SCALARSIZE];
+        ecc_randombytes(a, 1);
+        ecc_randombytes(b, 1);
+
+        byte[] aP = new byte[ecc_bls12_381_G1SIZE];
+        byte[] bQ = new byte[ecc_bls12_381_G2SIZE];
+
+        ecc_bls12_381_g1_scalarmult_base(aP, a); // a * P
+        ecc_bls12_381_g2_scalarmult_base(bQ, b); // b * Q
+
+        byte[] pairing1 = new byte[ecc_bls12_381_FP12SIZE];
+        ecc_bls12_381_pairing(pairing1, aP, bQ); // e(a * P, b * Q)
+
+        byte[] one = new byte[ecc_bls12_381_SCALARSIZE];
+        one[0] = 1; // 1 (one)
+
+        byte[] P = new byte[ecc_bls12_381_G1SIZE];
+        byte[] Q = new byte[ecc_bls12_381_G2SIZE];
+
+        ecc_bls12_381_g1_scalarmult_base(P, one); // P
+        ecc_bls12_381_g2_scalarmult_base(Q, one); // Q
+
+        byte[] pairing2 = new byte[ecc_bls12_381_FP12SIZE];
+        ecc_bls12_381_pairing(pairing2, P, Q); // e(P, Q)
+
+        byte[] r = new byte[ecc_bls12_381_FP12SIZE];
+        ecc_bls12_381_fp12_pow(r, pairing2, a[0] * b[0]);
+
+        assertArrayEquals(pairing1, r);
+    }
 
     @Test
     public void ecc_bls12_381_pairing_test_reverse_scalars() {

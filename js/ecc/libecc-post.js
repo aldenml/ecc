@@ -666,6 +666,84 @@ Module.ecc_ristretto255_scalarmult = (q, n, p) => {
 // bls12_381
 
 /**
+ * Computes a random element of BLS12-381 Fp.
+ *
+ * @param {Uint8Array} ret (output) the result
+ */
+Module.ecc_bls12_381_fp_random = (
+    ret
+) => {
+    const pRet = 0;
+
+    _ecc_bls12_381_fp_random(pRet);
+
+    mget(pRet, ret, 48);
+    mzero(48);
+}
+
+/**
+ * Perform a * b in Fp12.
+ *
+ * @param {Uint8Array} ret (output) the result
+ * @param {Uint8Array} a input group element
+ * @param {Uint8Array} b input group element
+ */
+Module.ecc_bls12_381_fp12_mul = (
+    ret,
+    a,
+    b
+) => {
+    const pA = mput(a, 0, 576);
+    const pB = mput(b, pA + 576, 576);
+    const pRet = pB + 576;
+
+    _ecc_bls12_381_fp12_mul(pRet, pA, pB);
+
+    mget(pRet, ret, 576);
+    mzero(576 + 576 + 576);
+}
+
+/**
+ * This is a naive implementation of an iterative exponentiation by squaring.
+ *
+ * NOTE: This method is not side-channel attack resistant on `n`, the algorithm
+ * leaks information about it, don't use this if `n` is a secret.
+ *
+ * @param {Uint8Array} ret (output) the result
+ * @param {Uint8Array} a the base
+ * @param {number} n the exponent
+ */
+Module.ecc_bls12_381_fp12_pow = (
+    ret,
+    a,
+    n
+) => {
+    const pA = mput(a, 0, 576);
+    const pRet = pA + 576;
+
+    _ecc_bls12_381_fp12_pow(pRet, pA, n);
+
+    mget(pRet, ret, 576);
+    mzero(576 + 576);
+}
+
+/**
+ * Computes a random element of BLS12-381 Fp12.
+ *
+ * @param {Uint8Array} ret (output) the result
+ */
+Module.ecc_bls12_381_fp12_random = (
+    ret
+) => {
+    const pRet = 0;
+
+    _ecc_bls12_381_fp12_random(pRet);
+
+    mget(pRet, ret, 576);
+    mzero(576);
+}
+
+/**
  * Multiplies the generator by a valid scalar n and puts the resulting
  * element into q.
  *

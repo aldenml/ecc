@@ -12,7 +12,15 @@
 #include "util.h"
 
 static_assert(sizeof(blst_scalar) == ecc_bls12_381_SCALARSIZE, "");
+static_assert(sizeof(blst_fp) == ecc_bls12_381_FPSIZE, "");
 static_assert(sizeof(blst_fp12) == ecc_bls12_381_FP12SIZE, "");
+
+void ecc_bls12_381_fp_random(byte_t *ret) {
+    byte_t a[ecc_bls12_381_FPSIZE];
+    ecc_randombytes(a, sizeof a);
+    blst_fp_from_lendian((blst_fp *) ret, a);
+    ecc_memzero(a, sizeof a);
+}
 
 void ecc_bls12_381_fp12_one(byte_t *ret) {
     memcpy(ret, blst_fp12_one(), ecc_bls12_381_FP12SIZE);
@@ -34,22 +42,77 @@ void ecc_bls12_381_fp12_mul(byte_t *ret, const byte_t *a, const byte_t *b) {
     blst_fp12_mul((blst_fp12 *) ret, (blst_fp12 *) a, (blst_fp12 *) b);
 }
 
+void ecc_bls12_381_fp12_pow(byte_t *ret, const byte_t *a, int n) {
+    if (n == 0) {
+        ecc_bls12_381_fp12_one(ret);
+        return;
+    }
+
+    byte_t x[ecc_bls12_381_FP12SIZE];
+    if (n < 0) {
+        ecc_bls12_381_fp12_inverse(x, a);
+        n = -n;
+    } else {
+        memcpy(x, a, ecc_bls12_381_FP12SIZE);
+    }
+
+    byte_t y[ecc_bls12_381_FP12SIZE];
+    ecc_bls12_381_fp12_one(y);
+    while (n > 1) {
+        if (n % 2 == 0) {
+            ecc_bls12_381_fp12_sqr(x, x);
+            n = n / 2;
+        } else {
+            ecc_bls12_381_fp12_mul(y, x, y);
+            ecc_bls12_381_fp12_sqr(x, x);
+            n = (n - 1) / 2;
+        }
+    }
+
+    ecc_bls12_381_fp12_mul(ret, x, y);
+
+    ecc_memzero((byte_t *) &x, sizeof x);
+    ecc_memzero((byte_t *) &y, sizeof y);
+}
+
+void ecc_bls12_381_fp12_random(byte_t *ret) {
+    blst_fp12 a;
+    ecc_bls12_381_fp_random((byte_t *) &a.fp6[0].fp2[0].fp[0]);
+    ecc_bls12_381_fp_random((byte_t *) &a.fp6[0].fp2[0].fp[1]);
+    ecc_bls12_381_fp_random((byte_t *) &a.fp6[0].fp2[1].fp[0]);
+    ecc_bls12_381_fp_random((byte_t *) &a.fp6[0].fp2[1].fp[1]);
+    ecc_bls12_381_fp_random((byte_t *) &a.fp6[0].fp2[2].fp[0]);
+    ecc_bls12_381_fp_random((byte_t *) &a.fp6[0].fp2[2].fp[1]);
+    ecc_bls12_381_fp_random((byte_t *) &a.fp6[1].fp2[0].fp[0]);
+    ecc_bls12_381_fp_random((byte_t *) &a.fp6[1].fp2[0].fp[1]);
+    ecc_bls12_381_fp_random((byte_t *) &a.fp6[1].fp2[1].fp[0]);
+    ecc_bls12_381_fp_random((byte_t *) &a.fp6[1].fp2[1].fp[1]);
+    ecc_bls12_381_fp_random((byte_t *) &a.fp6[1].fp2[2].fp[0]);
+    ecc_bls12_381_fp_random((byte_t *) &a.fp6[1].fp2[2].fp[1]);
+    // force Fp12 arithmetic
+    blst_fp12_inverse((blst_fp12 *) ret, &a);
+    ecc_memzero((byte_t *) &a, sizeof a);
+}
+
 void ecc_bls12_381_g1_scalarmult_base(byte_t *q, const byte_t *n) {
     blst_p1 out;
     blst_p1_mult(&out, blst_p1_generator(), n, ecc_bls12_381_SCALARSIZE * 8);
     blst_p1_serialize(q, &out);
+    ecc_memzero((byte_t *) &out, sizeof out);
 }
 
 void ecc_bls12_381_g2_scalarmult_base(byte_t *q, const byte_t *n) {
     blst_p2 out;
     blst_p2_mult(&out, blst_p2_generator(), n, ecc_bls12_381_SCALARSIZE * 8);
     blst_p2_serialize(q, &out);
+    ecc_memzero((byte_t *) &out, sizeof out);
 }
 
 void ecc_bls12_381_scalar_random(byte_t *r) {
     byte_t s[ecc_bls12_381_SCALARSIZE];
     ecc_randombytes(s, sizeof s);
     blst_scalar_from_le_bytes((blst_scalar *) r, s, sizeof s);
+    ecc_memzero(s, sizeof s);
 }
 
 void ecc_bls12_381_pairing(byte_t *ret, const byte_t *p1_g1, const byte_t *p2_g2) {
@@ -64,21 +127,24 @@ void ecc_bls12_381_pairing(byte_t *ret, const byte_t *p1_g1, const byte_t *p2_g2
     blst_miller_loop(&miller_ret, &p2, &p1);
 
     blst_final_exp((blst_fp12 *) ret, &miller_ret);
+
+    ecc_memzero((byte_t *) &p1, sizeof p1);
+    ecc_memzero((byte_t *) &p2, sizeof p2);
+    ecc_memzero((byte_t *) &miller_ret, sizeof miller_ret);
 }
 
-int ecc_bls12_381_pairing_miller_loop(byte_t *ret, const byte_t *p1_g1, const byte_t *p2_g2) {
+void ecc_bls12_381_pairing_miller_loop(byte_t *ret, const byte_t *p1_g1, const byte_t *p2_g2) {
 
     blst_p1_affine p1;
-    if (blst_p1_deserialize(&p1, p1_g1))
-        return -1;
+    blst_p1_deserialize(&p1, p1_g1);
 
     blst_p2_affine p2;
-    if (blst_p2_deserialize(&p2, p2_g2))
-        return -1;
+    blst_p2_deserialize(&p2, p2_g2);
 
     blst_miller_loop((blst_fp12 *) ret, &p2, &p1);
 
-    return 0;
+    ecc_memzero((byte_t *) &p1, sizeof p1);
+    ecc_memzero((byte_t *) &p2, sizeof p2);
 }
 
 void ecc_bls12_381_pairing_final_exp(byte_t *ret, const byte_t *a) {

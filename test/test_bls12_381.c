@@ -153,8 +153,7 @@ static void ecc_bls12_381_pairing_miller_loop_test(void **state) {
     ecc_bls12_381_g2_scalarmult_base(bQ, b); // b * Q
 
     byte_t pairing1[ecc_bls12_381_FP12SIZE];
-    int r1 = ecc_bls12_381_pairing_miller_loop(pairing1, aP, bQ); // e(a * P, b * Q)
-    assert_int_equal(r1, 0);
+    ecc_bls12_381_pairing_miller_loop(pairing1, aP, bQ); // e(a * P, b * Q)
 
     byte_t one[ecc_bls12_381_SCALARSIZE] = {1, 0}; // 1 (one)
 
@@ -165,8 +164,7 @@ static void ecc_bls12_381_pairing_miller_loop_test(void **state) {
     ecc_bls12_381_g2_scalarmult_base(Q, one); // Q
 
     byte_t pairing2[ecc_bls12_381_FP12SIZE];
-    int r2 = ecc_bls12_381_pairing_miller_loop(pairing2, P, Q); // e(P, Q)
-    assert_int_equal(r2, 0);
+    ecc_bls12_381_pairing_miller_loop(pairing2, P, Q); // e(P, Q)
 
     byte_t r[ecc_bls12_381_FP12SIZE];
     ecc_bls12_381_fp12_mul(r, pairing2, pairing2);

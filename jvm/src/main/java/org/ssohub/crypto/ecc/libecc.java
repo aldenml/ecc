@@ -429,9 +429,49 @@ public final class libecc {
     public static final int ecc_bls12_381_SCALARSIZE = 32;
 
     /**
+     * Size of an element in Fp.
+     */
+    public static final int ecc_bls12_381_FPSIZE = 48;
+
+    /**
      * Size of an element in Fp12.
      */
     public static final int ecc_bls12_381_FP12SIZE = 576;
+
+    /**
+     * Computes a random element of BLS12-381 Fp.
+     *
+     * @param ret (output) the result
+     */
+    public static native void ecc_bls12_381_fp_random(byte[] ret);
+
+    /**
+     * Perform a * b in Fp12.
+     *
+     * @param ret (output) the result
+     * @param a   input group element
+     * @param b   input group element
+     */
+    public static native void ecc_bls12_381_fp12_mul(byte[] ret, byte[] a, byte[] b);
+
+    /**
+     * This is a naive implementation of an iterative exponentiation by squaring.
+     * <p>
+     * NOTE: This method is not side-channel attack resistant on `n`, the algorithm
+     * leaks information about it, don't use this if `n` is a secret.
+     *
+     * @param ret (output) the result
+     * @param a   the base
+     * @param n   the exponent
+     */
+    public static native void ecc_bls12_381_fp12_pow(byte[] ret, byte[] a, int n);
+
+    /**
+     * Computes a random element of BLS12-381 Fp12.
+     *
+     * @param ret (output) the result
+     */
+    public static native void ecc_bls12_381_fp12_random(byte[] ret);
 
     /**
      * Multiplies the generator by a valid scalar n and puts the resulting
