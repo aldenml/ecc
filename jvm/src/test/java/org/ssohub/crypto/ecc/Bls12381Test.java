@@ -54,6 +54,8 @@ public class Bls12381Test {
         byte[] b = new byte[ecc_bls12_381_SCALARSIZE];
         ecc_randombytes(a, 1);
         ecc_randombytes(b, 1);
+        if (a[0] < 0) a[0] = (byte) -a[0];
+        if (b[0] < 0) b[0] = (byte) -b[0];
 
         byte[] aP = new byte[ecc_bls12_381_G1SIZE];
         byte[] bQ = new byte[ecc_bls12_381_G2SIZE];
