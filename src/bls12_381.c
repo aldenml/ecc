@@ -94,11 +94,111 @@ void ecc_bls12_381_fp12_random(byte_t *ret) {
     ecc_memzero((byte_t *) &a, sizeof a);
 }
 
+void ecc_bls12_381_g1_add(byte_t *r, const byte_t *p, const byte_t *q) {
+    blst_p1_affine p1_affine;
+    blst_p1_deserialize(&p1_affine, p);
+
+    blst_p1 p1;
+    blst_p1_from_affine(&p1, &p1_affine);
+
+    blst_p1_affine q1_affine;
+    blst_p1_deserialize(&q1_affine, q);
+
+    blst_p1 q1;
+    blst_p1_from_affine(&q1, &q1_affine);
+
+    blst_p1 out;
+    blst_p1_add(&out, &p1, &q1);
+    blst_p1_serialize(r, &out);
+
+    ecc_memzero((byte_t *) &p1_affine, sizeof p1_affine);
+    ecc_memzero((byte_t *) &p1, sizeof p1);
+    ecc_memzero((byte_t *) &q1_affine, sizeof q1_affine);
+    ecc_memzero((byte_t *) &q1, sizeof q1);
+    ecc_memzero((byte_t *) &out, sizeof out);
+}
+
+void ecc_bls12_381_g1_negate(byte_t *neg, byte_t *p) {
+    blst_p1_affine p1_affine;
+    blst_p1_deserialize(&p1_affine, p);
+
+    blst_p1 p1;
+    blst_p1_from_affine(&p1, &p1_affine);
+
+    blst_p1_cneg(&p1, 1);
+    blst_p1_serialize(neg, &p1);
+
+    ecc_memzero((byte_t *) &p1_affine, sizeof p1_affine);
+    ecc_memzero((byte_t *) &p1, sizeof p1);
+}
+
+void ecc_bls12_381_g1_generator(byte_t *g) {
+    memcpy(g, blst_p1_generator(), ecc_bls12_381_G1SIZE);
+}
+
+void ecc_bls12_381_g1_scalarmult(byte_t *q, const byte_t *n, const byte_t *p) {
+    blst_p1_affine p1_affine;
+    blst_p1_deserialize(&p1_affine, p);
+
+    blst_p1 p1;
+    blst_p1_from_affine(&p1, &p1_affine);
+
+    blst_p1 out;
+    blst_p1_mult(&out, &p1, n, ecc_bls12_381_SCALARSIZE * 8);
+    blst_p1_serialize(q, &out);
+
+    ecc_memzero((byte_t *) &p1_affine, sizeof p1_affine);
+    ecc_memzero((byte_t *) &p1, sizeof p1);
+    ecc_memzero((byte_t *) &out, sizeof out);
+}
+
 void ecc_bls12_381_g1_scalarmult_base(byte_t *q, const byte_t *n) {
     blst_p1 out;
     blst_p1_mult(&out, blst_p1_generator(), n, ecc_bls12_381_SCALARSIZE * 8);
     blst_p1_serialize(q, &out);
     ecc_memzero((byte_t *) &out, sizeof out);
+}
+
+void ecc_bls12_381_g2_add(byte_t *r, const byte_t *p, const byte_t *q) {
+    blst_p2_affine p2_affine;
+    blst_p2_deserialize(&p2_affine, p);
+
+    blst_p2 p2;
+    blst_p2_from_affine(&p2, &p2_affine);
+
+    blst_p2_affine q2_affine;
+    blst_p2_deserialize(&q2_affine, q);
+
+    blst_p2 q2;
+    blst_p2_from_affine(&q2, &q2_affine);
+
+    blst_p2 out;
+    blst_p2_add(&out, &p2, &q2);
+    blst_p2_serialize(r, &out);
+
+    ecc_memzero((byte_t *) &p2_affine, sizeof p2_affine);
+    ecc_memzero((byte_t *) &p2, sizeof p2);
+    ecc_memzero((byte_t *) &q2_affine, sizeof q2_affine);
+    ecc_memzero((byte_t *) &q2, sizeof q2);
+    ecc_memzero((byte_t *) &out, sizeof out);
+}
+
+void ecc_bls12_381_g2_negate(byte_t *neg, byte_t *p) {
+    blst_p2_affine p2_affine;
+    blst_p2_deserialize(&p2_affine, p);
+
+    blst_p2 p2;
+    blst_p2_from_affine(&p2, &p2_affine);
+
+    blst_p2_cneg(&p2, 1);
+    blst_p2_serialize(neg, &p2);
+
+    ecc_memzero((byte_t *) &p2_affine, sizeof p2_affine);
+    ecc_memzero((byte_t *) &p2, sizeof p2);
+}
+
+void ecc_bls12_381_g2_generator(byte_t *g) {
+    blst_p2_serialize(g, blst_p2_generator());
 }
 
 void ecc_bls12_381_g2_scalarmult_base(byte_t *q, const byte_t *n) {
@@ -116,7 +216,6 @@ void ecc_bls12_381_scalar_random(byte_t *r) {
 }
 
 void ecc_bls12_381_pairing(byte_t *ret, const byte_t *p1_g1, const byte_t *p2_g2) {
-
     blst_p1_affine p1;
     blst_p1_deserialize(&p1, p1_g1);
 
@@ -134,7 +233,6 @@ void ecc_bls12_381_pairing(byte_t *ret, const byte_t *p1_g1, const byte_t *p2_g2
 }
 
 void ecc_bls12_381_pairing_miller_loop(byte_t *ret, const byte_t *p1_g1, const byte_t *p2_g2) {
-
     blst_p1_affine p1;
     blst_p1_deserialize(&p1, p1_g1);
 

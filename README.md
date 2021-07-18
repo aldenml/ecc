@@ -42,3 +42,70 @@ ecc_bls12_381_pairing(pairing, aP, bQ); // e(a * P, b * Q)
 Read more at:<br/>
 https://hackmd.io/@benjaminion/bls12-381 <br/>
 https://en.wikipedia.org/wiki/Pairing-based_cryptography
+
+### Proxy Re-Encryption (PRE)
+
+With a pairing-friendly elliptic curve and a well-defined pairing operation,
+you can implement a proxy re-encryption scheme. This library provides an
+implementation using BLS12-381.
+
+Example of how to use it:
+```java
+// This is a java code, but for a similar plain C code, look at unit tests
+
+// client A setup public/private keys and signing keys
+KeyPair keysA = pre_schema1_KeyGen();
+SigningKeyPair signingA = pre_schema1_SigningKeyGen();
+
+// client B setup public/private keys (signing keys are not used here)
+KeyPair keysB = pre_schema1_KeyGen();
+
+// proxy server setup signing keys
+SigningKeyPair signingProxy = pre_schema1_SigningKeyGen();
+
+// client A select a plaintext message, this message
+// in itself is random, but can be used as a seed
+// for symmetric encryption keys
+byte[] message = pre_schema1_MessageGen();
+
+// client A encrypts the message to itself, making it
+// possible to send this ciphertext to the proxy.
+byte[] ciphertextLevel1 = pre_schema1_Encrypt(message, keysA.pk, signingA);
+
+// client A sends ciphertextLevel1 to the proxy server and
+// eventually client A allows client B to see the encrypted
+// message, in this case the proxy needs to re-encrypt
+// ciphertextLevel1 (without ever knowing the plaintext).
+// In order to do that, the client A needs to create a re-encryption
+// key that the proxy can use to perform such operation.
+
+// client A creates a re-encryption key that the proxy can use
+// to re-encrypt the ciphertext (ciphertextLevel1) in order for
+// client B be able to recover the original message
+byte[] reEncKey = pre_schema1_ReKeyGen(keysA.sk, keysB.pk, signingA);
+
+// the proxy re-encrypt the ciphertext ciphertextLevel1 with such
+// a key that allows client B to recover the original message
+byte[] ciphertextLevel2 = pre_schema1_ReEncrypt(
+    ciphertextLevel1,
+    reEncKey,
+    signingA.spk, keysB.pk,
+    signingProxy
+);
+
+// client B is able to decrypt ciphertextLevel2 and the result
+// is the original plaintext message
+byte[] messageDecrypted = pre_schema1_DecryptLevel2(
+    ciphertextLevel2,
+    keysB.sk, signingProxy.spk
+);
+
+// now both client A and client B share the same plaintext message
+// messageDecrypted is equal to message
+```
+
+Read more at:<br/>
+"A Fully Secure Unidirectional and Multi-user Proxy Re-encryption Scheme" by H. Wang and Z. Cao, 2009 <br/>
+"A Multi-User CCA-Secure Proxy Re-Encryption Scheme" by Y. Cai and X. Liu, 2014 <br/>
+"Cryptographically Enforced Orthogonal Access Control at Scale" by B. Wall and P. Walsh, 2018 <br/>
+https://en.wikipedia.org/wiki/Proxy_re-encryption

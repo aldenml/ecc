@@ -90,3 +90,12 @@ void ecc_add(byte_t *a, const byte_t *b, int len) {
 void ecc_sub(byte_t *a, const byte_t *b, int len) {
     sodium_sub(a, b, len);
 }
+
+byte_t *ecc_malloc(int size) {
+    return malloc(size);
+}
+
+void ecc_free(byte_t *p, int size) {
+    ecc_memzero(p, size);
+    free(p);
+}

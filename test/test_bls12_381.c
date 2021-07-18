@@ -174,6 +174,32 @@ static void ecc_bls12_381_pairing_miller_loop_test(void **state) {
     assert_int_equal(v, 1);
 }
 
+static void ecc_bls12_381_pairing_test_g2_inverse(void **state) {
+    ECC_UNUSED(state);
+
+    byte_t a[ecc_bls12_381_SCALARSIZE];
+    ecc_bls12_381_scalar_random(a);
+
+    byte_t g1[ecc_bls12_381_G1SIZE];
+    ecc_bls12_381_g1_generator(g1);
+
+    byte_t P[ecc_bls12_381_G2SIZE];
+
+    ecc_bls12_381_g2_scalarmult_base(P, a); // P = a * g2
+
+    byte_t pairing[ecc_bls12_381_FP12SIZE];
+    ecc_bls12_381_pairing(pairing, g1, P); // e(g1, a * g2)
+
+    byte_t pairing_inverse[ecc_bls12_381_FP12SIZE];
+    ecc_bls12_381_fp12_inverse(pairing_inverse, pairing); // e(g1, a * g2)^(-1)
+
+    byte_t mul[ecc_bls12_381_FP12SIZE];
+    ecc_bls12_381_fp12_mul(mul, pairing, pairing_inverse);
+
+    int r = ecc_bls12_381_fp12_is_one(mul);
+    assert_int_equal(r, 1);
+}
+
 int main() {
     const struct CMUnitTest tests[] = {
         cmocka_unit_test(ecc_bls12_381_fp12_pow_test),
@@ -182,6 +208,7 @@ int main() {
         cmocka_unit_test(ecc_bls12_381_pairing_test_reverse_scalars),
         cmocka_unit_test(ecc_bls12_381_pairing_test_perform),
         cmocka_unit_test(ecc_bls12_381_pairing_miller_loop_test),
+        cmocka_unit_test(ecc_bls12_381_pairing_test_g2_inverse),
     };
 
     return cmocka_run_group_tests(tests, NULL, NULL);

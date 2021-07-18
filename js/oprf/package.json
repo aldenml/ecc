@@ -25,7 +25,7 @@
     "test": "mocha *.test.js",
     "pack:dev": "webpack --config webpack.config.cjs --env=mode=dev",
     "pack:prod": "webpack --config webpack.config.cjs --env=mode=prod",
-    "pack": "npm run pack:dev && npm run pack:prod"
+    "pack": "npm run pack:dev && npm run pack:prod && npx tsc"
   },
   "repository": {
     "type": "git",
@@ -46,7 +46,7 @@
   "bugs": {
     "url": "https://github.com/aldenml/ecc/issues"
   },
-  "homepage": "https://github.com/aldenml/ecc/tree/master/js/oprf",
+  "homepage": "https://github.com/aldenml/ecc/tree/master/js/oprf#oprf",
   "type": "module",
   "devDependencies": {
     "mocha": "9.0.1",
