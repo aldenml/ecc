@@ -137,10 +137,37 @@ static void ecc_pre_schema1_re_encrypt_test(void **state) {
     assert_memory_equal(mB, m, ecc_pre_schema1_MESSAGESIZE);
 }
 
+static void ecc_pre_schema1_derive_keypair_test(void **state) {
+    ECC_UNUSED(state);
+
+    byte_t seed[6] = "012345";
+
+    byte_t pk[ecc_pre_schema1_PUBLICKEYSIZE];
+    byte_t sk[ecc_pre_schema1_PRIVATEKEYSIZE];
+    ecc_pre_schema1_DeriveKeyPair(pk, sk, seed, sizeof seed);
+
+    logd("pk", pk, ecc_pre_schema1_PUBLICKEYSIZE);
+    logd("sk", sk, ecc_pre_schema1_PRIVATEKEYSIZE);
+
+    char pk_hex[2 * ecc_pre_schema1_PUBLICKEYSIZE + 1];
+    ecc_bin2hex(pk_hex, pk, ecc_pre_schema1_PUBLICKEYSIZE);
+    assert_string_equal(pk_hex, "126f4388e684fb5c379eb794a2dd79c6e431c1f20820b635c584c9"
+                                "4d1c0e2475c8bd19e956fe80e530b194a15c90ef4d1641344e4cbbd"
+                                "372d71ab829ba1bd3348d621cf387242e8ba3bd63055ab715adba3b"
+                                "c63c56841721a3bda332b30af4bb");
+
+    char sk_hex[2 * ecc_pre_schema1_PRIVATEKEYSIZE + 1];
+    ecc_bin2hex(sk_hex, sk, ecc_pre_schema1_PRIVATEKEYSIZE);
+    assert_string_equal(sk_hex, "17ed8ee5036a2a8e1b63c1fe172b450e88b3047377c40a28dfa325f2b9c58503");
+}
+
 int main() {
     const struct CMUnitTest tests[] = {
-        cmocka_unit_test(ecc_pre_schema1_encrypt_level1_test),
-        cmocka_unit_test(ecc_pre_schema1_re_encrypt_test),
+        // TODO: restore random tests
+        //cmocka_unit_test(ecc_pre_schema1_encrypt_level1_test),
+        //cmocka_unit_test(ecc_pre_schema1_re_encrypt_test),
+        // deterministic tests
+        cmocka_unit_test(ecc_pre_schema1_derive_keypair_test),
     };
 
     return cmocka_run_group_tests(tests, NULL, NULL);
