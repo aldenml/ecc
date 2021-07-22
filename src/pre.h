@@ -111,6 +111,21 @@ ECC_EXPORT
 void ecc_pre_schema1_MessageGen(byte_t *m);
 
 /**
+ * Derive a public/private key pair deterministically
+ * from the input "seed".
+ *
+ * @param pk (output) public key
+ * @param sk (output) private key
+ * @param seed input seed to generate the key pair
+ * @param seed_len the length of `seed`
+ */
+ECC_EXPORT
+void ecc_pre_schema1_DeriveKeyPair(
+    byte_t *pk, byte_t *sk,
+    const byte_t *seed, int seed_len
+);
+
+/**
  * Generate a public/private key pair.
  *
  * @param pk (output) public key

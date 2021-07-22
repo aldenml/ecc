@@ -309,7 +309,7 @@ void ecc_opaque_ristretto255_sha512_GenerateAuthKeyPair(
  * @param private_key (output) a private key
  * @param public_key (output) the associated public key
  * @param seed pseudo-random byte sequence used as a seed
- * @param seed_len the length of `seed_len`
+ * @param seed_len the length of `seed`
  */
 ECC_EXPORT
 void ecc_opaque_ristretto255_sha512_DeriveAuthKeyPair(

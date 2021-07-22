@@ -14,6 +14,7 @@
 #include "hash.h"
 #include "ed25519.h"
 #include "bls12_381.h"
+#include "h2c.h"
 
 typedef struct {
     byte_t epk[ecc_pre_schema1_PUBLICKEYSIZE];
@@ -49,6 +50,29 @@ void ecc_pre_schema1_MessageGen(
     byte_t *m
 ) {
     ecc_bls12_381_fp12_random(m);
+}
+
+void ecc_pre_schema1_DeriveKeyPair(
+    byte_t *pk, byte_t *sk,
+    const byte_t *seed, int seed_len
+) {
+    byte_t dst[24] = "PRE-SCHEMA1-DeriveKeyGen";
+    byte_t expand_message[32];
+    ecc_h2c_expand_message_xmd_sha256(
+        expand_message,
+        seed, seed_len,
+        dst, sizeof dst,
+        32
+    );
+
+    // the secret key
+    blst_scalar_from_le_bytes((blst_scalar *) sk, expand_message, 32);
+
+    // public key pk = sk * g
+    ecc_bls12_381_g1_scalarmult_base(pk, sk);
+
+    // cleanup stack memory
+    ecc_memzero(expand_message, sizeof expand_message);
 }
 
 void ecc_pre_schema1_KeyGen(

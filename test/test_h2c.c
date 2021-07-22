@@ -18,6 +18,52 @@
 const byte_t dst[27] = "QUUX-V01-CS02-with-expander";
 const int dst_len = 27;
 
+static void ecc_h2c_expand_message_xmd_sha256_test1(void **state) {
+    ECC_UNUSED(state);
+
+    const byte_t msg[0];
+    const int msg_len = 0;
+    const int len_in_bytes = 0x20;
+    byte_t uniform_bytes[0x20];
+
+    ecc_h2c_expand_message_xmd_sha256(uniform_bytes, msg, msg_len, dst, dst_len, len_in_bytes);
+
+    char hex[0x40 + 1];
+    ecc_bin2hex(hex, uniform_bytes, 0x20);
+    assert_string_equal(hex, "f659819a6473c1835b25ea59e3d38914c98b374f0970b7e4"
+                             "c92181df928fca88");
+}
+
+static void ecc_h2c_expand_message_xmd_sha256_test1_null(void **state) {
+    ECC_UNUSED(state);
+
+    const int len_in_bytes = 0x20;
+    byte_t uniform_bytes[0x20];
+
+    ecc_h2c_expand_message_xmd_sha256(uniform_bytes, NULL, 0, dst, dst_len, len_in_bytes);
+
+    char hex[0x40 + 1];
+    ecc_bin2hex(hex, uniform_bytes, 0x20);
+    assert_string_equal(hex, "f659819a6473c1835b25ea59e3d38914c98b374f0970b7e4"
+                             "c92181df928fca88");
+}
+
+static void ecc_h2c_expand_message_xmd_sha256_test2(void **state) {
+    ECC_UNUSED(state);
+
+    const byte_t msg[3] = "abc";
+    const int msg_len = 3;
+    const int len_in_bytes = 0x20;
+    byte_t uniform_bytes[0x20];
+
+    ecc_h2c_expand_message_xmd_sha256(uniform_bytes, msg, msg_len, dst, dst_len, len_in_bytes);
+
+    char hex[0x40 + 1];
+    ecc_bin2hex(hex, uniform_bytes, 0x20);
+    assert_string_equal(hex, "1c38f7c211ef233367b2420d04798fa4698080a8901021a7"
+                             "95a1151775fe4da7");
+}
+
 static void ecc_h2c_expand_message_xmd_sha512_test1(void **state) {
     ECC_UNUSED(state);
 
@@ -178,6 +224,10 @@ static void ecc_h2c_expand_message_xmd_sha512_test8(void **state) {
 
 int main() {
     const struct CMUnitTest tests[] = {
+        // ecc_h2c_expand_message_xmd_sha256
+        cmocka_unit_test(ecc_h2c_expand_message_xmd_sha256_test1),
+        cmocka_unit_test(ecc_h2c_expand_message_xmd_sha256_test1_null),
+        cmocka_unit_test(ecc_h2c_expand_message_xmd_sha256_test2),
         // ecc_h2c_expand_message_xmd_sha512
         cmocka_unit_test(ecc_h2c_expand_message_xmd_sha512_test1),
         cmocka_unit_test(ecc_h2c_expand_message_xmd_sha512_test1_null),
