@@ -1382,3 +1382,377 @@ Module.ecc_opaque_ristretto255_sha512_3DH_ServerFinish = (
     mzero(128 + 64 + 64);
     return r;
 }
+
+// pre
+
+const ecc_pre_schema1_MESSAGESIZE = 576; // size of a Fp12 element in BLS12-381
+/**
+ * Size of the PRE-SCHEMA1 plaintext and ciphertext messages.
+ * <p>
+ * Only messages of this size are accepted in the protocol, they are short
+ * but suitable to use as the seed for other symmetric encryption protocols.
+ *
+ * @type {number}
+ */
+Module.ecc_pre_schema1_MESSAGESIZE = ecc_pre_schema1_MESSAGESIZE;
+
+const ecc_pre_schema1_PUBLICKEYSIZE = 96; // size of a G1 element in BLS12-381
+/**
+ * Size of the PRE-SCHEMA1 public key.
+ *
+ * @type {number}
+ */
+Module.ecc_pre_schema1_PUBLICKEYSIZE = ecc_pre_schema1_PUBLICKEYSIZE;
+
+const ecc_pre_schema1_PRIVATEKEYSIZE = 32; // size of a an scalar in BLS12-381
+/**
+ * Size of the PRE-SCHEMA1 private key.
+ *
+ * @type {number}
+ */
+Module.ecc_pre_schema1_PRIVATEKEYSIZE = ecc_pre_schema1_PRIVATEKEYSIZE;
+
+const ecc_pre_schema1_SIGNINGPUBLICKEYSIZE = 32; // ed25519 signing public key size
+/**
+ * Size of the PRE-SCHEMA1 signing public key.
+ *
+ * @type {number}
+ */
+Module.ecc_pre_schema1_SIGNINGPUBLICKEYSIZE = ecc_pre_schema1_SIGNINGPUBLICKEYSIZE;
+
+const ecc_pre_schema1_SIGNINGPRIVATEKEYSIZE = 64; // ed25519 signing secret key size
+/**
+ * Size of the PRE-SCHEMA1 signing private key.
+ *
+ * @type {number}
+ */
+Module.ecc_pre_schema1_SIGNINGPRIVATEKEYSIZE = ecc_pre_schema1_SIGNINGPRIVATEKEYSIZE;
+
+const ecc_pre_schema1_SIGNATURESIZE = 64; // ed25519 signature size
+/**
+ * Size of the PRE-SCHEMA1 signature.
+ *
+ * @type {number}
+ */
+Module.ecc_pre_schema1_SIGNATURESIZE = ecc_pre_schema1_SIGNATURESIZE;
+
+const ecc_pre_schema1_CIPHERTEXTLEVEL1SIZE = 800;
+/**
+ * Size of the whole ciphertext structure, that is the result
+ * of the simple Encrypt operation.
+ *
+ * @type {number}
+ */
+Module.ecc_pre_schema1_CIPHERTEXTLEVEL1SIZE = ecc_pre_schema1_CIPHERTEXTLEVEL1SIZE;
+
+const ecc_pre_schema1_CIPHERTEXTLEVEL2SIZE = 2240;
+/**
+ * Size of the whole ciphertext structure, that is the result
+ * of the one-hop ReEncrypt operation.
+ *
+ * @type {number}
+ */
+Module.ecc_pre_schema1_CIPHERTEXTLEVEL2SIZE = ecc_pre_schema1_CIPHERTEXTLEVEL2SIZE;
+
+const ecc_pre_schema1_REKEYSIZE = 960;
+/**
+ * Size of the whole re-encryption key structure.
+ *
+ * @type {number}
+ */
+Module.ecc_pre_schema1_REKEYSIZE = ecc_pre_schema1_REKEYSIZE;
+
+/**
+ * Generates a random message suitable to use in the protocol.
+ *
+ * The output can be used in other key derivation algorithms for other
+ * symmetric encryption protocols.
+ *
+ * @param {Uint8Array} m (output) a random plaintext message
+ */
+Module.ecc_pre_schema1_MessageGen = (
+    m
+) => {
+    const pM = 0;
+
+    _ecc_pre_schema1_MessageGen(pM);
+
+    mget(pM, m, ecc_pre_schema1_MESSAGESIZE);
+
+    mzero(ecc_pre_schema1_MESSAGESIZE);
+}
+
+/**
+ * Generate a public/private key pair.
+ *
+ * @param {Uint8Array} pk (output) public key
+ * @param {Uint8Array} sk (output) private key
+ */
+Module.ecc_pre_schema1_KeyGen = (pk, sk) => {
+    const pPk = 0;
+    const pSk = pPk + ecc_pre_schema1_PUBLICKEYSIZE;
+
+    _ecc_pre_schema1_KeyGen(pPk, pSk);
+
+    mget(pPk, pk, ecc_pre_schema1_PUBLICKEYSIZE);
+    mget(pSk, sk, ecc_pre_schema1_PRIVATEKEYSIZE);
+
+    mzero(ecc_pre_schema1_PUBLICKEYSIZE +
+        ecc_pre_schema1_PRIVATEKEYSIZE);
+}
+
+/**
+ * Generate a signing public/private key pair.
+ *
+ * @param {Uint8Array} spk (output) signing public key
+ * @param {Uint8Array} ssk (output) signing private key
+ */
+Module.ecc_pre_schema1_SigningKeyGen = (spk, ssk) => {
+    const pSpk = 0;
+    const pSsk = pSpk + ecc_pre_schema1_SIGNINGPUBLICKEYSIZE;
+
+    _ecc_pre_schema1_SigningKeyGen(pSpk, pSsk);
+
+    mget(pSpk, spk, ecc_pre_schema1_SIGNINGPUBLICKEYSIZE);
+    mget(pSsk, ssk, ecc_pre_schema1_SIGNINGPRIVATEKEYSIZE);
+
+    mzero(ecc_pre_schema1_SIGNINGPUBLICKEYSIZE +
+        ecc_pre_schema1_SIGNINGPRIVATEKEYSIZE);
+}
+
+/**
+ * Encrypt a message `m` to delegatee j, given j’s public key (pk_j) and the
+ * sender i’s signing key pair (spk_i, ssk_i). Produces a ciphertext C_j.
+ *
+ * This is also called encryption of level 1, since it's used to encrypt to
+ * itself (i.e j == i), in order to have later the ciphertext re-encrypted
+ * by the proxy with the re-encryption key (level 2).
+ *
+ * @param {Uint8Array} C_j_raw (output) a CiphertextLevel1_t structure
+ * @param {Uint8Array} m the plaintext message
+ * @param {Uint8Array} pk_j delegatee's public key
+ * @param {Uint8Array} spk_i sender signing public key
+ * @param {Uint8Array} ssk_i sender signing private key
+ */
+Module.ecc_pre_schema1_Encrypt = (
+    C_j_raw,
+    m,
+    pk_j,
+    spk_i,
+    ssk_i
+) => {
+    const pM = mput(m, 0, ecc_pre_schema1_MESSAGESIZE);
+    const pPk_j = mput(pk_j, pM + ecc_pre_schema1_MESSAGESIZE, ecc_pre_schema1_PUBLICKEYSIZE);
+    const pSpk_i = mput(spk_i, pPk_j + ecc_pre_schema1_PUBLICKEYSIZE, ecc_pre_schema1_SIGNINGPUBLICKEYSIZE);
+    const pSsk_i = mput(ssk_i, pSpk_i + ecc_pre_schema1_SIGNINGPUBLICKEYSIZE, ecc_pre_schema1_SIGNINGPRIVATEKEYSIZE);
+    const pC_j_raw = pSsk_i + ecc_pre_schema1_SIGNINGPRIVATEKEYSIZE;
+
+    _ecc_pre_schema1_Encrypt(
+        pC_j_raw,
+        pM,
+        pPk_j,
+        pSpk_i,
+        pSsk_i
+    );
+
+    mget(pC_j_raw, C_j_raw, ecc_pre_schema1_CIPHERTEXTLEVEL1SIZE);
+
+    mzero(ecc_pre_schema1_MESSAGESIZE +
+        ecc_pre_schema1_PUBLICKEYSIZE +
+        ecc_pre_schema1_SIGNINGPUBLICKEYSIZE +
+        ecc_pre_schema1_SIGNINGPRIVATEKEYSIZE +
+        ecc_pre_schema1_CIPHERTEXTLEVEL1SIZE);
+}
+
+/**
+ * Generate a re-encryption key from user i (the delegator) to user j (the delegatee).
+ *
+ * Requires the delegator’s private key (sk_i), the delegatee’s public key (pk_j), and
+ * the delegator’s signing key pair (spk_i, ssk_i).
+ *
+ * @param {Uint8Array} tk_i_j_raw (output) a ReKey_t structure
+ * @param {Uint8Array} sk_i delegator’s private key
+ * @param {Uint8Array} pk_j delegatee’s public key
+ * @param {Uint8Array} spk_i delegator’s signing public key
+ * @param {Uint8Array} ssk_i delegator’s signing private key
+ */
+Module.ecc_pre_schema1_ReKeyGen = (
+    tk_i_j_raw,
+    sk_i,
+    pk_j,
+    spk_i,
+    ssk_i
+) => {
+    const pSk_i = mput(sk_i, 0, ecc_pre_schema1_PRIVATEKEYSIZE);
+    const pPk_j = mput(pk_j, pSk_i + ecc_pre_schema1_PRIVATEKEYSIZE, ecc_pre_schema1_PUBLICKEYSIZE);
+    const pSpk_i = mput(spk_i, pPk_j + ecc_pre_schema1_PUBLICKEYSIZE, ecc_pre_schema1_SIGNINGPUBLICKEYSIZE);
+    const pSsk_i = mput(ssk_i, pSpk_i + ecc_pre_schema1_SIGNINGPUBLICKEYSIZE, ecc_pre_schema1_SIGNINGPRIVATEKEYSIZE);
+    const pTk_i_j_raw = pSsk_i + ecc_pre_schema1_SIGNINGPRIVATEKEYSIZE;
+
+    _ecc_pre_schema1_ReKeyGen(
+        pTk_i_j_raw,
+        pSk_i,
+        pPk_j,
+        pSpk_i,
+        pSsk_i
+    );
+
+    mget(pTk_i_j_raw, tk_i_j_raw, ecc_pre_schema1_REKEYSIZE);
+
+    mzero(ecc_pre_schema1_PRIVATEKEYSIZE +
+        ecc_pre_schema1_PUBLICKEYSIZE +
+        ecc_pre_schema1_SIGNINGPUBLICKEYSIZE +
+        ecc_pre_schema1_SIGNINGPRIVATEKEYSIZE +
+        ecc_pre_schema1_REKEYSIZE);
+}
+
+/**
+ * Re-encrypt a ciphertext encrypted to i (C_i) into a ciphertext encrypted
+ * to j (C_j), given a re-encryption key (tk_i_j) and the proxy’s signing key
+ * pair (spk, ssk).
+ *
+ * This operation is performed by the proxy and is also called encryption of
+ * level 2, since it takes a ciphertext from a level 1 and re-encrypt it.
+ *
+ * It also validate the signature on the encrypted ciphertext and re-encryption key.
+ *
+ * @param {Uint8Array} C_j_raw (output) a CiphertextLevel2_t structure
+ * @param {Uint8Array} C_i_raw a CiphertextLevel1_t structure
+ * @param {Uint8Array} tk_i_j_raw a ReKey_t structure
+ * @param {Uint8Array} spk_i delegator’s signing public key
+ * @param {Uint8Array} pk_j delegatee’s public key
+ * @param {Uint8Array} spk proxy’s signing public key
+ * @param {Uint8Array} ssk proxy’s signing private key
+ * @return {number} 0 if all the signatures are valid, -1 if there is an error
+ */
+Module.ecc_pre_schema1_ReEncrypt = (
+    C_j_raw,
+    C_i_raw,
+    tk_i_j_raw,
+    spk_i,
+    pk_j,
+    spk,
+    ssk
+) => {
+    const heap_size = ecc_pre_schema1_CIPHERTEXTLEVEL1SIZE +
+        ecc_pre_schema1_REKEYSIZE +
+        ecc_pre_schema1_SIGNINGPUBLICKEYSIZE +
+        ecc_pre_schema1_PUBLICKEYSIZE +
+        ecc_pre_schema1_SIGNINGPUBLICKEYSIZE +
+        ecc_pre_schema1_SIGNINGPRIVATEKEYSIZE +
+        ecc_pre_schema1_CIPHERTEXTLEVEL2SIZE;
+    const heap = _ecc_malloc(heap_size);
+
+    const pC_i_raw = mput(C_i_raw, heap, ecc_pre_schema1_CIPHERTEXTLEVEL1SIZE);
+    const pTk_i_j_raw = mput(tk_i_j_raw, pC_i_raw + ecc_pre_schema1_CIPHERTEXTLEVEL1SIZE, ecc_pre_schema1_REKEYSIZE);
+    const pSpk_i = mput(spk_i, pTk_i_j_raw + ecc_pre_schema1_REKEYSIZE, ecc_pre_schema1_SIGNINGPUBLICKEYSIZE);
+    const pPk_j = mput(pk_j, pSpk_i + ecc_pre_schema1_SIGNINGPUBLICKEYSIZE, ecc_pre_schema1_PUBLICKEYSIZE);
+    const pSpk = mput(spk, pPk_j + ecc_pre_schema1_PUBLICKEYSIZE, ecc_pre_schema1_SIGNINGPUBLICKEYSIZE);
+    const pSsk = mput(ssk, pSpk + ecc_pre_schema1_SIGNINGPUBLICKEYSIZE, ecc_pre_schema1_SIGNINGPRIVATEKEYSIZE);
+    const pC_j_raw = pSsk + ecc_pre_schema1_SIGNINGPRIVATEKEYSIZE;
+
+    const r = _ecc_pre_schema1_ReEncrypt(
+        pC_j_raw,
+        pC_i_raw,
+        pTk_i_j_raw,
+        pSpk_i,
+        pPk_j,
+        pSpk,
+        pSsk
+    );
+
+    mget(pC_j_raw, C_j_raw, ecc_pre_schema1_CIPHERTEXTLEVEL2SIZE);
+
+    _ecc_free(heap, heap_size);
+    return r;
+}
+
+/**
+ * Decrypt a signed ciphertext (C_i) given the private key of the recipient
+ * i (sk_i). Returns the original message that was encrypted, m.
+ *
+ * This operations is usually performed by the delegator, since it encrypted
+ * the message just to be stored and later be re-encrypted by the proxy.
+ *
+ * It also validate the signature on the encrypted ciphertext.
+ *
+ * @param {Uint8Array} m (output) the original plaintext message
+ * @param {Uint8Array} C_i_raw a CiphertextLevel1_t structure
+ * @param {Uint8Array} sk_i recipient private key
+ * @param {Uint8Array} spk_i recipient signing public key
+ * @return {number} 0 if all the signatures are valid, -1 if there is an error
+ */
+Module.ecc_pre_schema1_DecryptLevel1 = (
+    m,
+    C_i_raw,
+    sk_i,
+    spk_i
+) => {
+    const heap_size = ecc_pre_schema1_CIPHERTEXTLEVEL1SIZE +
+        ecc_pre_schema1_PRIVATEKEYSIZE +
+        ecc_pre_schema1_SIGNINGPUBLICKEYSIZE +
+        ecc_pre_schema1_MESSAGESIZE;
+    const heap = _ecc_malloc(heap_size);
+
+    const pC_i_raw = mput(C_i_raw, heap, ecc_pre_schema1_CIPHERTEXTLEVEL1SIZE);
+    const pSk_i = mput(sk_i, pC_i_raw + ecc_pre_schema1_CIPHERTEXTLEVEL1SIZE, ecc_pre_schema1_PRIVATEKEYSIZE);
+    const pSpk_i = mput(spk_i, pSk_i + ecc_pre_schema1_PRIVATEKEYSIZE, ecc_pre_schema1_SIGNINGPUBLICKEYSIZE);
+    const pM = pSpk_i + ecc_pre_schema1_SIGNINGPUBLICKEYSIZE;
+
+    const r = _ecc_pre_schema1_DecryptLevel1(
+        pM,
+        pC_i_raw,
+        pSk_i,
+        pSpk_i
+    );
+
+    mget(pM, m, ecc_pre_schema1_MESSAGESIZE);
+
+    _ecc_free(heap, heap_size);
+    return r;
+}
+
+/**
+ * Decrypt a signed ciphertext (C_j) given the private key of the recipient
+ * j (sk_j). Returns the original message that was encrypted, m.
+ *
+ * This operations is usually performed by the delegatee, since it is the proxy
+ * that re-encrypt the message and send the ciphertext to the final recipient.
+ *
+ * It also validate the signature on the encrypted ciphertext.
+ *
+ * @param {Uint8Array} m (output) the original plaintext message
+ * @param {Uint8Array} C_j_raw a CiphertextLevel2_t structure
+ * @param {Uint8Array} sk_j recipient private key
+ * @param {Uint8Array} spk proxy’s signing public key
+ * @return {number} 0 if all the signatures are valid, -1 if there is an error
+ */
+Module.ecc_pre_schema1_DecryptLevel2 = (
+    m,
+    C_j_raw,
+    sk_j,
+    spk
+) => {
+    const heap_size = ecc_pre_schema1_CIPHERTEXTLEVEL2SIZE +
+        ecc_pre_schema1_PRIVATEKEYSIZE +
+        ecc_pre_schema1_SIGNINGPUBLICKEYSIZE +
+        ecc_pre_schema1_MESSAGESIZE;
+    const heap = _ecc_malloc(heap_size);
+
+    const pC_j_raw = mput(C_j_raw, heap, ecc_pre_schema1_CIPHERTEXTLEVEL2SIZE);
+    const pSk_j = mput(sk_j, pC_j_raw + ecc_pre_schema1_CIPHERTEXTLEVEL2SIZE, ecc_pre_schema1_PRIVATEKEYSIZE);
+    const pSpk = mput(spk, pSk_j + ecc_pre_schema1_PRIVATEKEYSIZE, ecc_pre_schema1_SIGNINGPUBLICKEYSIZE);
+    const pM = pSpk + ecc_pre_schema1_SIGNINGPUBLICKEYSIZE;
+
+    const r = _ecc_pre_schema1_DecryptLevel2(
+        pM,
+        pC_j_raw,
+        pSk_j,
+        pSpk
+    );
+
+    mget(pM, m, ecc_pre_schema1_MESSAGESIZE);
+
+    _ecc_free(heap, heap_size);
+    return r;
+}

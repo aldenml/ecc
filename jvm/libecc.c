@@ -974,7 +974,8 @@ JNIEXPORT void JNICALL Java_org_ssohub_crypto_ecc_libecc_ecc_1opaque_1ristretto2
     FREE_HEAP;
 }
 
-JNIEXPORT void JNICALL Java_org_ssohub_crypto_ecc_libecc_ecc_1opaque_1ristretto255_1sha512_1CreateRegistrationRequestWithBlind(
+JNIEXPORT void JNICALL
+Java_org_ssohub_crypto_ecc_libecc_ecc_1opaque_1ristretto255_1sha512_1CreateRegistrationRequestWithBlind(
     JNIEnv *env, jclass cls,
     jbyteArray request_raw, // 32
     jbyteArray password, int password_len,
@@ -1043,7 +1044,8 @@ JNIEXPORT void JNICALL Java_org_ssohub_crypto_ecc_libecc_ecc_1opaque_1ristretto2
 
     byte_t *pRequest = mput(env, request_raw, heap, 32);
     byte_t *pServer_public_key = mput(env, server_public_key, pRequest + 32, 32);
-    byte_t *pCredential_identifier = mput(env, credential_identifier, pServer_public_key + 32, credential_identifier_len);
+    byte_t *pCredential_identifier = mput(env, credential_identifier, pServer_public_key + 32,
+                                          credential_identifier_len);
     byte_t *pOprf_seed = mput(env, oprf_seed, pCredential_identifier + credential_identifier_len, 64);
     byte_t *pResponse = pOprf_seed + 64;
     byte_t *pOprf_key = pResponse + 64;
@@ -1149,7 +1151,7 @@ JNIEXPORT int JNICALL Java_org_ssohub_crypto_ecc_libecc_ecc_1opaque_1ristretto25
     ECC_UNUSED(cls);
 
     const int heap_size = 160 + password_len + client_identity_len + server_identity_len + 320 +
-        64 + 64 + 64;
+                          64 + 64 + 64;
     ALLOC_HEAP_RET;
 
     byte_t *pState = mput(env, state_raw, heap, 160);
@@ -1197,7 +1199,7 @@ JNIEXPORT void JNICALL Java_org_ssohub_crypto_ecc_libecc_ecc_1opaque_1ristretto2
     ECC_UNUSED(cls);
 
     const int heap_size = 128 + server_identity_len + 32 + 32 + 192 + credential_identifier_len +
-        64 + 96 + context_len + 320;
+                          64 + 96 + context_len + 320;
     ALLOC_HEAP;
 
     byte_t *pState = mput(env, state_raw, heap, 128);
@@ -1253,6 +1255,256 @@ JNIEXPORT int JNICALL Java_org_ssohub_crypto_ecc_libecc_ecc_1opaque_1ristretto25
 
     mget(env, pState, state_raw, 128);
     mget(env, pSession_key, session_key, 64);
+
+    FREE_HEAP;
+    return r;
+}
+
+// pre
+
+JNIEXPORT void JNICALL Java_org_ssohub_crypto_ecc_libecc_ecc_1pre_1schema1_1MessageGen(
+    JNIEnv *env, jclass cls,
+    jbyteArray m
+) {
+    ECC_UNUSED(cls);
+
+    const int heap_size = ecc_pre_schema1_MESSAGESIZE;
+    ALLOC_HEAP;
+
+    byte_t *pM = heap;
+
+    ecc_pre_schema1_MessageGen(pM);
+
+    mget(env, pM, m, ecc_pre_schema1_MESSAGESIZE);
+
+    FREE_HEAP;
+}
+
+JNIEXPORT void JNICALL Java_org_ssohub_crypto_ecc_libecc_ecc_1pre_1schema1_1KeyGen(
+    JNIEnv *env, jclass cls,
+    jbyteArray pk,
+    jbyteArray sk
+) {
+    ECC_UNUSED(cls);
+
+    const int heap_size = ecc_pre_schema1_PUBLICKEYSIZE +
+                          ecc_pre_schema1_PRIVATEKEYSIZE;
+    ALLOC_HEAP;
+
+    byte_t *pPk = heap;
+    byte_t *pSk = pPk + ecc_pre_schema1_PUBLICKEYSIZE;
+
+    ecc_pre_schema1_KeyGen(pPk, pSk);
+
+    mget(env, pPk, pk, ecc_pre_schema1_PUBLICKEYSIZE);
+    mget(env, pSk, sk, ecc_pre_schema1_PRIVATEKEYSIZE);
+
+    FREE_HEAP;
+}
+
+JNIEXPORT void JNICALL Java_org_ssohub_crypto_ecc_libecc_ecc_1pre_1schema1_1SigningKeyGen(
+    JNIEnv *env, jclass cls,
+    jbyteArray spk,
+    jbyteArray ssk
+) {
+    ECC_UNUSED(cls);
+
+    const int heap_size = ecc_pre_schema1_SIGNINGPUBLICKEYSIZE +
+                          ecc_pre_schema1_SIGNINGPRIVATEKEYSIZE;
+    ALLOC_HEAP;
+
+    byte_t *pSpk = heap;
+    byte_t *pSsk = pSpk + ecc_pre_schema1_SIGNINGPUBLICKEYSIZE;
+
+    ecc_pre_schema1_SigningKeyGen(pSpk, pSsk);
+
+    mget(env, pSpk, spk, ecc_pre_schema1_SIGNINGPUBLICKEYSIZE);
+    mget(env, pSsk, ssk, ecc_pre_schema1_SIGNINGPRIVATEKEYSIZE);
+
+    FREE_HEAP;
+}
+
+JNIEXPORT void JNICALL Java_org_ssohub_crypto_ecc_libecc_ecc_1pre_1schema1_1Encrypt(
+    JNIEnv *env, jclass cls,
+    jbyteArray C_j_raw,
+    jbyteArray m,
+    jbyteArray pk_j,
+    jbyteArray spk_i,
+    jbyteArray ssk_i
+) {
+    ECC_UNUSED(cls);
+
+    const int heap_size = ecc_pre_schema1_MESSAGESIZE +
+                          ecc_pre_schema1_PUBLICKEYSIZE +
+                          ecc_pre_schema1_SIGNINGPUBLICKEYSIZE +
+                          ecc_pre_schema1_SIGNINGPRIVATEKEYSIZE +
+                          ecc_pre_schema1_CIPHERTEXTLEVEL1SIZE;
+    ALLOC_HEAP;
+
+    byte_t *pM = mput(env, m, heap, ecc_pre_schema1_MESSAGESIZE);
+    byte_t *pPk_j = mput(env, pk_j, pM + ecc_pre_schema1_MESSAGESIZE, ecc_pre_schema1_PUBLICKEYSIZE);
+    byte_t *pSpk_i = mput(env, spk_i, pPk_j + ecc_pre_schema1_PUBLICKEYSIZE, ecc_pre_schema1_SIGNINGPUBLICKEYSIZE);
+    byte_t *pSsk_i = mput(env, ssk_i, pSpk_i + ecc_pre_schema1_SIGNINGPUBLICKEYSIZE,
+                          ecc_pre_schema1_SIGNINGPRIVATEKEYSIZE);
+    byte_t *pC_j_raw = pSsk_i + ecc_pre_schema1_SIGNINGPRIVATEKEYSIZE;
+
+    ecc_pre_schema1_Encrypt(
+        pC_j_raw,
+        pM,
+        pPk_j,
+        pSpk_i,
+        pSsk_i
+    );
+
+    mget(env, pC_j_raw, C_j_raw, ecc_pre_schema1_CIPHERTEXTLEVEL1SIZE);
+
+    FREE_HEAP;
+}
+
+JNIEXPORT void JNICALL Java_org_ssohub_crypto_ecc_libecc_ecc_1pre_1schema1_1ReKeyGen(
+    JNIEnv *env, jclass cls,
+    jbyteArray tk_i_j_raw,
+    jbyteArray sk_i,
+    jbyteArray pk_j,
+    jbyteArray spk_i,
+    jbyteArray ssk_i
+) {
+    ECC_UNUSED(cls);
+
+    const int heap_size = ecc_pre_schema1_PRIVATEKEYSIZE +
+                          ecc_pre_schema1_PUBLICKEYSIZE +
+                          ecc_pre_schema1_SIGNINGPUBLICKEYSIZE +
+                          ecc_pre_schema1_SIGNINGPRIVATEKEYSIZE +
+                          ecc_pre_schema1_REKEYSIZE;
+    ALLOC_HEAP;
+
+    byte_t *pSk_i = mput(env, sk_i, heap, ecc_pre_schema1_PRIVATEKEYSIZE);
+    byte_t *pPk_j = mput(env, pk_j, pSk_i + ecc_pre_schema1_PRIVATEKEYSIZE, ecc_pre_schema1_PUBLICKEYSIZE);
+    byte_t *pSpk_i = mput(env, spk_i, pPk_j + ecc_pre_schema1_PUBLICKEYSIZE, ecc_pre_schema1_SIGNINGPUBLICKEYSIZE);
+    byte_t *pSsk_i = mput(env, ssk_i, pSpk_i + ecc_pre_schema1_SIGNINGPUBLICKEYSIZE,
+                          ecc_pre_schema1_SIGNINGPRIVATEKEYSIZE);
+    byte_t *pTk_i_j_raw = pSsk_i + ecc_pre_schema1_SIGNINGPRIVATEKEYSIZE;
+
+    ecc_pre_schema1_ReKeyGen(
+        pTk_i_j_raw,
+        pSk_i,
+        pPk_j,
+        pSpk_i,
+        pSsk_i
+    );
+
+    mget(env, pTk_i_j_raw, tk_i_j_raw, ecc_pre_schema1_REKEYSIZE);
+
+    FREE_HEAP;
+}
+
+JNIEXPORT int JNICALL Java_org_ssohub_crypto_ecc_libecc_ecc_1pre_1schema1_1ReEncrypt(
+    JNIEnv *env, jclass cls,
+    jbyteArray C_j_raw,
+    jbyteArray C_i_raw,
+    jbyteArray tk_i_j_raw,
+    jbyteArray spk_i,
+    jbyteArray pk_j,
+    jbyteArray spk,
+    jbyteArray ssk
+) {
+    ECC_UNUSED(cls);
+
+    const int heap_size = ecc_pre_schema1_CIPHERTEXTLEVEL1SIZE +
+                          ecc_pre_schema1_REKEYSIZE +
+                          ecc_pre_schema1_SIGNINGPUBLICKEYSIZE +
+                          ecc_pre_schema1_PUBLICKEYSIZE +
+                          ecc_pre_schema1_SIGNINGPUBLICKEYSIZE +
+                          ecc_pre_schema1_SIGNINGPRIVATEKEYSIZE +
+                          ecc_pre_schema1_CIPHERTEXTLEVEL2SIZE;
+    ALLOC_HEAP_RET;
+
+    byte_t *pC_i_raw = mput(env, C_i_raw, heap, ecc_pre_schema1_CIPHERTEXTLEVEL1SIZE);
+    byte_t *pTk_i_j_raw = mput(env, tk_i_j_raw, pC_i_raw + ecc_pre_schema1_CIPHERTEXTLEVEL1SIZE,
+                               ecc_pre_schema1_REKEYSIZE);
+    byte_t *pSpk_i = mput(env, spk_i, pTk_i_j_raw + ecc_pre_schema1_REKEYSIZE, ecc_pre_schema1_SIGNINGPUBLICKEYSIZE);
+    byte_t *pPk_j = mput(env, pk_j, pSpk_i + ecc_pre_schema1_SIGNINGPUBLICKEYSIZE, ecc_pre_schema1_PUBLICKEYSIZE);
+    byte_t *pSpk = mput(env, spk, pPk_j + ecc_pre_schema1_PUBLICKEYSIZE, ecc_pre_schema1_SIGNINGPUBLICKEYSIZE);
+    byte_t *pSsk = mput(env, ssk, pSpk + ecc_pre_schema1_SIGNINGPUBLICKEYSIZE, ecc_pre_schema1_SIGNINGPRIVATEKEYSIZE);
+    byte_t *pC_j_raw = pSsk + ecc_pre_schema1_SIGNINGPRIVATEKEYSIZE;
+
+    int r = ecc_pre_schema1_ReEncrypt(
+        pC_j_raw,
+        pC_i_raw,
+        pTk_i_j_raw,
+        pSpk_i,
+        pPk_j,
+        pSpk,
+        pSsk
+    );
+
+    mget(env, pC_j_raw, C_j_raw, ecc_pre_schema1_CIPHERTEXTLEVEL2SIZE);
+
+    FREE_HEAP;
+    return r;
+}
+
+JNIEXPORT int JNICALL Java_org_ssohub_crypto_ecc_libecc_ecc_1pre_1schema1_1DecryptLevel1(
+    JNIEnv *env, jclass cls,
+    jbyteArray m,
+    jbyteArray C_i_raw,
+    jbyteArray sk_i,
+    jbyteArray spk_i
+) {
+    ECC_UNUSED(cls);
+
+    const int heap_size = ecc_pre_schema1_CIPHERTEXTLEVEL1SIZE +
+                          ecc_pre_schema1_PRIVATEKEYSIZE +
+                          ecc_pre_schema1_SIGNINGPUBLICKEYSIZE +
+                          ecc_pre_schema1_MESSAGESIZE;
+    ALLOC_HEAP_RET;
+
+    byte_t *pC_i_raw = mput(env, C_i_raw, heap, ecc_pre_schema1_CIPHERTEXTLEVEL1SIZE);
+    byte_t *pSk_i = mput(env, sk_i, pC_i_raw + ecc_pre_schema1_CIPHERTEXTLEVEL1SIZE, ecc_pre_schema1_PRIVATEKEYSIZE);
+    byte_t *pSpk_i = mput(env, spk_i, pSk_i + ecc_pre_schema1_PRIVATEKEYSIZE, ecc_pre_schema1_SIGNINGPUBLICKEYSIZE);
+    byte_t *pM = pSpk_i + ecc_pre_schema1_SIGNINGPUBLICKEYSIZE;
+
+    int r = ecc_pre_schema1_DecryptLevel1(
+        pM,
+        pC_i_raw,
+        pSk_i,
+        pSpk_i
+    );
+
+    mget(env, pM, m, ecc_pre_schema1_MESSAGESIZE);
+
+    FREE_HEAP;
+    return r;
+}
+
+JNIEXPORT int JNICALL Java_org_ssohub_crypto_ecc_libecc_ecc_1pre_1schema1_1DecryptLevel2(
+    JNIEnv *env, jclass cls,
+    jbyteArray m,
+    jbyteArray C_j_raw,
+    jbyteArray sk_j,
+    jbyteArray spk
+) {
+    ECC_UNUSED(cls);
+
+    const int heap_size = ecc_pre_schema1_CIPHERTEXTLEVEL2SIZE +
+                          ecc_pre_schema1_PRIVATEKEYSIZE +
+                          ecc_pre_schema1_SIGNINGPUBLICKEYSIZE +
+                          ecc_pre_schema1_MESSAGESIZE;
+    ALLOC_HEAP_RET;
+
+    byte_t *pC_j_raw = mput(env, C_j_raw, heap, ecc_pre_schema1_CIPHERTEXTLEVEL2SIZE);
+    byte_t *pSk_j = mput(env, sk_j, pC_j_raw + ecc_pre_schema1_CIPHERTEXTLEVEL2SIZE, ecc_pre_schema1_PRIVATEKEYSIZE);
+    byte_t *pSpk = mput(env, spk, pSk_j + ecc_pre_schema1_PRIVATEKEYSIZE, ecc_pre_schema1_SIGNINGPUBLICKEYSIZE);
+    byte_t *pM = pSpk + ecc_pre_schema1_SIGNINGPUBLICKEYSIZE;
+
+    int r = ecc_pre_schema1_DecryptLevel2(
+        pM,
+        pC_j_raw,
+        pSk_j,
+        pSpk
+    );
+
+    mget(env, pM, m, ecc_pre_schema1_MESSAGESIZE);
 
     FREE_HEAP;
     return r;

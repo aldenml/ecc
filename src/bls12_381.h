@@ -92,6 +92,26 @@ void ecc_bls12_381_fp12_random(byte_t *ret);
 
 // G1 operations
 
+ECC_EXPORT
+void ecc_bls12_381_g1_add(byte_t *r, const byte_t *p, const byte_t *q);
+
+ECC_EXPORT
+void ecc_bls12_381_g1_negate(byte_t *neg, byte_t *p);
+
+ECC_EXPORT
+void ecc_bls12_381_g1_generator(byte_t *g);
+
+/**
+ * Multiplies an element represented by p by a valid scalar n
+ * and puts the resulting element into q.
+ *
+ * @param q (output) the result
+ * @param n the valid input scalar
+ * @param p the point on the curve
+ */
+ECC_EXPORT
+void ecc_bls12_381_g1_scalarmult(byte_t *q, const byte_t *n, const byte_t *p);
+
 /**
  * Multiplies the generator by a valid scalar n and puts the resulting
  * element into q.
@@ -103,6 +123,15 @@ ECC_EXPORT
 void ecc_bls12_381_g1_scalarmult_base(byte_t *q, const byte_t *n);
 
 // G2 operations
+
+ECC_EXPORT
+void ecc_bls12_381_g2_add(byte_t *r, const byte_t *p, const byte_t *q);
+
+ECC_EXPORT
+void ecc_bls12_381_g2_negate(byte_t *neg, byte_t *p);
+
+ECC_EXPORT
+void ecc_bls12_381_g2_generator(byte_t *g);
 
 /**
  * Multiplies the generator by a valid scalar n and puts the resulting

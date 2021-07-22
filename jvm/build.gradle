@@ -14,7 +14,7 @@ plugins {
 }
 
 group = "org.ssohub"
-version = "1.0.0"
+version = "1.0.2"
 
 java {
     sourceCompatibility = JavaVersion.VERSION_1_8
@@ -55,6 +55,11 @@ jar {
 
     from("../build") {
         include("libecc-jvm.dylib")
+        into("lib")
+    }
+
+    from("../build") {
+        include("libecc-jvm.so")
         into("lib")
     }
 }

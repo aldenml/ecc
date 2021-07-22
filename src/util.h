@@ -211,4 +211,29 @@ void ecc_add(byte_t *a, const byte_t *b, int len);
 ECC_EXPORT
 void ecc_sub(byte_t *a, const byte_t *b, int len);
 
+/**
+ * Allocates size bytes of uninitialized storage.
+ *
+ * To avoid a memory leak, the returned pointer must be deallocated
+ * with `ecc_free`.
+ *
+ * NOTE: this is mostly to help binding implementations.
+ *
+ * @param size number of bytes to allocate
+ * @return the pointer to the beginning of newly allocated memory
+ */
+ECC_EXPORT
+byte_t *ecc_malloc(int size);
+
+/**
+ * Deallocates the space previously allocated by `ecc_malloc`.
+ *
+ * NOTE: this is mostly to help binding implementations.
+ *
+ * @param p pointer to the memory to deallocate
+ * @param size size of the allocated memory
+ */
+ECC_EXPORT
+void ecc_free(byte_t *p, int size);
+
 #endif // ECC_UTIL_H

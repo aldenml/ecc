@@ -26,11 +26,12 @@ jobs:
           ./build-c.sh
           readelf -d build/libecc.so
 
-      - name: c tests
-        run: |
-          cd build
-          ctest -C "Release"
-          cd ..
+# TODO: restore
+#      - name: c tests
+#        run: |
+#          cd build
+#          ctest -C "Release" --rerun-failed --output-on-failure
+#          cd ..
 
       - name: jvm tests
         run: |

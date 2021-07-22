@@ -11,3 +11,5 @@ export const libecc_module = libecc.default;
 
 export * from "./util.js";
 export * from "./oprf.js";
+export * from "./opaque.js";
+export * from "./pre.js";

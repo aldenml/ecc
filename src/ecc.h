@@ -19,5 +19,6 @@
 #include "h2c.h"
 #include "oprf.h"
 #include "opaque.h"
+#include "pre.h"
 
 #endif // ECC_ECC_H

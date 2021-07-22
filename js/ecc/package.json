@@ -1,6 +1,6 @@
 {
   "name": "@aldenml/ecc",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "elliptic curves crypto functions",
   "main": "index.js",
   "types": "./dist/index.d.ts",
@@ -10,6 +10,7 @@
     "util.js",
     "oprf.js",
     "opaque.js",
+    "pre.js",
     "package.json",
     "tsconfig.json",
     "ecc.test.js",
@@ -21,21 +22,23 @@
     "bls12_381.test.js",
     "oprf.test.js",
     "opaque.test.js",
+    "pre.test.js",
     "README.md",
     "LICENSE",
     "dist/ecc.dev.js",
     "dist/ecc.min.js",
     "dist/index.d.ts",
     "dist/libecc.d.ts",
+    "dist/util.d.ts",
     "dist/oprf.d.ts",
     "dist/opaque.d.ts",
-    "dist/util.d.ts"
+    "dist/pre.d.ts"
   ],
   "scripts": {
     "test": "mocha *.test.js",
     "pack:dev": "webpack --config webpack.config.cjs --env=mode=dev",
     "pack:prod": "webpack --config webpack.config.cjs --env=mode=prod",
-    "pack": "npm run pack:dev && npm run pack:prod"
+    "pack": "npm run pack:dev && npm run pack:prod && npx tsc"
   },
   "repository": {
     "type": "git",
@@ -55,14 +58,15 @@
     "opaque",
     "pake",
     "apake",
-    "authentication"
+    "authentication",
+    "proxy re-encryption"
   ],
   "author": "aldenml",
   "license": "MIT",
   "bugs": {
     "url": "https://github.com/aldenml/ecc/issues"
   },
-  "homepage": "https://github.com/aldenml/ecc/tree/master/js/ecc",
+  "homepage": "https://github.com/aldenml/ecc/tree/master/js/ecc#ecc",
   "type": "module",
   "devDependencies": {
     "mocha": "9.0.1",
