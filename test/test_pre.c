@@ -44,6 +44,8 @@ static void ecc_pre_schema1_encrypt_level1_test(void **state) {
     );
     assert_int_equal(r, 0);
 
+    logd("m:", m, ecc_pre_schema1_MESSAGESIZE);
+    logd("dm:", dm, ecc_pre_schema1_MESSAGESIZE);
     assert_memory_equal(dm, m, ecc_pre_schema1_MESSAGESIZE);
 }
 
