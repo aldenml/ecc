@@ -39,6 +39,11 @@
 #define ecc_pre_schema1_MESSAGESIZE 576 // size of a Fp12 element in BLS12-381
 
 /**
+ * Size of the PRE-SCHEMA1 seed used in all operations.
+ */
+#define ecc_pre_schema1_SEEDSIZE 32
+
+/**
  * Size of the PRE-SCHEMA1 public key.
  */
 #define ecc_pre_schema1_PUBLICKEYSIZE 96 // size of a G1 element in BLS12-381
@@ -117,12 +122,11 @@ void ecc_pre_schema1_MessageGen(byte_t *m);
  * @param pk (output) public key
  * @param sk (output) private key
  * @param seed input seed to generate the key pair
- * @param seed_len the length of `seed`
  */
 ECC_EXPORT
-void ecc_pre_schema1_DeriveKeyPair(
+void ecc_pre_schema1_DeriveKey(
     byte_t *pk, byte_t *sk,
-    const byte_t *seed, int seed_len
+    const byte_t *seed
 );
 
 /**
@@ -135,6 +139,20 @@ ECC_EXPORT
 void ecc_pre_schema1_KeyGen(byte_t *pk, byte_t *sk);
 
 /**
+ * Derive a signing public/private key pair deterministically
+ * from the input "seed".
+ *
+ * @param spk (output) signing public key
+ * @param ssk (output) signing private key
+ * @param seed input seed to generate the key pair
+ */
+ECC_EXPORT
+void ecc_pre_schema1_DeriveSigningKey(
+    byte_t *spk, byte_t *ssk,
+    const byte_t *seed
+);
+
+/**
  * Generate a signing public/private key pair.
  *
  * @param spk (output) signing public key
@@ -142,6 +160,31 @@ void ecc_pre_schema1_KeyGen(byte_t *pk, byte_t *sk);
  */
 ECC_EXPORT
 void ecc_pre_schema1_SigningKeyGen(byte_t *spk, byte_t *ssk);
+
+/**
+ * Encrypt a message `m` to delegatee j, given j’s public key (pk_j) and the
+ * sender i’s signing key pair (spk_i, ssk_i). Produces a ciphertext C_j.
+ *
+ * This is also called encryption of level 1, since it's used to encrypt to
+ * itself (i.e j == i), in order to have later the ciphertext re-encrypted
+ * by the proxy with the re-encryption key (level 2).
+ *
+ * @param C_j_raw (output) a CiphertextLevel1_t structure
+ * @param m the plaintext message
+ * @param pk_j delegatee's public key
+ * @param spk_i sender signing public key
+ * @param ssk_i sender signing private key
+ * @param seed seed used to generate the internal ephemeral key
+ */
+ECC_EXPORT
+void ecc_pre_schema1_EncryptWithSeed(
+    byte_t *C_j_raw,
+    const byte_t *m,
+    const byte_t *pk_j,
+    const byte_t *spk_i,
+    const byte_t *ssk_i,
+    const byte_t *seed
+);
 
 /**
  * Encrypt a message `m` to delegatee j, given j’s public key (pk_j) and the

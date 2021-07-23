@@ -52,45 +52,72 @@ void ecc_pre_schema1_MessageGen(
     ecc_bls12_381_fp12_random(m);
 }
 
-void ecc_pre_schema1_DeriveKeyPair(
+void ecc_pre_schema1_DeriveKey(
     byte_t *pk, byte_t *sk,
-    const byte_t *seed, int seed_len
+    const byte_t *seed
 ) {
-    byte_t dst[24] = "PRE-SCHEMA1-DeriveKeyGen";
-    byte_t expand_message[32];
+    byte_t dst[21] = "PRE-SCHEMA1-DeriveKey";
+    byte_t s[ecc_bls12_381_SCALARSIZE];
     ecc_h2c_expand_message_xmd_sha256(
-        expand_message,
-        seed, seed_len,
+        s,
+        seed, ecc_pre_schema1_SEEDSIZE,
         dst, sizeof dst,
-        32
+        sizeof s
     );
 
     // the secret key
-    blst_scalar_from_le_bytes((blst_scalar *) sk, expand_message, 32);
+    blst_scalar_from_le_bytes((blst_scalar *) sk, s, sizeof s);
 
     // public key pk = sk * g
     ecc_bls12_381_g1_scalarmult_base(pk, sk);
 
     // cleanup stack memory
-    ecc_memzero(expand_message, sizeof expand_message);
+    ecc_memzero(s, sizeof s);
 }
 
 void ecc_pre_schema1_KeyGen(
     byte_t *pk,
     byte_t *sk
 ) {
-    // secret key sk, random scalar from Zp
-    ecc_bls12_381_scalar_random(sk);
+    byte_t seed[ecc_pre_schema1_SEEDSIZE];
+    ecc_randombytes(seed, sizeof seed);
 
-    // public key pk = sk * g
-    ecc_bls12_381_g1_scalarmult_base(pk, sk);
+    ecc_pre_schema1_DeriveKey(pk, sk, seed);
+
+    // cleanup stack memory
+    ecc_memzero(seed, sizeof seed);
+}
+
+void ecc_pre_schema1_DeriveSigningKey(
+    byte_t *spk, byte_t *ssk,
+    const byte_t *seed
+) {
+    byte_t dst[28] = "PRE-SCHEMA1-DeriveSigningKey";
+    byte_t s[ecc_ed25519_sign_SEEDSIZE];
+    ecc_h2c_expand_message_xmd_sha256(
+        s,
+        seed, ecc_pre_schema1_SEEDSIZE,
+        dst, sizeof dst,
+        sizeof s
+    );
+
+    ecc_ed25519_sign_seed_keypair(spk, ssk, s);
+
+    // cleanup stack memory
+    ecc_memzero(s, sizeof s);
 }
 
 void ecc_pre_schema1_SigningKeyGen(
     byte_t *spk,
     byte_t *ssk
 ) {
-    ecc_ed25519_sign_keypair(spk, ssk);
+    byte_t seed[ecc_pre_schema1_SEEDSIZE];
+    ecc_randombytes(seed, sizeof seed);
+
+    ecc_pre_schema1_DeriveSigningKey(spk, ssk, seed);
+
+    // cleanup stack memory
+    ecc_memzero(seed, sizeof seed);
 }
 
 // helper functions
@@ -190,18 +217,19 @@ void hash2_neg(byte_t *r, const byte_t *a) {
     ecc_memzero((byte_t *) &p, sizeof p);
 }
 
-void ecc_pre_schema1_Encrypt(
+void ecc_pre_schema1_EncryptWithSeed(
     byte_t *C_j_raw,
     const byte_t *m,
     const byte_t *pk_j,
     const byte_t *spk_i,
-    const byte_t *ssk_i
+    const byte_t *ssk_i,
+    const byte_t *seed
 ) {
     CiphertextLevel1_t *C_j = (CiphertextLevel1_t *) C_j_raw;
 
     // ephemeral key pair (epk, esk)
     byte_t esk[ecc_pre_schema1_PRIVATEKEYSIZE];
-    ecc_pre_schema1_KeyGen(C_j->epk, esk);
+    ecc_pre_schema1_DeriveKey(C_j->epk, esk, seed);
 
     // encrypted message em = m * e(pk_j, g2)^esk
     pairing_g2_mul(C_j->em, m, pk_j, esk);
@@ -230,6 +258,29 @@ void ecc_pre_schema1_Encrypt(
     ecc_memzero(esk, sizeof esk);
     ecc_memzero((byte_t *) &ah_st, sizeof ah_st);
     ecc_memzero((byte_t *) &sig_st, sizeof sig_st);
+}
+
+void ecc_pre_schema1_Encrypt(
+    byte_t *C_j_raw,
+    const byte_t *m,
+    const byte_t *pk_j,
+    const byte_t *spk_i,
+    const byte_t *ssk_i
+) {
+    byte_t seed[ecc_pre_schema1_SEEDSIZE];
+    ecc_randombytes(seed, sizeof seed);
+
+    ecc_pre_schema1_EncryptWithSeed(
+        C_j_raw,
+        m,
+        pk_j,
+        spk_i,
+        ssk_i,
+        seed
+    );
+
+    // cleanup stack memory
+    ecc_memzero(seed, sizeof seed);
 }
 
 void ecc_pre_schema1_ReKeyGen(

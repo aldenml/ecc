@@ -13,7 +13,7 @@
 #include <stdio.h>
 #include "test_util.h"
 
-static void ecc_pre_schema1_encrypt_level1_test(void **state) {
+static void ecc_pre_schema1_random_encrypt_level1_test(void **state) {
     ECC_UNUSED(state);
 
     byte_t pkA[ecc_pre_schema1_PUBLICKEYSIZE];
@@ -44,8 +44,8 @@ static void ecc_pre_schema1_encrypt_level1_test(void **state) {
     );
     assert_int_equal(r, 0);
 
-    logd("m:", m, ecc_pre_schema1_MESSAGESIZE);
-    logd("dm:", dm, ecc_pre_schema1_MESSAGESIZE);
+    logd("m", m, ecc_pre_schema1_MESSAGESIZE);
+    logd("dm", dm, ecc_pre_schema1_MESSAGESIZE);
     assert_memory_equal(dm, m, ecc_pre_schema1_MESSAGESIZE);
 }
 
@@ -137,37 +137,159 @@ static void ecc_pre_schema1_re_encrypt_test(void **state) {
     assert_memory_equal(mB, m, ecc_pre_schema1_MESSAGESIZE);
 }
 
-static void ecc_pre_schema1_derive_keypair_test(void **state) {
+static void ecc_pre_schema1_derive_key_test(void **state) {
     ECC_UNUSED(state);
 
-    byte_t seed[6] = "012345";
+    byte_t seed[ecc_pre_schema1_SEEDSIZE]; // 32
+    ecc_hex2bin(seed, "637b73c2a559be379650e043efcbfce501f116711f2db74b18ff486e2cfa4e35", 64);
 
     byte_t pk[ecc_pre_schema1_PUBLICKEYSIZE];
     byte_t sk[ecc_pre_schema1_PRIVATEKEYSIZE];
-    ecc_pre_schema1_DeriveKeyPair(pk, sk, seed, sizeof seed);
+    ecc_pre_schema1_DeriveKey(pk, sk, seed);
 
     logd("pk", pk, ecc_pre_schema1_PUBLICKEYSIZE);
     logd("sk", sk, ecc_pre_schema1_PRIVATEKEYSIZE);
 
     char pk_hex[2 * ecc_pre_schema1_PUBLICKEYSIZE + 1];
     ecc_bin2hex(pk_hex, pk, ecc_pre_schema1_PUBLICKEYSIZE);
-    assert_string_equal(pk_hex, "126f4388e684fb5c379eb794a2dd79c6e431c1f20820b635c584c9"
-                                "4d1c0e2475c8bd19e956fe80e530b194a15c90ef4d1641344e4cbbd"
-                                "372d71ab829ba1bd3348d621cf387242e8ba3bd63055ab715adba3b"
-                                "c63c56841721a3bda332b30af4bb");
+    assert_string_equal(pk_hex, "078176bbdd0489fa3009f6a5d00b8a4b5f5d8968da2834bd7aa4a8d9e7d7c9f7"
+                                "d5a419a702ffb60e12ad83f52d061d500f2aa7c3b5c91b4242ca3ce66390ea1b"
+                                "e29fab577cd78d2256cab6d1f9426cea30d5e7d860edf968542c465062309c1e");
 
     char sk_hex[2 * ecc_pre_schema1_PRIVATEKEYSIZE + 1];
     ecc_bin2hex(sk_hex, sk, ecc_pre_schema1_PRIVATEKEYSIZE);
-    assert_string_equal(sk_hex, "17ed8ee5036a2a8e1b63c1fe172b450e88b3047377c40a28dfa325f2b9c58503");
+    assert_string_equal(sk_hex, "097997a5f7862d8c6a37386ee50127d796fb2aa6c1add81976bcc2e626580e53");
+}
+
+static void ecc_pre_schema1_derive_signingkey_test(void **state) {
+    ECC_UNUSED(state);
+
+    byte_t seed[ecc_pre_schema1_SEEDSIZE]; // 32
+    ecc_hex2bin(seed, "637b73c2a559be379650e043efcbfce501f116711f2db74b18ff486e2cfa4e35", 64);
+
+    byte_t spk[ecc_pre_schema1_SIGNINGPUBLICKEYSIZE];
+    byte_t ssk[ecc_pre_schema1_SIGNINGPRIVATEKEYSIZE];
+    ecc_pre_schema1_DeriveSigningKey(spk, ssk, seed);
+
+    logd("spk", spk, ecc_pre_schema1_SIGNINGPUBLICKEYSIZE);
+    logd("ssk", ssk, ecc_pre_schema1_SIGNINGPRIVATEKEYSIZE);
+
+    char spk_hex[2 * ecc_pre_schema1_SIGNINGPUBLICKEYSIZE + 1];
+    ecc_bin2hex(spk_hex, spk, ecc_pre_schema1_SIGNINGPUBLICKEYSIZE);
+    assert_string_equal(spk_hex, "25abc08049f70630732a966ac79eec17b05346aa1e4883a496a6fa4c6ef88a4a");
+
+    char ssk_hex[2 * ecc_pre_schema1_SIGNINGPRIVATEKEYSIZE + 1];
+    ecc_bin2hex(ssk_hex, ssk, ecc_pre_schema1_SIGNINGPRIVATEKEYSIZE);
+    assert_string_equal(ssk_hex, "ab542c03b70651b701200b484cbf2160ede805c371f613616635c829cd6869652"
+                                 "5abc08049f70630732a966ac79eec17b05346aa1e4883a496a6fa4c6ef88a4a");
+}
+
+static void ecc_pre_schema1_encrypt_level1_test(void **state) {
+    ECC_UNUSED(state);
+
+    byte_t seed[ecc_pre_schema1_SEEDSIZE]; // 32
+    ecc_hex2bin(seed, "637b73c2a559be379650e043efcbfce501f116711f2db74b18ff486e2cfa4e35", 64);
+
+    byte_t pk[ecc_pre_schema1_PUBLICKEYSIZE];
+    byte_t sk[ecc_pre_schema1_PRIVATEKEYSIZE];
+    ecc_pre_schema1_DeriveKey(pk, sk, seed);
+
+    logd("pk", pk, ecc_pre_schema1_PUBLICKEYSIZE);
+    logd("sk", sk, ecc_pre_schema1_PRIVATEKEYSIZE);
+
+    char pk_hex[2 * ecc_pre_schema1_PUBLICKEYSIZE + 1];
+    ecc_bin2hex(pk_hex, pk, ecc_pre_schema1_PUBLICKEYSIZE);
+    assert_string_equal(pk_hex, "078176bbdd0489fa3009f6a5d00b8a4b5f5d8968da2834bd7aa4a8d9e7d7c9f7"
+                                "d5a419a702ffb60e12ad83f52d061d500f2aa7c3b5c91b4242ca3ce66390ea1b"
+                                "e29fab577cd78d2256cab6d1f9426cea30d5e7d860edf968542c465062309c1e");
+
+    char sk_hex[2 * ecc_pre_schema1_PRIVATEKEYSIZE + 1];
+    ecc_bin2hex(sk_hex, sk, ecc_pre_schema1_PRIVATEKEYSIZE);
+    assert_string_equal(sk_hex, "097997a5f7862d8c6a37386ee50127d796fb2aa6c1add81976bcc2e626580e53");
+
+    byte_t spk[ecc_pre_schema1_SIGNINGPUBLICKEYSIZE];
+    byte_t ssk[ecc_pre_schema1_SIGNINGPRIVATEKEYSIZE];
+    ecc_pre_schema1_DeriveSigningKey(spk, ssk, seed);
+
+    logd("spk", spk, ecc_pre_schema1_SIGNINGPUBLICKEYSIZE);
+    logd("ssk", ssk, ecc_pre_schema1_SIGNINGPRIVATEKEYSIZE);
+
+    char spk_hex[2 * ecc_pre_schema1_SIGNINGPUBLICKEYSIZE + 1];
+    ecc_bin2hex(spk_hex, spk, ecc_pre_schema1_SIGNINGPUBLICKEYSIZE);
+    assert_string_equal(spk_hex, "25abc08049f70630732a966ac79eec17b05346aa1e4883a496a6fa4c6ef88a4a");
+
+    char ssk_hex[2 * ecc_pre_schema1_SIGNINGPRIVATEKEYSIZE + 1];
+    ecc_bin2hex(ssk_hex, ssk, ecc_pre_schema1_SIGNINGPRIVATEKEYSIZE);
+    assert_string_equal(ssk_hex, "ab542c03b70651b701200b484cbf2160ede805c371f613616635c829cd6869652"
+                                 "5abc08049f70630732a966ac79eec17b05346aa1e4883a496a6fa4c6ef88a4a");
+
+    byte_t m[ecc_pre_schema1_MESSAGESIZE];
+    ecc_hex2bin(m, "bbc865a2fb1a96a0b900086bcdc8e1f8bc8e39caa795614932b9a129abc3afa8"
+                   "6969001c31fd0aa67635086278d82009d9998ca8547d8b92408ba4ebde8ded68"
+                   "c8089f232ac000cb24dd6e48b658ab7fb9f4c76fe709146ea7d9940f96e5220c"
+                   "350311ad911bf6ecca99ac9bb464f9825303a8e61386f4b5ca98bd8d5a0060f5"
+                   "979277f9f3ff15c0fa63c8623fb0780512e93f62c7c6f1f2d4a3fa472ac2e3f7"
+                   "f7bc5b2a340c5eccee09083b3407100b1685b1ba94b68760b870fc5f49d3e408"
+                   "d31bc04ab057c636f38a4a07e6f897e2f2f15b9ed9880df80bbe3adb5136b355"
+                   "bc2a49cd31c22202e136d0358fafec13a9b52fddc1628cdc94c6b0fa8ee6bfae"
+                   "233bc466917021d9668ed3c2a70c7cbf044c032a8145bd8487f8be2a75817e00"
+                   "2794ced39053f64afc3bb8e7a72b2999d1d206556093c451d795f1ae3a31c6d9"
+                   "0047834606a23d762fe5001a981ddb09741dafaf5220bcc060114fc1ced54963"
+                   "c1da7f226b5d7c0d97aea5eb1dce3890524f6acd97eb6b142470e11c3d83e200"
+                   "a1c1b4e410bcfb0d26ff472fe5daf01ecfc975a00dc1b7bef3a7aa9cb6dcd052"
+                   "9ee832f1f489bbac56036ae92955740d3265a362b35958b870ed096ab4974ceb"
+                   "ced19bc8536beaddc3f46dde96158f89af4e16e05b3401f66ace9b8fa071c115"
+                   "03850b884054b2a6aaf88fd1f1bee74cec50e44fd14934023994e3c644de64f9"
+                   "1e74c9bd15e3e00ad7ef6a53cc704210eb17967ec6a79393a7582dd3a36a28a4"
+                   "0ce4ab97132a5b3102a0b4a9e5442a010e4d7dce46100e781d3d4b5522635816",
+                ecc_pre_schema1_MESSAGESIZE * 2);
+
+    byte_t encrypt_seed[ecc_pre_schema1_SEEDSIZE]; // 32
+    ecc_hex2bin(seed, "037b73c2a559be379650e043efcbfce501f116711f2db74b18ff486e2cfa4e35", 64);
+
+    byte_t C1[ecc_pre_schema1_CIPHERTEXTLEVEL1SIZE];
+    ecc_pre_schema1_EncryptWithSeed(
+        C1,
+        m,
+        pk,
+        spk,
+        ssk,
+        encrypt_seed
+    );
+
+    logd("C1", C1, sizeof C1);
+
+    // NOTE: ecc_bin2hex is having a hard time with long buffers
+    char C1_hex[2 * 128 + 1];
+    ecc_bin2hex(C1_hex, C1, 128);
+    assert_string_equal(C1_hex, "0e16dc94dae21cd6a15332a7b11f73f6c950b2b9e7780ad6fd31fc951b0b0893"
+                                "66b15d78c6939a4de01e78214270a99f0429e8e324f2ddeac8302ddaf13612ad"
+                                "1cfaee2c0a3f35e8b21b164b21e9ca5eb68cc67e30bb42a24d7f2a0558d7ac5f"
+                                "466f24a77a87ed5ced25bd15f385edf23e3f18e6a28acf6df81d856b123c4cb5");
+
+    byte_t dm[ecc_pre_schema1_MESSAGESIZE];
+    int r = ecc_pre_schema1_DecryptLevel1(
+        dm,
+        C1,
+        sk,
+        spk
+    );
+    assert_int_equal(r, 0);
+
+    logd("m", m, ecc_pre_schema1_MESSAGESIZE);
+    logd("dm", dm, ecc_pre_schema1_MESSAGESIZE);
+    assert_memory_equal(dm, m, ecc_pre_schema1_MESSAGESIZE);
 }
 
 int main() {
     const struct CMUnitTest tests[] = {
         // TODO: restore random tests
-        //cmocka_unit_test(ecc_pre_schema1_encrypt_level1_test),
+        //cmocka_unit_test(ecc_pre_schema1_random_encrypt_level1_test),
         //cmocka_unit_test(ecc_pre_schema1_re_encrypt_test),
         // deterministic tests
-        cmocka_unit_test(ecc_pre_schema1_derive_keypair_test),
+        cmocka_unit_test(ecc_pre_schema1_derive_key_test),
+        cmocka_unit_test(ecc_pre_schema1_derive_signingkey_test),
+        cmocka_unit_test(ecc_pre_schema1_encrypt_level1_test),
     };
 
     return cmocka_run_group_tests(tests, NULL, NULL);
