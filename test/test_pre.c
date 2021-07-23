@@ -9,8 +9,9 @@
 #include <stdarg.h>
 #include <setjmp.h>
 #include <string.h>
-#include <cmocka.h>
 #include <stdio.h>
+#include <stdlib.h>
+#include <cmocka.h>
 #include "test_util.h"
 
 static void ecc_pre_schema1_random_encrypt_level1_test(void **state) {
@@ -247,7 +248,7 @@ static void ecc_pre_schema1_encrypt_level1_test(void **state) {
     byte_t encrypt_seed[ecc_pre_schema1_SEEDSIZE]; // 32
     ecc_hex2bin(seed, "037b73c2a559be379650e043efcbfce501f116711f2db74b18ff486e2cfa4e35", 64);
 
-    byte_t C1[ecc_pre_schema1_CIPHERTEXTLEVEL1SIZE];
+    byte_t *C1 = malloc(ecc_pre_schema1_CIPHERTEXTLEVEL1SIZE);
     ecc_pre_schema1_EncryptWithSeed(
         C1,
         m,
@@ -259,13 +260,34 @@ static void ecc_pre_schema1_encrypt_level1_test(void **state) {
 
     logd("C1", C1, sizeof C1);
 
-    // NOTE: ecc_bin2hex is having a hard time with long buffers
-    char C1_hex[2 * 128 + 1];
-    ecc_bin2hex(C1_hex, C1, 128);
+    char *C1_hex = malloc(2 * ecc_pre_schema1_CIPHERTEXTLEVEL1SIZE + 1);
+    ecc_bin2hex(C1_hex, C1, ecc_pre_schema1_CIPHERTEXTLEVEL1SIZE);
     assert_string_equal(C1_hex, "0e16dc94dae21cd6a15332a7b11f73f6c950b2b9e7780ad6fd31fc951b0b0893"
                                 "66b15d78c6939a4de01e78214270a99f0429e8e324f2ddeac8302ddaf13612ad"
                                 "1cfaee2c0a3f35e8b21b164b21e9ca5eb68cc67e30bb42a24d7f2a0558d7ac5f"
-                                "466f24a77a87ed5ced25bd15f385edf23e3f18e6a28acf6df81d856b123c4cb5");
+                                "466f24a77a87ed5ced25bd15f385edf23e3f18e6a28acf6df81d856b123c4cb5"
+                                "380622178c27c22843b1cce55aee551209e419c136f14655798f13980a601e44"
+                                "60edd3a01740796c96b559c3fc3c3cd520250495c47ca7fb5b6da2d84207c605"
+                                "86c7a6629da5e94b549efe2cecf021b5609095fecdc5f4e82c1ff66268ac0b4f"
+                                "c05d12b45b5fe036d87d07cc566037028604d66f9efa6f4c05f43afa90811b63"
+                                "ec296ff8d77e9abda9c0f1d9e9bb3b635d6b06c4474c4bc041d624c60045d119"
+                                "e31c679f2aae1e1cb670cc68b242390309496a3e69bdc02174dd3f964476c3a2"
+                                "c6956ef8645e351ba54fbb53c3a4b014510bda3bbff121c340cc2dc9c405bfd6"
+                                "c080cf4ec6ef910d7cbd4aeebb9a023b4bce3cea4268181ebdf09eba4afa4909"
+                                "7961ac70fe63ea31d6349cee887a00e95b61afe3e7142a265abb6b7fa013cbd8"
+                                "a88f7358ff7ce554d67bc874501a8b06c9e5b7193f7b221ba262bc2a09faee7d"
+                                "a30c11fe5d03ce0219ae46637bd1c419226079492e763f800b4acbf6fc853813"
+                                "2abbf394d088b3916c2295ca05d2201847106b8c60ab6b7483734a752916b0c4"
+                                "0e522e6eabc96f9d0ab71d016d3ea80698881bd392061daf01ecb33b11ab0774"
+                                "b9bbaafe6c57aa8f948de3be2fd387728170fa8b0b21d424f9bfa0ef64e5cf0b"
+                                "fb7600633d6530f18a872ae83a1d73e815c9a62af33a23a8a9772c6a6d0973e6"
+                                "86907a6e7fbef7b2e1333080799f7000e34f7e1aad6dd11c8318fa9616b20edc"
+                                "2ecfd4da92cc1a31c04f355751bed33d7a9e645c4fdd2c76f2194a752e8b3113"
+                                "622fdb62ae1d388ea55403dbcd8b3b0be17dc2262b00eda1cddf39198ed9c514"
+                                "25abc08049f70630732a966ac79eec17b05346aa1e4883a496a6fa4c6ef88a4a"
+                                "5be92d8fca78ee0b11da38fb6fc3bb49b56c612363f5b454ae9a1bacaa382e25"
+                                "a55cd448757f4715288e562c9426c669ba71ad1005bb9cd00425d4782373b007");
+    free(C1_hex);
 
     byte_t dm[ecc_pre_schema1_MESSAGESIZE];
     int r = ecc_pre_schema1_DecryptLevel1(
@@ -274,6 +296,7 @@ static void ecc_pre_schema1_encrypt_level1_test(void **state) {
         sk,
         spk
     );
+    free(C1);
     assert_int_equal(r, 0);
 
     logd("m", m, ecc_pre_schema1_MESSAGESIZE);
@@ -284,13 +307,12 @@ static void ecc_pre_schema1_encrypt_level1_test(void **state) {
 int main() {
     const struct CMUnitTest tests[] = {
         // TODO: restore random tests for linux
-        //cmocka_unit_test(ecc_pre_schema1_random_encrypt_level1_test),
+        cmocka_unit_test(ecc_pre_schema1_random_encrypt_level1_test),
         //cmocka_unit_test(ecc_pre_schema1_re_encrypt_test),
         // deterministic tests
         cmocka_unit_test(ecc_pre_schema1_derive_key_test),
         cmocka_unit_test(ecc_pre_schema1_derive_signingkey_test),
-        // TODO: restore for linux
-        //cmocka_unit_test(ecc_pre_schema1_encrypt_level1_test),
+        cmocka_unit_test(ecc_pre_schema1_encrypt_level1_test),
     };
 
     return cmocka_run_group_tests(tests, NULL, NULL);
