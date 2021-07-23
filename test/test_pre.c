@@ -198,13 +198,13 @@ static void ecc_pre_schema1_encrypt_level1_test(void **state) {
     logd("pk", pk, ecc_pre_schema1_PUBLICKEYSIZE);
     logd("sk", sk, ecc_pre_schema1_PRIVATEKEYSIZE);
 
-    char pk_hex[2 * ecc_pre_schema1_PUBLICKEYSIZE + 1];
+    char pk_hex[2 * (ecc_pre_schema1_PUBLICKEYSIZE + 1)];
     ecc_bin2hex(pk_hex, pk, ecc_pre_schema1_PUBLICKEYSIZE);
     assert_string_equal(pk_hex, "078176bbdd0489fa3009f6a5d00b8a4b5f5d8968da2834bd7aa4a8d9e7d7c9f7"
                                 "d5a419a702ffb60e12ad83f52d061d500f2aa7c3b5c91b4242ca3ce66390ea1b"
                                 "e29fab577cd78d2256cab6d1f9426cea30d5e7d860edf968542c465062309c1e");
 
-    char sk_hex[2 * ecc_pre_schema1_PRIVATEKEYSIZE + 1];
+    char sk_hex[2 * (ecc_pre_schema1_PRIVATEKEYSIZE + 1)];
     ecc_bin2hex(sk_hex, sk, ecc_pre_schema1_PRIVATEKEYSIZE);
     assert_string_equal(sk_hex, "097997a5f7862d8c6a37386ee50127d796fb2aa6c1add81976bcc2e626580e53");
 
@@ -215,11 +215,11 @@ static void ecc_pre_schema1_encrypt_level1_test(void **state) {
     logd("spk", spk, ecc_pre_schema1_SIGNINGPUBLICKEYSIZE);
     logd("ssk", ssk, ecc_pre_schema1_SIGNINGPRIVATEKEYSIZE);
 
-    char spk_hex[2 * ecc_pre_schema1_SIGNINGPUBLICKEYSIZE + 1];
+    char spk_hex[2 * (ecc_pre_schema1_SIGNINGPUBLICKEYSIZE + 1)];
     ecc_bin2hex(spk_hex, spk, ecc_pre_schema1_SIGNINGPUBLICKEYSIZE);
     assert_string_equal(spk_hex, "25abc08049f70630732a966ac79eec17b05346aa1e4883a496a6fa4c6ef88a4a");
 
-    char ssk_hex[2 * ecc_pre_schema1_SIGNINGPRIVATEKEYSIZE + 1];
+    char ssk_hex[2 * (ecc_pre_schema1_SIGNINGPRIVATEKEYSIZE + 1)];
     ecc_bin2hex(ssk_hex, ssk, ecc_pre_schema1_SIGNINGPRIVATEKEYSIZE);
     assert_string_equal(ssk_hex, "ab542c03b70651b701200b484cbf2160ede805c371f613616635c829cd6869652"
                                  "5abc08049f70630732a966ac79eec17b05346aa1e4883a496a6fa4c6ef88a4a");
@@ -248,7 +248,7 @@ static void ecc_pre_schema1_encrypt_level1_test(void **state) {
     byte_t encrypt_seed[ecc_pre_schema1_SEEDSIZE]; // 32
     ecc_hex2bin(seed, "037b73c2a559be379650e043efcbfce501f116711f2db74b18ff486e2cfa4e35", 64);
 
-    byte_t *C1 = malloc(ecc_pre_schema1_CIPHERTEXTLEVEL1SIZE);
+    byte_t C1[ecc_pre_schema1_CIPHERTEXTLEVEL1SIZE];
     ecc_pre_schema1_EncryptWithSeed(
         C1,
         m,
@@ -260,34 +260,33 @@ static void ecc_pre_schema1_encrypt_level1_test(void **state) {
 
     logd("C1", C1, sizeof C1);
 
-    char *C1_hex = malloc(2 * (ecc_pre_schema1_CIPHERTEXTLEVEL1SIZE + 1));
+    char C1_hex[2 * (ecc_pre_schema1_CIPHERTEXTLEVEL1SIZE + 1)];
     ecc_bin2hex(C1_hex, C1, ecc_pre_schema1_CIPHERTEXTLEVEL1SIZE);
-    assert_string_equal(C1_hex, "0e16dc94dae21cd6a15332a7b11f73f6c950b2b9e7780ad6fd31fc951b0b0893"
-                                "66b15d78c6939a4de01e78214270a99f0429e8e324f2ddeac8302ddaf13612ad"
-                                "1cfaee2c0a3f35e8b21b164b21e9ca5eb68cc67e30bb42a24d7f2a0558d7ac5f"
-                                "466f24a77a87ed5ced25bd15f385edf23e3f18e6a28acf6df81d856b123c4cb5"
-                                "380622178c27c22843b1cce55aee551209e419c136f14655798f13980a601e44"
-                                "60edd3a01740796c96b559c3fc3c3cd520250495c47ca7fb5b6da2d84207c605"
-                                "86c7a6629da5e94b549efe2cecf021b5609095fecdc5f4e82c1ff66268ac0b4f"
-                                "c05d12b45b5fe036d87d07cc566037028604d66f9efa6f4c05f43afa90811b63"
-                                "ec296ff8d77e9abda9c0f1d9e9bb3b635d6b06c4474c4bc041d624c60045d119"
-                                "e31c679f2aae1e1cb670cc68b242390309496a3e69bdc02174dd3f964476c3a2"
-                                "c6956ef8645e351ba54fbb53c3a4b014510bda3bbff121c340cc2dc9c405bfd6"
-                                "c080cf4ec6ef910d7cbd4aeebb9a023b4bce3cea4268181ebdf09eba4afa4909"
-                                "7961ac70fe63ea31d6349cee887a00e95b61afe3e7142a265abb6b7fa013cbd8"
-                                "a88f7358ff7ce554d67bc874501a8b06c9e5b7193f7b221ba262bc2a09faee7d"
-                                "a30c11fe5d03ce0219ae46637bd1c419226079492e763f800b4acbf6fc853813"
-                                "2abbf394d088b3916c2295ca05d2201847106b8c60ab6b7483734a752916b0c4"
-                                "0e522e6eabc96f9d0ab71d016d3ea80698881bd392061daf01ecb33b11ab0774"
-                                "b9bbaafe6c57aa8f948de3be2fd387728170fa8b0b21d424f9bfa0ef64e5cf0b"
-                                "fb7600633d6530f18a872ae83a1d73e815c9a62af33a23a8a9772c6a6d0973e6"
-                                "86907a6e7fbef7b2e1333080799f7000e34f7e1aad6dd11c8318fa9616b20edc"
-                                "2ecfd4da92cc1a31c04f355751bed33d7a9e645c4fdd2c76f2194a752e8b3113"
-                                "622fdb62ae1d388ea55403dbcd8b3b0be17dc2262b00eda1cddf39198ed9c514"
+    assert_string_equal(C1_hex, "100e7ee44d923fd1f3d8da0b2d303acb0e492cbf26fa5a937a4e9e76db8d3725"
+                                "68dc709eea430ca2ca65d6386d1b24e50bf9401d8e01c7636743fafe3217fb7b"
+                                "752366d4a64a99c756f1b51c885e2fc70ae4fe87e41c616b6f43cf68078c025b"
+                                "eda8079b743f387ff432109742f5c7585982a99f0f227b72d01124ee69b7611f"
+                                "2ffaf4a95b0ecf0c0506f3ea589dd515f51c85141ea64233c15e7d70a1dab0bf"
+                                "118f810dee00744b582eb72553dd1b8669df364dcd98ac4efceaa295fc961e11"
+                                "2cdd68a131e4b9ea454ac5cf02268ad58adf9e62467fd82fa509ccbe4ffc8b37"
+                                "a9d518895136fb003a6bbe316eb9a20c2100738f83a1d042622e87e9430d8588"
+                                "6da2db9751b32f8b8847713bf822391ef293e6e2b8a24770e61bac70cf0dd104"
+                                "e44d8c6ea793e05858b204504fb08cee20f495fcc323a3ba7fbc8f31cae6adda"
+                                "08a4673aa35995a895a296422630751057f45564983ee22ec49d3e8f36c97ee7"
+                                "e521e58446a255e286b0c93c3460f74330ab533e8deb438aad1ee400cf09b302"
+                                "6523e36759aa228ebb873fa963b3811827b952f0586c3137912d67ee16542226"
+                                "8c23ca5d41a18b24946c8801844c3e0b31ef3b8293b5a75bd6cd10f44fb26110"
+                                "d9afb1dc30dabec173f10e5f9ecd09f340db831722964d9dd0ab99293b67390f"
+                                "358b93255892a057ae7f3a6efe13eb4cdbe76c8bb7dff7cc905114534de4473b"
+                                "337fea523e50c21da6a224ac368b490795333a54836c991d93fce6d228c8550d"
+                                "b69251177a37129d18543a0b25c004891a4c8a2af67ba74c1e10cda265be5d02"
+                                "896b248ad4dc152827135e548167a5b6e4cd465fc7c2196c8000c78d1996587c"
+                                "dfc1fbada0285b60b20e56ceb4db3c0cf962cb9c28dda99269e120508dc88c89"
+                                "6679d7162bf468569d72168d2f217ff347ecabf38a29e3f35711651067d4fc19"
+                                "4d9767ab88eb0e66ee86a083c09a298ca20902e0db7de8aa52fbb2a822969735"
                                 "25abc08049f70630732a966ac79eec17b05346aa1e4883a496a6fa4c6ef88a4a"
-                                "5be92d8fca78ee0b11da38fb6fc3bb49b56c612363f5b454ae9a1bacaa382e25"
-                                "a55cd448757f4715288e562c9426c669ba71ad1005bb9cd00425d4782373b007");
-    free(C1_hex);
+                                "2024cd813e8801eff520e07646c2bc86c44fa2d633715a290a821e5beed4382b"
+                                "25aa2da9cb187cb2b755c19ef42814be1d44d70556cb6f47f610df9c10aaa201");
 
     byte_t dm[ecc_pre_schema1_MESSAGESIZE];
     int r = ecc_pre_schema1_DecryptLevel1(
@@ -296,7 +295,6 @@ static void ecc_pre_schema1_encrypt_level1_test(void **state) {
         sk,
         spk
     );
-    free(C1);
     assert_int_equal(r, 0);
 
     logd("m", m, ecc_pre_schema1_MESSAGESIZE);
@@ -307,11 +305,11 @@ static void ecc_pre_schema1_encrypt_level1_test(void **state) {
 int main() {
     const struct CMUnitTest tests[] = {
         // TODO: restore random tests for linux
-        cmocka_unit_test(ecc_pre_schema1_random_encrypt_level1_test),
+        //cmocka_unit_test(ecc_pre_schema1_random_encrypt_level1_test),
         //cmocka_unit_test(ecc_pre_schema1_re_encrypt_test),
         // deterministic tests
-        cmocka_unit_test(ecc_pre_schema1_derive_key_test),
-        cmocka_unit_test(ecc_pre_schema1_derive_signingkey_test),
+        //cmocka_unit_test(ecc_pre_schema1_derive_key_test),
+        //cmocka_unit_test(ecc_pre_schema1_derive_signingkey_test),
         cmocka_unit_test(ecc_pre_schema1_encrypt_level1_test),
     };
 
