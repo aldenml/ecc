@@ -260,7 +260,7 @@ static void ecc_pre_schema1_encrypt_level1_test(void **state) {
 
     logd("C1", C1, sizeof C1);
 
-    char *C1_hex = malloc(2 * ecc_pre_schema1_CIPHERTEXTLEVEL1SIZE + 1);
+    char *C1_hex = malloc(2 * (ecc_pre_schema1_CIPHERTEXTLEVEL1SIZE + 1));
     ecc_bin2hex(C1_hex, C1, ecc_pre_schema1_CIPHERTEXTLEVEL1SIZE);
     assert_string_equal(C1_hex, "0e16dc94dae21cd6a15332a7b11f73f6c950b2b9e7780ad6fd31fc951b0b0893"
                                 "66b15d78c6939a4de01e78214270a99f0429e8e324f2ddeac8302ddaf13612ad"
