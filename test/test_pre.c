@@ -225,26 +225,25 @@ static void ecc_pre_schema1_encrypt_level1_test(void **state) {
                                  "5abc08049f70630732a966ac79eec17b05346aa1e4883a496a6fa4c6ef88a4a");
 
     byte_t m[ecc_pre_schema1_MESSAGESIZE];
-    ecc_pre_schema1_MessageGen(m);
-//    ecc_hex2bin(m, "bbc865a2fb1a96a0b900086bcdc8e1f8bc8e39caa795614932b9a129abc3afa8"
-//                   "6969001c31fd0aa67635086278d82009d9998ca8547d8b92408ba4ebde8ded68"
-//                   "c8089f232ac000cb24dd6e48b658ab7fb9f4c76fe709146ea7d9940f96e5220c"
-//                   "350311ad911bf6ecca99ac9bb464f9825303a8e61386f4b5ca98bd8d5a0060f5"
-//                   "979277f9f3ff15c0fa63c8623fb0780512e93f62c7c6f1f2d4a3fa472ac2e3f7"
-//                   "f7bc5b2a340c5eccee09083b3407100b1685b1ba94b68760b870fc5f49d3e408"
-//                   "d31bc04ab057c636f38a4a07e6f897e2f2f15b9ed9880df80bbe3adb5136b355"
-//                   "bc2a49cd31c22202e136d0358fafec13a9b52fddc1628cdc94c6b0fa8ee6bfae"
-//                   "233bc466917021d9668ed3c2a70c7cbf044c032a8145bd8487f8be2a75817e00"
-//                   "2794ced39053f64afc3bb8e7a72b2999d1d206556093c451d795f1ae3a31c6d9"
-//                   "0047834606a23d762fe5001a981ddb09741dafaf5220bcc060114fc1ced54963"
-//                   "c1da7f226b5d7c0d97aea5eb1dce3890524f6acd97eb6b142470e11c3d83e200"
-//                   "a1c1b4e410bcfb0d26ff472fe5daf01ecfc975a00dc1b7bef3a7aa9cb6dcd052"
-//                   "9ee832f1f489bbac56036ae92955740d3265a362b35958b870ed096ab4974ceb"
-//                   "ced19bc8536beaddc3f46dde96158f89af4e16e05b3401f66ace9b8fa071c115"
-//                   "03850b884054b2a6aaf88fd1f1bee74cec50e44fd14934023994e3c644de64f9"
-//                   "1e74c9bd15e3e00ad7ef6a53cc704210eb17967ec6a79393a7582dd3a36a28a4"
-//                   "0ce4ab97132a5b3102a0b4a9e5442a010e4d7dce46100e781d3d4b5522635816",
-//                ecc_pre_schema1_MESSAGESIZE * 2);
+    ecc_hex2bin(m, "5ed531955bd205d146a3e79d26f70d7078ba665442f4f37c2f0f55a863d3db6d"
+                   "39a0fa5364fcea8e8c8755384bb56513f1321f24febf2772359df3938810041d"
+                   "8be766b536db7babdda18227d3c59fc525e3e5ea118aadbeb73bb5477ac5b019"
+                   "1cbd11be4b2e7688a03e1852a58c2c002d80b1616197b71d8c9093c23df73246"
+                   "23edc05968db6da7d59c76bf895de1137b3f98245d4b4489c074c44420613a18"
+                   "99a1593ee8c0fd2132f4ff7caad9cfd8fbc3183f58ea2c759125db80d9e29219"
+                   "3c427a56f261974e846aac9adeccb312b525ba3097a9b4fb1e690be3ebd02361"
+                   "d4e3b9cac2babae34937a5c66e41ef19396cf94d96023ba6da5d147b392d6dd8"
+                   "75acdb1dcf3e69d416d3c03bb293ddeded6ac8a83449a7c2439a4529702d3b16"
+                   "489fcda80d58a88b9bb9cfaf9059b999f5d18ae9de51bcd90345a4aeb29aea66"
+                   "a61db0e98552cd93c07a5dfb63199804f6965d8a8bf1b28c10ee3b3f1753f9e7"
+                   "3e3cee1d3f30918a163727208b098a994c7c04507ca8daac29e48a2901b0360e"
+                   "6e6e08e405cc272f80f5880116a24982043670880056aa0ae2e489263cdbc22d"
+                   "585d8d978e4debfc36dd6caf6249dd0aa516174eb9c1f1083c92b702ae85f0ef"
+                   "bf97cf70e08587e3ba70fdc1e7a616857ced0cfcea9e49aa42dd23e37d750d10"
+                   "1960428bd203024aadb463b7849c3be1341b62a57ee6a354ebbc9dbc6ebe11c2"
+                   "602b570eaaf1279d663afbdbce598004e1b19d14cfb18e61de7bff51c3d1d549"
+                   "2dcea7729064a8026b0cbefffb02b9d02e456af40f4e7f82b5660caeffcda201",
+                ecc_pre_schema1_MESSAGESIZE * 2);
 
     byte_t encrypt_seed[ecc_pre_schema1_SEEDSIZE]; // 32
     ecc_hex2bin(seed, "037b73c2a559be379650e043efcbfce501f116711f2db74b18ff486e2cfa4e35", 64);
@@ -263,31 +262,31 @@ static void ecc_pre_schema1_encrypt_level1_test(void **state) {
 
     char C1_hex[2 * (ecc_pre_schema1_CIPHERTEXTLEVEL1SIZE + 1)];
     ecc_bin2hex(C1_hex, C1, ecc_pre_schema1_CIPHERTEXTLEVEL1SIZE);
-//    assert_string_equal(C1_hex, "100e7ee44d923fd1f3d8da0b2d303acb0e492cbf26fa5a937a4e9e76db8d3725"
-//                                "68dc709eea430ca2ca65d6386d1b24e50bf9401d8e01c7636743fafe3217fb7b"
-//                                "752366d4a64a99c756f1b51c885e2fc70ae4fe87e41c616b6f43cf68078c025b"
-//                                "eda8079b743f387ff432109742f5c7585982a99f0f227b72d01124ee69b7611f"
-//                                "2ffaf4a95b0ecf0c0506f3ea589dd515f51c85141ea64233c15e7d70a1dab0bf"
-//                                "118f810dee00744b582eb72553dd1b8669df364dcd98ac4efceaa295fc961e11"
-//                                "2cdd68a131e4b9ea454ac5cf02268ad58adf9e62467fd82fa509ccbe4ffc8b37"
-//                                "a9d518895136fb003a6bbe316eb9a20c2100738f83a1d042622e87e9430d8588"
-//                                "6da2db9751b32f8b8847713bf822391ef293e6e2b8a24770e61bac70cf0dd104"
-//                                "e44d8c6ea793e05858b204504fb08cee20f495fcc323a3ba7fbc8f31cae6adda"
-//                                "08a4673aa35995a895a296422630751057f45564983ee22ec49d3e8f36c97ee7"
-//                                "e521e58446a255e286b0c93c3460f74330ab533e8deb438aad1ee400cf09b302"
-//                                "6523e36759aa228ebb873fa963b3811827b952f0586c3137912d67ee16542226"
-//                                "8c23ca5d41a18b24946c8801844c3e0b31ef3b8293b5a75bd6cd10f44fb26110"
-//                                "d9afb1dc30dabec173f10e5f9ecd09f340db831722964d9dd0ab99293b67390f"
-//                                "358b93255892a057ae7f3a6efe13eb4cdbe76c8bb7dff7cc905114534de4473b"
-//                                "337fea523e50c21da6a224ac368b490795333a54836c991d93fce6d228c8550d"
-//                                "b69251177a37129d18543a0b25c004891a4c8a2af67ba74c1e10cda265be5d02"
-//                                "896b248ad4dc152827135e548167a5b6e4cd465fc7c2196c8000c78d1996587c"
-//                                "dfc1fbada0285b60b20e56ceb4db3c0cf962cb9c28dda99269e120508dc88c89"
-//                                "6679d7162bf468569d72168d2f217ff347ecabf38a29e3f35711651067d4fc19"
-//                                "4d9767ab88eb0e66ee86a083c09a298ca20902e0db7de8aa52fbb2a822969735"
-//                                "25abc08049f70630732a966ac79eec17b05346aa1e4883a496a6fa4c6ef88a4a"
-//                                "2024cd813e8801eff520e07646c2bc86c44fa2d633715a290a821e5beed4382b"
-//                                "25aa2da9cb187cb2b755c19ef42814be1d44d70556cb6f47f610df9c10aaa201");
+    assert_string_equal(C1_hex, "100e7ee44d923fd1f3d8da0b2d303acb0e492cbf26fa5a937a4e9e76db8d3725"
+                                "68dc709eea430ca2ca65d6386d1b24e50bf9401d8e01c7636743fafe3217fb7b"
+                                "752366d4a64a99c756f1b51c885e2fc70ae4fe87e41c616b6f43cf68078c025b"
+                                "f606d840d8d98d1a4bae60a6b11768013e239861ff5ede84c06bfef84d3244f9"
+                                "888326bf57848cd474f0f21384185b1763f33146f3ec533546443bc59f83feb5"
+                                "c960a6b9831da2f188792ba174cfd0d9866dee5f03400fa275d91b8c9acfee07"
+                                "cb2245b9fb288bf773c68b30c6402abe6309798144d04261e5c388ef6d31ecf7"
+                                "c8103dd72dd44776a0d66d88a86f961154251a03d9eeb42c8f9def01280fba4c"
+                                "de3c87c80eb5f91fd26bf22955f2cff1bc8e66e20442a0063436147feb963d19"
+                                "bdaf3b52e1e775a286a3fab99e201bdd6bb033462fb38c4a603800019f442b38"
+                                "b8c99711f44dedf638c446018c839d0d5e5c5a9c4badcb59f105a5400c9b5144"
+                                "cd7a5fb818e84a6efbbd15838bfe45ce73ff3acecb1d718435950e3b9a0a7506"
+                                "dd0816257f2ebb01ca81c9947ee509e164c8ab0bbb4847f73ce2e2175f388903"
+                                "de176ef7191a6e5b40517314ec6ac90997df31f3e30115f608328120ff8d15ff"
+                                "2034bf99c5363014149349fbdc922050a68be3ecacf6e3e2a9fbe5f36ae7c804"
+                                "7214afa380df767e12ed0527b151faf54bc35485fca8d363e1bd276738d2e08f"
+                                "327d972ce176d1b472545b94203fcd05f621266feaaaab8becf550106149a347"
+                                "bfeeb324d9580e6afc29a4b8af24ebfc4200ded7ef6b1baf10e76d39cb116c18"
+                                "982e0e2ae267e4f83c1c2ca453632acae495cd615f295ba881d9ba874bf23d4f"
+                                "3d1a7bd5b36ddab993f5019ed0e8a5017684c289039ecc279db06cd792fecd79"
+                                "449c199f007ffa5b59c0ec0fb575f341a1e311779459a2bc07e5f040dff2fc19"
+                                "f5b6e9c4818f877ca81be96791011155f4d660007e17bcb7a83d1b0d1319182c"
+                                "25abc08049f70630732a966ac79eec17b05346aa1e4883a496a6fa4c6ef88a4a"
+                                "afa2aaeb5e39a734d4f70c0897f1d169944ec3906420939d14f3a60c9341093e"
+                                "647288f417f649abe82f9feb8545f5bc6d507ea488dc59190f8bf17efa8ae40e");
 
     byte_t dm[ecc_pre_schema1_MESSAGESIZE];
     int r = ecc_pre_schema1_DecryptLevel1(
@@ -306,7 +305,7 @@ static void ecc_pre_schema1_encrypt_level1_test(void **state) {
 int main() {
     const struct CMUnitTest tests[] = {
         // TODO: restore random tests for linux
-        //cmocka_unit_test(ecc_pre_schema1_random_encrypt_level1_test),
+        cmocka_unit_test(ecc_pre_schema1_random_encrypt_level1_test),
         //cmocka_unit_test(ecc_pre_schema1_re_encrypt_test),
         // deterministic tests
         //cmocka_unit_test(ecc_pre_schema1_derive_key_test),
