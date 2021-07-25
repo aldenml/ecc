@@ -19,8 +19,8 @@ static void ecc_pre_schema1_random_encrypt_level1_test(void **state) {
 
     byte_t pkA[ecc_pre_schema1_PUBLICKEYSIZE];
     byte_t skA[ecc_pre_schema1_PRIVATEKEYSIZE];
-    byte_t spkA[ecc_pre_schema1_PUBLICKEYSIZE];
-    byte_t sskA[ecc_pre_schema1_PRIVATEKEYSIZE];
+    byte_t spkA[ecc_pre_schema1_SIGNINGPUBLICKEYSIZE];
+    byte_t sskA[ecc_pre_schema1_SIGNINGPRIVATEKEYSIZE];
     ecc_pre_schema1_KeyGen(pkA, skA);
     ecc_pre_schema1_SigningKeyGen(spkA, sskA);
 
@@ -56,22 +56,22 @@ static void ecc_pre_schema1_re_encrypt_test(void **state) {
     // client A setup public/private keys and signing keys
     byte_t pkA[ecc_pre_schema1_PUBLICKEYSIZE];
     byte_t skA[ecc_pre_schema1_PRIVATEKEYSIZE];
-    byte_t spkA[ecc_pre_schema1_PUBLICKEYSIZE];
-    byte_t sskA[ecc_pre_schema1_PRIVATEKEYSIZE];
+    byte_t spkA[ecc_pre_schema1_SIGNINGPUBLICKEYSIZE];
+    byte_t sskA[ecc_pre_schema1_SIGNINGPRIVATEKEYSIZE];
     ecc_pre_schema1_KeyGen(pkA, skA);
     ecc_pre_schema1_SigningKeyGen(spkA, sskA);
 
     // client B setup public/private keys and signing keys
     byte_t pkB[ecc_pre_schema1_PUBLICKEYSIZE];
     byte_t skB[ecc_pre_schema1_PRIVATEKEYSIZE];
-    byte_t spkB[ecc_pre_schema1_PUBLICKEYSIZE];
-    byte_t sskB[ecc_pre_schema1_PRIVATEKEYSIZE];
+    byte_t spkB[ecc_pre_schema1_SIGNINGPUBLICKEYSIZE];
+    byte_t sskB[ecc_pre_schema1_SIGNINGPRIVATEKEYSIZE];
     ecc_pre_schema1_KeyGen(pkB, skB);
     ecc_pre_schema1_SigningKeyGen(spkB, sskB);
 
     // proxy server setup signing keys
-    byte_t spkSrv[ecc_pre_schema1_PUBLICKEYSIZE];
-    byte_t sskSrv[ecc_pre_schema1_PRIVATEKEYSIZE];
+    byte_t spkSrv[ecc_pre_schema1_SIGNINGPUBLICKEYSIZE];
+    byte_t sskSrv[ecc_pre_schema1_SIGNINGPRIVATEKEYSIZE];
     ecc_pre_schema1_SigningKeyGen(spkSrv, sskSrv);
 
     // client A select a plaintext message, this message
