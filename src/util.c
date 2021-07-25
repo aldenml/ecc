@@ -18,7 +18,7 @@ void ecc_randombytes(byte_t *buf, int n) {
 }
 
 void ecc_bin2hex(char *hex, const byte_t *bin, int bin_len) {
-    sodium_bin2hex(hex, bin_len * 2 + 1, bin, bin_len);
+    sodium_bin2hex(hex, 2 * (bin_len + 1), bin, bin_len);
 }
 
 void ecc_hex2bin(byte_t *bin, const char *hex, int hex_len) {
