@@ -52,7 +52,6 @@ else()
             "CFLAGS=-DSODIUM_STATIC=1 -O2"
             --prefix=${CMAKE_CURRENT_SOURCE_DIR}/build/libsodium
             --disable-ssp
-            --disable-asm
             --disable-shared
             --without-pthreads
         PREFIX ${CMAKE_CURRENT_SOURCE_DIR}/build/libsodium
@@ -63,7 +62,7 @@ else()
         blst-external
         SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/deps/blst
         CONFIGURE_COMMAND ""
-        BUILD_COMMAND ./build.sh -D__BLST_PORTABLE__
+        BUILD_COMMAND ./build.sh
         BUILD_IN_SOURCE 1
         INSTALL_COMMAND ""
     )
