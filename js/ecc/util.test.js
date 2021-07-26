@@ -18,7 +18,9 @@ describe("util",() => {
         libecc.ecc_memzero(buf, buf.length);
         let count = 0;
         for (let i = 0; i < buf.length; i++) {
-            if (buf[i] === 0) count++;
+            if (buf[i] === 0) {
+                count++;
+            }
         }
         assert.strictEqual(count, buf.length);
     });
@@ -29,7 +31,9 @@ describe("util",() => {
         libecc.ecc_randombytes(buf, buf.length);
         let count = 0;
         for (let i = 0; i < buf.length; i++) {
-            if (buf[i] === 0) count++;
+            if (buf[i] === 0) {
+                count++;
+            }
         }
         // what are the odds of having more than one 0 in a random of 10 elements
         assert.strictEqual(count < 2, true);
