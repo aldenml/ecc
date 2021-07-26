@@ -12,7 +12,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <cmocka.h>
-#include "test_util.h"
+#include "ecc_log.h"
 
 static void ecc_pre_schema1_random_encrypt_level1_test(void **state) {
     ECC_UNUSED(state);
@@ -45,8 +45,8 @@ static void ecc_pre_schema1_random_encrypt_level1_test(void **state) {
     );
     assert_int_equal(r, 0);
 
-    logd("m", m, ecc_pre_schema1_MESSAGESIZE);
-    logd("dm", dm, ecc_pre_schema1_MESSAGESIZE);
+    ecc_log("m", m, ecc_pre_schema1_MESSAGESIZE);
+    ecc_log("dm", dm, ecc_pre_schema1_MESSAGESIZE);
     assert_memory_equal(dm, m, ecc_pre_schema1_MESSAGESIZE);
 }
 
@@ -148,8 +148,8 @@ static void ecc_pre_schema1_derive_key_test(void **state) {
     byte_t sk[ecc_pre_schema1_PRIVATEKEYSIZE];
     ecc_pre_schema1_DeriveKey(pk, sk, seed);
 
-    logd("pk", pk, ecc_pre_schema1_PUBLICKEYSIZE);
-    logd("sk", sk, ecc_pre_schema1_PRIVATEKEYSIZE);
+    ecc_log("pk", pk, ecc_pre_schema1_PUBLICKEYSIZE);
+    ecc_log("sk", sk, ecc_pre_schema1_PRIVATEKEYSIZE);
 
     char pk_hex[2 * (ecc_pre_schema1_PUBLICKEYSIZE + 1)];
     ecc_bin2hex(pk_hex, pk, ecc_pre_schema1_PUBLICKEYSIZE);
@@ -172,8 +172,8 @@ static void ecc_pre_schema1_derive_signingkey_test(void **state) {
     byte_t ssk[ecc_pre_schema1_SIGNINGPRIVATEKEYSIZE];
     ecc_pre_schema1_DeriveSigningKey(spk, ssk, seed);
 
-    logd("spk", spk, ecc_pre_schema1_SIGNINGPUBLICKEYSIZE);
-    logd("ssk", ssk, ecc_pre_schema1_SIGNINGPRIVATEKEYSIZE);
+    ecc_log("spk", spk, ecc_pre_schema1_SIGNINGPUBLICKEYSIZE);
+    ecc_log("ssk", ssk, ecc_pre_schema1_SIGNINGPRIVATEKEYSIZE);
 
     char spk_hex[2 * (ecc_pre_schema1_SIGNINGPUBLICKEYSIZE + 1)];
     ecc_bin2hex(spk_hex, spk, ecc_pre_schema1_SIGNINGPUBLICKEYSIZE);
@@ -195,8 +195,8 @@ static void ecc_pre_schema1_encrypt_level1_test(void **state) {
     byte_t sk[ecc_pre_schema1_PRIVATEKEYSIZE];
     ecc_pre_schema1_DeriveKey(pk, sk, seed);
 
-    logd("pk", pk, ecc_pre_schema1_PUBLICKEYSIZE);
-    logd("sk", sk, ecc_pre_schema1_PRIVATEKEYSIZE);
+    ecc_log("pk", pk, ecc_pre_schema1_PUBLICKEYSIZE);
+    ecc_log("sk", sk, ecc_pre_schema1_PRIVATEKEYSIZE);
 
     char pk_hex[2 * (ecc_pre_schema1_PUBLICKEYSIZE + 1)];
     ecc_bin2hex(pk_hex, pk, ecc_pre_schema1_PUBLICKEYSIZE);
@@ -212,8 +212,8 @@ static void ecc_pre_schema1_encrypt_level1_test(void **state) {
     byte_t ssk[ecc_pre_schema1_SIGNINGPRIVATEKEYSIZE];
     ecc_pre_schema1_DeriveSigningKey(spk, ssk, seed);
 
-    logd("spk", spk, ecc_pre_schema1_SIGNINGPUBLICKEYSIZE);
-    logd("ssk", ssk, ecc_pre_schema1_SIGNINGPRIVATEKEYSIZE);
+    ecc_log("spk", spk, ecc_pre_schema1_SIGNINGPUBLICKEYSIZE);
+    ecc_log("ssk", ssk, ecc_pre_schema1_SIGNINGPRIVATEKEYSIZE);
 
     char spk_hex[2 * (ecc_pre_schema1_SIGNINGPUBLICKEYSIZE + 1)];
     ecc_bin2hex(spk_hex, spk, ecc_pre_schema1_SIGNINGPUBLICKEYSIZE);
@@ -258,7 +258,7 @@ static void ecc_pre_schema1_encrypt_level1_test(void **state) {
         encrypt_seed
     );
 
-    logd("C1", C1, sizeof C1);
+    ecc_log("C1", C1, sizeof C1);
 
     char C1_hex[2 * (ecc_pre_schema1_CIPHERTEXTLEVEL1SIZE + 1)];
     ecc_bin2hex(C1_hex, C1, ecc_pre_schema1_CIPHERTEXTLEVEL1SIZE);
@@ -297,8 +297,8 @@ static void ecc_pre_schema1_encrypt_level1_test(void **state) {
     );
     assert_int_equal(r, 0);
 
-    logd("m", m, ecc_pre_schema1_MESSAGESIZE);
-    logd("dm", dm, ecc_pre_schema1_MESSAGESIZE);
+    ecc_log("m", m, ecc_pre_schema1_MESSAGESIZE);
+    ecc_log("dm", dm, ecc_pre_schema1_MESSAGESIZE);
     assert_memory_equal(dm, m, ecc_pre_schema1_MESSAGESIZE);
 }
 

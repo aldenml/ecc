@@ -36,9 +36,9 @@ void ecc_concat2(
 
 void ecc_concat3(
     byte_t *out,
-    const byte_t *a1, int a1_len,
-    const byte_t *a2, int a2_len,
-    const byte_t *a3, int a3_len
+    const byte_t *a1, const int a1_len,
+    const byte_t *a2, const int a2_len,
+    const byte_t *a3, const int a3_len
 ) {
     memcpy(out, a1, a1_len); out += a1_len;
     memcpy(out, a2, a2_len); out += a2_len;
@@ -47,10 +47,10 @@ void ecc_concat3(
 
 void ecc_concat4(
     byte_t *out,
-    const byte_t *a1, int a1_len,
-    const byte_t *a2, int a2_len,
-    const byte_t *a3, int a3_len,
-    const byte_t *a4, int a4_len
+    const byte_t *a1, const int a1_len,
+    const byte_t *a2, const int a2_len,
+    const byte_t *a3, const int a3_len,
+    const byte_t *a4, const int a4_len
 ) {
     memcpy(out, a1, a1_len); out += a1_len;
     memcpy(out, a2, a2_len); out += a2_len;
@@ -58,13 +58,13 @@ void ecc_concat4(
     memcpy(out, a4, a4_len);
 }
 
-void ecc_strxor(byte_t *out, const byte_t *a, const byte_t *b, int len) {
+void ecc_strxor(byte_t *out, const byte_t *a, const byte_t *b, const int len) {
     for (int i = 0; i < len; i++) {
         out[i] = a[i] ^ b[i];
     }
 }
 
-void ecc_I2OSP(byte_t *out, int x, int xLen) {
+void ecc_I2OSP(byte_t *out, int x, const int xLen) {
     for (int i = xLen - 1; i >= 0; i--) {
         out[i] = x & 0xff;
         x = x >> 8;
@@ -79,18 +79,6 @@ int ecc_is_zero(const byte_t *n, int len) {
     return sodium_is_zero(n, len);
 }
 
-void ecc_increment(byte_t *n, int len) {
-    return sodium_increment(n, len);
-}
-
-void ecc_add(byte_t *a, const byte_t *b, int len) {
-    sodium_add(a, b, len);
-}
-
-void ecc_sub(byte_t *a, const byte_t *b, int len) {
-    sodium_sub(a, b, len);
-}
-
 byte_t *ecc_malloc(int size) {
     return malloc(size);
 }
@@ -99,3 +87,12 @@ void ecc_free(byte_t *p, int size) {
     ecc_memzero(p, size);
     free(p);
 }
+
+#if ECC_LOG
+void ecc_log(const char *label, const byte_t *data, const int data_len) {
+    char *hex = malloc(2 * (data_len + 1));
+    ecc_bin2hex(hex, data, data_len);
+    printf("%s: %s\n", label, hex);
+    free(hex);
+}
+#endif

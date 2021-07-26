@@ -11,7 +11,7 @@
 #include <string.h>
 #include <cmocka.h>
 #include <stdio.h>
-#include "test_util.h"
+#include "ecc_log.h"
 
 static void ecc_bls12_381_fp12_pow_test(void **state) {
     ECC_UNUSED(state);

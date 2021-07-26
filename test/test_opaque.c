@@ -11,7 +11,7 @@
 #include <string.h>
 #include <cmocka.h>
 #include <stdio.h>
-#include "test_util.h"
+#include "ecc_log.h"
 
 static void opaque_CreateCleartextCredentials_test(void **state) {
     ECC_UNUSED(state);
@@ -257,8 +257,8 @@ static void opaque_ristretto255_sha512_test1(void **state) {
     );
     assert_int_equal(server_finish_ret, 0);
 
-    logd("client_session_key", client_session_key, sizeof client_session_key);
-    logd("server_session_key", server_session_key, sizeof server_session_key);
+    ecc_log("client_session_key", client_session_key, sizeof client_session_key);
+    ecc_log("server_session_key", server_session_key, sizeof server_session_key);
     assert_memory_equal(client_session_key, server_session_key, 64);
     assert_memory_equal(export_key, export_key2, 64);
 }

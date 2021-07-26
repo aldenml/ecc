@@ -6,7 +6,6 @@
  */
 
 #include "jni.h"
-#include <stdlib.h>
 #include <ecc.h>
 
 void throw_OutOfMemoryError(JNIEnv *env) {
@@ -14,19 +13,6 @@ void throw_OutOfMemoryError(JNIEnv *env) {
     jclass cls = (*env)->FindClass(env, "java/lang/OutOfMemoryError");
     if (cls)
         (*env)->ThrowNew(env, cls, "Unable to allocate native memory");
-}
-
-byte_t *alloc_heap(JNIEnv *env, int size) {
-    byte_t *p = malloc(size);
-    if (!p) {
-        throw_OutOfMemoryError(env);
-    }
-    return p;
-}
-
-void free_heap(byte_t *p, int size) {
-    ecc_memzero(p, size);
-    free(p);
 }
 
 byte_t *mput(JNIEnv *env, jbyteArray src, byte_t *ptr, int length) {
@@ -40,21 +26,23 @@ void mget(JNIEnv *env, byte_t *ptr, jbyteArray dest, int length) {
 }
 
 #define ALLOC_HEAP \
-    byte_t *heap = alloc_heap(env, heap_size); \
+    byte_t *heap = ecc_malloc(heap_size); \
     if (!heap) { \
+        throw_OutOfMemoryError(env); \
         return; \
     } \
     (void)(0)
 
 #define ALLOC_HEAP_RET \
-    byte_t *heap = alloc_heap(env, heap_size); \
+    byte_t *heap = ecc_malloc(heap_size); \
     if (!heap) { \
+        throw_OutOfMemoryError(env); \
         return -1; \
     } \
     (void)(0)
 
 #define FREE_HEAP \
-    free_heap(heap, heap_size)
+    ecc_free(heap, heap_size)
 
 #ifdef __cplusplus
 extern "C" {
@@ -244,62 +232,6 @@ JNIEXPORT int JNICALL Java_org_ssohub_crypto_ecc_libecc_ecc_1is_1zero(
 
     FREE_HEAP;
     return r;
-}
-
-JNIEXPORT void JNICALL Java_org_ssohub_crypto_ecc_libecc_ecc_1increment(
-    JNIEnv *env, jclass cls,
-    jbyteArray n, jint len
-) {
-    ECC_UNUSED(cls);
-
-    const int heap_size = len;
-    ALLOC_HEAP;
-
-    byte_t *pN = mput(env, n, heap, len);
-
-    ecc_increment(pN, len);
-
-    mget(env, pN, n, len);
-
-    FREE_HEAP;
-}
-
-JNIEXPORT void JNICALL Java_org_ssohub_crypto_ecc_libecc_ecc_1add(
-    JNIEnv *env, jclass cls,
-    jbyteArray a, jbyteArray b, jint len
-) {
-    ECC_UNUSED(cls);
-
-    const int heap_size = len + len;
-    ALLOC_HEAP;
-
-    byte_t *pA = mput(env, a, heap, len);
-    byte_t *pB = mput(env, b, pA + len, len);
-
-    ecc_add(pA, pB, len);
-
-    mget(env, pA, a, len);
-
-    FREE_HEAP;
-}
-
-JNIEXPORT void JNICALL Java_org_ssohub_crypto_ecc_libecc_ecc_1sub(
-    JNIEnv *env, jclass cls,
-    jbyteArray a, jbyteArray b, jint len
-) {
-    ECC_UNUSED(cls);
-
-    const int heap_size = len + len;
-    ALLOC_HEAP;
-
-    byte_t *pA = mput(env, a, heap, len);
-    byte_t *pB = mput(env, b, pA + len, len);
-
-    ecc_sub(pA, pB, len);
-
-    mget(env, pA, a, len);
-
-    FREE_HEAP;
 }
 
 // hash

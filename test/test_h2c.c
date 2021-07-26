@@ -11,7 +11,7 @@
 #include <string.h>
 #include <cmocka.h>
 #include <stdio.h>
-#include "test_util.h"
+#include "ecc_log.h"
 
 // https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-hash-to-curve-11#appendix-K.2
 

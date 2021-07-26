@@ -248,62 +248,6 @@ Module.ecc_is_zero = (n, len) => {
     return r;
 }
 
-/**
- * Takes a pointer to an arbitrary-long unsigned integer encoded in
- * little-endian format, and increments it. It runs in constant-time.
- *
- * Can be used to increment nonces in constant time.
- *
- * @param {Uint8Array} n (input/output) unsigned integer
- * @param {number} len length of `n`
- */
-Module.ecc_increment = (n, len) => {
-    const pN = mput(n, 0, len);
-
-    _ecc_increment(pN, len);
-
-    mget(pN, n, len);
-    mzero(len);
-}
-
-/**
- * Takes two pointers to unsigned numbers encoded in little-endian
- * format, computes (a + b) mod 2^(8*len) and store the result in `a`.
- * It runs in constant-time.
- *
- * @param {Uint8Array} a (input/output) first unsigned integer argument
- * @param {Uint8Array} b second unsigned integer argument
- * @param {number} len the length of both `a` and `b`
- */
-Module.ecc_add = (a, b, len) => {
-    const pA = mput(a, 0, len);
-    const pB = mput(b, pA + len, len);
-
-    _ecc_add(pA, pB, len);
-
-    mget(pA, a, len);
-    mzero(len + len);
-}
-
-/**
- * Takes two pointers to unsigned numbers encoded in little-endian
- * format, computes (a - b) mod 2^(8*len) and store the result in `a`.
- * It runs in constant-time.
- *
- * @param {Uint8Array} a (input/output) first unsigned integer argument
- * @param {Uint8Array} b second unsigned integer argument
- * @param {number} len the length of both `a` and `b`
- */
-Module.ecc_sub = (a, b, len) => {
-    const pA = mput(a, 0, len);
-    const pB = mput(b, pA + len, len);
-
-    _ecc_sub(pA, pB, len);
-
-    mget(pA, a, len);
-    mzero(len + len);
-}
-
 // hash
 
 /**
