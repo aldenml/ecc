@@ -855,7 +855,7 @@ Module.ecc_h2c_expand_message_xmd_sha512 = (
  * Evaluates serialized representations of blinded group elements from the
  * client as inputs.
  *
- * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-voprf-06#section-3.4.1.1
+ * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-voprf-07#section-3.4.1.1
  *
  * @param {Uint8Array} evaluatedElement (output) evaluated element
  * @param {Uint8Array} skS private key
@@ -884,7 +884,7 @@ Module.ecc_oprf_ristretto255_sha512_Evaluate = (
  * Same as calling `ecc_oprf_ristretto255_sha512_Blind` with an
  * specified scalar blind.
  *
- * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-voprf-06#section-3.4.3.1
+ * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-voprf-07#section-3.4.3.1
  *
  * @param {Uint8Array} blindedElement (output) blinded element
  * @param {Uint8Array} input message to blind
@@ -911,7 +911,7 @@ Module.ecc_oprf_ristretto255_sha512_BlindWithScalar = (
 }
 
 /**
- * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-voprf-06#section-3.4.3.1
+ * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-voprf-07#section-3.4.3.1
  *
  * @param {Uint8Array} blindedElement (output) blinded element
  * @param {Uint8Array} blind (output) scalar used in the blind operation
@@ -939,7 +939,7 @@ Module.ecc_oprf_ristretto255_sha512_Blind = (
 }
 
 /**
- * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-voprf-06#section-3.4.3.3
+ * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-voprf-07#section-3.4.3.3
  *
  * @param {Uint8Array} output (output)
  * @param {Uint8Array} input the input message

@@ -4,7 +4,7 @@
 
 Oblivious pseudo-random function using ristretto255.
 
-This is an implementation of [draft-irtf-cfrg-voprf-06](https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-voprf-06)
+This is an implementation of [draft-irtf-cfrg-voprf-07](https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-voprf-07)
 using [libsodium](https://doc.libsodium.org).
 
 It contains the following primitives (plus all the supporting functions):

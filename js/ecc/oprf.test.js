@@ -16,15 +16,14 @@ import {
 } from "./oprf.js";
 import assert from "assert";
 
-// https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-voprf-06#appendix-A.1
+// https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-voprf-07#appendix-A.1
 
 describe("OPRF(ristretto255, SHA-512)", () => {
 
-    // https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-voprf-06#appendix-A.1.1
-    const seed = hex2bin("aca1ae53bec831a1279b75ec6091b23d28034b59f77abeb0fa8f6d1a01340234");
-    const skSm = hex2bin("758cbac0e1eb4265d80f6e6489d9a74d788f7ddeda67d7fb3c08b08f44bda30a");
+    // https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-voprf-07#appendix-A.1.1
+    const skSm = hex2bin("caeff69352df4905a9121a4997704ca8cee1524a110819eb87deba1a39ec1701");
 
-    // https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-voprf-06#appendix-A.1.1.1
+    // https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-voprf-07#appendix-A.1.1.1
     it("input 00", async () => {
         const input = hex2bin("00");
         const blind = hex2bin("c604c785ada70d77a5256ae21767de8c3304115237d262134f5e46e512cf8e03");
@@ -33,12 +32,12 @@ describe("OPRF(ristretto255, SHA-512)", () => {
         const evaluationElement = await oprf_ristretto255_sha512_Evaluate(skSm, blindedElement);
         const output = await oprf_ristretto255_sha512_Finalize(input, blind, evaluationElement);
 
-        assert.equal(bin2hex(blindedElement), "3c7f2d901c0d4f245503a186086fbdf5d8b4408432b25c5163e8b5a19c258348");
-        assert.equal(bin2hex(evaluationElement), "fc6c2b854553bf1ed6674072ed0bde1a9911e02b4bd64aa02cfb428f30251e77");
-        assert.equal(bin2hex(output), "d8ed12382086c74564ae19b7a2b5ed9bdc52656d1fc151faaae51aaba86291e8df0b2143a92f24d44d5efd0892e2e26721d27d88745343493634a66d3a925e3a");
+        assert.strictEqual(bin2hex(blindedElement), "fc20e03aff3a9de9b37e8d35886ade11ec7d85c2a1fb5bb0b1686c64e07ac467");
+        assert.strictEqual(bin2hex(evaluationElement), "7c72cc293cd7d44c0b57c273f27befd598b132edc665694bdc9c42a4d3083c0a");
+        assert.strictEqual(bin2hex(output), "e3a209dce2d3ea3d84fcddb282818caebb756a341e08a310d9904314f5392085d13c3f76339d745db0f46974a6049c3ea9546305af55d37760b2136d9b3f0134");
     });
 
-    // https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-voprf-06#appendix-A.1.1.2
+    // https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-voprf-07#appendix-A.1.1.2
     it("input 5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a", async () => {
         const input = hex2bin("5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a");
         const blind = hex2bin("5ed895206bfc53316d307b23e46ecc6623afb3086da74189a416012be037e50b");
@@ -47,8 +46,8 @@ describe("OPRF(ristretto255, SHA-512)", () => {
         const evaluationElement = await oprf_ristretto255_sha512_Evaluate(skSm, blindedElement);
         const output = await oprf_ristretto255_sha512_Finalize(input, blind, evaluationElement);
 
-        assert.equal(bin2hex(blindedElement), "28a5e797b710f76d20a52507145fbf320a574ec2c8ab0e33e65dd2c277d0ee56");
-        assert.equal(bin2hex(evaluationElement), "345e140b707257ae83d4911f7ead3177891e7a62c54097732802c4c7a98ab25a");
-        assert.equal(bin2hex(output), "4d5f4221b5ebfd4d1a9dd54830e1ed0bce5a8f30a792723a6fddfe6cfe9f86bb1d95a3725818aeb725eb0b1b52e01ee9a72f47042372ef66c307770054d674fc");
+        assert.strictEqual(bin2hex(blindedElement), "483d4f39de5ff77fa0f9a0ad2334dd5bf87f2cda868539d21de67ce49e7d1536");
+        assert.strictEqual(bin2hex(evaluationElement), "026f2758fc62f02a7ff95f35ec6f20186aa57c0274361655543ea235d7b2aa34");
+        assert.strictEqual(bin2hex(output), "2c17dc3e9398dadb44bb2d3360c446302e99f1fe0ec40f0b1ad25c9cf002be1e4b41b4900ef056537fe8c14532ccea4d796f5feab9541af48057d83c0db86fe9");
     });
 });
