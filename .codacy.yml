@@ -7,5 +7,8 @@ exclude_paths:
   - '**.md'
   - '**/examples/**'
   - '**/libecc.js'
+  - '**/libecc-post.js'
   - '**/libopaque.js'
+  - '**/libopaque-post.js'
   - '**/liboprf.js'
+  - '**/liboprf-post.js'
