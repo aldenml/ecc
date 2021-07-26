@@ -11,16 +11,46 @@
 #include <string.h>
 #include <cmocka.h>
 
-static void ecc_bin2hex_test1(void **state) {
+static void ecc_memzero_test(void **state) {
     ECC_UNUSED(state);
+
+    const int len = 100;
+    byte_t buf[len];
+    ecc_randombytes(buf, len);
+    ecc_memzero(buf, len);
+    int count = 0;
+    for (int i = 0; i < len; i++) {
+        if (buf[i] == 0) count++;
+    }
+    assert_int_equal(count, len);
+}
+
+static void ecc_randombytes_test(void **state) {
+    ECC_UNUSED(state);
+
+    const int len = 10;
+    byte_t buf[len];
+    ecc_randombytes(buf, len);
+    int count = 0;
+    for (int i = 0; i < len; i++) {
+        if (buf[i] == 0) count++;
+    }
+    // what are the odds of having more than one 0 in a random of 10 elements
+    assert_true(count < 2);
+}
+
+static void ecc_bin2hex_test(void **state) {
+    ECC_UNUSED(state);
+
     const byte_t bin[2] = {0xab, 0xcd};
-    char hex[5];
+    char hex[6];
     ecc_bin2hex(hex, bin, 2);
     assert_string_equal(hex, "abcd");
 }
 
-static void ecc_hex2bin_test1(void **state) {
+static void ecc_hex2bin_test(void **state) {
     ECC_UNUSED(state);
+
     const char hex[4] = "abcd";
     byte_t bin[2];
     ecc_hex2bin(bin, hex, 4);
@@ -71,8 +101,10 @@ static void ecc_I2OSP_test1(void **state) {
 
 int main() {
     const struct CMUnitTest tests[] = {
-        cmocka_unit_test(ecc_bin2hex_test1),
-        cmocka_unit_test(ecc_hex2bin_test1),
+        cmocka_unit_test(ecc_memzero_test),
+        cmocka_unit_test(ecc_randombytes_test),
+        cmocka_unit_test(ecc_bin2hex_test),
+        cmocka_unit_test(ecc_hex2bin_test),
         cmocka_unit_test(ecc_concat3_test1),
         cmocka_unit_test(ecc_concat4_test1),
         cmocka_unit_test(ecc_strxor_test1),

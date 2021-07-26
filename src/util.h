@@ -186,6 +186,8 @@ int ecc_is_zero(const byte_t *n, int len);
  * @param size number of bytes to allocate
  * @return the pointer to the beginning of newly allocated memory
  */
+ECC_OPRF_EXPORT
+ECC_OPAQUE_EXPORT
 ECC_EXPORT
 byte_t *ecc_malloc(int size);
 
@@ -197,6 +199,8 @@ byte_t *ecc_malloc(int size);
  * @param p pointer to the memory to deallocate
  * @param size size of the allocated memory
  */
+ECC_OPRF_EXPORT
+ECC_OPAQUE_EXPORT
 ECC_EXPORT
 void ecc_free(byte_t *p, int size);
 
@@ -206,6 +210,7 @@ void ecc_free(byte_t *p, int size);
 #define ECC_LOG 0
 #endif
 #if ECC_LOG
+ECC_EXPORT
 void ecc_log(const char *label, const byte_t *data, int data_len);
 #endif
 
