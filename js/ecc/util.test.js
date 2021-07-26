@@ -9,6 +9,33 @@ import libecc_module from "./libecc.js";
 import * as util from "./util.js";
 import assert from "assert";
 
+describe("util",() => {
+
+    it("ecc_memzero_test", async () => {
+        const libecc = await libecc_module();
+        let buf = new Uint8Array(100);
+        libecc.ecc_randombytes(buf, buf.length);
+        libecc.ecc_memzero(buf, buf.length);
+        let count = 0;
+        for (let i = 0; i < buf.length; i++) {
+            if (buf[i] === 0) count++;
+        }
+        assert.strictEqual(count, buf.length);
+    });
+
+    it("ecc_randombytes_test", async () => {
+        const libecc = await libecc_module();
+        let buf = new Uint8Array(10);
+        libecc.ecc_randombytes(buf, buf.length);
+        let count = 0;
+        for (let i = 0; i < buf.length; i++) {
+            if (buf[i] === 0) count++;
+        }
+        // what are the odds of having more than one 0 in a random of 10 elements
+        assert.strictEqual(count < 2, true);
+    });
+});
+
 describe("str2buf", () => {
 
     it("input abcd", async () => {

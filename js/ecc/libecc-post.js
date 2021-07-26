@@ -57,10 +57,16 @@ Module.ecc_memzero = (buf, n) => {
  * @param {number} n the number of bytes to fill
  */
 Module.ecc_randombytes = (buf, n) => {
-    const pBuf = 0;
+    const heap_size = n;
+    const heap = _ecc_malloc(heap_size);
+
+    const pBuf = heap;
+
     _ecc_randombytes(pBuf, n);
+
     mget(pBuf, buf, n);
-    mzero(n);
+
+    _ecc_free(heap, heap_size);
 }
 
 /**
