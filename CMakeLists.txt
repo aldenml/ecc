@@ -40,7 +40,7 @@ if(EMSCRIPTEN)
         blst-external
         SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/deps/blst
         CONFIGURE_COMMAND ""
-        BUILD_COMMAND AR=emar ./build.sh CC=emcc -D__BLST_PORTABLE__
+        BUILD_COMMAND AR=emar ./build.sh CC=emcc -D__BLST_PORTABLE__ -Oz
         BUILD_IN_SOURCE 1
         INSTALL_COMMAND ""
     )
@@ -62,7 +62,7 @@ else()
         blst-external
         SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/deps/blst
         CONFIGURE_COMMAND ""
-        BUILD_COMMAND ./build.sh
+        BUILD_COMMAND ./build.sh -O2
         BUILD_IN_SOURCE 1
         INSTALL_COMMAND ""
     )

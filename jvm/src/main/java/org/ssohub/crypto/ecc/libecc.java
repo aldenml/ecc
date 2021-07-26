@@ -170,39 +170,6 @@ public final class libecc {
      */
     public static native int ecc_is_zero(byte[] n, int len);
 
-    /**
-     * Takes a pointer to an arbitrary-long unsigned integer encoded in
-     * little-endian format, and increments it. It runs in constant-time.
-     * <p>
-     * Can be used to increment nonces in constant time.
-     *
-     * @param n   (input/output) unsigned integer
-     * @param len length of `n`
-     */
-    public static native void ecc_increment(byte[] n, int len);
-
-    /**
-     * Takes two pointers to unsigned numbers encoded in little-endian
-     * format, computes (a + b) mod 2^(8*len) and store the result in `a`.
-     * It runs in constant-time.
-     *
-     * @param a   (input/output) first unsigned integer argument
-     * @param b   second unsigned integer argument
-     * @param len the length of both `a` and `b`
-     */
-    public static native void ecc_add(byte[] a, byte[] b, int len);
-
-    /**
-     * Takes two pointers to unsigned numbers encoded in little-endian
-     * format, computes (a - b) mod 2^(8*len) and store the result in `a`.
-     * It runs in constant-time.
-     *
-     * @param a   (input/output) first unsigned integer argument
-     * @param b   second unsigned integer argument
-     * @param len the length of both `a` and `b`
-     */
-    public static native void ecc_sub(byte[] a, byte[] b, int len);
-
     // hash
 
     /**

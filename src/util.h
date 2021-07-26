@@ -176,42 +176,6 @@ ECC_EXPORT
 int ecc_is_zero(const byte_t *n, int len);
 
 /**
- * Takes a pointer to an arbitrary-long unsigned integer encoded in
- * little-endian format, and increments it. It runs in constant-time.
- *
- * Can be used to increment nonces in constant time.
- *
- * @param n (input/output) unsigned integer
- * @param len length of `n`
- */
-ECC_EXPORT
-void ecc_increment(byte_t *n, int len);
-
-/**
- * Takes two pointers to unsigned numbers encoded in little-endian
- * format, computes (a + b) mod 2^(8*len) and store the result in `a`.
- * It runs in constant-time.
- *
- * @param a (input/output) first unsigned integer argument
- * @param b second unsigned integer argument
- * @param len the length of both `a` and `b`
- */
-ECC_EXPORT
-void ecc_add(byte_t *a, const byte_t *b, int len);
-
-/**
- * Takes two pointers to unsigned numbers encoded in little-endian
- * format, computes (a - b) mod 2^(8*len) and store the result in `a`.
- * It runs in constant-time.
- *
- * @param a (input/output) first unsigned integer argument
- * @param b second unsigned integer argument
- * @param len the length of both `a` and `b`
- */
-ECC_EXPORT
-void ecc_sub(byte_t *a, const byte_t *b, int len);
-
-/**
  * Allocates size bytes of uninitialized storage.
  *
  * To avoid a memory leak, the returned pointer must be deallocated
@@ -235,5 +199,14 @@ byte_t *ecc_malloc(int size);
  */
 ECC_EXPORT
 void ecc_free(byte_t *p, int size);
+
+// the following is a private log facility, used mostly to
+// verify partial state values in protocols implementations
+#ifndef ECC_LOG
+#define ECC_LOG 0
+#endif
+#if ECC_LOG
+void ecc_log(const char *label, const byte_t *data, int data_len);
+#endif
 
 #endif // ECC_UTIL_H
