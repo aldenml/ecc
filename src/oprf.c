@@ -6,10 +6,16 @@
  */
 
 #include "oprf.h"
+#include <assert.h>
 #include <sodium.h>
 #include "util.h"
+#include "hash.h"
 #include "h2c.h"
 #include "ristretto255.h"
+
+static_assert(ecc_oprf_ristretto255_sha512_ELEMENTSIZE == ecc_ristretto255_SIZE, "");
+static_assert(ecc_oprf_ristretto255_sha512_SCALARSIZE == ecc_ristretto255_SCALARSIZE, "");
+static_assert(ecc_oprf_ristretto255_sha512_Nh == ecc_hash_sha512_SIZE, "");
 
 void ecc_oprf_ristretto255_sha512_Evaluate(
     byte_t *evaluatedElement, // 32 bytes
@@ -28,7 +34,7 @@ void ecc_oprf_ristretto255_sha512_BlindWithScalar(
     const byte_t *blind // 32
 ) {
     // using modeBase=0x00
-    byte_t P[32];
+    byte_t P[ecc_oprf_ristretto255_sha512_ELEMENTSIZE];
     ecc_oprf_ristretto255_sha512_HashToGroup(P, input, input_len, 0x00);
     ecc_ristretto255_scalarmult(blindedElement, blind, P);
 
@@ -50,19 +56,19 @@ void ecc_oprf_ristretto255_sha512_Blind(
 }
 
 void ecc_oprf_ristretto255_sha512_Unblind(
-    byte_t *unblinded_element, // 32 bytes
+    byte_t *unblindedElement, // 32 bytes
     const byte_t *blind,
-    const byte_t *evaluated_element
+    const byte_t *evaluatedElement
 ) {
     // Z = GG.DeserializeElement(evaluatedElement)
     // N = (blind^(-1)) * Z
     // unblindedElement = GG.SerializeElement(N)
-    byte_t inverted_blind[32];
-    ecc_ristretto255_scalar_invert(inverted_blind, blind);
-    ecc_ristretto255_scalarmult(unblinded_element, inverted_blind, evaluated_element);
+    byte_t blindInverted[ecc_oprf_ristretto255_sha512_ELEMENTSIZE];
+    ecc_ristretto255_scalar_invert(blindInverted, blind); // blind^(-1)
+    ecc_ristretto255_scalarmult(unblindedElement, blindInverted, evaluatedElement);
 
     // stack memory cleanup
-    ecc_memzero(inverted_blind, sizeof inverted_blind);
+    ecc_memzero(blindInverted, sizeof blindInverted);
 }
 
 void ecc_oprf_ristretto255_sha512_Finalize(
@@ -74,14 +80,14 @@ void ecc_oprf_ristretto255_sha512_Finalize(
 ) {
     // unblindedElement = Unblind(blind, evaluatedElement)
     //
-    // finalizeDST = "VOPRF06-Finalize-" || self.contextString
+    // finalizeDST = "Finalize-" || self.contextString
     // hashInput = I2OSP(len(input), 2) || input ||
     //             I2OSP(len(unblindedElement), 2) || unblindedElement ||
     //             I2OSP(len(finalizeDST), 2) || finalizeDST
     // return Hash(hashInput)
 
-    byte_t unblinded_element[32];
-    ecc_oprf_ristretto255_sha512_Unblind(unblinded_element, blind, evaluatedElement);
+    byte_t unblindedElement[ecc_oprf_ristretto255_sha512_ELEMENTSIZE];
+    ecc_oprf_ristretto255_sha512_Unblind(unblindedElement, blind, evaluatedElement);
 
     crypto_hash_sha512_state st;
     crypto_hash_sha512_init(&st);
@@ -96,17 +102,17 @@ void ecc_oprf_ristretto255_sha512_Finalize(
     ecc_I2OSP(tmp, 32, 2);
     crypto_hash_sha512_update(&st, tmp, 2);
     // unblindedElement
-    crypto_hash_sha512_update(&st, unblinded_element, 32);
+    crypto_hash_sha512_update(&st, unblindedElement, 32);
 
-    // https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-voprf-06#section-3.2
+    // https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-voprf-07#section-3.2
     // contextString = I2OSP(mode, 1) || I2OSP(suite.ID, 2)
     // suite id = 0x0001
-    byte_t context_string[3];
-    ecc_I2OSP(&context_string[0], mode, 1);
-    ecc_I2OSP(&context_string[1], 0x0001, 2);
+    byte_t contextString[3];
+    ecc_I2OSP(&contextString[0], mode, 1);
+    ecc_I2OSP(&contextString[1], 0x0001, 2);
     // domain separation tag (DST)
-    byte_t finalizeDST[20] = "VOPRF06-Finalize-";
-    ecc_concat2(finalizeDST, finalizeDST, 17, context_string, 3);
+    byte_t finalizeDST[20] = "Finalize-VOPRF07-";
+    ecc_concat2(finalizeDST, finalizeDST, 17, contextString, 3);
 
     // I2OSP(len(finalizeDST), 2)
     ecc_I2OSP(tmp, sizeof finalizeDST, 2);
@@ -118,7 +124,7 @@ void ecc_oprf_ristretto255_sha512_Finalize(
     crypto_hash_sha512_final(&st, output);
 
     // stack memory cleanup
-    ecc_memzero(unblinded_element, sizeof unblinded_element);
+    ecc_memzero(unblindedElement, sizeof unblindedElement);
     ecc_memzero((byte_t *) &st, sizeof st);
 }
 
@@ -141,7 +147,7 @@ void ecc_oprf_ristretto255_sha512_HashToGroup(
     const byte_t *input, const int input_len,
     const int mode
 ) {
-    // https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-voprf-06#section-3.2
+    // https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-voprf-07#section-3.2
     // contextString = I2OSP(mode, 1) || I2OSP(suite.ID, 2)
     // suite id = 0x0001
     byte_t contextString[3];
@@ -149,10 +155,10 @@ void ecc_oprf_ristretto255_sha512_HashToGroup(
     ecc_I2OSP(&contextString[1], 0x0001, 2);
 
     // domain separation tag (DST)
-    byte_t DST[23] = "VOPRF06-HashToGroup-";
+    byte_t DST[23] = "HashToGroup-VOPRF07-";
     ecc_concat2(DST, DST, 20, contextString, 3);
 
-    ecc_oprf_ristretto255_sha512_HashToGroupWithDST(out, input, input_len, DST, 23);
+    ecc_oprf_ristretto255_sha512_HashToGroupWithDST(out, input, input_len, DST, sizeof DST);
 }
 
 void ecc_oprf_ristretto255_sha512_HashToScalarWithDST(
@@ -174,7 +180,7 @@ void ecc_oprf_ristretto255_sha512_HashToScalar(
     const byte_t *input, const int input_len,
     const int mode
 ) {
-    // https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-voprf-06#section-3.2
+    // https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-voprf-07#section-3.2
     // contextString = I2OSP(mode, 1) || I2OSP(suite.ID, 2)
     // suite id = 0x0001
     byte_t contextString[3];
@@ -182,8 +188,8 @@ void ecc_oprf_ristretto255_sha512_HashToScalar(
     ecc_I2OSP(&contextString[1], 0x0001, 2);
 
     // domain separation tag (DST)
-    byte_t DST[24] = "VOPRF06-HashToScalar-";
+    byte_t DST[24] = "HashToScalar-VOPRF07-";
     ecc_concat2(DST, DST, 21, contextString, 3);
 
-    ecc_oprf_ristretto255_sha512_HashToScalarWithDST(out, input, input_len, DST, 24);
+    ecc_oprf_ristretto255_sha512_HashToScalarWithDST(out, input, input_len, DST, sizeof DST);
 }

@@ -283,8 +283,8 @@ int main() {
         cmocka_unit_test(opaque_CreateCleartextCredentials_test),
         cmocka_unit_test(ecc_opaque_ristretto255_sha512_3DH_Preamble_test1),
         // ecc_opaque_ristretto255_sha512_CreateRegistrationRequestWithBlind
-        cmocka_unit_test(opaque_ristretto255_sha512_CreateRegistrationRequestWithBlind_test1),
-        cmocka_unit_test(opaque_ristretto255_sha512_CreateRegistrationRequestWithBlind_test2),
+        //cmocka_unit_test(opaque_ristretto255_sha512_CreateRegistrationRequestWithBlind_test1),
+        //cmocka_unit_test(opaque_ristretto255_sha512_CreateRegistrationRequestWithBlind_test2),
         cmocka_unit_test(opaque_ristretto255_sha512_RecoverPublicKey_test1),
         // protocol
         cmocka_unit_test(opaque_ristretto255_sha512_test1),

@@ -1,6 +1,6 @@
 {
   "name": "@aldenml/oprf",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "Oblivious pseudo-random function using ristretto255",
   "main": "index.js",
   "types": "./dist/index.d.ts",

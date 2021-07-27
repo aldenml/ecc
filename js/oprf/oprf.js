@@ -13,7 +13,7 @@ const libecc_module = liboprf_module;
  * Evaluates serialized representations of blinded group elements from the
  * client as inputs.
  *
- * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-voprf-06#section-3.4.1.1
+ * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-voprf-07#section-3.3.1.1
  *
  * @param {Uint8Array} skS private key
  * @param {Uint8Array} blindedElement blinded element
@@ -32,7 +32,7 @@ export async function oprf_ristretto255_sha512_Evaluate(skS, blindedElement) {
  * Same as calling `oprf_ristretto255_sha512_Blind` with an
  * specified scalar blind.
  *
- * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-voprf-06#section-3.4.3.1
+ * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-voprf-07#section-3.3.3.1
  *
  * @param {Uint8Array} input message to blind
  * @param {Uint8Array} blind scalar to use in the blind operation
@@ -53,7 +53,7 @@ export async function oprf_ristretto255_sha512_BlindWithScalar(input, blind) {
 }
 
 /**
- * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-voprf-06#section-3.4.3.1
+ * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-voprf-07#section-3.3.3.1
  *
  * @param {Uint8Array} input message to blind
  * @return object {blind, blindedElement}
@@ -74,7 +74,7 @@ export async function oprf_ristretto255_sha512_Blind(input) {
 }
 
 /**
- * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-voprf-06#section-3.4.3.3
+ * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-voprf-07#section-3.3.3.2
  *
  * @param input the input message
  * @param blind

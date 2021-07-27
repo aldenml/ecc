@@ -11,10 +11,28 @@
 #include "export.h"
 
 /**
+ * Size of a serialized group element, since this is the ristretto255
+ * curve the size is 32 bytes.
+ */
+#define ecc_oprf_ristretto255_sha512_ELEMENTSIZE 32
+
+/**
+ * Size of a serialized scalar, since this is the ristretto255
+ * curve the size is 32 bytes.
+ */
+#define ecc_oprf_ristretto255_sha512_SCALARSIZE 32
+
+/**
+ * Size of the protocol output in the `Finalize` operations, since
+ * this is ristretto255 with SHA-512, the size is 64 bytes.
+ */
+#define ecc_oprf_ristretto255_sha512_Nh 64
+
+/**
  * Evaluates serialized representations of blinded group elements from the
  * client as inputs.
  *
- * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-voprf-06#section-3.4.1.1
+ * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-voprf-07#section-3.3.1.1
  *
  * @param evaluatedElement (output) evaluated element
  * @param skS private key
@@ -32,7 +50,7 @@ void ecc_oprf_ristretto255_sha512_Evaluate(
  * Same as calling `ecc_oprf_ristretto255_sha512_Blind` with an
  * specified scalar blind.
  *
- * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-voprf-06#section-3.4.3.1
+ * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-voprf-07#section-3.3.3.1
  *
  * @param blindedElement (output) blinded element
  * @param input message to blind
@@ -48,7 +66,7 @@ void ecc_oprf_ristretto255_sha512_BlindWithScalar(
 );
 
 /**
- * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-voprf-06#section-3.4.3.1
+ * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-voprf-07#section-3.3.3.1
  *
  * @param blindedElement (output) blinded element
  * @param blind (output) scalar used in the blind operation
@@ -63,20 +81,20 @@ void ecc_oprf_ristretto255_sha512_Blind(
     const byte_t *input, int input_len
 );
 
-// https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-voprf-06#section-3.4.3.2
+// https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-voprf-07#section-3.3.3.1
 ECC_EXPORT
 void ecc_oprf_ristretto255_sha512_Unblind(
-    byte_t *unblinded_element,
+    byte_t *unblindedElement,
     const byte_t *blind,
-    const byte_t *evaluated_element
+    const byte_t *evaluatedElement
 );
 
 /**
- * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-voprf-06#section-3.4.3.3
+ * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-voprf-07#section-3.3.3.2
  *
  * @param output (output)
  * @param input the input message
- * @param input_len the length of `blind`
+ * @param input_len the length of `input`
  * @param blind
  * @param evaluatedElement
  * @param mode mode to build the internal DST string (modeBase=0x00, modeVerifiable=0x01)
@@ -95,8 +113,8 @@ void ecc_oprf_ristretto255_sha512_Finalize(
  * Same as calling `ecc_oprf_ristretto255_sha512_HashToGroup` with an
  * specified DST string.
  *
- * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-voprf-06#section-2.1
- * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-voprf-06#section-5.1
+ * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-voprf-07#section-2.1
+ * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-voprf-07#section-4.1
  *
  * @param out element of the group
  * @param input input string to map
@@ -115,10 +133,10 @@ void ecc_oprf_ristretto255_sha512_HashToGroupWithDST(
  * Deterministically maps an array of bytes "x" to an element of "GG" in
  * the ristretto255 curve.
  *
- * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-voprf-06#section-2.1
- * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-voprf-06#section-5.1
+ * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-voprf-07#section-2.1
+ * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-voprf-07#section-4.1
  * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-hash-to-curve-11#section-2.2.5
- * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-voprf-06#section-3
+ * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-voprf-07#section-3
  *
  * @param out element of the group
  * @param input input string to map

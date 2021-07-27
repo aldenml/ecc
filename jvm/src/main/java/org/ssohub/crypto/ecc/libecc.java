@@ -527,7 +527,7 @@ public final class libecc {
      * Evaluates serialized representations of blinded group elements from the
      * client as inputs.
      * <p>
-     * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-voprf-06#section-3.4.1.1
+     * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-voprf-07#section-3.4.1.1
      *
      * @param evaluatedElement (output) evaluated element
      * @param skS              private key
@@ -540,7 +540,7 @@ public final class libecc {
     );
 
     /**
-     * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-voprf-06#section-3.4.3.3
+     * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-voprf-07#section-3.4.3.3
      *
      * @param output           (output)
      * @param input            the input message

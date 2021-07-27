@@ -1,6 +1,6 @@
 {
   "name": "@aldenml/opaque",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "The OPAQUE asymmetric PAKE protocol using ristretto255",
   "main": "index.js",
   "types": "./dist/index.d.ts",
