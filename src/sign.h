@@ -10,7 +10,11 @@
 
 #include "export.h"
 
+// eth2
 // https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-bls-signature-04
+// https://github.com/cfrg/draft-irtf-cfrg-bls-signature
+
+#define ecc_sign_bls_eth2_PRIVATEKEYSIZE 32
 
 /**
  *
@@ -19,7 +23,7 @@
  * @param IKM_len
  */
 ECC_EXPORT
-void ecc_sign_bls12_381_keygen(byte_t *sk, const byte_t *ikm, int ikm_len);
+void ecc_sign_bls_eth2_keygen(byte_t *sk, const byte_t *ikm, int ikm_len);
 
 
 #endif // ECC_SIGN_H
