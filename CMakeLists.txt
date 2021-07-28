@@ -98,6 +98,7 @@ set(ecc_src_files
     src/h2c.h src/h2c.c
     src/oprf.h src/oprf.c
     src/opaque.h src/opaque.c
+    src/sign.h src/sign.c
     src/pre.h src/pre.c
     src/ecc.h
 )
