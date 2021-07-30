@@ -102,3 +102,41 @@ int ecc_sign_bls12_381_CoreVerify(
 
     return r == BLST_SUCCESS ? 0 : -1;
 }
+
+int ecc_sign_bls12_381_Aggregate(
+    byte_t *sig,
+    const byte_t **signatures, int n
+) {
+    // 1. aggregate = signature_to_point(signature_1)
+    // 2. If aggregate is INVALID, return INVALID
+    // 3. for i in 2, ..., n:
+    // 4.     next = signature_to_point(signature_i)
+    // 5.     If next is INVALID, return INVALID
+    // 6.     aggregate = aggregate + next
+    // 7. signature = point_to_signature(aggregate)
+    // 8. return signature
+
+    blst_p2_affine first;
+    if (blst_p2_uncompress(&first, sig) != BLST_SUCCESS)
+        return -1;
+
+    blst_p2 aggregate;
+    blst_p2_from_affine(&aggregate, &first);
+
+    blst_p2_affine next;
+    for (int i = 1; i < n; i++) {
+        if (blst_p2_uncompress(&next, sig) != BLST_SUCCESS)
+            return -1;
+
+        blst_p2_add_affine(&aggregate, &aggregate, &next);
+    }
+
+    blst_p2_compress(sig, &aggregate);
+
+    // cleanup stack memory
+    ecc_memzero((byte_t *) &first, sizeof first);
+    ecc_memzero((byte_t *) &aggregate, sizeof aggregate);
+    ecc_memzero((byte_t *) &next, sizeof next);
+
+    return 0;
+}

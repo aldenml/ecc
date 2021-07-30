@@ -16,14 +16,20 @@
 // The variant implemented here is the minimal-pubkey-size: public keys are
 // points in G1, signatures are points in G2.
 
-#define ecc_sign_bls12_381_PUBLICKEYSIZE 48
+/**
+ * Size of the signing public key.
+ */
+#define ecc_sign_bls12_381_PUBLICKEYSIZE 48 // size of a compressed G1 element in BLS12-381
 
-#define ecc_sign_bls12_381_PRIVATEKEYSIZE 32
+/**
+ * Size of the signing private key.
+ */
+#define ecc_sign_bls12_381_PRIVATEKEYSIZE 32 // size of a scalar in BLS12-381
 
 /**
  * Signature size.
  */
-#define ecc_sign_bls12_381_SIGNATURESIZE 96
+#define ecc_sign_bls12_381_SIGNATURESIZE 96 // size of a compressed G2 element in BLS12-381
 
 /**
  * Generates a secret key `sk` deterministically from a secret
@@ -92,13 +98,29 @@ void ecc_sign_bls12_381_CoreSign(
  * @param msg input message
  * @param msg_len the length of `msg`
  * @param sig the signature
- * @return 0 of valid, -1 if invalid
+ * @return 0 if valid, -1 if invalid
  */
 ECC_EXPORT
 int ecc_sign_bls12_381_CoreVerify(
     const byte_t *pk,
     const byte_t *msg, int msg_len,
     const byte_t *sig
+);
+
+/**
+ * Aggregates multiple signatures into one.
+ *
+ * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-bls-signature-04#section-2.8
+ *
+ * @param sig (output) the aggregated signature that combines all inputs
+ * @param signatures array of individual signatures
+ * @param n amount of signatures in the array `signatures`
+ * @return 0 if valid, -1 if invalid
+ */
+ECC_EXPORT
+int ecc_sign_bls12_381_Aggregate(
+    byte_t *sig,
+    const byte_t **signatures, int n
 );
 
 #endif // ECC_SIGN_H
