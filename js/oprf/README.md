@@ -7,7 +7,7 @@ Oblivious pseudo-random function using ristretto255.
 This is an implementation of [draft-irtf-cfrg-voprf-07](https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-voprf-07)
 using [libsodium](https://doc.libsodium.org).
 
-It contains the following primitives (plus all the supporting functions):
+It contains the following primitives:
 
 - `oprf_ristretto255_sha512_Blind` - client sends a masked secret input to the server.
 - `oprf_ristretto255_sha512_Evaluate` - server takes the masked secret and evaluates an "element" and sends it to the client.

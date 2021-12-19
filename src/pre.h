@@ -51,7 +51,7 @@
 /**
  * Size of the PRE-SCHEMA1 private key.
  */
-#define ecc_pre_schema1_PRIVATEKEYSIZE 32 // size of a an scalar in BLS12-381
+#define ecc_pre_schema1_PRIVATEKEYSIZE 32 // size of a scalar in BLS12-381
 
 /**
  * Size of the PRE-SCHEMA1 signing public key.

@@ -215,8 +215,8 @@ int ecc_ed25519_scalarmult_base(byte_t *q, const byte_t *n);
 #define ecc_ed25519_sign_SECRETKEYSIZE 64
 
 /**
- * Signs the message msg whose length is m_len bytes, using the secret key sk, and
- * puts the signature into sig.
+ * Signs the message msg whose length is msg_len bytes, using the
+ * secret key sk, and puts the signature into sig.
  *
  * @param sig (output) the signature
  * @param msg input message

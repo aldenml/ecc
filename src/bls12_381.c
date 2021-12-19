@@ -252,7 +252,3 @@ void ecc_bls12_381_pairing_final_exp(byte_t *ret, const byte_t *a) {
 int ecc_bls12_381_pairing_final_verify(const byte_t *a, const byte_t *b) {
     return blst_fp12_finalverify((blst_fp12 *) a, (blst_fp12 *) b);
 }
-
-void ecc_bls12_381_sign_keygen(byte_t *sk, const byte_t *ikm, int ikm_len) {
-    blst_keygen((blst_scalar *) sk, ikm, ikm_len, 0, 0);
-}

@@ -98,6 +98,7 @@ set(ecc_src_files
     src/h2c.h src/h2c.c
     src/oprf.h src/oprf.c
     src/opaque.h src/opaque.c
+    src/sign.h src/sign.c
     src/pre.h src/pre.c
     src/ecc.h
 )
@@ -185,6 +186,8 @@ if(NOT DEFINED EMSCRIPTEN)
     target_link_libraries(test_oprf PRIVATE ecc cmocka-static)
     add_executable(test_opaque test/test_opaque.c)
     target_link_libraries(test_opaque PRIVATE ecc cmocka-static)
+    add_executable(test_sign test/test_sign.c)
+    target_link_libraries(test_sign PRIVATE ecc cmocka-static)
     add_executable(test_pre test/test_pre.c)
     target_link_libraries(test_pre PRIVATE ecc cmocka-static)
 
@@ -195,5 +198,6 @@ if(NOT DEFINED EMSCRIPTEN)
     add_test(NAME test_h2c COMMAND test_h2c)
     add_test(NAME test_oprf COMMAND test_oprf)
     add_test(NAME test_opaque COMMAND test_opaque)
+    add_test(NAME test_sign COMMAND test_sign)
     add_test(NAME test_pre COMMAND test_pre)
 endif()

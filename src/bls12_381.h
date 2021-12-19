@@ -187,13 +187,4 @@ void ecc_bls12_381_pairing_final_exp(byte_t *ret, const byte_t *a);
 ECC_EXPORT
 int ecc_bls12_381_pairing_final_verify(const byte_t *a, const byte_t *b);
 
-/**
- *
- * @param out_SK
- * @param IKM
- * @param IKM_len
- */
-ECC_EXPORT
-void ecc_bls12_381_sign_keygen(byte_t *sk, const byte_t *ikm, int ikm_len);
-
 #endif // ECC_BLS12_381_H
