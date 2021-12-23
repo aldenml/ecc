@@ -21,12 +21,15 @@
  * @param len the length of `buf`
  */
 ECC_EXPORT
-void ecc_memzero(byte_t *buf, int len);
+void ecc_memzero(
+    byte_t *buf, // size:len
+    int len
+);
 
 /**
  * Fills `n` bytes at buf with an unpredictable sequence of bytes.
  *
- * @param buf (output) the byte array to fill
+ * @param[out] buf (output) the byte array to fill
  * @param n the number of bytes to fill
  */
 ECC_EXPORT
