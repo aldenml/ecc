@@ -293,7 +293,6 @@ void ecc_opaque_ristretto255_sha512_RecoverPublicKey(
  * @param private_key (output) a private key
  * @param public_key (output) the associated public key
  */
-ECC_OPAQUE_EXPORT
 ECC_EXPORT
 void ecc_opaque_ristretto255_sha512_GenerateAuthKeyPair(
     byte_t *private_key, byte_t *public_key
@@ -377,7 +376,6 @@ void ecc_opaque_ristretto255_sha512_CreateRegistrationRequestWithBlind(
  * @param password an opaque byte string containing the client's password
  * @param password_len the length of `password`
  */
-ECC_OPAQUE_EXPORT
 ECC_EXPORT
 void ecc_opaque_ristretto255_sha512_CreateRegistrationRequest(
     byte_t *request_raw,
@@ -423,7 +421,6 @@ void ecc_opaque_ristretto255_sha512_CreateRegistrationResponseWithOprfKey(
  * @param credential_identifier_len the length of `credential_identifier`
  * @param oprf_seed the server-side seed of Nh bytes used to generate an oprf_key
  */
-ECC_OPAQUE_EXPORT
 ECC_EXPORT
 void ecc_opaque_ristretto255_sha512_CreateRegistrationResponse(
     byte_t *response_raw,
@@ -453,7 +450,6 @@ void ecc_opaque_ristretto255_sha512_CreateRegistrationResponse(
  * @param client_identity the optional encoded client identity
  * @param client_identity_len the length of `client_identity`
  */
-ECC_OPAQUE_EXPORT
 ECC_EXPORT
 void ecc_opaque_ristretto255_sha512_FinalizeRequest(
     byte_t *record_raw, // RegistrationUpload_t
@@ -667,7 +663,6 @@ void ecc_opaque_ristretto255_sha512_3DH_DeriveKeys(
  * @param password an opaque byte string containing the client's password
  * @param password_len the length of `password`
  */
-ECC_OPAQUE_EXPORT
 ECC_EXPORT
 void ecc_opaque_ristretto255_sha512_3DH_ClientInit(
     byte_t *ke1_raw,
@@ -695,7 +690,6 @@ void ecc_opaque_ristretto255_sha512_3DH_ClientInit(
  * @return 0 if is able to recover credentials and authenticate with the
  * server, else -1
  */
-ECC_OPAQUE_EXPORT
 ECC_EXPORT
 int ecc_opaque_ristretto255_sha512_3DH_ClientFinish(
     byte_t *ke3_raw,
@@ -768,7 +762,6 @@ int ecc_opaque_ristretto255_sha512_3DH_ClientFinalize(
  * @param context the application specific context
  * @param context_len the length of `context_len`
  */
-ECC_OPAQUE_EXPORT
 ECC_EXPORT
 void ecc_opaque_ristretto255_sha512_3DH_ServerInit(
     byte_t *ke2_raw,
@@ -791,7 +784,6 @@ void ecc_opaque_ristretto255_sha512_3DH_ServerInit(
  * @param ke3_raw a KE3 structure
  * @return 0 if the user was authenticated, else -1
  */
-ECC_OPAQUE_EXPORT
 ECC_EXPORT
 int ecc_opaque_ristretto255_sha512_3DH_ServerFinish(
     byte_t *session_key,

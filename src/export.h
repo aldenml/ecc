@@ -14,21 +14,9 @@
     #define SYMBOL_EXPORT __attribute__((visibility("default"))) __attribute__((used))
 #endif
 
-#if defined ECC_OPRF
-    #define ECC_OPRF_EXPORT SYMBOL_EXPORT
-    #define ECC_OPAQUE_EXPORT
-    #define ECC_EXPORT
-#elif defined ECC_OPAQUE
-    #define ECC_OPRF_EXPORT
-    #define ECC_OPAQUE_EXPORT SYMBOL_EXPORT
-    #define ECC_EXPORT
-#elif defined ECC_ALL
-    #define ECC_OPRF_EXPORT
-    #define ECC_OPAQUE_EXPORT
+#if defined ECC_EXPORT_SYMBOLS
     #define ECC_EXPORT SYMBOL_EXPORT
 #else
-    #define ECC_OPRF_EXPORT
-    #define ECC_OPAQUE_EXPORT
     #define ECC_EXPORT
 #endif
 

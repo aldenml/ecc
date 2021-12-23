@@ -113,7 +113,7 @@ endif()
 
 target_compile_features(ecc PUBLIC c_std_11)
 target_link_libraries(ecc PRIVATE libsodium blst)
-target_compile_definitions(ecc PRIVATE ECC_ALL)
+target_compile_definitions(ecc PRIVATE ECC_EXPORT_SYMBOLS)
 target_include_directories(ecc PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src>
     $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>

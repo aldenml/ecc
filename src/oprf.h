@@ -38,7 +38,6 @@
  * @param skS private key
  * @param blindedElement blinded element
  */
-ECC_OPRF_EXPORT
 ECC_EXPORT
 void ecc_oprf_ristretto255_sha512_Evaluate(
     byte_t *evaluatedElement,
@@ -57,7 +56,6 @@ void ecc_oprf_ristretto255_sha512_Evaluate(
  * @param input_len length of `input`
  * @param blind scalar to use in the blind operation
  */
-ECC_OPRF_EXPORT
 ECC_EXPORT
 void ecc_oprf_ristretto255_sha512_BlindWithScalar(
     byte_t *blindedElement, // 32
@@ -73,7 +71,6 @@ void ecc_oprf_ristretto255_sha512_BlindWithScalar(
  * @param input message to blind
  * @param input_len length of `input`
  */
-ECC_OPRF_EXPORT
 ECC_EXPORT
 void ecc_oprf_ristretto255_sha512_Blind(
     byte_t *blindedElement, // 32
@@ -99,7 +96,6 @@ void ecc_oprf_ristretto255_sha512_Unblind(
  * @param evaluatedElement
  * @param mode mode to build the internal DST string (modeBase=0x00, modeVerifiable=0x01)
  */
-ECC_OPRF_EXPORT
 ECC_EXPORT
 void ecc_oprf_ristretto255_sha512_Finalize(
     byte_t *output,
