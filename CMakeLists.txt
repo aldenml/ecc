@@ -18,7 +18,6 @@ endif()
 
 project(ecc LANGUAGES C)
 
-# libsodium
 include(ExternalProject)
 if(EMSCRIPTEN)
     ExternalProject_Add(
@@ -103,8 +102,14 @@ set(ecc_src_files
     src/ecc.h
 )
 
-# ecc shared
-add_library(ecc SHARED ${ecc_src_files})
+# ecc
+if(EMSCRIPTEN)
+    add_library(ecc STATIC ${ecc_src_files})
+    target_compile_options(ecc PRIVATE -Oz)
+else()
+    add_library(ecc SHARED ${ecc_src_files})
+    target_compile_options(ecc PRIVATE -O2)
+endif()
 
 target_compile_features(ecc PUBLIC c_std_11)
 target_link_libraries(ecc PRIVATE libsodium blst)
@@ -114,61 +119,28 @@ target_include_directories(ecc PUBLIC
     $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
 )
 
-# ecc static
-add_library(ecc_static STATIC ${ecc_src_files})
+if(NOT DEFINED EMSCRIPTEN)
+    # ecc static
+    add_library(ecc_static STATIC ${ecc_src_files})
 
-target_compile_features(ecc_static PUBLIC c_std_11)
-target_link_libraries(ecc_static PRIVATE libsodium blst)
-target_include_directories(ecc_static PUBLIC
-    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src>
-    $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
-)
+    target_compile_features(ecc_static PUBLIC c_std_11)
+    target_compile_options(ecc_static PRIVATE -O2)
+    target_link_libraries(ecc_static PRIVATE libsodium blst)
+    target_include_directories(ecc_static PUBLIC
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src>
+        $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
+    )
 
-# oprf
-add_library(oprf
-    src/export.h
-    src/util.h src/util.c
-    src/hash.h src/hash.c
-    src/ristretto255.h src/ristretto255.c
-    src/h2c.h src/h2c.c
-    src/oprf.h src/oprf.c
-)
+    # jvm
+    add_library(ecc-jvm SHARED
+        jvm/jni.h
+        jvm/libecc.c
+    )
 
-target_compile_features(oprf PUBLIC c_std_11)
-target_link_libraries(oprf PRIVATE libsodium)
-target_compile_definitions(oprf PRIVATE ECC_OPRF)
-
-# opaque
-add_library(opaque
-    src/export.h
-    src/util.h src/util.c
-    src/hash.h src/hash.c
-    src/mac.h src/mac.c
-    src/kdf.h src/kdf.c
-    src/ristretto255.h src/ristretto255.c
-    src/h2c.h src/h2c.c
-    src/oprf.h src/oprf.c
-    src/opaque.h src/opaque.c
-)
-
-target_compile_features(opaque PUBLIC c_std_11)
-target_link_libraries(opaque PRIVATE libsodium)
-target_compile_definitions(opaque PRIVATE ECC_OPAQUE)
-
-if(EMSCRIPTEN)
-    target_compile_options(ecc PRIVATE -Oz)
-    target_compile_options(oprf PRIVATE -Oz)
-    target_compile_options(opaque PRIVATE -Oz)
+    target_compile_features(ecc-jvm PUBLIC c_std_11)
+    target_compile_options(ecc-jvm PRIVATE -O2)
+    target_link_libraries(ecc-jvm PRIVATE ecc_static)
 endif()
-
-# jvm
-add_library(ecc-jvm
-    jvm/jni.h
-    jvm/libecc.c
-)
-
-target_compile_features(ecc-jvm PUBLIC c_std_11)
-target_link_libraries(ecc-jvm PRIVATE ecc_static)
 
 if(NOT DEFINED EMSCRIPTEN)
     include(cmake/FetchCmocka.cmake)

@@ -772,7 +772,7 @@ JNIEXPORT int JNICALL Java_org_ssohub_crypto_ecc_libecc_ecc_1bls12_1381_1pairing
     FREE_HEAP;
     return r;
 }
-
+/*
 JNIEXPORT void JNICALL Java_org_ssohub_crypto_ecc_libecc_ecc_1bls12_1381_1sign_1keygen(
     JNIEnv *env, jclass cls,
     jbyteArray sk,
@@ -793,6 +793,7 @@ JNIEXPORT void JNICALL Java_org_ssohub_crypto_ecc_libecc_ecc_1bls12_1381_1sign_1
 
     FREE_HEAP;
 }
+*/
 
 // h2c
 
