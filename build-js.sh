@@ -32,6 +32,6 @@ EMCC_FLAGS="-Oz -flto --no-entry \
   -sTOTAL_STACK=65536 \
   -sINITIAL_MEMORY=131072"
 
-emcc -o js/ecc/libecc.js -sEXPORT_NAME=libecc_module \
-  --pre-js js/ecc/libecc-pre.js --post-js js/ecc/libecc-post.js \
+emcc -o bindings/js/libecc.js -sEXPORT_NAME=libecc_module \
+  --pre-js bindings/js/libecc-pre.js --post-js bindings/js/libecc-post.js \
   -Wl,--whole-archive build/libecc.a -Wl,--no-whole-archive ${EMCC_FLAGS}
