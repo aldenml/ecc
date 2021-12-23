@@ -9,6 +9,18 @@ class ParmVarDecl:
         self.mangledName = ast["mangledName"]
 
 
+class FullComment:
+    def __init__(self, ast):
+        self.ast = ast
+
+    def function_comment(self):
+        paragraphs = list(map(
+            lambda e: e["inner"][0]["text"].strip(),
+            filter(lambda e: e["kind"] == "ParagraphComment", self.ast["inner"])
+        ))
+        return "\n\n".join(filter(None, paragraphs))
+
+
 class FunctionDecl:
     def __init__(self, ast):
         self.ast = ast
@@ -16,7 +28,16 @@ class FunctionDecl:
         self.mangledName = ast["mangledName"]
 
     def params(self):
-        return list(map(lambda e: ParmVarDecl(e), filter(lambda e: e["kind"] == "ParmVarDecl", self.ast["inner"])))
+        return list(map(
+            lambda e: ParmVarDecl(e),
+            filter(lambda e: e["kind"] == "ParmVarDecl", self.ast["inner"])
+        ))
+
+    def comment(self):
+        return list(map(
+            lambda e: FullComment(e),
+            filter(lambda e: e["kind"] == "FullComment", self.ast["inner"])
+        ))[0]
 
 
 class TranslationUnitDecl:
@@ -24,7 +45,10 @@ class TranslationUnitDecl:
         self.ast = ast
 
     def functions(self):
-        return list(map(lambda e: FunctionDecl(e), filter(lambda e: e["kind"] == "FunctionDecl", self.ast["inner"])))
+        return list(map(
+            lambda e: FunctionDecl(e),
+            filter(lambda e: e["kind"] == "FunctionDecl", self.ast["inner"])
+        ))
 
 
 def read_ast_json(filename):
@@ -38,6 +62,7 @@ translationUnit = TranslationUnitDecl(read_ast_json(sys.argv[1]))
 functions = translationUnit.functions()
 print(functions[0].name)
 print(functions[0].params()[0].name)
+print(functions[0].comment().function_comment())
 #
 # functionDecl = functions[0]
 # name = functionDecl.name
