@@ -13,11 +13,11 @@
 /**
  * Size of the HMAC-SHA-256 digest.
  */
-#define ecc_mac_hmac_sha256_SIZE 32
+static const int ecc_mac_hmac_sha256_SIZE = 32;
 /**
  * Size of a HMAC-SHA-256 key.
  */
-#define ecc_mac_hmac_sha256_KEYSIZE 32
+static const int ecc_mac_hmac_sha256_KEYSIZE = 32;
 
 /**
  * Computes the HMAC-SHA-256 of the input stream.
@@ -25,10 +25,10 @@
  * See https://datatracker.ietf.org/doc/html/rfc2104
  * See https://datatracker.ietf.org/doc/html/rfc4868
  *
- * @param digest (output) the HMAC-SHA-256 of the input
- * @param text the input message
+ * @param[out] digest the HMAC-SHA-256 of the input, size:ecc_mac_hmac_sha256_SIZE
+ * @param text the input message, size:text_len
  * @param text_len the length of `input`
- * @param key authentication key
+ * @param key authentication key, size:ecc_mac_hmac_sha256_KEYSIZE
  */
 ECC_EXPORT
 void ecc_mac_hmac_sha256(
@@ -40,11 +40,11 @@ void ecc_mac_hmac_sha256(
 /**
  * Size of the HMAC-SHA-512 digest.
  */
-#define ecc_mac_hmac_sha512_SIZE 64
+static const int ecc_mac_hmac_sha512_SIZE = 64;
 /**
  * Size of a HMAC-SHA-512 key.
  */
-#define ecc_mac_hmac_sha256_KEYBYTES 32
+static const int ecc_mac_hmac_sha512_KEYSIZE = 32;
 
 /**
  * Computes the HMAC-SHA-512 of the input stream.
@@ -52,10 +52,10 @@ void ecc_mac_hmac_sha256(
  * See https://datatracker.ietf.org/doc/html/rfc2104
  * See https://datatracker.ietf.org/doc/html/rfc4868
  *
- * @param digest (output) the HMAC-SHA-512 of the input
- * @param text the input message
+ * @param[out] digest the HMAC-SHA-512 of the input, size:ecc_mac_hmac_sha512_SIZE
+ * @param text the input message, size:text_len
  * @param text_len the length of `input`
- * @param key authentication key
+ * @param key authentication key, size:ecc_mac_hmac_sha512_KEYSIZE
  */
 ECC_EXPORT
 void ecc_mac_hmac_sha512(
