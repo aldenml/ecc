@@ -1,6 +1,6 @@
 import json
-import sys
 import re
+import sys
 
 
 class ParamComment:
@@ -62,6 +62,8 @@ class ParmVarDecl:
     def size(self):
         text = self.comment.comment_text()
         match = re.search(r"\bsize:(\w+)\b", text)
+        if match is None:
+            print("No size specified: " + text)
         return match.group(1)
 
     def type_js(self):
@@ -90,9 +92,9 @@ class VarDecl:
         ))[0]
 
     def type_js(self):
-        if self.type == " const int":
+        if self.type == "const int":
             return "number"
-        elif self.type == " int":
+        elif self.type == "int":
             return "number"
         else:
             return self.type
@@ -195,6 +197,14 @@ class TranslationUnitDecl:
             filter(lambda e: e["kind"] == "FunctionDecl", self.ast["inner"])
         ))
 
+    def build_js(self):
+        constants = self.constants()
+        functions = self.functions()
+        out = ""
+        out += "\n".join(map(lambda c: c.build_js(), constants))
+        out += "\n".join(map(lambda f: f.build_js(), functions))
+        return out
+
 
 def read_ast_json(filename):
     f = open(filename, "r")
@@ -204,21 +214,4 @@ def read_ast_json(filename):
 
 
 translationUnit = TranslationUnitDecl(read_ast_json(sys.argv[1]))
-constants = translationUnit.constants()
-functions = translationUnit.functions()
-print(functions[0].name)
-print(functions[0].return_type())
-print(functions[0].params()[0].name)
-print(functions[0].comment().comment_text())
-print(functions[0].comment().comment_params()[0].comment_text())
-print(functions[0].params()[0].size())
-print(functions[0].build_js())
-print(constants[0].build_js())
-#
-# functionDecl = functions[0]
-# name = functionDecl.name
-# mangledName = functionDecl["mangledName"]
-#
-# params = list(filter(lambda e: e["kind"] == "ParmVarDecl", functionDecl["inner"]))
-# print("name: " + name)
-# print("mangledName: " + mangledName)
+print(translationUnit.build_js())

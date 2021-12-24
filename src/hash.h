@@ -30,15 +30,15 @@ void ecc_hash_sha256(byte_t *digest, const byte_t *input, int input_len);
 /**
  * The size of a SHA-512 digest.
  */
-#define ecc_hash_sha512_SIZE 64
+static const int ecc_hash_sha512_SIZE = 64;
 
 /**
  * Computes the SHA-512 of a given input.
  *
  * See https://en.wikipedia.org/wiki/SHA-2
  *
- * @param digest (output) the SHA-512 of the input
- * @param input the input message
+ * @param[out] digest the SHA-512 of the input, size:ecc_hash_sha512_SIZE
+ * @param input the input message, size:input_len
  * @param input_len the length of `input`
  */
 ECC_EXPORT
