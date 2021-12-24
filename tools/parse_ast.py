@@ -1,12 +1,6 @@
 import json
 import sys
-
-
-class ParmVarDecl:
-    def __init__(self, ast):
-        self.ast = ast
-        self.name = ast["name"]
-        self.mangledName = ast["mangledName"]
+import re
 
 
 class ParamComment:
@@ -16,7 +10,7 @@ class ParamComment:
         self.direction = ast["direction"]
 
     def comment_text(self):
-        return self.ast["inner"][0]["inner"][0]["text"]
+        return self.ast["inner"][0]["inner"][0]["text"].strip()
 
 
 class FullComment:
@@ -36,6 +30,20 @@ class FullComment:
             filter(lambda e: e["kind"] == "ParamCommandComment", self.ast["inner"])
         ))
 
+
+class ParmVarDecl:
+    def __init__(self, ast, comment):
+        self.ast = ast
+        self.name = ast["name"]
+        self.mangledName = ast["mangledName"]
+        self.comment = comment
+
+    def size(self):
+        text = self.comment.comment_text()
+        match = re.search(r"\bsize:(\w+)\b", text)
+        return match.group(1)
+
+
 class FunctionDecl:
     def __init__(self, ast):
         self.ast = ast
@@ -43,8 +51,9 @@ class FunctionDecl:
         self.mangledName = ast["mangledName"]
 
     def params(self):
+        comments = self.comment().comment_params()
         return list(map(
-            lambda e: ParmVarDecl(e),
+            lambda e: ParmVarDecl(e, next(filter(lambda c: c.name == e["name"], comments))),
             filter(lambda e: e["kind"] == "ParmVarDecl", self.ast["inner"])
         ))
 
@@ -79,6 +88,7 @@ print(functions[0].name)
 print(functions[0].params()[0].name)
 print(functions[0].comment().comment_text())
 print(functions[0].comment().comment_params()[0].comment_text())
+print(functions[0].params()[0].size())
 #
 # functionDecl = functions[0]
 # name = functionDecl.name
