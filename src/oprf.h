@@ -26,7 +26,8 @@
  * Size of the protocol output in the `Finalize` operations, since
  * this is ristretto255 with SHA-512, the size is 64 bytes.
  */
-#define ecc_oprf_ristretto255_sha512_Nh 64
+#define ecc_oprf_ristretto255_sha512_Nh_CONST 64
+static const int ecc_oprf_ristretto255_sha512_Nh = ecc_oprf_ristretto255_sha512_Nh_CONST;
 
 /**
  * Evaluates serialized representations of blinded group elements from the

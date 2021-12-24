@@ -10,14 +10,17 @@
 
 #include "export.h"
 
+#define ecc_mac_hmac_sha256_SIZE_CONST 32
 /**
  * Size of the HMAC-SHA-256 digest.
  */
-static const int ecc_mac_hmac_sha256_SIZE = 32;
+static const int ecc_mac_hmac_sha256_SIZE = ecc_mac_hmac_sha256_SIZE_CONST;
+
+#define ecc_mac_hmac_sha256_KEYSIZE_CONST 32
 /**
  * Size of a HMAC-SHA-256 key.
  */
-static const int ecc_mac_hmac_sha256_KEYSIZE = 32;
+static const int ecc_mac_hmac_sha256_KEYSIZE = ecc_mac_hmac_sha256_KEYSIZE_CONST;
 
 /**
  * Computes the HMAC-SHA-256 of the input stream.
@@ -37,14 +40,17 @@ void ecc_mac_hmac_sha256(
     const byte_t *key
 );
 
+#define ecc_mac_hmac_sha512_SIZE_CONST 64
 /**
  * Size of the HMAC-SHA-512 digest.
  */
-static const int ecc_mac_hmac_sha512_SIZE = 64;
+static const int ecc_mac_hmac_sha512_SIZE = ecc_mac_hmac_sha512_SIZE_CONST;
+
+#define ecc_mac_hmac_sha512_KEYSIZE_CONST 32
 /**
  * Size of a HMAC-SHA-512 key.
  */
-static const int ecc_mac_hmac_sha512_KEYSIZE = 32;
+static const int ecc_mac_hmac_sha512_KEYSIZE = ecc_mac_hmac_sha512_KEYSIZE_CONST;
 
 /**
  * Computes the HMAC-SHA-512 of the input stream.
