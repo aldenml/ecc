@@ -78,6 +78,7 @@ class VarDecl:
         self.ast = ast
         self.name = ast["name"]
         self.mangledName = ast["mangledName"]
+        self.type = ast["type"]["qualType"]
 
     def value(self):
         return self.ast["inner"][0]["value"]
@@ -87,6 +88,27 @@ class VarDecl:
             lambda e: FullComment(e),
             filter(lambda e: e["kind"] == "FullComment", self.ast["inner"])
         ))[0]
+
+    def type_js(self):
+        if self.type == " const int":
+            return "number"
+        elif self.type == " int":
+            return "number"
+        else:
+            return self.type
+
+    def build_js(self):
+        comment = self.comment()
+        out = ""
+        out += "const " + self.name + " = " + self.value() + ";\n"
+        out += "/**\n"
+        out += " * "
+        out += " * ".join(comment.comment_text().splitlines(True)) + "\n"
+        out += " *\n"
+        out += " * @type {" + self.type_js() + "}\n"
+        out += " */\n"
+        out += "Module." + self.name + " = " + self.name + ";\n"
+        return out
 
 
 class FunctionDecl:
@@ -191,7 +213,7 @@ print(functions[0].comment().comment_text())
 print(functions[0].comment().comment_params()[0].comment_text())
 print(functions[0].params()[0].size())
 print(functions[0].build_js())
-print(constants[0].comment().comment_text())
+print(constants[0].build_js())
 #
 # functionDecl = functions[0]
 # name = functionDecl.name
