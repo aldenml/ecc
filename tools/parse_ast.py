@@ -19,7 +19,7 @@ class FullComment:
 
     def comment_text(self):
         paragraphs = list(map(
-            lambda e: e["inner"][0]["text"].strip(),
+            lambda e: "\n".join(map(lambda t: t["text"].strip(), e["inner"])),
             filter(lambda e: e["kind"] == "ParagraphComment", self.ast["inner"])
         ))
         return "\n\n".join(filter(None, paragraphs))
@@ -39,8 +39,25 @@ class ParmVarDecl:
         self.type = ast["type"]["qualType"]
         self.comment = comment
 
+    def is_array(self):
+        if self.type == "const byte_t *":
+            return True
+        elif self.type == "byte_t *":
+            return True
+        else:
+            return False
+
+    def impl_name(self):
+        if self.is_array():
+            return "ptr_" + self.name
+        else:
+            return self.name
+
     def direction(self):
         return self.comment.direction
+
+    def is_out(self):
+        return self.direction() == "out"
 
     def size(self):
         text = self.comment.comment_text()
@@ -50,9 +67,7 @@ class ParmVarDecl:
     def type_js(self):
         if self.type == "int":
             return "number"
-        elif self.type == "const byte_t *":
-            return "Uint8Array"
-        elif self.type == "byte_t *":
+        elif self.is_array():
             return "Uint8Array"
         else:
             return self.type
@@ -77,6 +92,11 @@ class FunctionDecl:
             filter(lambda e: e["kind"] == "FullComment", self.ast["inner"])
         ))[0]
 
+    def return_type(self):
+        text = self.ast["type"]["qualType"]
+        match = re.search(r"^(\w+)\b", text)
+        return match.group(1)
+
     def build_js(self):
         comment = self.comment()
         out = ""
@@ -86,7 +106,7 @@ class FunctionDecl:
         out += " *\n"
         for param in self.params():
             out += " * @param {" + param.type_js() + "} " + param.name
-            if param.direction() == "out":
+            if param.is_out():
                 out += " (output)"
             out += " " + param.comment.comment_text() + "\n"
         out += " */\n"
@@ -94,6 +114,29 @@ class FunctionDecl:
         for param in self.params():
             out += "    " + param.name + ",\n"
         out += ") => {\n"
+        # alloc
+        for param in self.params():
+            if param.is_array():
+                out += "    const " + param.impl_name() + " = mput(" + param.name + ", " + param.size() + ");\n"
+        # invoke
+        if self.return_type() != "void":
+            out += "    const r = " + self.mangledName + "(\n"
+        else:
+            out += "    " + self.mangledName + "(\n"
+        for param in self.params():
+            out += "        " + param.impl_name() + ",\n"
+        out += "    );\n"
+        # get
+        for param in self.params():
+            if param.is_array() and param.is_out():
+                out += "    mget(" + param.name + ", " + param.impl_name() + ", " + param.size() + ");\n"
+        # free
+        for param in self.params():
+            if param.is_array():
+                out += "    mfree(" + param.impl_name() + ", " + param.size() + ");\n"
+        # return
+        if self.return_type() != "void":
+            out += "    return r;\n"
         out += "}\n"
         return out
 
@@ -119,6 +162,7 @@ def read_ast_json(filename):
 translationUnit = TranslationUnitDecl(read_ast_json(sys.argv[1]))
 functions = translationUnit.functions()
 print(functions[0].name)
+print(functions[0].return_type())
 print(functions[0].params()[0].name)
 print(functions[0].comment().comment_text())
 print(functions[0].comment().comment_params()[0].comment_text())

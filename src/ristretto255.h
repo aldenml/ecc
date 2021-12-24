@@ -34,7 +34,7 @@
  * Checks that p is a valid ristretto255-encoded element. This operation
  * only checks that p is in canonical form.
  *
- * @param p potential point to test
+ * @param p potential point to test, size:ecc_ristretto255_SIZE
  * @return 1 on success, and 0 if the checks didn't pass.
  */
 ECC_EXPORT
