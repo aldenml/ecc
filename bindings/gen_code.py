@@ -61,7 +61,7 @@ class ParmVarDecl:
 
     def size(self):
         text = self.comment.comment_text()
-        match = re.search(r"\bsize:(\w+)\b", text)
+        match = re.search(r"\bsize:([A-Za-z0-9_+\-*/]+)", text)
         if match is None:
             print("No size specified: " + text)
         return match.group(1)
@@ -191,15 +191,15 @@ class TranslationUnitDecl:
             filter(lambda e: e["kind"] == "VarDecl", self.ast["inner"])
         ))
 
-    def functions(self):
+    def functions(self, ignore):
         return list(map(
             lambda e: FunctionDecl(e),
-            filter(lambda e: e["kind"] == "FunctionDecl", self.ast["inner"])
+            filter(lambda e: e["kind"] == "FunctionDecl" and e["name"] not in ignore, self.ast["inner"])
         ))
 
-    def build_js(self):
+    def build_js(self, ignore):
         constants = self.constants()
-        functions = self.functions()
+        functions = self.functions(ignore)
         out = ""
         out += "\n".join(map(lambda c: c.build_js(), constants))
         out += "\n".join(map(lambda f: f.build_js(), functions))
@@ -218,17 +218,16 @@ def gen_ast(header):
 
 ecc_headers = ["util", "hash", "mac", "kdf", "ed25519", "ristretto255", "bls12_381",
                "h2c", "oprf", "opaque", "sign", "pre"]
+ecc_ignore = ["ecc_memzero", "ecc_bin2hex", "ecc_hex2bin", "ecc_malloc", "ecc_free"]
 
 
-def gen_js(headers):
+def gen_js(headers, ignore):
     out = ""
     out += "\n".join(map(
-        lambda h: TranslationUnitDecl(gen_ast(h)).build_js(),
+        lambda h: TranslationUnitDecl(gen_ast(h)).build_js(ignore),
         headers
     ))
     return out
 
 
-print(gen_js(["util"]))
-# translationUnit = TranslationUnitDecl(read_ast_json(sys.argv[1]))
-# print(translationUnit.build_js())
+print(gen_js(["util"], ecc_ignore))

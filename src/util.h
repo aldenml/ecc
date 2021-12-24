@@ -79,12 +79,12 @@ void ecc_concat2(
 /**
  * Same as calling ecc_concat2 but with three byte arrays.
  *
- * @param out (output) result of the concatenation
- * @param a1 first byte array
+ * @param[out] out result of the concatenation, size:a1_len+a2_len+a3_len
+ * @param a1 first byte array, size:a1_len
  * @param a1_len the length of `a1`
- * @param a2 second byte array
+ * @param a2 second byte array, size:a2_len
  * @param a2_len the length of `a2`
- * @param a3 third byte array
+ * @param a3 third byte array, size:a3_len
  * @param a3_len the length of `a3`
  */
 ECC_EXPORT
@@ -98,14 +98,14 @@ void ecc_concat3(
 /**
  * Same as calling ecc_concat2 but with four byte arrays.
  *
- * @param out (output) result of the concatenation
- * @param a1 first byte array
+ * @param[out] out result of the concatenation, size:a1_len+a2_len+a3_len+a4_len
+ * @param a1 first byte array, size:a1_len
  * @param a1_len the length of `a1`
- * @param a2 second byte array
+ * @param a2 second byte array, size:a2_len
  * @param a2_len the length of `a2`
- * @param a3 third byte array
+ * @param a3 third byte array, size:a3_len
  * @param a3_len the length of `a4`
- * @param a4 fourth byte array
+ * @param a4 fourth byte array, size:a4_len
  * @param a4_len the length of `a4`
  */
 ECC_EXPORT
@@ -125,22 +125,22 @@ void ecc_concat4(
  *
  * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-hash-to-curve-11#section-4
  *
- * @param out (output) result of the operation
- * @param a first byte array
- * @param b second byte array
+ * @param[out] out result of the operation, size:len
+ * @param a first byte array, size:len
+ * @param b second byte array, size:len
  * @param len length of both `a` and `b`
  */
 ECC_EXPORT
 void ecc_strxor(byte_t *out, const byte_t *a, const byte_t *b, int len);
 
 /**
- * I2OSP converts a nonnegative integer to an octet string of a
+ * I2OSP converts a non-negative integer to an octet string of a
  * specified length.
  *
  * See https://datatracker.ietf.org/doc/html/rfc8017#section-4.1
  *
- * @param out (output) corresponding octet string of length xLen
- * @param x nonnegative integer to be converted
+ * @param[out] out corresponding octet string of length xLen, size:xLen
+ * @param x non-negative integer to be converted
  * @param xLen intended length of the resulting octet string
  */
 ECC_EXPORT
@@ -156,8 +156,8 @@ void ecc_I2OSP(byte_t *out, int x, int xLen);
  *
  * The comparison is done in constant time
  *
- * @param a first unsigned integer argument
- * @param b second unsigned integer argument
+ * @param a first unsigned integer argument, size:len
+ * @param b second unsigned integer argument, size:len
  * @param len the length of both `a` and `b`
  */
 ECC_EXPORT
@@ -167,7 +167,7 @@ int ecc_compare(const byte_t *a, const byte_t *b, int len);
  * Takes a byte array and test if it contains only zeros. It runs
  * in constant-time.
  *
- * @param n the byte array
+ * @param n the byte array, size:len
  * @param len the length of `n`
  * @return 0 if non-zero bits are found
  */
@@ -193,7 +193,7 @@ byte_t *ecc_malloc(int size);
  *
  * NOTE: this is mostly to help binding implementations.
  *
- * @param p pointer to the memory to deallocate
+ * @param p pointer to the memory to deallocate, size:size
  * @param size size of the allocated memory
  */
 ECC_EXPORT
