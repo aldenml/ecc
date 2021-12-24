@@ -13,7 +13,7 @@
 /**
  * The size of a SHA-256 digest.
  */
-#define ecc_hash_sha256_SIZE 32
+static const int ecc_hash_sha256_SIZE = 32;
 
 /**
  * Computes the SHA-256 of a given input.
