@@ -36,12 +36,26 @@ class ParmVarDecl:
         self.ast = ast
         self.name = ast["name"]
         self.mangledName = ast["mangledName"]
+        self.type = ast["type"]["qualType"]
         self.comment = comment
+
+    def direction(self):
+        return self.comment.direction
 
     def size(self):
         text = self.comment.comment_text()
         match = re.search(r"\bsize:(\w+)\b", text)
         return match.group(1)
+
+    def type_js(self):
+        if self.type == "int":
+            return "number"
+        elif self.type == "const byte_t *":
+            return "Uint8Array"
+        elif self.type == "byte_t *":
+            return "Uint8Array"
+        else:
+            return self.type
 
 
 class FunctionDecl:
@@ -62,6 +76,26 @@ class FunctionDecl:
             lambda e: FullComment(e),
             filter(lambda e: e["kind"] == "FullComment", self.ast["inner"])
         ))[0]
+
+    def build_js(self):
+        comment = self.comment()
+        out = ""
+        out += "/**\n"
+        out += " * "
+        out += " * ".join(comment.comment_text().splitlines(True)) + "\n"
+        out += " *\n"
+        for param in self.params():
+            out += " * @param {" + param.type_js() + "} " + param.name
+            if param.direction() == "out":
+                out += " (output)"
+            out += " " + param.comment.comment_text() + "\n"
+        out += " */\n"
+        out += "Module." + self.name + " = (\n"
+        for param in self.params():
+            out += "    " + param.name + ",\n"
+        out += ") => {\n"
+        out += "}\n"
+        return out
 
 
 class TranslationUnitDecl:
@@ -89,6 +123,7 @@ print(functions[0].params()[0].name)
 print(functions[0].comment().comment_text())
 print(functions[0].comment().comment_params()[0].comment_text())
 print(functions[0].params()[0].size())
+print(functions[0].build_js())
 #
 # functionDecl = functions[0]
 # name = functionDecl.name
