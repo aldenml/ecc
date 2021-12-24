@@ -9,17 +9,32 @@ class ParmVarDecl:
         self.mangledName = ast["mangledName"]
 
 
+class ParamComment:
+    def __init__(self, ast):
+        self.ast = ast
+        self.name = ast["param"]
+        self.direction = ast["direction"]
+
+    def comment_text(self):
+        return self.ast["inner"][0]["inner"][0]["text"]
+
+
 class FullComment:
     def __init__(self, ast):
         self.ast = ast
 
-    def function_comment(self):
+    def comment_text(self):
         paragraphs = list(map(
             lambda e: e["inner"][0]["text"].strip(),
             filter(lambda e: e["kind"] == "ParagraphComment", self.ast["inner"])
         ))
         return "\n\n".join(filter(None, paragraphs))
 
+    def comment_params(self):
+        return list(map(
+            lambda e: ParamComment(e),
+            filter(lambda e: e["kind"] == "ParamCommandComment", self.ast["inner"])
+        ))
 
 class FunctionDecl:
     def __init__(self, ast):
@@ -62,7 +77,8 @@ translationUnit = TranslationUnitDecl(read_ast_json(sys.argv[1]))
 functions = translationUnit.functions()
 print(functions[0].name)
 print(functions[0].params()[0].name)
-print(functions[0].comment().function_comment())
+print(functions[0].comment().comment_text())
+print(functions[0].comment().comment_params()[0].comment_text())
 #
 # functionDecl = functions[0]
 # name = functionDecl.name

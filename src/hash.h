@@ -20,8 +20,8 @@
  *
  * See https://en.wikipedia.org/wiki/SHA-2
  *
- * @param digest (output) the SHA-256 of the input
- * @param input the input message
+ * @param[out] digest the SHA-256 of the input, size:ecc_hash_sha256_SIZE
+ * @param input the input message, size:input_len
  * @param input_len the length of `input`
  */
 ECC_EXPORT
