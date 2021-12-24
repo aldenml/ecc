@@ -17,19 +17,19 @@
  * Tries to effectively zero the memory pointed by `buf` even
  * if optimizations are being applied to the compiler.
  *
- * @param buf the memory pointer
+ * @param buf the memory pointer, size:len
  * @param len the length of `buf`
  */
 ECC_EXPORT
 void ecc_memzero(
-    byte_t *buf, // size:len
+    byte_t *buf,
     int len
 );
 
 /**
  * Fills `n` bytes at buf with an unpredictable sequence of bytes.
  *
- * @param[out] buf (output) the byte array to fill
+ * @param[out] buf the byte array to fill, size:n
  * @param n the number of bytes to fill
  */
 ECC_EXPORT
@@ -38,8 +38,8 @@ void ecc_randombytes(byte_t *buf, int n);
 /**
  * Converts a byte array to the hex string.
  *
- * @param hex (output) the hex encoded string
- * @param bin the input byte array
+ * @param[out] hex the hex encoded string, size:2*bin_len+1
+ * @param bin the input byte array, size:bin_len
  * @param bin_len the length of `bin`
  */
 ECC_EXPORT
@@ -48,8 +48,8 @@ void ecc_bin2hex(char *hex, const byte_t *bin, int bin_len);
 /**
  * Converts an hex string to a byte array.
  *
- * @param bin (output) the byte array
- * @param hex the input hex string
+ * @param[out] bin the byte array, size:hex_len/2
+ * @param hex the input hex string, size:hex_len
  * @param hex_len the length of `hex`
  */
 ECC_EXPORT
@@ -63,10 +63,10 @@ void ecc_hex2bin(byte_t *bin, const char *hex, int hex_len);
  *
  * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-hash-to-curve-11#section-4
  *
- * @param out (output) result of the concatenation
- * @param a1 first byte array
+ * @param[out] out result of the concatenation, size:a1_len+a2_len
+ * @param a1 first byte array, size:a1_len
  * @param a1_len the length of `a1`
- * @param a2 second byte array
+ * @param a2 second byte array, size:a2_len
  * @param a2_len the length of `a2`
  */
 ECC_EXPORT

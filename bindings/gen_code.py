@@ -1,6 +1,6 @@
 import json
 import re
-import sys
+import subprocess
 
 
 class ParamComment:
@@ -206,12 +206,29 @@ class TranslationUnitDecl:
         return out
 
 
-def read_ast_json(filename):
-    f = open(filename, "r")
-    ast = json.loads(f.read())
-    f.close()
-    return ast
+def gen_ast(header):
+    # clang -Xclang -ast-dump=json -fsyntax-only src/{header}.h
+    filename = "src/" + header + ".h"
+    output = subprocess.run(
+        ["clang", "-Xclang", "-ast-dump=json", "-fsyntax-only", filename],
+        capture_output=True, text=True
+    ).stdout
+    return json.loads(output)
 
 
-translationUnit = TranslationUnitDecl(read_ast_json(sys.argv[1]))
-print(translationUnit.build_js())
+ecc_headers = ["util", "hash", "mac", "kdf", "ed25519", "ristretto255", "bls12_381",
+               "h2c", "oprf", "opaque", "sign", "pre"]
+
+
+def gen_js(headers):
+    out = ""
+    out += "\n".join(map(
+        lambda h: TranslationUnitDecl(gen_ast(h)).build_js(),
+        headers
+    ))
+    return out
+
+
+print(gen_js(["util"]))
+# translationUnit = TranslationUnitDecl(read_ast_json(sys.argv[1]))
+# print(translationUnit.build_js())
