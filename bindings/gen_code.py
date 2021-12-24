@@ -230,4 +230,4 @@ def gen_js(headers, ignore):
     return out
 
 
-print(gen_js(["mac"], ecc_ignore))
+print(gen_js(["kdf"], ecc_ignore))

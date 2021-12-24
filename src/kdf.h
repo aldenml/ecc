@@ -10,20 +10,21 @@
 
 #include "export.h"
 
+#define ecc_kdf_hkdf_sha256_KEYSIZE_CONST 32
 /**
  * Key size for HKDF-SHA-256.
  */
-#define ecc_kdf_hkdf_sha256_KEYSIZE 32
+static const int ecc_kdf_hkdf_sha256_KEYSIZE = ecc_kdf_hkdf_sha256_KEYSIZE_CONST;
 
 /**
  * Computes the HKDF-SHA-256 extract of the input using a key material.
  *
  * See https://datatracker.ietf.org/doc/html/rfc5869
  *
- * @param prk (output) a pseudorandom key
- * @param salt optional salt value (a non-secret random value)
+ * @param[out] prk a pseudorandom key, size:ecc_kdf_hkdf_sha256_KEYSIZE
+ * @param salt optional salt value (a non-secret random value), size:salt_len
  * @param salt_len the length of `salt`
- * @param ikm input keying material
+ * @param ikm input keying material, size:ikm_len
  * @param ikm_len the length of `ikm`
  */
 ECC_EXPORT
@@ -38,9 +39,9 @@ void ecc_kdf_hkdf_sha256_extract(
  *
  * See https://datatracker.ietf.org/doc/html/rfc5869
  *
- * @param okm (output) output keying material of length `len`
- * @param prk a pseudorandom key
- * @param info optional context and application specific information
+ * @param okm[out] output keying material of length `len`, size:len
+ * @param prk a pseudorandom key, size:ecc_kdf_hkdf_sha256_KEYSIZE
+ * @param info optional context and application specific information, size:info_len
  * @param info_len length of `info`
  * @param len length of output keying material in octets
  */
@@ -52,20 +53,21 @@ void ecc_kdf_hkdf_sha256_expand(
     int len
 );
 
+#define ecc_kdf_hkdf_sha512_KEYSIZE_CONST 64
 /**
  * Key size for HKDF-SHA-512.
  */
-#define ecc_kdf_hkdf_sha512_KEYSIZE 64
+static const int ecc_kdf_hkdf_sha512_KEYSIZE = ecc_kdf_hkdf_sha512_KEYSIZE_CONST;
 
 /**
  * Computes the HKDF-SHA-512 extract of the input using a key material.
  *
  * See https://datatracker.ietf.org/doc/html/rfc5869
  *
- * @param prk (output) a pseudorandom key
- * @param salt optional salt value (a non-secret random value)
+ * @param[out] prk a pseudorandom key, size:ecc_kdf_hkdf_sha512_KEYSIZE
+ * @param salt optional salt value (a non-secret random value), size:salt_len
  * @param salt_len the length of `salt`
- * @param ikm input keying material
+ * @param ikm input keying material, size:ikm_len
  * @param ikm_len the length of `ikm`
  */
 ECC_EXPORT
@@ -80,9 +82,9 @@ void ecc_kdf_hkdf_sha512_extract(
  *
  * See https://datatracker.ietf.org/doc/html/rfc5869
  *
- * @param okm (output) output keying material of length `len`
- * @param prk a pseudorandom key
- * @param info optional context and application specific information
+ * @param[out] okm output keying material of length `len`, size:len
+ * @param prk a pseudorandom key, size:ecc_kdf_hkdf_sha512_KEYSIZE
+ * @param info optional context and application specific information, size:info_len
  * @param info_len length of `info`
  * @param len length of output keying material in octets
  */
