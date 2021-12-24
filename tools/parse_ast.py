@@ -73,6 +73,22 @@ class ParmVarDecl:
             return self.type
 
 
+class VarDecl:
+    def __init__(self, ast):
+        self.ast = ast
+        self.name = ast["name"]
+        self.mangledName = ast["mangledName"]
+
+    def value(self):
+        return self.ast["inner"][0]["value"]
+
+    def comment(self):
+        return list(map(
+            lambda e: FullComment(e),
+            filter(lambda e: e["kind"] == "FullComment", self.ast["inner"])
+        ))[0]
+
+
 class FunctionDecl:
     def __init__(self, ast):
         self.ast = ast
@@ -145,6 +161,12 @@ class TranslationUnitDecl:
     def __init__(self, ast):
         self.ast = ast
 
+    def constants(self):
+        return list(map(
+            lambda e: VarDecl(e),
+            filter(lambda e: e["kind"] == "VarDecl", self.ast["inner"])
+        ))
+
     def functions(self):
         return list(map(
             lambda e: FunctionDecl(e),
@@ -160,6 +182,7 @@ def read_ast_json(filename):
 
 
 translationUnit = TranslationUnitDecl(read_ast_json(sys.argv[1]))
+constants = translationUnit.constants()
 functions = translationUnit.functions()
 print(functions[0].name)
 print(functions[0].return_type())
@@ -168,6 +191,7 @@ print(functions[0].comment().comment_text())
 print(functions[0].comment().comment_params()[0].comment_text())
 print(functions[0].params()[0].size())
 print(functions[0].build_js())
+print(constants[0].comment().comment_text())
 #
 # functionDecl = functions[0]
 # name = functionDecl.name
