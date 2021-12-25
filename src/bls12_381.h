@@ -10,61 +10,89 @@
 
 #include "export.h"
 
+#define ecc_bls12_381_G1SIZE_CONST 96
 /**
  * Size of a an element in G1.
  */
-#define ecc_bls12_381_G1SIZE 96
+static const int ecc_bls12_381_G1SIZE = ecc_bls12_381_G1SIZE_CONST;
 
+#define ecc_bls12_381_G2SIZE_CONST 192
 /**
  * Size of an element in G2.
  */
-#define ecc_bls12_381_G2SIZE 192
+static const int ecc_bls12_381_G2SIZE = ecc_bls12_381_G2SIZE_CONST;
 
+#define ecc_bls12_381_SCALARSIZE_CONST 32
 /**
  * Size of the scalar used in the curve operations.
  */
-#define ecc_bls12_381_SCALARSIZE 32
+static const int ecc_bls12_381_SCALARSIZE = ecc_bls12_381_SCALARSIZE_CONST;
 
+#define ecc_bls12_381_FPSIZE_CONST 48
 /**
  * Size of an element in Fp.
  */
-#define ecc_bls12_381_FPSIZE 48
+static const int ecc_bls12_381_FPSIZE = ecc_bls12_381_FPSIZE_CONST;
 
+#define ecc_bls12_381_FP12SIZE_CONST 576
 /**
  * Size of an element in Fp12.
  */
-#define ecc_bls12_381_FP12SIZE 576
+static const int ecc_bls12_381_FP12SIZE = ecc_bls12_381_FP12SIZE_CONST;
 
 // Fp operations
 
 /**
  * Computes a random element of BLS12-381 Fp.
  *
- * @param ret (output) the result
+ * @param[out] ret the result, size:ecc_bls12_381_FPSIZE
  */
 ECC_EXPORT
 void ecc_bls12_381_fp_random(byte_t *ret);
 
 // Fp12 operations
 
+/**
+ * Get the identity element of BLS12-381 Fp12.
+ *
+ * @param[out] ret the result, size:ecc_bls12_381_FP12SIZE
+ */
 ECC_EXPORT
 void ecc_bls12_381_fp12_one(byte_t *ret);
 
+/**
+ * Determine if an element is the identity in BLS12-381 Fp12.
+ *
+ * @param a the input, size:ecc_bls12_381_FP12SIZE
+ * @return 0 if the element a is the identity in BLS12-381 Fp12.
+ */
 ECC_EXPORT
 int ecc_bls12_381_fp12_is_one(const byte_t *a);
 
+/**
+ * Computes the inverse of an element in BLS12-381 Fp12.
+ *
+ * @param[out] ret the result, size:ecc_bls12_381_FP12SIZE
+ * @param a the input, size:ecc_bls12_381_FP12SIZE
+ */
 ECC_EXPORT
 void ecc_bls12_381_fp12_inverse(byte_t *ret, const byte_t *a);
 
+/**
+ * Computes the square of an element in BLS12-381 Fp12.
+ *
+ * @param[out] ret the result, size:ecc_bls12_381_FP12SIZE
+ * @param a the input, size:ecc_bls12_381_FP12SIZE
+ */
 ECC_EXPORT
 void ecc_bls12_381_fp12_sqr(byte_t *ret, const byte_t *a);
 
 /**
  * Perform a * b in Fp12.
  *
- * @param ret (output) the result
- * @param a input group element
- * @param b input group element
+ * @param[out] ret the result, size:ecc_bls12_381_FP12SIZE
+ * @param a input group element, size:ecc_bls12_381_FP12SIZE
+ * @param b input group element, size:ecc_bls12_381_FP12SIZE
  */
 ECC_EXPORT
 void ecc_bls12_381_fp12_mul(byte_t *ret, const byte_t *a, const byte_t *b);
@@ -75,8 +103,8 @@ void ecc_bls12_381_fp12_mul(byte_t *ret, const byte_t *a, const byte_t *b);
  * NOTE: This method is not side-channel attack resistant on `n`, the algorithm
  * leaks information about it, don't use this if `n` is a secret.
  *
- * @param ret (output) the result
- * @param a the base
+ * @param[out] ret the result, size:ecc_bls12_381_FP12SIZE
+ * @param a the base, size:ecc_bls12_381_FP12SIZE
  * @param n the exponent
  */
 ECC_EXPORT
@@ -85,19 +113,34 @@ void ecc_bls12_381_fp12_pow(byte_t *ret, const byte_t *a, int n);
 /**
  * Computes a random element of BLS12-381 Fp12.
  *
- * @param ret (output) the result
+ * @param[out] ret the result, size:ecc_bls12_381_FP12SIZE
  */
 ECC_EXPORT
 void ecc_bls12_381_fp12_random(byte_t *ret);
 
 // G1 operations
 
+/**
+ *
+ * @param[out] r size:ecc_bls12_381_G1SIZE
+ * @param p size:ecc_bls12_381_G1SIZE
+ * @param q size:ecc_bls12_381_G1SIZE
+ */
 ECC_EXPORT
 void ecc_bls12_381_g1_add(byte_t *r, const byte_t *p, const byte_t *q);
 
+/**
+ *
+ * @param[out] neg size:ecc_bls12_381_G1SIZE
+ * @param p size:ecc_bls12_381_G1SIZE
+ */
 ECC_EXPORT
 void ecc_bls12_381_g1_negate(byte_t *neg, byte_t *p);
 
+/**
+ *
+ * @param[out] g size:ecc_bls12_381_G1SIZE
+ */
 ECC_EXPORT
 void ecc_bls12_381_g1_generator(byte_t *g);
 
@@ -105,9 +148,9 @@ void ecc_bls12_381_g1_generator(byte_t *g);
  * Multiplies an element represented by p by a valid scalar n
  * and puts the resulting element into q.
  *
- * @param q (output) the result
- * @param n the valid input scalar
- * @param p the point on the curve
+ * @param[out] q the result, size:ecc_bls12_381_G1SIZE
+ * @param n the valid input scalar, size:ecc_bls12_381_SCALARSIZE
+ * @param p the point on the curve, size:ecc_bls12_381_G1SIZE
  */
 ECC_EXPORT
 void ecc_bls12_381_g1_scalarmult(byte_t *q, const byte_t *n, const byte_t *p);
@@ -116,20 +159,35 @@ void ecc_bls12_381_g1_scalarmult(byte_t *q, const byte_t *n, const byte_t *p);
  * Multiplies the generator by a valid scalar n and puts the resulting
  * element into q.
  *
- * @param q (output) the result
- * @param n the valid input scalar
+ * @param[out] q the result, size:ecc_bls12_381_G1SIZE
+ * @param n the valid input scalar, size:ecc_bls12_381_SCALARSIZE
  */
 ECC_EXPORT
 void ecc_bls12_381_g1_scalarmult_base(byte_t *q, const byte_t *n);
 
 // G2 operations
 
+/**
+ *
+ * @param[out] r size:ecc_bls12_381_G2SIZE
+ * @param p size:ecc_bls12_381_G2SIZE
+ * @param q size:ecc_bls12_381_G2SIZE
+ */
 ECC_EXPORT
 void ecc_bls12_381_g2_add(byte_t *r, const byte_t *p, const byte_t *q);
 
+/**
+ *
+ * @param[out] neg size:ecc_bls12_381_G2SIZE
+ * @param p size:ecc_bls12_381_G2SIZE
+ */
 ECC_EXPORT
 void ecc_bls12_381_g2_negate(byte_t *neg, byte_t *p);
 
+/**
+ *
+ * @param[out] g size:ecc_bls12_381_G2SIZE
+ */
 ECC_EXPORT
 void ecc_bls12_381_g2_generator(byte_t *g);
 
@@ -137,8 +195,8 @@ void ecc_bls12_381_g2_generator(byte_t *g);
  * Multiplies the generator by a valid scalar n and puts the resulting
  * element into q.
  *
- * @param q (output) the result
- * @param n the valid input scalar
+ * @param[out] q the result, size:ecc_bls12_381_G2SIZE
+ * @param n the valid input scalar, size:ecc_bls12_381_SCALARSIZE
  */
 ECC_EXPORT
 void ecc_bls12_381_g2_scalarmult_base(byte_t *q, const byte_t *n);
@@ -148,7 +206,7 @@ void ecc_bls12_381_g2_scalarmult_base(byte_t *q, const byte_t *n);
 /**
  * Fills r with a bytes representation of an scalar.
  *
- * @param r (output) random scalar
+ * @param[out] r random scalar, size:ecc_bls12_381_SCALARSIZE
  */
 ECC_EXPORT
 void ecc_bls12_381_scalar_random(byte_t *r);
@@ -163,16 +221,27 @@ void ecc_bls12_381_scalar_random(byte_t *r);
  * G2 is a subgroup of E'(GF(p^2)) of order r.
  * GT is a subgroup of a multiplicative group (GF(p^12))^* of order r.
  *
- * @param ret (output) the result of the pairing evaluation in GT
- * @param p1_g1 point in G1
- * @param p2_g2 point in G2
+ * @param[out] ret the result of the pairing evaluation in GT, size:ecc_bls12_381_FP12SIZE
+ * @param p1_g1 point in G1, size:ecc_bls12_381_G1SIZE
+ * @param p2_g2 point in G2, size:ecc_bls12_381_G2SIZE
  */
 ECC_EXPORT
 void ecc_bls12_381_pairing(byte_t *ret, const byte_t *p1_g1, const byte_t *p2_g2);
 
+/**
+ *
+ * @param[out] ret size:ecc_bls12_381_FP12SIZE
+ * @param p1_g1 size:ecc_bls12_381_G1SIZE
+ * @param p2_g2 size:ecc_bls12_381_G2SIZE
+ */
 ECC_EXPORT
 void ecc_bls12_381_pairing_miller_loop(byte_t *ret, const byte_t *p1_g1, const byte_t *p2_g2);
 
+/**
+ *
+ * @param[out] ret size:ecc_bls12_381_FP12SIZE
+ * @param a size:ecc_bls12_381_FP12SIZE
+ */
 ECC_EXPORT
 void ecc_bls12_381_pairing_final_exp(byte_t *ret, const byte_t *a);
 
@@ -180,8 +249,8 @@ void ecc_bls12_381_pairing_final_exp(byte_t *ret, const byte_t *a);
  * Perform the verification of a pairing match. Useful if the
  * inputs are raw output values from the miller loop.
  *
- * @param a the first argument to verify
- * @param b the second argument to verify
+ * @param a the first argument to verify, size:ecc_bls12_381_FP12SIZE
+ * @param b the second argument to verify, size:ecc_bls12_381_FP12SIZE
  * @return 1 if it's a pairing match, else 0
  */
 ECC_EXPORT
