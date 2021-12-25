@@ -37,9 +37,9 @@ static const int ecc_oprf_ristretto255_sha512_Nh = ecc_oprf_ristretto255_sha512_
  *
  * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-voprf-07#section-3.3.1.1
  *
- * @param evaluatedElement (output) evaluated element
- * @param skS private key
- * @param blindedElement blinded element
+ * @param[out] evaluatedElement evaluated element, size:ecc_oprf_ristretto255_sha512_ELEMENTSIZE
+ * @param skS private key, size:ecc_oprf_ristretto255_sha512_SCALARSIZE
+ * @param blindedElement blinded element, size:ecc_oprf_ristretto255_sha512_ELEMENTSIZE
  */
 ECC_EXPORT
 void ecc_oprf_ristretto255_sha512_Evaluate(
@@ -54,10 +54,10 @@ void ecc_oprf_ristretto255_sha512_Evaluate(
  *
  * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-voprf-07#section-3.3.3.1
  *
- * @param blindedElement (output) blinded element
- * @param input message to blind
+ * @param[out] blindedElement blinded element, size:ecc_oprf_ristretto255_sha512_ELEMENTSIZE
+ * @param input message to blind, size:input_len
  * @param input_len length of `input`
- * @param blind scalar to use in the blind operation
+ * @param blind scalar to use in the blind operation, size:ecc_oprf_ristretto255_sha512_SCALARSIZE
  */
 ECC_EXPORT
 void ecc_oprf_ristretto255_sha512_BlindWithScalar(
@@ -69,9 +69,9 @@ void ecc_oprf_ristretto255_sha512_BlindWithScalar(
 /**
  * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-voprf-07#section-3.3.3.1
  *
- * @param blindedElement (output) blinded element
- * @param blind (output) scalar used in the blind operation
- * @param input message to blind
+ * @param[out] blindedElement blinded element, size:ecc_oprf_ristretto255_sha512_ELEMENTSIZE
+ * @param[out] blind scalar used in the blind operation, size:ecc_oprf_ristretto255_sha512_SCALARSIZE
+ * @param input message to blind, size:input_len
  * @param input_len length of `input`
  */
 ECC_EXPORT
@@ -81,7 +81,13 @@ void ecc_oprf_ristretto255_sha512_Blind(
     const byte_t *input, int input_len
 );
 
-// https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-voprf-07#section-3.3.3.1
+/**
+ * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-voprf-07#section-3.3.3.1
+ *
+ * @param unblindedElement size:ecc_oprf_ristretto255_sha512_ELEMENTSIZE
+ * @param blind size:ecc_oprf_ristretto255_sha512_SCALARSIZE
+ * @param evaluatedElement size:ecc_oprf_ristretto255_sha512_ELEMENTSIZE
+ */
 ECC_EXPORT
 void ecc_oprf_ristretto255_sha512_Unblind(
     byte_t *unblindedElement,
@@ -92,11 +98,11 @@ void ecc_oprf_ristretto255_sha512_Unblind(
 /**
  * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-voprf-07#section-3.3.3.2
  *
- * @param output (output)
- * @param input the input message
+ * @param[out] output size:64
+ * @param input the input message, size:input_len
  * @param input_len the length of `input`
- * @param blind
- * @param evaluatedElement
+ * @param blind size:ecc_oprf_ristretto255_sha512_SCALARSIZE
+ * @param evaluatedElement size:ecc_oprf_ristretto255_sha512_ELEMENTSIZE
  * @param mode mode to build the internal DST string (modeBase=0x00, modeVerifiable=0x01)
  */
 ECC_EXPORT
@@ -115,10 +121,10 @@ void ecc_oprf_ristretto255_sha512_Finalize(
  * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-voprf-07#section-2.1
  * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-voprf-07#section-4.1
  *
- * @param out element of the group
- * @param input input string to map
+ * @param[out] out element of the group, size:ecc_oprf_ristretto255_sha512_ELEMENTSIZE
+ * @param input input string to map, size:input_len
  * @param input_len length of `input`
- * @param dst domain separation tag (DST)
+ * @param dst domain separation tag (DST), size:dst_len
  * @param dst_len length of `dst`
  */
 ECC_EXPORT
@@ -137,8 +143,8 @@ void ecc_oprf_ristretto255_sha512_HashToGroupWithDST(
  * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-hash-to-curve-11#section-2.2.5
  * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-voprf-07#section-3
  *
- * @param out element of the group
- * @param input input string to map
+ * @param[out] out element of the group, size:ecc_oprf_ristretto255_sha512_ELEMENTSIZE
+ * @param input input string to map, size:input_len
  * @param input_len length of `input`
  * @param mode mode to build the internal DST string (modeBase=0x00, modeVerifiable=0x01)
  */
@@ -149,6 +155,14 @@ void ecc_oprf_ristretto255_sha512_HashToGroup(
     int mode
 );
 
+/**
+ *
+ * @param[out] out size:ecc_oprf_ristretto255_sha512_SCALARSIZE
+ * @param input size:input_len
+ * @param input_len
+ * @param dst size:dst_len
+ * @param dst_len
+ */
 ECC_EXPORT
 void ecc_oprf_ristretto255_sha512_HashToScalarWithDST(
     byte_t *out,
@@ -156,6 +170,13 @@ void ecc_oprf_ristretto255_sha512_HashToScalarWithDST(
     const byte_t *dst, int dst_len
 );
 
+/**
+ *
+ * @param[out] out size:ecc_oprf_ristretto255_sha512_SCALARSIZE
+ * @param input size:input_len
+ * @param input_len
+ * @param mode
+ */
 ECC_EXPORT
 void ecc_oprf_ristretto255_sha512_HashToScalar(
     byte_t *out,
