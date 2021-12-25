@@ -10,11 +10,10 @@
 
 #include "export.h"
 
-#define ecc_hash_sha256_SIZE_CONST 32
 /**
  * The size of a SHA-256 digest.
  */
-static const int ecc_hash_sha256_SIZE = ecc_hash_sha256_SIZE_CONST;
+#define ecc_hash_sha256_SIZE 32
 
 /**
  * Computes the SHA-256 of a given input.
@@ -28,11 +27,10 @@ static const int ecc_hash_sha256_SIZE = ecc_hash_sha256_SIZE_CONST;
 ECC_EXPORT
 void ecc_hash_sha256(byte_t *digest, const byte_t *input, int input_len);
 
-#define ecc_hash_sha512_SIZE_CONST 64
 /**
  * The size of a SHA-512 digest.
  */
-static const int ecc_hash_sha512_SIZE = ecc_hash_sha512_SIZE_CONST;
+#define ecc_hash_sha512_SIZE 64
 
 /**
  * Computes the SHA-512 of a given input.

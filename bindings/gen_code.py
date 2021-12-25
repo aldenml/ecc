@@ -75,6 +75,25 @@ class ParmVarDecl:
             return self.type
 
 
+class DefineDecl:
+    def __init__(self, match):
+        self.comment = match[0].replace(" * ", "").strip()
+        self.name = match[1]
+        self.value = match[2]
+
+    def build_js(self):
+        out = ""
+        out += "const " + self.name + " = " + self.value + ";\n"
+        out += "/**\n"
+        out += " * "
+        out += " * ".join(self.comment.splitlines(True)) + "\n"
+        out += " *\n"
+        out += " * @type {number}\n"
+        out += " */\n"
+        out += "Module." + self.name + " = " + self.name + ";\n"
+        return out
+
+
 class VarDecl:
     def __init__(self, ast):
         self.ast = ast
@@ -182,8 +201,16 @@ class FunctionDecl:
 
 
 class TranslationUnitDecl:
-    def __init__(self, ast):
+    def __init__(self, ast, text):
         self.ast = ast
+        self.text = text
+
+    def defines(self):
+        matches = re.findall(r"\n/\*\*(.*?)\*/\n#define ([A-Za-z0-9_]+?) ([0-9]+?)\n\n", self.text, flags=re.DOTALL)
+        return list(map(
+            lambda e: DefineDecl(e),
+            matches
+        ))
 
     def constants(self):
         return list(map(
@@ -198,10 +225,11 @@ class TranslationUnitDecl:
         ))
 
     def build_js(self, ignore):
-        constants = self.constants()
+        defines = self.defines()
         functions = self.functions(ignore)
         out = ""
-        out += "\n".join(map(lambda c: c.build_js(), constants))
+        out += "\n".join(map(lambda c: c.build_js(), defines))
+        out += "\n"
         out += "\n".join(map(lambda f: f.build_js(), functions))
         return out
 
@@ -216,6 +244,12 @@ def gen_ast(header):
     return json.loads(output)
 
 
+def read_header(header):
+    filename = "src/" + header + ".h"
+    with open(filename, "r") as f:
+        return f.read()
+
+
 ecc_headers = ["util", "hash", "mac", "kdf", "ed25519", "ristretto255", "bls12_381",
                "h2c", "oprf", "opaque", "sign", "pre"]
 ecc_ignore = ["ecc_memzero", "ecc_bin2hex", "ecc_hex2bin", "ecc_malloc", "ecc_free"]
@@ -224,10 +258,10 @@ ecc_ignore = ["ecc_memzero", "ecc_bin2hex", "ecc_hex2bin", "ecc_malloc", "ecc_fr
 def gen_js(headers, ignore):
     out = ""
     out += "\n".join(map(
-        lambda h: TranslationUnitDecl(gen_ast(h)).build_js(ignore),
+        lambda h: TranslationUnitDecl(gen_ast(h), read_header(h)).build_js(ignore),
         headers
     ))
     return out
 
 
-print(gen_js(["oprf"], ecc_ignore))
+print(gen_js(["hash"], ecc_ignore))
