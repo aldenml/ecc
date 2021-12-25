@@ -10,6 +10,7 @@
 
 #include "export.h"
 
+// const
 /**
  * The size of a SHA-256 digest.
  */
@@ -27,6 +28,7 @@
 ECC_EXPORT
 void ecc_hash_sha256(byte_t *digest, const byte_t *input, int input_len);
 
+// const
 /**
  * The size of a SHA-512 digest.
  */

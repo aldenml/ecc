@@ -11,9 +11,9 @@
 #include <blst.h>
 #include "util.h"
 
-static_assert(sizeof(blst_scalar) == ecc_bls12_381_SCALARSIZE_CONST, "");
-static_assert(sizeof(blst_fp) == ecc_bls12_381_FPSIZE_CONST, "");
-static_assert(sizeof(blst_fp12) == ecc_bls12_381_FP12SIZE_CONST, "");
+static_assert(sizeof(blst_scalar) == ecc_bls12_381_SCALARSIZE, "");
+static_assert(sizeof(blst_fp) == ecc_bls12_381_FPSIZE, "");
+static_assert(sizeof(blst_fp12) == ecc_bls12_381_FP12SIZE, "");
 
 void ecc_bls12_381_fp_random(byte_t *ret) {
     byte_t a[ecc_bls12_381_FPSIZE];

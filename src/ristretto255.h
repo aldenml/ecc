@@ -10,29 +10,29 @@
 
 #include "export.h"
 
-#define ecc_ristretto255_SIZE_CONST 32
+// const
 /**
  * Size of the serialized group elements.
  */
-static const int ecc_ristretto255_SIZE = ecc_ristretto255_SIZE_CONST;
+#define ecc_ristretto255_SIZE 32
 
-#define ecc_ristretto255_HASHSIZE_CONST 64
+// const
 /**
  * Size of the hash input to use on the hash to map operation.
  */
-static const int ecc_ristretto255_HASHSIZE = ecc_ristretto255_HASHSIZE_CONST;
+#define ecc_ristretto255_HASHSIZE 64
 
-#define ecc_ristretto255_SCALARSIZE_CONST 32
+// const
 /**
  * Size of the scalar used in the curve operations.
  */
-static const int ecc_ristretto255_SCALARSIZE = ecc_ristretto255_SCALARSIZE_CONST;
+#define ecc_ristretto255_SCALARSIZE 32
 
-#define ecc_ristretto255_NONREDUCEDSCALARSIZE_CONST 64
+// const
 /**
  * Size of a non reduced scalar.
  */
-static const int ecc_ristretto255_NONREDUCEDSCALARSIZE = ecc_ristretto255_NONREDUCEDSCALARSIZE_CONST;
+#define ecc_ristretto255_NONREDUCEDSCALARSIZE 64
 
 /**
  * Checks that p is a valid ristretto255-encoded element. This operation

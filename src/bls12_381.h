@@ -10,35 +10,35 @@
 
 #include "export.h"
 
-#define ecc_bls12_381_G1SIZE_CONST 96
+// const
 /**
  * Size of a an element in G1.
  */
-static const int ecc_bls12_381_G1SIZE = ecc_bls12_381_G1SIZE_CONST;
+#define ecc_bls12_381_G1SIZE 96
 
-#define ecc_bls12_381_G2SIZE_CONST 192
+// const
 /**
  * Size of an element in G2.
  */
-static const int ecc_bls12_381_G2SIZE = ecc_bls12_381_G2SIZE_CONST;
+#define ecc_bls12_381_G2SIZE 192
 
-#define ecc_bls12_381_SCALARSIZE_CONST 32
+// const
 /**
  * Size of the scalar used in the curve operations.
  */
-static const int ecc_bls12_381_SCALARSIZE = ecc_bls12_381_SCALARSIZE_CONST;
+#define ecc_bls12_381_SCALARSIZE 32
 
-#define ecc_bls12_381_FPSIZE_CONST 48
+// const
 /**
  * Size of an element in Fp.
  */
-static const int ecc_bls12_381_FPSIZE = ecc_bls12_381_FPSIZE_CONST;
+#define ecc_bls12_381_FPSIZE 48
 
-#define ecc_bls12_381_FP12SIZE_CONST 576
+// const
 /**
  * Size of an element in Fp12.
  */
-static const int ecc_bls12_381_FP12SIZE = ecc_bls12_381_FP12SIZE_CONST;
+#define ecc_bls12_381_FP12SIZE 576
 
 // Fp operations
 

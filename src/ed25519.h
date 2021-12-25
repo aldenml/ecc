@@ -10,29 +10,29 @@
 
 #include "export.h"
 
-#define ecc_ed25519_SIZE_CONST 32
+// const
 /**
  * Size of the serialized group elements.
  */
-static const int ecc_ed25519_SIZE = ecc_ed25519_SIZE_CONST;
+#define ecc_ed25519_SIZE 32
 
-#define ecc_ed25519_UNIFORMSIZE_CONST 32
+// const
 /**
  * Size of the input to perform the Elligator 2 map operation.
  */
-static const int ecc_ed25519_UNIFORMSIZE = ecc_ed25519_UNIFORMSIZE_CONST;
+#define ecc_ed25519_UNIFORMSIZE 32
 
-#define ecc_ed25519_SCALARSIZE_CONST 32
+// const
 /**
  * Size of the scalar used in the curve operations.
  */
-static const int ecc_ed25519_SCALARSIZE = ecc_ed25519_SCALARSIZE_CONST;
+#define ecc_ed25519_SCALARSIZE 32
 
-#define ecc_ed25519_NONREDUCEDSCALARSIZE_CONST 64
+// const
 /**
  * Size of a non reduced scalar.
  */
-static const int ecc_ed25519_NONREDUCEDSCALARSIZE = ecc_ed25519_NONREDUCEDSCALARSIZE_CONST;
+#define ecc_ed25519_NONREDUCEDSCALARSIZE 64
 
 /**
  * Checks that p represents a point on the edwards25519 curve, in canonical
@@ -198,29 +198,25 @@ int ecc_ed25519_scalarmult(byte_t *q, const byte_t *n, const byte_t *p);
 ECC_EXPORT
 int ecc_ed25519_scalarmult_base(byte_t *q, const byte_t *n);
 
-#define ecc_ed25519_sign_SIZE_CONST 64
 /**
  * Signature size.
  */
-static const int ecc_ed25519_sign_SIZE = ecc_ed25519_sign_SIZE_CONST;
+#define ecc_ed25519_sign_SIZE 64
 
-#define ecc_ed25519_sign_SEEDSIZE_CONST 32
 /**
  * Seed size.
  */
-static const int ecc_ed25519_sign_SEEDSIZE = ecc_ed25519_sign_SEEDSIZE_CONST;
+#define ecc_ed25519_sign_SEEDSIZE 32
 
-#define ecc_ed25519_sign_PUBLICKEYSIZE_CONST 32
 /**
  * Public key size.
  */
-static const int ecc_ed25519_sign_PUBLICKEYSIZE = ecc_ed25519_sign_PUBLICKEYSIZE_CONST;
+#define ecc_ed25519_sign_PUBLICKEYSIZE 32
 
-#define ecc_ed25519_sign_SECRETKEYSIZE_CONST 64
 /**
  * Secret key size.
  */
-static const int ecc_ed25519_sign_SECRETKEYSIZE = ecc_ed25519_sign_SECRETKEYSIZE_CONST;
+#define ecc_ed25519_sign_SECRETKEYSIZE 64
 
 /**
  * Signs the message msg whose length is msg_len bytes, using the

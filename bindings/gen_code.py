@@ -206,7 +206,7 @@ class TranslationUnitDecl:
         self.text = text
 
     def defines(self):
-        matches = re.findall(r"\n/\*\*(.*?)\*/\n#define ([A-Za-z0-9_]+?) ([0-9]+?)\n\n", self.text, flags=re.DOTALL)
+        matches = re.findall(r"// const\n/\*\*(.*?)\*/\n#define ([A-Za-z0-9_]+?) ([0-9]+?)\n\n", self.text, flags=re.DOTALL)
         return list(map(
             lambda e: DefineDecl(e),
             matches
@@ -264,4 +264,4 @@ def gen_js(headers, ignore):
     return out
 
 
-print(gen_js(["hash"], ecc_ignore))
+print(gen_js(["bls12_381"], ecc_ignore))

@@ -10,26 +10,26 @@
 
 #include "export.h"
 
-#define ecc_oprf_ristretto255_sha512_ELEMENTSIZE_CONST 32
+// const
 /**
  * Size of a serialized group element, since this is the ristretto255
  * curve the size is 32 bytes.
  */
-static const int ecc_oprf_ristretto255_sha512_ELEMENTSIZE = ecc_oprf_ristretto255_sha512_ELEMENTSIZE_CONST;
+#define ecc_oprf_ristretto255_sha512_ELEMENTSIZE 32
 
-#define ecc_oprf_ristretto255_sha512_SCALARSIZE_CONST 32
+// const
 /**
  * Size of a serialized scalar, since this is the ristretto255
  * curve the size is 32 bytes.
  */
-static const int ecc_oprf_ristretto255_sha512_SCALARSIZE = ecc_oprf_ristretto255_sha512_SCALARSIZE_CONST;
+#define ecc_oprf_ristretto255_sha512_SCALARSIZE 32
 
-#define ecc_oprf_ristretto255_sha512_Nh_CONST 64
+// const
 /**
  * Size of the protocol output in the `Finalize` operations, since
  * this is ristretto255 with SHA-512, the size is 64 bytes.
  */
-static const int ecc_oprf_ristretto255_sha512_Nh = ecc_oprf_ristretto255_sha512_Nh_CONST;
+#define ecc_oprf_ristretto255_sha512_Nh 64
 
 /**
  * Evaluates serialized representations of blinded group elements from the

@@ -13,16 +13,17 @@
 // Hashing to Elliptic Curves
 // https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-hash-to-curve-11
 
-#define ecc_h2c_expand_message_xmd_sha256_MAXSIZE_CONST 256
+// const
 /**
  *
  */
-static const int ecc_h2c_expand_message_xmd_sha256_MAXSIZE = ecc_h2c_expand_message_xmd_sha256_MAXSIZE_CONST;
-#define ecc_h2c_expand_message_xmd_sha256_DSTMAXSIZE_CONST 256
+#define ecc_h2c_expand_message_xmd_sha256_MAXSIZE 256
+
+// const
 /**
  *
  */
-static const int ecc_h2c_expand_message_xmd_sha256_DSTMAXSIZE = ecc_h2c_expand_message_xmd_sha256_DSTMAXSIZE_CONST;
+#define ecc_h2c_expand_message_xmd_sha256_DSTMAXSIZE 256
 
 /**
  * Produces a uniformly random byte string using SHA-256.
@@ -46,16 +47,17 @@ void ecc_h2c_expand_message_xmd_sha256(
     int len
 );
 
-#define ecc_h2c_expand_message_xmd_sha512_MAXSIZE_CONST 256
+// const
 /**
  *
  */
-static const int ecc_h2c_expand_message_xmd_sha512_MAXSIZE = ecc_h2c_expand_message_xmd_sha512_MAXSIZE_CONST;
-#define ecc_h2c_expand_message_xmd_sha512_DSTMAXSIZE_CONST 256
+#define ecc_h2c_expand_message_xmd_sha512_MAXSIZE 256
+
+// const
 /**
  *
  */
-static const int ecc_h2c_expand_message_xmd_sha512_DSTMAXSIZE = ecc_h2c_expand_message_xmd_sha512_DSTMAXSIZE_CONST;
+#define ecc_h2c_expand_message_xmd_sha512_DSTMAXSIZE 256
 
 /**
  * Produces a uniformly random byte string using SHA-512.

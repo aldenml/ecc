@@ -10,11 +10,11 @@
 
 #include "export.h"
 
-#define ecc_kdf_hkdf_sha256_KEYSIZE_CONST 32
+// const
 /**
  * Key size for HKDF-SHA-256.
  */
-static const int ecc_kdf_hkdf_sha256_KEYSIZE = ecc_kdf_hkdf_sha256_KEYSIZE_CONST;
+#define ecc_kdf_hkdf_sha256_KEYSIZE 32
 
 /**
  * Computes the HKDF-SHA-256 extract of the input using a key material.
@@ -53,11 +53,11 @@ void ecc_kdf_hkdf_sha256_expand(
     int len
 );
 
-#define ecc_kdf_hkdf_sha512_KEYSIZE_CONST 64
+// const
 /**
  * Key size for HKDF-SHA-512.
  */
-static const int ecc_kdf_hkdf_sha512_KEYSIZE = ecc_kdf_hkdf_sha512_KEYSIZE_CONST;
+#define ecc_kdf_hkdf_sha512_KEYSIZE 64
 
 /**
  * Computes the HKDF-SHA-512 extract of the input using a key material.
