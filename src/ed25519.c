@@ -56,10 +56,6 @@ void ecc_ed25519_scalar_mul(byte_t *z, const byte_t *x, const byte_t *y) {
     crypto_core_ed25519_scalar_mul(z, x, y);
 }
 
-/*
- * The interval `s` is sampled from should be at least 317 bits to
- * ensure almost uniformity of `r` over `L`.
- */
 void ecc_ed25519_scalar_reduce(byte_t *r, const byte_t *s) {
     crypto_core_ed25519_scalar_reduce(r, s);
 }

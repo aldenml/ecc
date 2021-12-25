@@ -10,31 +10,35 @@
 
 #include "export.h"
 
+#define ecc_ed25519_SIZE_CONST 32
 /**
  * Size of the serialized group elements.
  */
-#define ecc_ed25519_SIZE 32
+static const int ecc_ed25519_SIZE = ecc_ed25519_SIZE_CONST;
 
+#define ecc_ed25519_UNIFORMSIZE_CONST 32
 /**
  * Size of the input to perform the Elligator 2 map operation.
  */
-#define ecc_ed25519_UNIFORMSIZE 32
+static const int ecc_ed25519_UNIFORMSIZE = ecc_ed25519_UNIFORMSIZE_CONST;
 
+#define ecc_ed25519_SCALARSIZE_CONST 32
 /**
  * Size of the scalar used in the curve operations.
  */
-#define ecc_ed25519_SCALARSIZE 32
+static const int ecc_ed25519_SCALARSIZE = ecc_ed25519_SCALARSIZE_CONST;
 
+#define ecc_ed25519_NONREDUCEDSCALARSIZE_CONST 64
 /**
  * Size of a non reduced scalar.
  */
-#define ecc_ed25519_NONREDUCEDSCALARSIZE 64
+static const int ecc_ed25519_NONREDUCEDSCALARSIZE = ecc_ed25519_NONREDUCEDSCALARSIZE_CONST;
 
 /**
  * Checks that p represents a point on the edwards25519 curve, in canonical
  * form, on the main subgroup, and that the point doesn't have a small order.
  *
- * @param p potential point to test
+ * @param p potential point to test, size:ecc_ed25519_SIZE
  * @return 1 on success, and 0 if the checks didn't pass
  */
 ECC_EXPORT
@@ -43,9 +47,9 @@ int ecc_ed25519_is_valid_point(const byte_t *p);
 /**
  * Adds the point p to the point q and stores the resulting point into r.
  *
- * @param r (output) the result
- * @param p input point operand
- * @param q input point operand
+ * @param[out] r the result, size:ecc_ed25519_SIZE
+ * @param p input point operand, size:ecc_ed25519_SIZE
+ * @param q input point operand, size:ecc_ed25519_SIZE
  * @return 0 on success, or -1 if p and/or q are not valid points
  */
 ECC_EXPORT
@@ -54,9 +58,9 @@ int ecc_ed25519_add(byte_t *r, const byte_t *p, const byte_t *q);
 /**
  * Subtracts the point p to the point q and stores the resulting point into r.
  *
- * @param r (output) the result
- * @param p input point operand
- * @param q input point operand
+ * @param[out] r the result, size:ecc_ed25519_SIZE
+ * @param p input point operand, size:ecc_ed25519_SIZE
+ * @param q input point operand, size:ecc_ed25519_SIZE
  * @return 0 on success, or -1 if p and/or q are not valid points
  */
 ECC_EXPORT
@@ -71,8 +75,8 @@ int ecc_ed25519_sub(byte_t *r, const byte_t *p, const byte_t *q);
  * bit to set the sign of the X coordinate, and the resulting point is
  * multiplied by the cofactor.
  *
- * @param p (output) point in the main subgroup
- * @param r input vector
+ * @param[out] p point in the main subgroup, size:ecc_ed25519_SIZE
+ * @param r input vector, size:ecc_ed25519_UNIFORMSIZE
  */
 ECC_EXPORT
 void ecc_ed25519_from_uniform(byte_t *p, const byte_t *r);
@@ -80,7 +84,7 @@ void ecc_ed25519_from_uniform(byte_t *p, const byte_t *r);
 /**
  * Fills p with the representation of a random group element.
  *
- * @param p (output) random group element
+ * @param[out] p random group element, size:ecc_ed25519_SIZE
  */
 ECC_EXPORT
 void ecc_ed25519_random(byte_t *p);
@@ -90,7 +94,7 @@ void ecc_ed25519_random(byte_t *p);
  * main subgroup (2^252 + 27742317777372353535851937790883648493) and fill
  * r with the bytes.
  *
- * @param r (output) scalar
+ * @param[out] r scalar, size:ecc_ed25519_SCALARSIZE
  */
 ECC_EXPORT
 void ecc_ed25519_scalar_random(byte_t *r);
@@ -98,8 +102,8 @@ void ecc_ed25519_scalar_random(byte_t *r);
 /**
  * Computes the multiplicative inverse of s over L, and puts it into recip.
  *
- * @param recip (output) the result
- * @param s an scalar
+ * @param[out] recip the result, size:ecc_ed25519_SCALARSIZE
+ * @param s an scalar, size:ecc_ed25519_SCALARSIZE
  * @return 0 on success, or -1 if s is zero
  */
 ECC_EXPORT
@@ -108,8 +112,8 @@ int ecc_ed25519_scalar_invert(byte_t *recip, const byte_t *s);
 /**
  * Returns neg so that s + neg = 0 (mod L).
  *
- * @param neg (output) the result
- * @param s an scalar
+ * @param[out] neg the result, size:ecc_ed25519_SCALARSIZE
+ * @param s an scalar, size:ecc_ed25519_SCALARSIZE
  */
 ECC_EXPORT
 void ecc_ed25519_scalar_negate(byte_t *neg, const byte_t *s);
@@ -117,8 +121,8 @@ void ecc_ed25519_scalar_negate(byte_t *neg, const byte_t *s);
 /**
  * Returns comp so that s + comp = 1 (mod L).
  *
- * @param comp (output) the result
- * @param s an scalar
+ * @param[out] comp the result, size:ecc_ed25519_SCALARSIZE
+ * @param s an scalar, size:ecc_ed25519_SCALARSIZE
  */
 ECC_EXPORT
 void ecc_ed25519_scalar_complement(byte_t *comp, const byte_t *s);
@@ -126,9 +130,9 @@ void ecc_ed25519_scalar_complement(byte_t *comp, const byte_t *s);
 /**
  * Stores x + y (mod L) into z.
  *
- * @param z (output) the result
- * @param x input scalar operand
- * @param y input scalar operand
+ * @param[out] z the result, size:ecc_ed25519_SCALARSIZE
+ * @param x input scalar operand, size:ecc_ed25519_SCALARSIZE
+ * @param y input scalar operand, size:ecc_ed25519_SCALARSIZE
  */
 ECC_EXPORT
 void ecc_ed25519_scalar_add(byte_t *z, const byte_t *x, const byte_t *y);
@@ -136,9 +140,9 @@ void ecc_ed25519_scalar_add(byte_t *z, const byte_t *x, const byte_t *y);
 /**
  * Stores x - y (mod L) into z.
  *
- * @param z (output) the result
- * @param x input scalar operand
- * @param y input scalar operand
+ * @param[out] z the result, size:ecc_ed25519_SCALARSIZE
+ * @param x input scalar operand, size:ecc_ed25519_SCALARSIZE
+ * @param y input scalar operand, size:ecc_ed25519_SCALARSIZE
  */
 ECC_EXPORT
 void ecc_ed25519_scalar_sub(byte_t *z, const byte_t *x, const byte_t *y);
@@ -146,9 +150,9 @@ void ecc_ed25519_scalar_sub(byte_t *z, const byte_t *x, const byte_t *y);
 /**
  * Stores x * y (mod L) into z.
  *
- * @param z (output) the result
- * @param x input scalar operand
- * @param y input scalar operand
+ * @param[out] z the result, size:ecc_ed25519_SCALARSIZE
+ * @param x input scalar operand, size:ecc_ed25519_SCALARSIZE
+ * @param y input scalar operand, size:ecc_ed25519_SCALARSIZE
  */
 ECC_EXPORT
 void ecc_ed25519_scalar_mul(byte_t *z, const byte_t *x, const byte_t *y);
@@ -161,8 +165,8 @@ void ecc_ed25519_scalar_mul(byte_t *z, const byte_t *x, const byte_t *y);
  * The interval `s` is sampled from should be at least 317 bits to
  * ensure almost uniformity of `r` over `L`.
  *
- * @param r (output) the reduced scalar
- * @param s the integer to reduce
+ * @param[out] r the reduced scalar, size:ecc_ed25519_SCALARSIZE
+ * @param s the integer to reduce, size:ecc_ed25519_NONREDUCEDSCALARSIZE
  */
 ECC_EXPORT
 void ecc_ed25519_scalar_reduce(byte_t *r, const byte_t *s);
@@ -175,9 +179,9 @@ void ecc_ed25519_scalar_reduce(byte_t *r, const byte_t *s);
  * on the curve, not on the main subgroup, is a point of small order,
  * or is not provided in canonical form.
  *
- * @param q (output) the result
- * @param n the valid input scalar
- * @param p the point on the curve
+ * @param[out] q the result, size:ecc_ed25519_SIZE
+ * @param n the valid input scalar, size:ecc_ed25519_SCALARSIZE
+ * @param p the point on the curve, size:ecc_ed25519_SIZE
  * @return 0 on success, or -1 otherwise.
  */
 ECC_EXPORT
@@ -187,41 +191,45 @@ int ecc_ed25519_scalarmult(byte_t *q, const byte_t *n, const byte_t *p);
  * Multiplies the base point (x, 4/5) by a scalar n (without clamping) and puts
  * the Y coordinate of the resulting point into q.
  *
- * @param q (output) the result
- * @param n the valid input scalar
+ * @param[out] q the result, size:ecc_ed25519_SIZE
+ * @param n the valid input scalar, size:ecc_ed25519_SCALARSIZE
  * @return -1 if n is 0, and 0 otherwise.
  */
 ECC_EXPORT
 int ecc_ed25519_scalarmult_base(byte_t *q, const byte_t *n);
 
+#define ecc_ed25519_sign_SIZE_CONST 64
 /**
  * Signature size.
  */
-#define ecc_ed25519_sign_SIZE 64
+static const int ecc_ed25519_sign_SIZE = ecc_ed25519_sign_SIZE_CONST;
 
+#define ecc_ed25519_sign_SEEDSIZE_CONST 32
 /**
  * Seed size.
  */
-#define ecc_ed25519_sign_SEEDSIZE 32
+static const int ecc_ed25519_sign_SEEDSIZE = ecc_ed25519_sign_SEEDSIZE_CONST;
 
+#define ecc_ed25519_sign_PUBLICKEYSIZE_CONST 32
 /**
  * Public key size.
  */
-#define ecc_ed25519_sign_PUBLICKEYSIZE 32
+static const int ecc_ed25519_sign_PUBLICKEYSIZE = ecc_ed25519_sign_PUBLICKEYSIZE_CONST;
 
+#define ecc_ed25519_sign_SECRETKEYSIZE_CONST 64
 /**
  * Secret key size.
  */
-#define ecc_ed25519_sign_SECRETKEYSIZE 64
+static const int ecc_ed25519_sign_SECRETKEYSIZE = ecc_ed25519_sign_SECRETKEYSIZE_CONST;
 
 /**
  * Signs the message msg whose length is msg_len bytes, using the
  * secret key sk, and puts the signature into sig.
  *
- * @param sig (output) the signature
- * @param msg input message
+ * @param[out] sig the signature, size:ecc_ed25519_sign_SIZE
+ * @param msg input message, size:msg_len
  * @param msg_len the length of `msg`
- * @param sk the secret key
+ * @param sk the secret key, size:ecc_ed25519_sign_SECRETKEYSIZE
  */
 ECC_EXPORT
 void ecc_ed25519_sign(
@@ -234,10 +242,10 @@ void ecc_ed25519_sign(
  * Verifies that sig is a valid signature for the message msg whose length
  * is msg_len bytes, using the signer's public key pk.
  *
- * @param sig the signature
- * @param msg input message
+ * @param sig the signature, size:ecc_ed25519_sign_SIZE
+ * @param msg input message, size:msg_len
  * @param msg_len the length of `msg`
- * @param pk the public key
+ * @param pk the public key, size:ecc_ed25519_sign_PUBLICKEYSIZE
  * @return -1 if the signature fails verification, or 0 on success
  */
 ECC_EXPORT
@@ -250,8 +258,8 @@ int ecc_ed25519_sign_verify(
 /**
  * Generates a random key pair of public and private keys.
  *
- * @param pk (output) public key
- * @param sk (output) private key
+ * @param[out] pk public key, size:ecc_ed25519_sign_PUBLICKEYSIZE
+ * @param[out] sk private key, size:ecc_ed25519_sign_SECRETKEYSIZE
  */
 ECC_EXPORT
 void ecc_ed25519_sign_keypair(byte_t *pk, byte_t *sk);
@@ -260,9 +268,9 @@ void ecc_ed25519_sign_keypair(byte_t *pk, byte_t *sk);
  * Generates a random key pair of public and private keys derived
  * from a seed.
  *
- * @param pk (output) public key
- * @param sk (output) private key
- * @param seed seed to generate the keys
+ * @param[out] pk public key, size:ecc_ed25519_sign_PUBLICKEYSIZE
+ * @param[out] sk private key, size:ecc_ed25519_sign_SECRETKEYSIZE
+ * @param seed seed to generate the keys, size:ecc_ed25519_sign_SEEDSIZE
  */
 ECC_EXPORT
 void ecc_ed25519_sign_seed_keypair(byte_t *pk, byte_t *sk, const byte_t *seed);
@@ -270,8 +278,8 @@ void ecc_ed25519_sign_seed_keypair(byte_t *pk, byte_t *sk, const byte_t *seed);
 /**
  * Extracts the seed from the secret key sk and copies it into seed.
  *
- * @param seed (output) the seed used to generate the secret key
- * @param sk the secret key
+ * @param[out] seed the seed used to generate the secret key, size:ecc_ed25519_sign_SEEDSIZE
+ * @param sk the secret key, size:ecc_ed25519_sign_SECRETKEYSIZE
  */
 ECC_EXPORT
 void ecc_ed25519_sign_sk_to_seed(byte_t *seed, const byte_t *sk);
@@ -279,8 +287,8 @@ void ecc_ed25519_sign_sk_to_seed(byte_t *seed, const byte_t *sk);
 /**
  * Extracts the public key from the secret key sk and copies it into pk.
  *
- * @param pk (output) the public key
- * @param sk the secret key
+ * @param[out] pk the public key, size:ecc_ed25519_sign_PUBLICKEYSIZE
+ * @param sk the secret key, size:ecc_ed25519_sign_SECRETKEYSIZE
  */
 ECC_EXPORT
 void ecc_ed25519_sign_sk_to_pk(byte_t *pk, const byte_t *sk);
