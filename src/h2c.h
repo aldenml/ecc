@@ -13,8 +13,16 @@
 // Hashing to Elliptic Curves
 // https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-hash-to-curve-11
 
-#define ecc_h2c_expand_message_xmd_sha256_MAXSIZE 256
-#define ecc_h2c_expand_message_xmd_sha256_DSTMAXSIZE 256
+#define ecc_h2c_expand_message_xmd_sha256_MAXSIZE_CONST 256
+/**
+ *
+ */
+static const int ecc_h2c_expand_message_xmd_sha256_MAXSIZE = ecc_h2c_expand_message_xmd_sha256_MAXSIZE_CONST;
+#define ecc_h2c_expand_message_xmd_sha256_DSTMAXSIZE_CONST 256
+/**
+ *
+ */
+static const int ecc_h2c_expand_message_xmd_sha256_DSTMAXSIZE = ecc_h2c_expand_message_xmd_sha256_DSTMAXSIZE_CONST;
 
 /**
  * Produces a uniformly random byte string using SHA-256.
@@ -23,10 +31,10 @@
  *
  * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-hash-to-curve-11#section-5.4.1
  *
- * @param out (output) a byte string, should be at least of size `len`
- * @param msg a byte string
+ * @param[out] out a byte string, should be at least of size `len`, size:len
+ * @param msg a byte string, size:msg_len
  * @param msg_len the length of `msg`
- * @param dst a byte string of at most 255 bytes
+ * @param dst a byte string of at most 255 bytes, size:dst_len
  * @param dst_len the length of `dst`, should be <= 256
  * @param len the length of the requested output in bytes, should be <= 256
  */
@@ -38,8 +46,16 @@ void ecc_h2c_expand_message_xmd_sha256(
     int len
 );
 
-#define ecc_h2c_expand_message_xmd_sha512_MAXSIZE 256
-#define ecc_h2c_expand_message_xmd_sha512_DSTMAXSIZE 256
+#define ecc_h2c_expand_message_xmd_sha512_MAXSIZE_CONST 256
+/**
+ *
+ */
+static const int ecc_h2c_expand_message_xmd_sha512_MAXSIZE = ecc_h2c_expand_message_xmd_sha512_MAXSIZE_CONST;
+#define ecc_h2c_expand_message_xmd_sha512_DSTMAXSIZE_CONST 256
+/**
+ *
+ */
+static const int ecc_h2c_expand_message_xmd_sha512_DSTMAXSIZE = ecc_h2c_expand_message_xmd_sha512_DSTMAXSIZE_CONST;
 
 /**
  * Produces a uniformly random byte string using SHA-512.
@@ -48,10 +64,10 @@ void ecc_h2c_expand_message_xmd_sha256(
  *
  * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-hash-to-curve-11#section-5.4.1
  *
- * @param out (output) a byte string, should be at least of size `len`
- * @param msg a byte string
+ * @param[out] out a byte string, should be at least of size `len`, size:len
+ * @param msg a byte string, size:msg_len
  * @param msg_len the length of `msg`
- * @param dst a byte string of at most 255 bytes
+ * @param dst a byte string of at most 255 bytes, size:dst_len
  * @param dst_len the length of `dst`, should be <= 256
  * @param len the length of the requested output in bytes, should be <= 256
  */
