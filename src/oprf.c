@@ -13,8 +13,8 @@
 #include "h2c.h"
 #include "ristretto255.h"
 
-static_assert(ecc_oprf_ristretto255_sha512_ELEMENTSIZE == ecc_ristretto255_SIZE, "");
-static_assert(ecc_oprf_ristretto255_sha512_SCALARSIZE == ecc_ristretto255_SCALARSIZE, "");
+static_assert(ecc_oprf_ristretto255_sha512_ELEMENTSIZE_CONST == ecc_ristretto255_SIZE_CONST, "");
+static_assert(ecc_oprf_ristretto255_sha512_SCALARSIZE_CONST == ecc_ristretto255_SCALARSIZE_CONST, "");
 static_assert(ecc_oprf_ristretto255_sha512_Nh_CONST == ecc_hash_sha512_SIZE_CONST, "");
 
 void ecc_oprf_ristretto255_sha512_Evaluate(

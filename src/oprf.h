@@ -10,23 +10,25 @@
 
 #include "export.h"
 
+#define ecc_oprf_ristretto255_sha512_ELEMENTSIZE_CONST 32
 /**
  * Size of a serialized group element, since this is the ristretto255
  * curve the size is 32 bytes.
  */
-#define ecc_oprf_ristretto255_sha512_ELEMENTSIZE 32
+static const int ecc_oprf_ristretto255_sha512_ELEMENTSIZE = ecc_oprf_ristretto255_sha512_ELEMENTSIZE_CONST;
 
+#define ecc_oprf_ristretto255_sha512_SCALARSIZE_CONST 32
 /**
  * Size of a serialized scalar, since this is the ristretto255
  * curve the size is 32 bytes.
  */
-#define ecc_oprf_ristretto255_sha512_SCALARSIZE 32
+static const int ecc_oprf_ristretto255_sha512_SCALARSIZE = ecc_oprf_ristretto255_sha512_SCALARSIZE_CONST;
 
+#define ecc_oprf_ristretto255_sha512_Nh_CONST 64
 /**
  * Size of the protocol output in the `Finalize` operations, since
  * this is ristretto255 with SHA-512, the size is 64 bytes.
  */
-#define ecc_oprf_ristretto255_sha512_Nh_CONST 64
 static const int ecc_oprf_ristretto255_sha512_Nh = ecc_oprf_ristretto255_sha512_Nh_CONST;
 
 /**

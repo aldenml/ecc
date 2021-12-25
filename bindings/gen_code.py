@@ -230,4 +230,4 @@ def gen_js(headers, ignore):
     return out
 
 
-print(gen_js(["ed25519"], ecc_ignore))
+print(gen_js(["ristretto255"], ecc_ignore))

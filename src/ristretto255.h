@@ -10,25 +10,29 @@
 
 #include "export.h"
 
+#define ecc_ristretto255_SIZE_CONST 32
 /**
  * Size of the serialized group elements.
  */
-#define ecc_ristretto255_SIZE 32
+static const int ecc_ristretto255_SIZE = ecc_ristretto255_SIZE_CONST;
 
+#define ecc_ristretto255_HASHSIZE_CONST 64
 /**
  * Size of the hash input to use on the hash to map operation.
  */
-#define ecc_ristretto255_HASHSIZE 64
+static const int ecc_ristretto255_HASHSIZE = ecc_ristretto255_HASHSIZE_CONST;
 
+#define ecc_ristretto255_SCALARSIZE_CONST 32
 /**
  * Size of the scalar used in the curve operations.
  */
-#define ecc_ristretto255_SCALARSIZE 32
+static const int ecc_ristretto255_SCALARSIZE = ecc_ristretto255_SCALARSIZE_CONST;
 
+#define ecc_ristretto255_NONREDUCEDSCALARSIZE_CONST 64
 /**
  * Size of a non reduced scalar.
  */
-#define ecc_ristretto255_NONREDUCEDSCALARSIZE 64
+static const int ecc_ristretto255_NONREDUCEDSCALARSIZE = ecc_ristretto255_NONREDUCEDSCALARSIZE_CONST;
 
 /**
  * Checks that p is a valid ristretto255-encoded element. This operation
@@ -44,9 +48,9 @@ int ecc_ristretto255_is_valid_point(const byte_t *p);
  * Adds the element represented by p to the element q and stores
  * the resulting element into r.
  *
- * @param r (output) the result
- * @param p input point operand
- * @param q input point operand
+ * @param[out] r the result, size:ecc_ristretto255_SIZE
+ * @param p input point operand, size:ecc_ristretto255_SIZE
+ * @param q input point operand, size:ecc_ristretto255_SIZE
  * @return 0 on success, or -1 if p and/or q are not valid encoded elements
  */
 ECC_EXPORT
@@ -56,9 +60,9 @@ int ecc_ristretto255_add(byte_t *r, const byte_t *p, const byte_t *q);
  * Subtracts the element represented by p to the element q and stores
  * the resulting element into r.
  *
- * @param r (output) the result
- * @param p input point operand
- * @param q input point operand
+ * @param[out] r the result, size:ecc_ristretto255_SIZE
+ * @param p input point operand, size:ecc_ristretto255_SIZE
+ * @param q input point operand, size:ecc_ristretto255_SIZE
  * @return 0 on success, or -1 if p and/or q are not valid encoded elements
  */
 ECC_EXPORT
@@ -68,8 +72,8 @@ int ecc_ristretto255_sub(byte_t *r, const byte_t *p, const byte_t *q);
  * Maps a 64 bytes vector r (usually the output of a hash function) to
  * a group element, and stores its representation into p.
  *
- * @param p (output) group element
- * @param r bytes vector hash
+ * @param[out] p group element, size:ecc_ristretto255_SIZE
+ * @param r bytes vector hash, size:ecc_ristretto255_HASHSIZE
  */
 ECC_EXPORT
 void ecc_ristretto255_from_hash(byte_t *p, const byte_t *r);
@@ -77,7 +81,7 @@ void ecc_ristretto255_from_hash(byte_t *p, const byte_t *r);
 /**
  * Fills p with the representation of a random group element.
  *
- * @param p (output) random group element
+ * @param[out] p random group element, size:ecc_ristretto255_SIZE
  */
 ECC_EXPORT
 void ecc_ristretto255_random(byte_t *p);
@@ -87,7 +91,7 @@ void ecc_ristretto255_random(byte_t *p);
  * the ]0..L[ interval where L is the order of the
  * group (2^252 + 27742317777372353535851937790883648493).
  *
- * @param r (output) random scalar
+ * @param[out] r random scalar, size:ecc_ristretto255_SCALARSIZE
  */
 ECC_EXPORT
 void ecc_ristretto255_scalar_random(byte_t *r);
@@ -95,8 +99,8 @@ void ecc_ristretto255_scalar_random(byte_t *r);
 /**
  * Computes the multiplicative inverse of s over L, and puts it into recip.
  *
- * @param recip (output) the result
- * @param s an scalar
+ * @param[out] recip the result, size:ecc_ristretto255_SCALARSIZE
+ * @param s an scalar, size:ecc_ristretto255_SCALARSIZE
  * @return 0 on success, or -1 if s is zero
  */
 ECC_EXPORT
@@ -105,8 +109,8 @@ int ecc_ristretto255_scalar_invert(byte_t *recip, const byte_t *s);
 /**
  * Returns neg so that s + neg = 0 (mod L).
  *
- * @param neg (output) the result
- * @param s an scalar
+ * @param[out] neg the result, size:ecc_ristretto255_SCALARSIZE
+ * @param s an scalar, size:ecc_ristretto255_SCALARSIZE
  */
 ECC_EXPORT
 void ecc_ristretto255_scalar_negate(byte_t *neg, const byte_t *s);
@@ -114,8 +118,8 @@ void ecc_ristretto255_scalar_negate(byte_t *neg, const byte_t *s);
 /**
  * Returns comp so that s + comp = 1 (mod L).
  *
- * @param comp (output) the result
- * @param s an scalar
+ * @param[out] comp the result, size:ecc_ristretto255_SCALARSIZE
+ * @param s an scalar, size:ecc_ristretto255_SCALARSIZE
  */
 ECC_EXPORT
 void ecc_ristretto255_scalar_complement(byte_t *comp, const byte_t *s);
@@ -123,9 +127,9 @@ void ecc_ristretto255_scalar_complement(byte_t *comp, const byte_t *s);
 /**
  * Stores x + y (mod L) into z.
  *
- * @param z (output) the result
- * @param x input scalar operand
- * @param y input scalar operand
+ * @param[out] z the result, size:ecc_ristretto255_SCALARSIZE
+ * @param x input scalar operand, size:ecc_ristretto255_SCALARSIZE
+ * @param y input scalar operand, size:ecc_ristretto255_SCALARSIZE
  */
 ECC_EXPORT
 void ecc_ristretto255_scalar_add(byte_t *z, const byte_t *x, const byte_t *y);
@@ -133,9 +137,9 @@ void ecc_ristretto255_scalar_add(byte_t *z, const byte_t *x, const byte_t *y);
 /**
  * Stores x - y (mod L) into z.
  *
- * @param z (output) the result
- * @param x input scalar operand
- * @param y input scalar operand
+ * @param[out] z the result, size:ecc_ristretto255_SCALARSIZE
+ * @param x input scalar operand, size:ecc_ristretto255_SCALARSIZE
+ * @param y input scalar operand, size:ecc_ristretto255_SCALARSIZE
  */
 ECC_EXPORT
 void ecc_ristretto255_scalar_sub(byte_t *z, const byte_t *x, const byte_t *y);
@@ -143,9 +147,9 @@ void ecc_ristretto255_scalar_sub(byte_t *z, const byte_t *x, const byte_t *y);
 /**
  * Stores x * y (mod L) into z.
  *
- * @param z (output) the result
- * @param x input scalar operand
- * @param y input scalar operand
+ * @param[out] z the result, size:ecc_ristretto255_SCALARSIZE
+ * @param x input scalar operand, size:ecc_ristretto255_SCALARSIZE
+ * @param y input scalar operand, size:ecc_ristretto255_SCALARSIZE
  */
 ECC_EXPORT
 void ecc_ristretto255_scalar_mul(byte_t *z, const byte_t *x, const byte_t *y);
@@ -158,8 +162,8 @@ void ecc_ristretto255_scalar_mul(byte_t *z, const byte_t *x, const byte_t *y);
  * The interval `s` is sampled from should be at least 317 bits to
  * ensure almost uniformity of `r` over `L`.
  *
- * @param r (output) the reduced scalar
- * @param s the integer to reduce
+ * @param[out] r the reduced scalar, size:ecc_ristretto255_SCALARSIZE
+ * @param s the integer to reduce, size:ecc_ristretto255_NONREDUCEDSCALARSIZE
  */
 ECC_EXPORT
 void ecc_ristretto255_scalar_reduce(byte_t *r, const byte_t *s);
@@ -168,9 +172,9 @@ void ecc_ristretto255_scalar_reduce(byte_t *r, const byte_t *s);
  * Multiplies an element represented by p by a valid scalar n
  * and puts the resulting element into q.
  *
- * @param q (output) the result
- * @param n the valid input scalar
- * @param p the point on the curve
+ * @param[out] q the result, size:ecc_ristretto255_SIZE
+ * @param n the valid input scalar, size:ecc_ristretto255_SCALARSIZE
+ * @param p the point on the curve, size:ecc_ristretto255_SIZE
  * @return 0 on success, or -1 if q is the identity element.
  */
 ECC_EXPORT
@@ -180,8 +184,8 @@ int ecc_ristretto255_scalarmult(byte_t *q, const byte_t *n, const byte_t *p);
  * Multiplies the generator by a valid scalar n and puts the resulting
  * element into q.
  *
- * @param q (output) the result
- * @param n the valid input scalar
+ * @param[out] q the result, size:ecc_ristretto255_SIZE
+ * @param n the valid input scalar, size:ecc_ristretto255_SCALARSIZE
  * @return -1 if n is 0, and 0 otherwise.
  */
 ECC_EXPORT
