@@ -30,6 +30,7 @@
 // - Only two levels are supported, level 1 (simple encrypt) and level 2 (re-encryption by proxy)
 // - Pairing for blinding operations are mostly done in the G2 group of BLS12-381
 
+// const
 /**
  * Size of the PRE-SCHEMA1 plaintext and ciphertext messages.
  *
@@ -38,36 +39,43 @@
  */
 #define ecc_pre_schema1_MESSAGESIZE 576 // size of a Fp12 element in BLS12-381
 
+// const
 /**
  * Size of the PRE-SCHEMA1 seed used in all operations.
  */
 #define ecc_pre_schema1_SEEDSIZE 32
 
+// const
 /**
  * Size of the PRE-SCHEMA1 public key.
  */
 #define ecc_pre_schema1_PUBLICKEYSIZE 96 // size of a G1 element in BLS12-381
 
+// const
 /**
  * Size of the PRE-SCHEMA1 private key.
  */
 #define ecc_pre_schema1_PRIVATEKEYSIZE 32 // size of a scalar in BLS12-381
 
+// const
 /**
  * Size of the PRE-SCHEMA1 signing public key.
  */
 #define ecc_pre_schema1_SIGNINGPUBLICKEYSIZE 32 // ed25519 signing public key size
 
+// const
 /**
  * Size of the PRE-SCHEMA1 signing private key.
  */
 #define ecc_pre_schema1_SIGNINGPRIVATEKEYSIZE 64 // ed25519 signing secret key size
 
+// const
 /**
  * Size of the PRE-SCHEMA1 signature.
  */
 #define ecc_pre_schema1_SIGNATURESIZE 64 // ed25519 signature size
 
+// const
 /**
  * Size of the whole ciphertext structure, that is the result
  * of the simple Encrypt operation.
@@ -80,6 +88,7 @@
     ecc_pre_schema1_SIGNATURESIZE // 800
 // 32 is ecc_hash_sha256_SIZE
 
+// const
 /**
  * Size of the whole ciphertext structure, that is the result
  * of the one-hop ReEncrypt operation.
@@ -93,6 +102,7 @@
     ecc_pre_schema1_SIGNINGPUBLICKEYSIZE +     \
     ecc_pre_schema1_SIGNATURESIZE // 2240
 
+// const
 /**
  * Size of the whole re-encryption key structure.
  */
@@ -110,7 +120,7 @@
  * The output can be used in other key derivation algorithms for other
  * symmetric encryption protocols.
  *
- * @param m (output) a random plaintext message
+ * @param[out] m a random plaintext message, size:ecc_pre_schema1_MESSAGESIZE
  */
 ECC_EXPORT
 void ecc_pre_schema1_MessageGen(byte_t *m);
@@ -119,9 +129,9 @@ void ecc_pre_schema1_MessageGen(byte_t *m);
  * Derive a public/private key pair deterministically
  * from the input "seed".
  *
- * @param pk (output) public key
- * @param sk (output) private key
- * @param seed input seed to generate the key pair
+ * @param[out] pk public key, size:ecc_pre_schema1_PUBLICKEYSIZE
+ * @param[out] sk private key, size:ecc_pre_schema1_PRIVATEKEYSIZE
+ * @param seed input seed to generate the key pair, size:ecc_pre_schema1_SEEDSIZE
  */
 ECC_EXPORT
 void ecc_pre_schema1_DeriveKey(
@@ -132,8 +142,8 @@ void ecc_pre_schema1_DeriveKey(
 /**
  * Generate a public/private key pair.
  *
- * @param pk (output) public key
- * @param sk (output) private key
+ * @param[out] pk public key, size:ecc_pre_schema1_PUBLICKEYSIZE
+ * @param[out] sk private key, size:ecc_pre_schema1_PRIVATEKEYSIZE
  */
 ECC_EXPORT
 void ecc_pre_schema1_KeyGen(byte_t *pk, byte_t *sk);
@@ -142,9 +152,9 @@ void ecc_pre_schema1_KeyGen(byte_t *pk, byte_t *sk);
  * Derive a signing public/private key pair deterministically
  * from the input "seed".
  *
- * @param spk (output) signing public key
- * @param ssk (output) signing private key
- * @param seed input seed to generate the key pair
+ * @param[out] spk signing public key, size:ecc_pre_schema1_SIGNINGPUBLICKEYSIZE
+ * @param[out] ssk signing private key, size:ecc_pre_schema1_SIGNINGPRIVATEKEYSIZE
+ * @param seed input seed to generate the key pair, size:ecc_pre_schema1_SEEDSIZE
  */
 ECC_EXPORT
 void ecc_pre_schema1_DeriveSigningKey(
@@ -155,8 +165,8 @@ void ecc_pre_schema1_DeriveSigningKey(
 /**
  * Generate a signing public/private key pair.
  *
- * @param spk (output) signing public key
- * @param ssk (output) signing private key
+ * @param[out] spk signing public key, size:ecc_pre_schema1_SIGNINGPUBLICKEYSIZE
+ * @param[out] ssk signing private key, size:ecc_pre_schema1_SIGNINGPRIVATEKEYSIZE
  */
 ECC_EXPORT
 void ecc_pre_schema1_SigningKeyGen(byte_t *spk, byte_t *ssk);
@@ -169,12 +179,12 @@ void ecc_pre_schema1_SigningKeyGen(byte_t *spk, byte_t *ssk);
  * itself (i.e j == i), in order to have later the ciphertext re-encrypted
  * by the proxy with the re-encryption key (level 2).
  *
- * @param C_j_raw (output) a CiphertextLevel1_t structure
- * @param m the plaintext message
- * @param pk_j delegatee's public key
- * @param spk_i sender signing public key
- * @param ssk_i sender signing private key
- * @param seed seed used to generate the internal ephemeral key
+ * @param[out] C_j_raw a CiphertextLevel1_t structure, size:ecc_pre_schema1_CIPHERTEXTLEVEL1SIZE
+ * @param m the plaintext message, size:ecc_pre_schema1_MESSAGESIZE
+ * @param pk_j delegatee's public key, size:ecc_pre_schema1_PUBLICKEYSIZE
+ * @param spk_i sender signing public key, size:ecc_pre_schema1_SIGNINGPUBLICKEYSIZE
+ * @param ssk_i sender signing private key, size:ecc_pre_schema1_SIGNINGPRIVATEKEYSIZE
+ * @param seed seed used to generate the internal ephemeral key, size:ecc_pre_schema1_SEEDSIZE
  */
 ECC_EXPORT
 void ecc_pre_schema1_EncryptWithSeed(
@@ -194,11 +204,11 @@ void ecc_pre_schema1_EncryptWithSeed(
  * itself (i.e j == i), in order to have later the ciphertext re-encrypted
  * by the proxy with the re-encryption key (level 2).
  *
- * @param C_j_raw (output) a CiphertextLevel1_t structure
- * @param m the plaintext message
- * @param pk_j delegatee's public key
- * @param spk_i sender signing public key
- * @param ssk_i sender signing private key
+ * @param[out] C_j_raw a CiphertextLevel1_t structure, size:ecc_pre_schema1_CIPHERTEXTLEVEL1SIZE
+ * @param m the plaintext message, size:ecc_pre_schema1_MESSAGESIZE
+ * @param pk_j delegatee's public key, size:ecc_pre_schema1_PUBLICKEYSIZE
+ * @param spk_i sender signing public key, size:ecc_pre_schema1_SIGNINGPUBLICKEYSIZE
+ * @param ssk_i sender signing private key, size:ecc_pre_schema1_SIGNINGPRIVATEKEYSIZE
  */
 ECC_EXPORT
 void ecc_pre_schema1_Encrypt(
@@ -215,11 +225,11 @@ void ecc_pre_schema1_Encrypt(
  * Requires the delegator’s private key (sk_i), the delegatee’s public key (pk_j), and
  * the delegator’s signing key pair (spk_i, ssk_i).
  *
- * @param tk_i_j_raw (output) a ReKey_t structure
- * @param sk_i delegator’s private key
- * @param pk_j delegatee’s public key
- * @param spk_i delegator’s signing public key
- * @param ssk_i delegator’s signing private key
+ * @param[out] tk_i_j_raw a ReKey_t structure, size:ecc_pre_schema1_REKEYSIZE
+ * @param sk_i delegator’s private key, size:ecc_pre_schema1_PRIVATEKEYSIZE
+ * @param pk_j delegatee’s public key, size:ecc_pre_schema1_PUBLICKEYSIZE
+ * @param spk_i delegator’s signing public key, size:ecc_pre_schema1_SIGNINGPUBLICKEYSIZE
+ * @param ssk_i delegator’s signing private key, size:ecc_pre_schema1_SIGNINGPRIVATEKEYSIZE
  */
 ECC_EXPORT
 void ecc_pre_schema1_ReKeyGen(
@@ -240,13 +250,13 @@ void ecc_pre_schema1_ReKeyGen(
  *
  * It also validate the signature on the encrypted ciphertext and re-encryption key.
  *
- * @param C_j_raw (output) a CiphertextLevel2_t structure
- * @param C_i_raw a CiphertextLevel1_t structure
- * @param tk_i_j_raw a ReKey_t structure
- * @param spk_i delegator’s signing public key
- * @param pk_j delegatee’s public key
- * @param spk proxy’s signing public key
- * @param ssk proxy’s signing private key
+ * @param[out] C_j_raw a CiphertextLevel2_t structure, size:ecc_pre_schema1_CIPHERTEXTLEVEL2SIZE
+ * @param C_i_raw a CiphertextLevel1_t structure, size:ecc_pre_schema1_CIPHERTEXTLEVEL1SIZE
+ * @param tk_i_j_raw a ReKey_t structure, size:ecc_pre_schema1_REKEYSIZE
+ * @param spk_i delegator’s signing public key, size:ecc_pre_schema1_SIGNINGPUBLICKEYSIZE
+ * @param pk_j delegatee’s public key, size:ecc_pre_schema1_PUBLICKEYSIZE
+ * @param spk proxy’s signing public key, size:ecc_pre_schema1_SIGNINGPUBLICKEYSIZE
+ * @param ssk proxy’s signing private key, size:ecc_pre_schema1_SIGNINGPRIVATEKEYSIZE
  * @return 0 if all the signatures are valid, -1 if there is an error
  */
 ECC_EXPORT
@@ -269,10 +279,10 @@ int ecc_pre_schema1_ReEncrypt(
  *
  * It also validate the signature on the encrypted ciphertext.
  *
- * @param m (output) the original plaintext message
- * @param C_i_raw a CiphertextLevel1_t structure
- * @param sk_i recipient private key
- * @param spk_i recipient signing public key
+ * @param[out] m the original plaintext message, size:ecc_pre_schema1_MESSAGESIZE
+ * @param C_i_raw a CiphertextLevel1_t structure, size:ecc_pre_schema1_CIPHERTEXTLEVEL1SIZE
+ * @param sk_i recipient private key, size:ecc_pre_schema1_PRIVATEKEYSIZE
+ * @param spk_i recipient signing public key, size:ecc_pre_schema1_SIGNINGPUBLICKEYSIZE
  * @return 0 if all the signatures are valid, -1 if there is an error
  */
 ECC_EXPORT
@@ -292,10 +302,10 @@ int ecc_pre_schema1_DecryptLevel1(
  *
  * It also validate the signature on the encrypted ciphertext.
  *
- * @param m (output) the original plaintext message
- * @param C_j_raw a CiphertextLevel2_t structure
- * @param sk_j recipient private key
- * @param spk proxy’s signing public key
+ * @param[out] m the original plaintext message, size:ecc_pre_schema1_MESSAGESIZE
+ * @param C_j_raw a CiphertextLevel2_t structure, size:ecc_pre_schema1_CIPHERTEXTLEVEL2SIZE
+ * @param sk_j recipient private key, size:ecc_pre_schema1_PRIVATEKEYSIZE
+ * @param spk proxy’s signing public key, size:ecc_pre_schema1_SIGNINGPUBLICKEYSIZE
  * @return 0 if all the signatures are valid, -1 if there is an error
  */
 ECC_EXPORT

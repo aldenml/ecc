@@ -283,4 +283,4 @@ def gen_js(headers, ignore):
     return out
 
 
-print(gen_js(["sign"], ecc_ignore))
+print(gen_js(["pre"], ecc_ignore))
