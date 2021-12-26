@@ -319,8 +319,8 @@ void ecc_opaque_ristretto255_sha512_DeriveAuthKeyPair(
 /**
  * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-05#section-4.3.1
  *
- * @param inner_env size:0
- * @param client_public_key size:ecc_opaque_ristretto255_sha512_Npk
+ * @param[out] inner_env size:0
+ * @param[out] client_public_key size:ecc_opaque_ristretto255_sha512_Npk
  * @param randomized_pwd size:64
  * @param nonce size:ecc_opaque_ristretto255_sha512_Nn
  * @param client_private_key size:ecc_opaque_ristretto255_sha512_Nsk
@@ -336,11 +336,11 @@ void ecc_opaque_ristretto255_sha512_BuildInnerEnvelope(
 
 /**
  *
- * @param client_private_key
- * @param client_public_key
- * @param randomized_pwd
- * @param nonce
- * @param inner_env
+ * @param[out] client_private_key size:ecc_opaque_ristretto255_sha512_Nsk
+ * @param[out] client_public_key size:ecc_opaque_ristretto255_sha512_Npk
+ * @param randomized_pwd size:64
+ * @param nonce size:ecc_opaque_ristretto255_sha512_Nn
+ * @param inner_env size:0
  */
 ECC_EXPORT
 void ecc_opaque_ristretto255_sha512_RecoverKeys(
@@ -356,10 +356,10 @@ void ecc_opaque_ristretto255_sha512_RecoverKeys(
  *
  * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-05#section-5.1.1.1
  *
- * @param request_raw (output) a RegistrationRequest structure
- * @param password an opaque byte string containing the client's password
+ * @param[out] request_raw a RegistrationRequest structure, size:ecc_opaque_ristretto255_sha512_REGISTRATIONREQUESTSIZE
+ * @param password an opaque byte string containing the client's password, size:password_len
  * @param password_len the length of `password`
- * @param blind the OPRF scalar value to use
+ * @param blind the OPRF scalar value to use, size:ecc_opaque_ristretto255_sha512_Noe
  */
 ECC_EXPORT
 void ecc_opaque_ristretto255_sha512_CreateRegistrationRequestWithBlind(
@@ -371,9 +371,9 @@ void ecc_opaque_ristretto255_sha512_CreateRegistrationRequestWithBlind(
 /**
  * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-05#section-5.1.1.1
  *
- * @param request_raw (output) a RegistrationRequest structure
- * @param blind (output) an OPRF scalar value
- * @param password an opaque byte string containing the client's password
+ * @param[out] request_raw a RegistrationRequest structure, size:ecc_opaque_ristretto255_sha512_REGISTRATIONREQUESTSIZE
+ * @param[out] blind an OPRF scalar value, size:ecc_opaque_ristretto255_sha512_Noe
+ * @param password an opaque byte string containing the client's password, size:password_len
  * @param password_len the length of `password`
  */
 ECC_EXPORT
@@ -391,7 +391,7 @@ void ecc_opaque_ristretto255_sha512_CreateRegistrationRequest(
  *
  * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-05#section-5.1.1.2
  *
- * @param response
+ * @param[out] response
  * @param request
  * @param server_public_key
  * @param credential_identifier
@@ -413,8 +413,8 @@ void ecc_opaque_ristretto255_sha512_CreateRegistrationResponseWithOprfKey(
  *
  * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-05#section-5.1.1.2
  *
- * @param response_raw (output) a RegistrationResponse structure
- * @param oprf_key (output) the per-client OPRF key known only to the server
+ * @param[out] response_raw a RegistrationResponse structure
+ * @param[out] oprf_key the per-client OPRF key known only to the server
  * @param request_raw a RegistrationRequest structure
  * @param server_public_key the server's public key
  * @param credential_identifier an identifier that uniquely represents the credential being registered
@@ -438,8 +438,8 @@ void ecc_opaque_ristretto255_sha512_CreateRegistrationResponse(
  *
  * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-05#section-5.1.1.3
  *
- * @param record_raw (output) a RegistrationUpload structure
- * @param export_key (output) an additional client key
+ * @param[out] record_raw a RegistrationUpload structure
+ * @param[out] export_key an additional client key
  * @param client_private_key the client's private key (always null, internal mode)
  * @param password an opaque byte string containing the client's password
  * @param password_len the length of `password`
@@ -465,8 +465,8 @@ void ecc_opaque_ristretto255_sha512_FinalizeRequest(
 /**
  * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-05#section-6.1.2.1
  *
- * @param request_raw a CredentialRequest structure
- * @param blind an OPRF scalar value.
+ * @param[out] request_raw a CredentialRequest structure
+ * @param[out] blind an OPRF scalar value.
  * @param password an opaque byte string containing the client's password
  * @param password_len the length of `password`
  */
@@ -496,7 +496,7 @@ void ecc_opaque_ristretto255_sha512_CreateCredentialRequest(
  *
  * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-05#section-6.1.2.2
  *
- * @param response
+ * @param[out] response
  * @param request
  * @param server_public_key
  * @param credential_identifier
@@ -516,9 +516,9 @@ void ecc_opaque_ristretto255_sha512_CreateCredentialResponse(
 /**
  * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-05#section-6.1.2.3
  *
- * @param client_private_key
- * @param server_public_key
- * @param export_key
+ * @param[out] client_private_key
+ * @param[out] server_public_key
+ * @param[out] export_key
  * @param password
  * @param password_len
  * @param blind
@@ -544,7 +544,7 @@ int ecc_opaque_ristretto255_sha512_RecoverCredentials(
 /**
  * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-05#section-6.2.2.1
  *
- * @param out
+ * @param[out] out
  * @param secret
  * @param label
  * @param label_len
@@ -564,7 +564,7 @@ void ecc_opaque_ristretto255_sha512_3DH_Expand_Label(
 /**
  * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-05#section-6.2.2.1
  *
- * @param out
+ * @param[out] out
  * @param secret
  * @param label
  * @param label_len
@@ -588,7 +588,7 @@ void ecc_opaque_ristretto255_sha512_3DH_Derive_Secret(
  *
  * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-05#section-6.2.2.1
  *
- * @param preamble (output) the protocol transcript with identities and messages
+ * @param[out] preamble the protocol transcript with identities and messages
  * @param context optional shared context information
  * @param context_len the length of `context`
  * @param client_identity the optional encoded client identity
@@ -617,7 +617,7 @@ int ecc_opaque_ristretto255_sha512_3DH_Preamble(
  *
  * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-05#section-6.2.2.2
  *
- * @param ikm
+ * @param[out] ikm
  * @param sk1
  * @param pk1
  * @param sk2
@@ -636,9 +636,9 @@ void ecc_opaque_ristretto255_sha512_3DH_TripleDHIKM(
 /**
  * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-05#section-6.2.2.2
  *
- * @param km2
- * @param km3
- * @param session_key
+ * @param[out] km2
+ * @param[out] km3
+ * @param[out] session_key
  * @param ikm
  * @param ikm_len
  * @param preamble
@@ -656,7 +656,7 @@ void ecc_opaque_ristretto255_sha512_3DH_DeriveKeys(
 /**
  * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-05#section-6.2.3
  *
- * @param ke1_raw (output) a KE1 message structure
+ * @param[out] ke1_raw a KE1 message structure
  * @param state_raw a ClientState structure
  * @param client_identity the optional encoded client identity, which is null if not specified
  * @param client_identity_len the length of `client_identity`
@@ -674,9 +674,9 @@ void ecc_opaque_ristretto255_sha512_3DH_ClientInit(
 /**
  * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-05#section-6.2.3
  *
- * @param ke3_raw (output) a KE3 message structure
- * @param session_key (output) the session's shared secret
- * @param export_key (output) an additional client key
+ * @param[out] ke3_raw a KE3 message structure
+ * @param[out] session_key the session's shared secret
+ * @param[out] export_key an additional client key
  * @param state_raw a ClientState structure
  * @param password an opaque byte string containing the client's password
  * @param password_len the length of `password`
@@ -705,7 +705,7 @@ int ecc_opaque_ristretto255_sha512_3DH_ClientFinish(
 /**
  * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-05#section-6.2.3.1
  *
- * @param ke1_raw
+ * @param[out] ke1_raw
  * @param state_raw
  * @param credential_request
  */
@@ -718,8 +718,8 @@ void ecc_opaque_ristretto255_sha512_3DH_Start(
 
 /**
  * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-05#section-6.2.3.1
- * @param ke3_raw
- * @param session_key
+ * @param[out] ke3_raw
+ * @param[out] session_key
  * @param state_raw
  * @param client_identity
  * @param client_identity_len
@@ -746,7 +746,7 @@ int ecc_opaque_ristretto255_sha512_3DH_ClientFinalize(
 /**
  * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-05#section-6.2.4
  *
- * @param ke2_raw (output) a KE2 structure
+ * @param[out] ke2_raw a KE2 structure
  * @param state_raw a ServerState structure
  * @param server_identity the optional encoded server identity, which is set to
  * server_public_key if null
@@ -779,7 +779,7 @@ void ecc_opaque_ristretto255_sha512_3DH_ServerInit(
 /**
  * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-05#section-6.2.4
  *
- * @param session_key (output) the shared session secret if and only if KE3 is valid
+ * @param[out] session_key the shared session secret if and only if KE3 is valid
  * @param state_raw a ServerState structure
  * @param ke3_raw a KE3 structure
  * @return 0 if the user was authenticated, else -1
@@ -794,7 +794,7 @@ int ecc_opaque_ristretto255_sha512_3DH_ServerFinish(
 /**
  * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-05#section-6.2.4
  *
- * @param ke2_raw
+ * @param[out] ke2_raw
  * @param state_raw
  * @param server_identity
  * @param server_identity_len
