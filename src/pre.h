@@ -29,15 +29,15 @@
 // - Signature and signing keys uses Ed25519, https://ed25519.cr.yp.to
 // - Only two levels are supported, level 1 (simple encrypt) and level 2 (re-encryption by proxy)
 // - Pairing for blinding operations are mostly done in the G2 group of BLS12-381
+//
+// NOTE Only messages of ecc_pre_schema1_MESSAGESIZE size are accepted in the protocol,
+// they are short but suitable to use as the seed for other symmetric encryption protocols.
 
 // const
 /**
- * Size of the PRE-SCHEMA1 plaintext and ciphertext messages.
- *
- * Only messages of this size are accepted in the protocol, they are short
- * but suitable to use as the seed for other symmetric encryption protocols.
+ * Size of the PRE-SCHEMA1 plaintext and ciphertext messages (size of a Fp12 element in BLS12-381).
  */
-#define ecc_pre_schema1_MESSAGESIZE 576 // size of a Fp12 element in BLS12-381
+#define ecc_pre_schema1_MESSAGESIZE 576
 
 // const
 /**
@@ -47,33 +47,33 @@
 
 // const
 /**
- * Size of the PRE-SCHEMA1 public key.
+ * Size of the PRE-SCHEMA1 public key (size of a G1 element in BLS12-381).
  */
-#define ecc_pre_schema1_PUBLICKEYSIZE 96 // size of a G1 element in BLS12-381
+#define ecc_pre_schema1_PUBLICKEYSIZE 96
 
 // const
 /**
- * Size of the PRE-SCHEMA1 private key.
+ * Size of the PRE-SCHEMA1 private key (size of a scalar in BLS12-381).
  */
-#define ecc_pre_schema1_PRIVATEKEYSIZE 32 // size of a scalar in BLS12-381
+#define ecc_pre_schema1_PRIVATEKEYSIZE 32
 
 // const
 /**
- * Size of the PRE-SCHEMA1 signing public key.
+ * Size of the PRE-SCHEMA1 signing public key (ed25519 signing public key size).
  */
-#define ecc_pre_schema1_SIGNINGPUBLICKEYSIZE 32 // ed25519 signing public key size
+#define ecc_pre_schema1_SIGNINGPUBLICKEYSIZE 32
 
 // const
 /**
- * Size of the PRE-SCHEMA1 signing private key.
+ * Size of the PRE-SCHEMA1 signing private key (ed25519 signing secret key size).
  */
-#define ecc_pre_schema1_SIGNINGPRIVATEKEYSIZE 64 // ed25519 signing secret key size
+#define ecc_pre_schema1_SIGNINGPRIVATEKEYSIZE 64
 
 // const
 /**
- * Size of the PRE-SCHEMA1 signature.
+ * Size of the PRE-SCHEMA1 signature (ed25519 signature size).
  */
-#define ecc_pre_schema1_SIGNATURESIZE 64 // ed25519 signature size
+#define ecc_pre_schema1_SIGNATURESIZE 64
 
 // const
 /**
