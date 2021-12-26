@@ -11,7 +11,7 @@ class ParamComment:
 
     def comment_text(self):
         paragraphs = list(map(
-            lambda e: "\n".join(map(lambda t: t["text"].strip(), e["inner"])),
+            lambda e: "\n".join(map(lambda t: t["text"].strip(), e["inner"])).strip(),
             filter(lambda e: e["kind"] == "ParagraphComment", self.ast["inner"])
         ))
         return "\n".join(filter(None, paragraphs))
@@ -33,6 +33,16 @@ class FullComment:
             lambda e: ParamComment(e),
             filter(lambda e: e["kind"] == "ParamCommandComment", self.ast["inner"])
         ))
+
+    def comment_return(self):
+        return_comments = list(filter(
+            lambda e: e["kind"] == "BlockCommandComment" and e["name"] == "return",
+            self.ast["inner"]
+        ))
+        if len(return_comments) > 0:
+            return return_comments[0]["inner"][0]["inner"][0]["text"].strip()
+        else:
+            return None
 
 
 class ParmVarDecl:
@@ -172,7 +182,9 @@ class FunctionDecl:
             if param.is_out():
                 out += " (output)"
             out += " "
-            out += " * ".join(param.comment.comment_text().splitlines(True))
+            out += " * ".join(param.comment.comment_text().splitlines(True)) + "\n"
+        if comment.comment_return() is not None:
+            out += " * @return {number} " + comment.comment_return()
         out += " */\n"
         out += "Module." + self.name + " = (\n"
         for param in self.params():
@@ -211,7 +223,8 @@ class TranslationUnitDecl:
         self.text = text
 
     def defines(self):
-        matches = re.findall(r"// const\n/\*\*(.*?)\*/\n#define ([A-Za-z0-9_]+?) ([0-9]+?)\n\n", self.text, flags=re.DOTALL)
+        matches = re.findall(r"// const\n/\*\*(.*?)\*/\n#define ([A-Za-z0-9_]+?) ([0-9]+?)\n\n", self.text,
+                             flags=re.DOTALL)
         return list(map(
             lambda e: DefineDecl(e),
             matches
@@ -257,7 +270,8 @@ def read_header(header):
 
 ecc_headers = ["util", "hash", "mac", "kdf", "ed25519", "ristretto255", "bls12_381",
                "h2c", "oprf", "opaque", "sign", "pre"]
-ecc_ignore = ["ecc_memzero", "ecc_bin2hex", "ecc_hex2bin", "ecc_malloc", "ecc_free"]
+ecc_ignore = ["ecc_memzero", "ecc_bin2hex", "ecc_hex2bin", "ecc_malloc", "ecc_free",
+              "ecc_sign_bls12_381_Aggregate"]
 
 
 def gen_js(headers, ignore):
@@ -269,4 +283,4 @@ def gen_js(headers, ignore):
     return out
 
 
-print(gen_js(["opaque"], ecc_ignore))
+print(gen_js(["sign"], ecc_ignore))

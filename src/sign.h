@@ -16,20 +16,23 @@
 // The variant implemented here is the minimal-pubkey-size: public keys are
 // points in G1, signatures are points in G2.
 
+// const
 /**
- * Size of the signing public key.
+ * Size of the signing public key (size of a compressed G1 element in BLS12-381).
  */
-#define ecc_sign_bls12_381_PUBLICKEYSIZE 48 // size of a compressed G1 element in BLS12-381
+#define ecc_sign_bls12_381_PUBLICKEYSIZE 48
 
+// const
 /**
- * Size of the signing private key.
+ * Size of the signing private key (size of a scalar in BLS12-381).
  */
-#define ecc_sign_bls12_381_PRIVATEKEYSIZE 32 // size of a scalar in BLS12-381
+#define ecc_sign_bls12_381_PRIVATEKEYSIZE 32
 
+// const
 /**
- * Signature size.
+ * Signature size (size of a compressed G2 element in BLS12-381).
  */
-#define ecc_sign_bls12_381_SIGNATURESIZE 96 // size of a compressed G2 element in BLS12-381
+#define ecc_sign_bls12_381_SIGNATURESIZE 96
 
 /**
  * Generates a secret key `sk` deterministically from a secret
@@ -40,8 +43,8 @@
  *
  * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-bls-signature-04#section-2.3
  *
- * @param sk (output) a secret key
- * @param ikm a secret octet string
+ * @param[out] sk a secret key, size:ecc_sign_bls12_381_PRIVATEKEYSIZE
+ * @param ikm a secret octet string, size:ikm_len
  * @param ikm_len the length of `ikm`
  */
 ECC_EXPORT
@@ -52,8 +55,8 @@ void ecc_sign_bls12_381_KeyGen(byte_t *sk, const byte_t *ikm, int ikm_len);
  *
  * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-bls-signature-04#section-2.4
  *
- * @param pk (output) a public key
- * @param sk the secret key
+ * @param[out] pk a public key, size:ecc_sign_bls12_381_PUBLICKEYSIZE
+ * @param sk the secret key, size:ecc_sign_bls12_381_PRIVATEKEYSIZE
  */
 ECC_EXPORT
 void ecc_sign_bls12_381_SkToPk(byte_t *pk, const byte_t *sk);
@@ -65,7 +68,7 @@ void ecc_sign_bls12_381_SkToPk(byte_t *pk, const byte_t *sk);
  *
  * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-bls-signature-04#section-2.5
  *
- * @param pk a public key in the format output by SkToPk
+ * @param pk a public key in the format output by SkToPk, size:ecc_sign_bls12_381_PUBLICKEYSIZE
  * @return 0 for valid or -1 for invalid
  */
 ECC_EXPORT
@@ -77,10 +80,10 @@ int ecc_sign_bls12_381_KeyValidate(const byte_t *pk);
  *
  * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-bls-signature-04#section-2.6
  *
- * @param sig (output) the signature
- * @param msg input message
+ * @param[out] sig the signature, size:ecc_sign_bls12_381_SIGNATURESIZE
+ * @param msg input message, size:msg_len
  * @param msg_len the length of `msg`
- * @param sk the secret key
+ * @param sk the secret key, size:ecc_sign_bls12_381_PRIVATEKEYSIZE
  */
 ECC_EXPORT
 void ecc_sign_bls12_381_CoreSign(
@@ -94,10 +97,10 @@ void ecc_sign_bls12_381_CoreSign(
  *
  * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-bls-signature-04#section-2.7
  *
- * @param pk the public key
- * @param msg input message
+ * @param pk the public key, size:ecc_sign_bls12_381_PUBLICKEYSIZE
+ * @param msg input message, size:msg_len
  * @param msg_len the length of `msg`
- * @param sig the signature
+ * @param sig the signature, size:ecc_sign_bls12_381_SIGNATURESIZE
  * @return 0 if valid, -1 if invalid
  */
 ECC_EXPORT
@@ -112,8 +115,8 @@ int ecc_sign_bls12_381_CoreVerify(
  *
  * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-bls-signature-04#section-2.8
  *
- * @param sig (output) the aggregated signature that combines all inputs
- * @param signatures array of individual signatures
+ * @param[out] sig the aggregated signature that combines all inputs, size:ecc_sign_bls12_381_SIGNATURESIZE
+ * @param signatures array of individual signatures, size:n*ecc_sign_bls12_381_SIGNATURESIZE
  * @param n amount of signatures in the array `signatures`
  * @return 0 if valid, -1 if invalid
  */

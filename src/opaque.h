@@ -594,7 +594,7 @@ void ecc_opaque_ristretto255_sha512_CreateCredentialResponse(
  * @param server_identity_len
  * @param client_identity size:client_identity_len
  * @param client_identity_len
- * @return
+ * @return on success returns 0, else -1.
  */
 ECC_EXPORT
 int ecc_opaque_ristretto255_sha512_RecoverCredentials(
@@ -756,8 +756,7 @@ void ecc_opaque_ristretto255_sha512_3DH_ClientInit(
  * to server_public_key if not specified, size:server_identity_len
  * @param server_identity_len the length of `server_identity`
  * @param ke2_raw a KE2 message structure, size:ecc_opaque_ristretto255_sha512_KE2SIZE
- * @return 0 if is able to recover credentials and authenticate with the
- * server, else -1
+ * @return 0 if is able to recover credentials and authenticate with the server, else -1
  */
 ECC_EXPORT
 int ecc_opaque_ristretto255_sha512_3DH_ClientFinish(
@@ -797,7 +796,7 @@ void ecc_opaque_ristretto255_sha512_3DH_Start(
  * @param server_identity_len
  * @param server_public_key size:ecc_opaque_ristretto255_sha512_Npk
  * @param ke2_raw size:ecc_opaque_ristretto255_sha512_KE2SIZE
- * @return
+ * @return 0 if success, else -1
  */
 ECC_EXPORT
 int ecc_opaque_ristretto255_sha512_3DH_ClientFinalize(
