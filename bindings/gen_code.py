@@ -10,7 +10,11 @@ class ParamComment:
         self.direction = ast["direction"]
 
     def comment_text(self):
-        return self.ast["inner"][0]["inner"][0]["text"].strip()
+        paragraphs = list(map(
+            lambda e: "\n".join(map(lambda t: t["text"].strip(), e["inner"])),
+            filter(lambda e: e["kind"] == "ParagraphComment", self.ast["inner"])
+        ))
+        return "\n".join(filter(None, paragraphs))
 
 
 class FullComment:
@@ -167,7 +171,8 @@ class FunctionDecl:
             out += " * @param {" + param.type_js() + "} " + param.name
             if param.is_out():
                 out += " (output)"
-            out += " " + param.comment.comment_text() + "\n"
+            out += " "
+            out += " * ".join(param.comment.comment_text().splitlines(True))
         out += " */\n"
         out += "Module." + self.name + " = (\n"
         for param in self.params():

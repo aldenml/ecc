@@ -845,6 +845,7 @@ void ecc_opaque_ristretto255_sha512_3DH_Derive_Secret(
 
 int ecc_opaque_ristretto255_sha512_3DH_Preamble(
     byte_t *preamble,
+    const int preamble_len,
     const byte_t *context, const int context_len,
     const byte_t *client_identity, const int client_identity_len,
     const byte_t *ke1, const int ke1_len,
@@ -1158,6 +1159,7 @@ int ecc_opaque_ristretto255_sha512_3DH_ClientFinalize(
     byte_t preamble[512];
     int preamble_len = ecc_opaque_ristretto255_sha512_3DH_Preamble(
         preamble,
+        sizeof preamble,
         context, context_len,
         client_identity, client_identity_len,
         (byte_t *) &state->ke1, sizeof(KE1_t),
@@ -1338,6 +1340,7 @@ void ecc_opaque_ristretto255_sha512_3DH_Response(
     byte_t preamble[512];
     int preamble_len = ecc_opaque_ristretto255_sha512_3DH_Preamble(
         preamble,
+        sizeof preamble,
         context, context_len,
         client_identity, client_identity_len,
         ke1_raw, sizeof(KE1_t),
