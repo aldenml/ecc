@@ -196,7 +196,7 @@ class FunctionDecl:
                 out += "    const " + param.impl_name() + " = mput(" + param.name + ", " + param.size() + ");\n"
         # invoke
         if self.return_type() != "void":
-            out += "    const r = " + self.mangledName + "(\n"
+            out += "    const fun_ret = " + self.mangledName + "(\n"
         else:
             out += "    " + self.mangledName + "(\n"
         for param in self.params():
@@ -212,7 +212,7 @@ class FunctionDecl:
                 out += "    mfree(" + param.impl_name() + ", " + param.size() + ");\n"
         # return
         if self.return_type() != "void":
-            out += "    return r;\n"
+            out += "    return fun_ret;\n"
         out += "}\n"
         return out
 
@@ -277,10 +277,10 @@ ecc_ignore = ["ecc_memzero", "ecc_bin2hex", "ecc_hex2bin", "ecc_malloc", "ecc_fr
 def gen_js(headers, ignore):
     out = ""
     out += "\n".join(map(
-        lambda h: TranslationUnitDecl(gen_ast(h), read_header(h)).build_js(ignore),
+        lambda h: "// " + h + "\n\n" + TranslationUnitDecl(gen_ast(h), read_header(h)).build_js(ignore),
         headers
     ))
     return out
 
 
-print(gen_js(["pre"], ecc_ignore))
+print(gen_js(ecc_headers, ecc_ignore))
