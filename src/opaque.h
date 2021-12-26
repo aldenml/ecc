@@ -391,12 +391,12 @@ void ecc_opaque_ristretto255_sha512_CreateRegistrationRequest(
  *
  * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-05#section-5.1.1.2
  *
- * @param[out] response
- * @param request
- * @param server_public_key
- * @param credential_identifier
+ * @param[out] response size:ecc_opaque_ristretto255_sha512_REGISTRATIONRESPONSESIZE
+ * @param request size:ecc_opaque_ristretto255_sha512_REGISTRATIONREQUESTSIZE
+ * @param server_public_key size:ecc_opaque_ristretto255_sha512_Npk
+ * @param credential_identifier size:credential_identifier_len
  * @param credential_identifier_len
- * @param oprf_seed
+ * @param oprf_key size:32
  */
 ECC_EXPORT
 void ecc_opaque_ristretto255_sha512_CreateRegistrationResponseWithOprfKey(
@@ -413,13 +413,13 @@ void ecc_opaque_ristretto255_sha512_CreateRegistrationResponseWithOprfKey(
  *
  * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-05#section-5.1.1.2
  *
- * @param[out] response_raw a RegistrationResponse structure
- * @param[out] oprf_key the per-client OPRF key known only to the server
- * @param request_raw a RegistrationRequest structure
- * @param server_public_key the server's public key
- * @param credential_identifier an identifier that uniquely represents the credential being registered
+ * @param[out] response_raw a RegistrationResponse structure, size:ecc_opaque_ristretto255_sha512_REGISTRATIONRESPONSESIZE
+ * @param[out] oprf_key the per-client OPRF key known only to the server, size:32
+ * @param request_raw a RegistrationRequest structure, size:ecc_opaque_ristretto255_sha512_REGISTRATIONREQUESTSIZE
+ * @param server_public_key the server's public key, size:ecc_opaque_ristretto255_sha512_Npk
+ * @param credential_identifier an identifier that uniquely represents the credential being registered, size:credential_identifier_len
  * @param credential_identifier_len the length of `credential_identifier`
- * @param oprf_seed the server-side seed of Nh bytes used to generate an oprf_key
+ * @param oprf_seed the server-side seed of Nh bytes used to generate an oprf_key, size:ecc_opaque_ristretto255_sha512_Nh
  */
 ECC_EXPORT
 void ecc_opaque_ristretto255_sha512_CreateRegistrationResponse(
