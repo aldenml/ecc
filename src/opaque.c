@@ -99,7 +99,7 @@ static_assert(sizeof(ClientState_t) == ecc_opaque_ristretto255_sha512_CLIENTSTAT
 static_assert(sizeof(ServerState_t) == ecc_opaque_ristretto255_sha512_SERVERSTATESIZE, "");
 
 int ecc_opaque_ristretto255_sha512_CreateCleartextCredentials(
-    byte_t *cleartext_credentials,
+    byte_t *cleartext_credentials, int cleartext_credentials_len,
     const byte_t *server_public_key,
     const byte_t *client_public_key,
     const byte_t *server_identity, int server_identity_len,
@@ -124,7 +124,7 @@ int ecc_opaque_ristretto255_sha512_CreateCleartextCredentials(
     }
 
     const int total_size = Npk + server_identity_len + client_identity_len;
-    if (cleartext_credentials == NULL)
+    if (cleartext_credentials == NULL || cleartext_credentials_len != total_size)
         return total_size;
 
     ecc_concat3(
@@ -191,7 +191,7 @@ void ecc_opaque_ristretto255_sha512_CreateEnvelopeWithNonce(
     // 6. cleartext_creds = CreateCleartextCredentials(server_public_key, client_public_key, server_identity, client_identity)
     byte_t cleartext_creds[512];
     const int cleartext_creds_len = ecc_opaque_ristretto255_sha512_CreateCleartextCredentials(
-        cleartext_creds,
+        cleartext_creds, sizeof cleartext_creds,
         server_public_key, client_public_key,
         server_identity, server_identity_len,
         client_identity, client_identity_len
@@ -307,7 +307,7 @@ int ecc_opaque_ristretto255_sha512_RecoverEnvelope(
     //                       client_public_key, server_identity, client_identity)
     byte_t cleartext_creds[512];
     const int cleartext_creds_len = ecc_opaque_ristretto255_sha512_CreateCleartextCredentials(
-        cleartext_creds,
+        cleartext_creds, sizeof cleartext_creds,
         server_public_key,
         client_public_key,
         server_identity, server_identity_len,

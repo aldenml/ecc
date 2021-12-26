@@ -264,4 +264,4 @@ def gen_js(headers, ignore):
     return out
 
 
-print(gen_js(["bls12_381"], ecc_ignore))
+print(gen_js(["opaque"], ecc_ignore))

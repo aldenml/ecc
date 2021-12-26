@@ -155,18 +155,18 @@
  *
  * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-05#section-4
  *
- * @param cleartext_credentials (output) a CleartextCredentials structure
- * @param server_public_key the encoded server public key for the AKE protocol
- * @param client_public_key the encoded client public key for the AKE protocol
- * @param server_identity the optional encoded server identity
+ * @param[out] cleartext_credentials a CleartextCredentials structure, size:cleartext_credentials_len
+ * @param server_public_key the encoded server public key for the AKE protocol, size:ecc_opaque_ristretto255_sha512_Npk
+ * @param client_public_key the encoded client public key for the AKE protocol, size:ecc_opaque_ristretto255_sha512_Npk
+ * @param server_identity the optional encoded server identity, size:server_identity_len
  * @param server_identity_len the length of `server_identity`
- * @param client_identity the optional encoded client identity
+ * @param client_identity the optional encoded client identity, size:client_identity_len
  * @param client_identity_len the length of `client_identity`
  * @return the size of the serialized structure
  */
 ECC_EXPORT
 int ecc_opaque_ristretto255_sha512_CreateCleartextCredentials(
-    byte_t *cleartext_credentials,
+    byte_t *cleartext_credentials, int cleartext_credentials_len,
     const byte_t *server_public_key,
     const byte_t *client_public_key,
     const byte_t *server_identity, int server_identity_len,
@@ -179,18 +179,18 @@ int ecc_opaque_ristretto255_sha512_CreateCleartextCredentials(
  *
  * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-05#section-4.2
  *
- * @param envelope_raw
- * @param client_public_key
- * @param masking_key
- * @param export_key
- * @param randomized_pwd
- * @param server_public_key
- * @param client_private_key
- * @param server_identity
+ * @param[out] envelope_raw size:ecc_opaque_ristretto255_sha512_Ne
+ * @param[out] client_public_key size:ecc_opaque_ristretto255_sha512_Npk
+ * @param[out] masking_key size:ecc_opaque_ristretto255_sha512_Nh
+ * @param[out] export_key size:ecc_opaque_ristretto255_sha512_Nh
+ * @param randomized_pwd size:64
+ * @param server_public_key size:ecc_opaque_ristretto255_sha512_Npk
+ * @param client_private_key size:ecc_opaque_ristretto255_sha512_Nsk
+ * @param server_identity size:server_identity_len
  * @param server_identity_len
- * @param client_identity
+ * @param client_identity size:client_identity_len
  * @param client_identity_len
- * @param nonce
+ * @param nonce size:ecc_opaque_ristretto255_sha512_Nn
  */
 ECC_EXPORT
 void ecc_opaque_ristretto255_sha512_CreateEnvelopeWithNonce(
@@ -215,16 +215,16 @@ void ecc_opaque_ristretto255_sha512_CreateEnvelopeWithNonce(
  *
  * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-05#section-4.2
  *
- * @param envelope
- * @param client_public_key
- * @param masking_key
- * @param export_key
- * @param randomized_pwd
- * @param server_public_key
- * @param client_private_key
- * @param server_identity
+ * @param[out] envelope size:ecc_opaque_ristretto255_sha512_Ne
+ * @param[out] client_public_key size:ecc_opaque_ristretto255_sha512_Npk
+ * @param[out] masking_key size:ecc_opaque_ristretto255_sha512_Nh
+ * @param[out] export_key size:ecc_opaque_ristretto255_sha512_Nh
+ * @param randomized_pwd size:64
+ * @param server_public_key size:ecc_opaque_ristretto255_sha512_Npk
+ * @param client_private_key size:ecc_opaque_ristretto255_sha512_Nsk
+ * @param server_identity size:server_identity_len
  * @param server_identity_len
- * @param client_identity
+ * @param client_identity size:client_identity_len
  * @param client_identity_len
  */
 ECC_EXPORT
@@ -246,14 +246,14 @@ void ecc_opaque_ristretto255_sha512_CreateEnvelope(
  *
  * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-05#section-4.2
  *
- * @param client_private_key
- * @param export_key
- * @param randomized_pwd
- * @param server_public_key
- * @param envelope_raw
- * @param server_identity
+ * @param[out] client_private_key size:ecc_opaque_ristretto255_sha512_Nsk
+ * @param[out] export_key size:ecc_opaque_ristretto255_sha512_Nh
+ * @param randomized_pwd size:64
+ * @param server_public_key size:ecc_opaque_ristretto255_sha512_Npk
+ * @param envelope_raw size:ecc_opaque_ristretto255_sha512_Ne
+ * @param server_identity size:server_identity_len
  * @param server_identity_len
- * @param client_identity
+ * @param client_identity size:client_identity_len
  * @param client_identity_len
  * @return on success returns 0, else -1.
  */
@@ -273,8 +273,8 @@ int ecc_opaque_ristretto255_sha512_RecoverEnvelope(
  *
  * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-05#section-2
  *
- * @param public_key
- * @param private_key
+ * @param[out] public_key size:ecc_opaque_ristretto255_sha512_Npk
+ * @param private_key size:ecc_opaque_ristretto255_sha512_Nsk
  */
 ECC_EXPORT
 void ecc_opaque_ristretto255_sha512_RecoverPublicKey(
@@ -290,8 +290,8 @@ void ecc_opaque_ristretto255_sha512_RecoverPublicKey(
  *
  * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-05#section-2
  *
- * @param private_key (output) a private key
- * @param public_key (output) the associated public key
+ * @param[out] private_key a private key, size:ecc_opaque_ristretto255_sha512_Nsk
+ * @param[out] public_key the associated public key, size:ecc_opaque_ristretto255_sha512_Npk
  */
 ECC_EXPORT
 void ecc_opaque_ristretto255_sha512_GenerateAuthKeyPair(
@@ -305,9 +305,9 @@ void ecc_opaque_ristretto255_sha512_GenerateAuthKeyPair(
  * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-05#section-4.3.1
  * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-05#section-2
  *
- * @param private_key (output) a private key
- * @param public_key (output) the associated public key
- * @param seed pseudo-random byte sequence used as a seed
+ * @param[out] private_key a private key, size:ecc_opaque_ristretto255_sha512_Nsk
+ * @param[out] public_key the associated public key, size:ecc_opaque_ristretto255_sha512_Npk
+ * @param seed pseudo-random byte sequence used as a seed, size:seed_len
  * @param seed_len the length of `seed`
  */
 ECC_EXPORT
@@ -319,11 +319,11 @@ void ecc_opaque_ristretto255_sha512_DeriveAuthKeyPair(
 /**
  * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-05#section-4.3.1
  *
- * @param inner_env
- * @param client_public_key
- * @param randomized_pwd
- * @param nonce
- * @param client_private_key
+ * @param inner_env size:0
+ * @param client_public_key size:ecc_opaque_ristretto255_sha512_Npk
+ * @param randomized_pwd size:64
+ * @param nonce size:ecc_opaque_ristretto255_sha512_Nn
+ * @param client_private_key size:ecc_opaque_ristretto255_sha512_Nsk
  */
 ECC_EXPORT
 void ecc_opaque_ristretto255_sha512_BuildInnerEnvelope(
