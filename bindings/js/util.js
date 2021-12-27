@@ -41,7 +41,7 @@ export function hex2bin(hex) {
 }
 
 /**
- * Converts an hex string to a byte array.
+ * Converts a hex string to a byte array.
  *
  * @param {Uint8Array} buf
  * @returns {number}

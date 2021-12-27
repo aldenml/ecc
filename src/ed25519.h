@@ -198,21 +198,25 @@ int ecc_ed25519_scalarmult(byte_t *q, const byte_t *n, const byte_t *p);
 ECC_EXPORT
 int ecc_ed25519_scalarmult_base(byte_t *q, const byte_t *n);
 
+// const
 /**
  * Signature size.
  */
 #define ecc_ed25519_sign_SIZE 64
 
+// const
 /**
  * Seed size.
  */
 #define ecc_ed25519_sign_SEEDSIZE 32
 
+// const
 /**
  * Public key size.
  */
 #define ecc_ed25519_sign_PUBLICKEYSIZE 32
 
+// const
 /**
  * Secret key size.
  */

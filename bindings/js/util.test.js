@@ -11,20 +11,6 @@ import assert from "assert";
 
 describe("util",() => {
 
-    it("ecc_memzero_test", async () => {
-        const libecc = await libecc_module();
-        let buf = new Uint8Array(100);
-        libecc.ecc_randombytes(buf, buf.length);
-        libecc.ecc_memzero(buf, buf.length);
-        let count = 0;
-        for (let i = 0; i < buf.length; i++) {
-            if (buf[i] === 0) {
-                count++;
-            }
-        }
-        assert.strictEqual(count, buf.length);
-    });
-
     it("ecc_randombytes_test", async () => {
         const libecc = await libecc_module();
         let buf = new Uint8Array(10);
