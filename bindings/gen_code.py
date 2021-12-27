@@ -52,6 +52,8 @@ class ParmVarDecl:
         self.mangledName = ast["mangledName"]
         self.type = ast["type"]["qualType"]
         self.comment = comment
+        if comment is None:
+            raise RuntimeError("Param without comment: " + self.name)
 
     def is_array(self):
         if self.type == "const byte_t *":
@@ -323,3 +325,4 @@ def gen_js(headers, ignore):
 
 
 print(gen_js(ecc_headers, ecc_ignore))
+#print(gen_ast("opaque"))
