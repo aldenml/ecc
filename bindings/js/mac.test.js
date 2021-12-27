@@ -19,7 +19,7 @@ describe("HMAC-SHA-256, HMAC-SHA-512", () => {
     // https://datatracker.ietf.org/doc/html/rfc4231#section-4.2
     it("Test Case 1", async () => {
         const libecc = await libecc_module();
-        const key = hex2bin("0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b");
+        const key = hex2bin("0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b".padEnd(64, "0"))
         const data = hex2bin("4869205468657265");
 
         let out256 = new Uint8Array(32);
@@ -34,7 +34,7 @@ describe("HMAC-SHA-256, HMAC-SHA-512", () => {
     // https://datatracker.ietf.org/doc/html/rfc4231#section-4.3
     it("Test Case 2", async () => {
         const libecc = await libecc_module();
-        const key = hex2bin("4a656665");
+        const key = hex2bin("4a656665".padEnd(64, "0"));
         const data = hex2bin("7768617420646f2079612077616e7420666f72206e6f7468696e673f");
 
         let out256 = new Uint8Array(32);
