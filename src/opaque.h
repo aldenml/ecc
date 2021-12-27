@@ -427,15 +427,15 @@ void ecc_opaque_ristretto255_sha512_CreateRegistrationRequest(
 );
 
 /**
- * Same as calling CreateRegistrationResponse with an specific oprf_seed.
+ * Same as calling CreateRegistrationResponse with a specific oprf_seed.
  *
  * In order to make this method not to use dynamic memory allocation, there is a
  * limit of credential_identifier_len <= 200.
  *
  * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-05#section-5.1.1.2
  *
- * @param[out] response size:ecc_opaque_ristretto255_sha512_REGISTRATIONRESPONSESIZE
- * @param request size:ecc_opaque_ristretto255_sha512_REGISTRATIONREQUESTSIZE
+ * @param[out] response_raw size:ecc_opaque_ristretto255_sha512_REGISTRATIONRESPONSESIZE
+ * @param request_raw size:ecc_opaque_ristretto255_sha512_REGISTRATIONREQUESTSIZE
  * @param server_public_key size:ecc_opaque_ristretto255_sha512_Npk
  * @param credential_identifier size:credential_identifier_len
  * @param credential_identifier_len
