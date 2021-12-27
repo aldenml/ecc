@@ -42,6 +42,33 @@ typedef struct {
     byte_t tep[ecc_bls12_381_G2SIZE];
 } ReKey_t;
 
+static_assert(
+    ecc_pre_schema1_CIPHERTEXTLEVEL1SIZE ==
+    ecc_pre_schema1_PUBLICKEYSIZE +
+    ecc_pre_schema1_MESSAGESIZE +
+    32 + // 32 is ecc_hash_sha256_SIZE
+    ecc_pre_schema1_SIGNINGPUBLICKEYSIZE +
+    ecc_pre_schema1_SIGNATURESIZE,
+    "");
+static_assert(
+    ecc_pre_schema1_CIPHERTEXTLEVEL2SIZE ==
+    ecc_pre_schema1_CIPHERTEXTLEVEL1SIZE +
+    ecc_pre_schema1_PUBLICKEYSIZE +
+    ecc_pre_schema1_MESSAGESIZE +
+    ecc_pre_schema1_PUBLICKEYSIZE +
+    ecc_pre_schema1_MESSAGESIZE +
+    ecc_pre_schema1_SIGNINGPUBLICKEYSIZE +
+    ecc_pre_schema1_SIGNATURESIZE,
+    "");
+static_assert(
+    ecc_pre_schema1_REKEYSIZE ==
+    ecc_pre_schema1_PUBLICKEYSIZE +
+    ecc_pre_schema1_MESSAGESIZE +
+    ecc_pre_schema1_SIGNINGPUBLICKEYSIZE +
+    ecc_pre_schema1_SIGNATURESIZE +
+    192, // 192 is ecc_bls12_381_G2SIZE
+    "");
+
 static_assert(sizeof(CiphertextLevel1_t) == ecc_pre_schema1_CIPHERTEXTLEVEL1SIZE, "");
 static_assert(sizeof(CiphertextLevel2_t) == ecc_pre_schema1_CIPHERTEXTLEVEL2SIZE, "");
 static_assert(sizeof(ReKey_t) == ecc_pre_schema1_REKEYSIZE, "");

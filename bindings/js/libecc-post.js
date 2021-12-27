@@ -2597,6 +2597,86 @@ const ecc_opaque_ristretto255_sha512_Ne = 96;
  */
 Module.ecc_opaque_ristretto255_sha512_Ne = ecc_opaque_ristretto255_sha512_Ne;
 
+const ecc_opaque_ristretto255_sha512_REGISTRATIONREQUESTSIZE = 32;
+/**
+ * *
+ *
+ * @type {number}
+ */
+Module.ecc_opaque_ristretto255_sha512_REGISTRATIONREQUESTSIZE = ecc_opaque_ristretto255_sha512_REGISTRATIONREQUESTSIZE;
+
+const ecc_opaque_ristretto255_sha512_REGISTRATIONRESPONSESIZE = 64;
+/**
+ * *
+ *
+ * @type {number}
+ */
+Module.ecc_opaque_ristretto255_sha512_REGISTRATIONRESPONSESIZE = ecc_opaque_ristretto255_sha512_REGISTRATIONRESPONSESIZE;
+
+const ecc_opaque_ristretto255_sha512_REGISTRATIONUPLOADSIZE = 192;
+/**
+ * *
+ *
+ * @type {number}
+ */
+Module.ecc_opaque_ristretto255_sha512_REGISTRATIONUPLOADSIZE = ecc_opaque_ristretto255_sha512_REGISTRATIONUPLOADSIZE;
+
+const ecc_opaque_ristretto255_sha512_CREDENTIALREQUESTSIZE = 32;
+/**
+ * *
+ *
+ * @type {number}
+ */
+Module.ecc_opaque_ristretto255_sha512_CREDENTIALREQUESTSIZE = ecc_opaque_ristretto255_sha512_CREDENTIALREQUESTSIZE;
+
+const ecc_opaque_ristretto255_sha512_CREDENTIALRESPONSESIZE = 192;
+/**
+ * *
+ *
+ * @type {number}
+ */
+Module.ecc_opaque_ristretto255_sha512_CREDENTIALRESPONSESIZE = ecc_opaque_ristretto255_sha512_CREDENTIALRESPONSESIZE;
+
+const ecc_opaque_ristretto255_sha512_KE1SIZE = 96;
+/**
+ * *
+ *
+ * @type {number}
+ */
+Module.ecc_opaque_ristretto255_sha512_KE1SIZE = ecc_opaque_ristretto255_sha512_KE1SIZE;
+
+const ecc_opaque_ristretto255_sha512_KE2SIZE = 320;
+/**
+ * *
+ *
+ * @type {number}
+ */
+Module.ecc_opaque_ristretto255_sha512_KE2SIZE = ecc_opaque_ristretto255_sha512_KE2SIZE;
+
+const ecc_opaque_ristretto255_sha512_KE3SIZE = 64;
+/**
+ * *
+ *
+ * @type {number}
+ */
+Module.ecc_opaque_ristretto255_sha512_KE3SIZE = ecc_opaque_ristretto255_sha512_KE3SIZE;
+
+const ecc_opaque_ristretto255_sha512_CLIENTSTATESIZE = 160;
+/**
+ * *
+ *
+ * @type {number}
+ */
+Module.ecc_opaque_ristretto255_sha512_CLIENTSTATESIZE = ecc_opaque_ristretto255_sha512_CLIENTSTATESIZE;
+
+const ecc_opaque_ristretto255_sha512_SERVERSTATESIZE = 128;
+/**
+ * *
+ *
+ * @type {number}
+ */
+Module.ecc_opaque_ristretto255_sha512_SERVERSTATESIZE = ecc_opaque_ristretto255_sha512_SERVERSTATESIZE;
+
 /**
  * Constructs a "CleartextCredentials" structure given application
  * credential information.
@@ -4133,6 +4213,30 @@ const ecc_pre_schema1_SIGNATURESIZE = 64;
  * @type {number}
  */
 Module.ecc_pre_schema1_SIGNATURESIZE = ecc_pre_schema1_SIGNATURESIZE;
+
+const ecc_pre_schema1_CIPHERTEXTLEVEL1SIZE = 800;
+/**
+ * Size of the whole ciphertext structure, that is the result of the simple Encrypt operation.
+ *
+ * @type {number}
+ */
+Module.ecc_pre_schema1_CIPHERTEXTLEVEL1SIZE = ecc_pre_schema1_CIPHERTEXTLEVEL1SIZE;
+
+const ecc_pre_schema1_CIPHERTEXTLEVEL2SIZE = 2240;
+/**
+ * Size of the whole ciphertext structure, that is the result of the one-hop ReEncrypt operation.
+ *
+ * @type {number}
+ */
+Module.ecc_pre_schema1_CIPHERTEXTLEVEL2SIZE = ecc_pre_schema1_CIPHERTEXTLEVEL2SIZE;
+
+const ecc_pre_schema1_REKEYSIZE = 960;
+/**
+ * Size of the whole re-encryption key structure.
+ *
+ * @type {number}
+ */
+Module.ecc_pre_schema1_REKEYSIZE = ecc_pre_schema1_REKEYSIZE;
 
 /**
  * Generates a random message suitable to use in the protocol.

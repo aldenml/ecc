@@ -86,6 +86,61 @@ typedef struct {
     byte_t session_key[Nx];
 } ServerState_t;
 
+static_assert(
+    ecc_opaque_ristretto255_sha512_REGISTRATIONREQUESTSIZE ==
+    ecc_opaque_ristretto255_sha512_Noe,
+    "");
+static_assert(
+    ecc_opaque_ristretto255_sha512_REGISTRATIONRESPONSESIZE ==
+    ecc_opaque_ristretto255_sha512_Noe +
+    ecc_opaque_ristretto255_sha512_Npk,
+    "");
+static_assert(
+    ecc_opaque_ristretto255_sha512_REGISTRATIONUPLOADSIZE ==
+    ecc_opaque_ristretto255_sha512_Npk +
+    ecc_opaque_ristretto255_sha512_Nh +
+    ecc_opaque_ristretto255_sha512_Ne,
+    "");
+static_assert(
+    ecc_opaque_ristretto255_sha512_CREDENTIALREQUESTSIZE ==
+    ecc_opaque_ristretto255_sha512_Noe,
+    "");
+static_assert(
+    ecc_opaque_ristretto255_sha512_CREDENTIALRESPONSESIZE ==
+    ecc_opaque_ristretto255_sha512_Noe +
+    ecc_opaque_ristretto255_sha512_Nn +
+    ecc_opaque_ristretto255_sha512_Npk +
+    ecc_opaque_ristretto255_sha512_Ne,
+    "");
+static_assert(
+    ecc_opaque_ristretto255_sha512_KE1SIZE ==
+    ecc_opaque_ristretto255_sha512_CREDENTIALREQUESTSIZE +
+    ecc_opaque_ristretto255_sha512_Nn +
+    ecc_opaque_ristretto255_sha512_Npk,
+    "");
+static_assert(
+    ecc_opaque_ristretto255_sha512_KE2SIZE ==
+    ecc_opaque_ristretto255_sha512_CREDENTIALRESPONSESIZE +
+    ecc_opaque_ristretto255_sha512_Nn +
+    ecc_opaque_ristretto255_sha512_Npk +
+    ecc_opaque_ristretto255_sha512_Nm,
+    "");
+static_assert(
+    ecc_opaque_ristretto255_sha512_KE3SIZE ==
+    ecc_opaque_ristretto255_sha512_Nm,
+    "");
+static_assert(
+    ecc_opaque_ristretto255_sha512_CLIENTSTATESIZE ==
+    ecc_opaque_ristretto255_sha512_Nok +
+    ecc_opaque_ristretto255_sha512_Nsk +
+    ecc_opaque_ristretto255_sha512_KE1SIZE,
+    "");
+static_assert(
+    ecc_opaque_ristretto255_sha512_SERVERSTATESIZE ==
+    ecc_opaque_ristretto255_sha512_Nm +
+    ecc_opaque_ristretto255_sha512_Nx,
+    "");
+
 static_assert(sizeof(Envelope_t) == ecc_opaque_ristretto255_sha512_Ne, "");
 static_assert(sizeof(RegistrationRequest_t) == ecc_opaque_ristretto255_sha512_REGISTRATIONREQUESTSIZE, "");
 static_assert(sizeof(RegistrationResponse_t) == ecc_opaque_ristretto255_sha512_REGISTRATIONRESPONSESIZE, "");

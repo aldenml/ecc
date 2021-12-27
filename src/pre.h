@@ -77,42 +77,21 @@
 
 // const
 /**
- * Size of the whole ciphertext structure, that is the result
- * of the simple Encrypt operation.
+ * Size of the whole ciphertext structure, that is the result of the simple Encrypt operation.
  */
-#define ecc_pre_schema1_CIPHERTEXTLEVEL1SIZE \
-    ecc_pre_schema1_PUBLICKEYSIZE +          \
-    ecc_pre_schema1_MESSAGESIZE +            \
-    32 +                                     \
-    ecc_pre_schema1_SIGNINGPUBLICKEYSIZE +     \
-    ecc_pre_schema1_SIGNATURESIZE // 800
-// 32 is ecc_hash_sha256_SIZE
+#define ecc_pre_schema1_CIPHERTEXTLEVEL1SIZE 800
 
 // const
 /**
- * Size of the whole ciphertext structure, that is the result
- * of the one-hop ReEncrypt operation.
+ * Size of the whole ciphertext structure, that is the result of the one-hop ReEncrypt operation.
  */
-#define ecc_pre_schema1_CIPHERTEXTLEVEL2SIZE \
-    ecc_pre_schema1_CIPHERTEXTLEVEL1SIZE +   \
-    ecc_pre_schema1_PUBLICKEYSIZE +          \
-    ecc_pre_schema1_MESSAGESIZE +            \
-    ecc_pre_schema1_PUBLICKEYSIZE +          \
-    ecc_pre_schema1_MESSAGESIZE +            \
-    ecc_pre_schema1_SIGNINGPUBLICKEYSIZE +     \
-    ecc_pre_schema1_SIGNATURESIZE // 2240
+#define ecc_pre_schema1_CIPHERTEXTLEVEL2SIZE 2240
 
 // const
 /**
  * Size of the whole re-encryption key structure.
  */
-#define ecc_pre_schema1_REKEYSIZE        \
-    ecc_pre_schema1_PUBLICKEYSIZE +      \
-    ecc_pre_schema1_MESSAGESIZE +        \
-    ecc_pre_schema1_SIGNINGPUBLICKEYSIZE + \
-    ecc_pre_schema1_SIGNATURESIZE +      \
-    192 // 960
-// 192 is ecc_bls12_381_G2SIZE
+#define ecc_pre_schema1_REKEYSIZE 960
 
 /**
  * Generates a random message suitable to use in the protocol.

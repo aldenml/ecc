@@ -22,7 +22,7 @@ static void opaque_CreateCleartextCredentials_test(void **state) {
     byte_t client_identity[2] = "cd";
 
     int len = ecc_opaque_ristretto255_sha512_CreateCleartextCredentials(
-        NULL,
+        NULL, 0,
         server_public_key,
         client_public_key,
         NULL, 0,
@@ -33,7 +33,7 @@ static void opaque_CreateCleartextCredentials_test(void **state) {
 
     byte_t creds[32 + 32 + 2];
     ecc_opaque_ristretto255_sha512_CreateCleartextCredentials(
-        creds,
+        creds, sizeof creds,
         server_public_key,
         client_public_key,
         NULL, 0,
@@ -59,7 +59,7 @@ static void ecc_opaque_ristretto255_sha512_3DH_Preamble_test1(void **state) {
 
     byte_t preamble[256];
     int len = ecc_opaque_ristretto255_sha512_3DH_Preamble(
-        preamble,
+        preamble, sizeof preamble,
         context, sizeof context,
         client_identity, sizeof client_identity,
         ke1, sizeof ke1,

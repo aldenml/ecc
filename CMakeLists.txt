@@ -133,8 +133,8 @@ if(NOT DEFINED EMSCRIPTEN)
 
     # jvm
     add_library(ecc-jvm SHARED
-        jvm/jni.h
-        jvm/libecc.c
+        bindings/jvm/jni.h
+        bindings/jvm/libecc.c
     )
 
     target_compile_features(ecc-jvm PUBLIC c_std_11)
