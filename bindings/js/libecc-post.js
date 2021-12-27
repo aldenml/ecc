@@ -521,11 +521,33 @@ Module.ecc_kdf_hkdf_sha256_extract = (
  * 
  * See https://datatracker.ietf.org/doc/html/rfc5869
  *
+ * @param {Uint8Array} okm (output) output keying material of length `len`, size:len
+ * @param {Uint8Array} prk a pseudorandom key, size:ecc_kdf_hkdf_sha256_KEYSIZE
+ * @param {Uint8Array} info optional context and application specific information, size:info_len
+ * @param {number} info_len length of `info`
+ * @param {number} len length of output keying material in octets
  */
 Module.ecc_kdf_hkdf_sha256_expand = (
+    okm,
+    prk,
+    info,
+    info_len,
+    len,
 ) => {
+    const ptr_okm = mput(okm, len);
+    const ptr_prk = mput(prk, ecc_kdf_hkdf_sha256_KEYSIZE);
+    const ptr_info = mput(info, info_len);
     _ecc_kdf_hkdf_sha256_expand(
+        ptr_okm,
+        ptr_prk,
+        ptr_info,
+        info_len,
+        len,
     );
+    mget(okm, ptr_okm, len);
+    mfree(ptr_okm, len);
+    mfree(ptr_prk, ecc_kdf_hkdf_sha256_KEYSIZE);
+    mfree(ptr_info, info_len);
 }
 
 /**

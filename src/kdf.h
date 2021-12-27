@@ -39,7 +39,7 @@ void ecc_kdf_hkdf_sha256_extract(
  *
  * See https://datatracker.ietf.org/doc/html/rfc5869
  *
- * @param okm[out] output keying material of length `len`, size:len
+ * @param[out] okm output keying material of length `len`, size:len
  * @param prk a pseudorandom key, size:ecc_kdf_hkdf_sha256_KEYSIZE
  * @param info optional context and application specific information, size:info_len
  * @param info_len length of `info`
