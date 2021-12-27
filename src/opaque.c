@@ -179,7 +179,7 @@ int ecc_opaque_ristretto255_sha512_CreateCleartextCredentials(
     }
 
     const int total_size = Npk + server_identity_len + client_identity_len;
-    if (cleartext_credentials == NULL || cleartext_credentials_len != total_size)
+    if (cleartext_credentials == NULL)
         return total_size;
 
     ecc_concat3(
@@ -390,6 +390,9 @@ int ecc_opaque_ristretto255_sha512_RecoverEnvelope(
         ecc_memzero(expected_tag, sizeof expected_tag);
         return -1;
     }
+
+    // more cleanup stack memory
+    ecc_memzero(expected_tag, sizeof expected_tag);
 
     // 7. Output (client_private_key, export_key)
     return 0;
