@@ -3154,7 +3154,7 @@ Module.ecc_opaque_ristretto255_sha512_CreateRegistrationRequest = (
 }
 
 /**
- * Same as calling CreateRegistrationResponse with an specific oprf_seed.
+ * Same as calling CreateRegistrationResponse with a specific oprf_seed.
  * 
  * In order to make this method not to use dynamic memory allocation, there is a
  * limit of credential_identifier_len
@@ -3163,11 +3163,40 @@ Module.ecc_opaque_ristretto255_sha512_CreateRegistrationRequest = (
  * 
  * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-05#section-5.1.1.2
  *
+ * @param {Uint8Array} response_raw (output) size:ecc_opaque_ristretto255_sha512_REGISTRATIONRESPONSESIZE
+ * @param {Uint8Array} request_raw size:ecc_opaque_ristretto255_sha512_REGISTRATIONREQUESTSIZE
+ * @param {Uint8Array} server_public_key size:ecc_opaque_ristretto255_sha512_Npk
+ * @param {Uint8Array} credential_identifier size:credential_identifier_len
+ * @param {number} credential_identifier_len 
+ * @param {Uint8Array} oprf_key size:32
  */
 Module.ecc_opaque_ristretto255_sha512_CreateRegistrationResponseWithOprfKey = (
+    response_raw,
+    request_raw,
+    server_public_key,
+    credential_identifier,
+    credential_identifier_len,
+    oprf_key,
 ) => {
+    const ptr_response_raw = mput(response_raw, ecc_opaque_ristretto255_sha512_REGISTRATIONRESPONSESIZE);
+    const ptr_request_raw = mput(request_raw, ecc_opaque_ristretto255_sha512_REGISTRATIONREQUESTSIZE);
+    const ptr_server_public_key = mput(server_public_key, ecc_opaque_ristretto255_sha512_Npk);
+    const ptr_credential_identifier = mput(credential_identifier, credential_identifier_len);
+    const ptr_oprf_key = mput(oprf_key, 32);
     _ecc_opaque_ristretto255_sha512_CreateRegistrationResponseWithOprfKey(
+        ptr_response_raw,
+        ptr_request_raw,
+        ptr_server_public_key,
+        ptr_credential_identifier,
+        credential_identifier_len,
+        ptr_oprf_key,
     );
+    mget(response_raw, ptr_response_raw, ecc_opaque_ristretto255_sha512_REGISTRATIONRESPONSESIZE);
+    mfree(ptr_response_raw, ecc_opaque_ristretto255_sha512_REGISTRATIONRESPONSESIZE);
+    mfree(ptr_request_raw, ecc_opaque_ristretto255_sha512_REGISTRATIONREQUESTSIZE);
+    mfree(ptr_server_public_key, ecc_opaque_ristretto255_sha512_Npk);
+    mfree(ptr_credential_identifier, credential_identifier_len);
+    mfree(ptr_oprf_key, 32);
 }
 
 /**
@@ -3218,6 +3247,79 @@ Module.ecc_opaque_ristretto255_sha512_CreateRegistrationResponse = (
     mfree(ptr_server_public_key, ecc_opaque_ristretto255_sha512_Npk);
     mfree(ptr_credential_identifier, credential_identifier_len);
     mfree(ptr_oprf_seed, ecc_opaque_ristretto255_sha512_Nh);
+}
+
+/**
+ * Same as calling `ecc_opaque_ristretto255_sha512_FinalizeRequest` with an
+ * specified `nonce`.
+ * 
+ * To create the user record used for further authentication, the client
+ * executes the following function. Since this works in the internal key mode, the
+ * "client_private_key" is null.
+ * 
+ * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-05#section-5.1.1.3
+ *
+ * @param {Uint8Array} record_raw (output) a RegistrationUpload structure, size:ecc_opaque_ristretto255_sha512_REGISTRATIONUPLOADSIZE
+ * @param {Uint8Array} export_key (output) an additional client key, size:ecc_opaque_ristretto255_sha512_Nh
+ * @param {Uint8Array} client_private_key the client's private key (always null, internal mode), size:0
+ * @param {Uint8Array} password an opaque byte string containing the client's password, size:password_len
+ * @param {number} password_len the length of `password`
+ * @param {Uint8Array} blind the OPRF scalar value used for blinding, size:ecc_opaque_ristretto255_sha512_Noe
+ * @param {Uint8Array} response_raw a RegistrationResponse structure, size:ecc_opaque_ristretto255_sha512_REGISTRATIONRESPONSESIZE
+ * @param {Uint8Array} server_identity the optional encoded server identity, size:server_identity_len
+ * @param {number} server_identity_len the length of `server_identity`
+ * @param {Uint8Array} client_identity the optional encoded client identity, size:client_identity_len
+ * @param {number} client_identity_len the length of `client_identity`
+ * @param {Uint8Array} nonce size:ecc_opaque_ristretto255_sha512_Nn
+ */
+Module.ecc_opaque_ristretto255_sha512_FinalizeRequestWithNonce = (
+    record_raw,
+    export_key,
+    client_private_key,
+    password,
+    password_len,
+    blind,
+    response_raw,
+    server_identity,
+    server_identity_len,
+    client_identity,
+    client_identity_len,
+    nonce,
+) => {
+    const ptr_record_raw = mput(record_raw, ecc_opaque_ristretto255_sha512_REGISTRATIONUPLOADSIZE);
+    const ptr_export_key = mput(export_key, ecc_opaque_ristretto255_sha512_Nh);
+    const ptr_client_private_key = mput(client_private_key, 0);
+    const ptr_password = mput(password, password_len);
+    const ptr_blind = mput(blind, ecc_opaque_ristretto255_sha512_Noe);
+    const ptr_response_raw = mput(response_raw, ecc_opaque_ristretto255_sha512_REGISTRATIONRESPONSESIZE);
+    const ptr_server_identity = mput(server_identity, server_identity_len);
+    const ptr_client_identity = mput(client_identity, client_identity_len);
+    const ptr_nonce = mput(nonce, ecc_opaque_ristretto255_sha512_Nn);
+    _ecc_opaque_ristretto255_sha512_FinalizeRequestWithNonce(
+        ptr_record_raw,
+        ptr_export_key,
+        ptr_client_private_key,
+        ptr_password,
+        password_len,
+        ptr_blind,
+        ptr_response_raw,
+        ptr_server_identity,
+        server_identity_len,
+        ptr_client_identity,
+        client_identity_len,
+        ptr_nonce,
+    );
+    mget(record_raw, ptr_record_raw, ecc_opaque_ristretto255_sha512_REGISTRATIONUPLOADSIZE);
+    mget(export_key, ptr_export_key, ecc_opaque_ristretto255_sha512_Nh);
+    mfree(ptr_record_raw, ecc_opaque_ristretto255_sha512_REGISTRATIONUPLOADSIZE);
+    mfree(ptr_export_key, ecc_opaque_ristretto255_sha512_Nh);
+    mfree(ptr_client_private_key, 0);
+    mfree(ptr_password, password_len);
+    mfree(ptr_blind, ecc_opaque_ristretto255_sha512_Noe);
+    mfree(ptr_response_raw, ecc_opaque_ristretto255_sha512_REGISTRATIONRESPONSESIZE);
+    mfree(ptr_server_identity, server_identity_len);
+    mfree(ptr_client_identity, client_identity_len);
+    mfree(ptr_nonce, ecc_opaque_ristretto255_sha512_Nn);
 }
 
 /**

@@ -475,6 +475,42 @@ void ecc_opaque_ristretto255_sha512_CreateRegistrationResponse(
 );
 
 /**
+ * Same as calling `ecc_opaque_ristretto255_sha512_FinalizeRequest` with an
+ * specified `nonce`.
+ *
+ * To create the user record used for further authentication, the client
+ * executes the following function. Since this works in the internal key mode, the
+ * "client_private_key" is null.
+ *
+ * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-05#section-5.1.1.3
+ *
+ * @param[out] record_raw a RegistrationUpload structure, size:ecc_opaque_ristretto255_sha512_REGISTRATIONUPLOADSIZE
+ * @param[out] export_key an additional client key, size:ecc_opaque_ristretto255_sha512_Nh
+ * @param client_private_key the client's private key (always null, internal mode), size:0
+ * @param password an opaque byte string containing the client's password, size:password_len
+ * @param password_len the length of `password`
+ * @param blind the OPRF scalar value used for blinding, size:ecc_opaque_ristretto255_sha512_Noe
+ * @param response_raw a RegistrationResponse structure, size:ecc_opaque_ristretto255_sha512_REGISTRATIONRESPONSESIZE
+ * @param server_identity the optional encoded server identity, size:server_identity_len
+ * @param server_identity_len the length of `server_identity`
+ * @param client_identity the optional encoded client identity, size:client_identity_len
+ * @param client_identity_len the length of `client_identity`
+ * @param nonce size:ecc_opaque_ristretto255_sha512_Nn
+ */
+ECC_EXPORT
+void ecc_opaque_ristretto255_sha512_FinalizeRequestWithNonce(
+    byte_t *record_raw, // RegistrationUpload_t
+    byte_t *export_key,
+    const byte_t *client_private_key,
+    const byte_t *password, int password_len,
+    const byte_t *blind,
+    const byte_t *response_raw, // RegistrationResponse_t
+    const byte_t *server_identity, int server_identity_len,
+    const byte_t *client_identity, int client_identity_len,
+    const byte_t *nonce
+);
+
+/**
  * To create the user record used for further authentication, the client
  * executes the following function. Since this works in the internal key mode, the
  * "client_private_key" is null.

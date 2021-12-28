@@ -292,8 +292,8 @@ void ecc_opaque_ristretto255_sha512_CreateEnvelope(
     const byte_t *client_identity, int client_identity_len
 ) {
     // 1. envelope_nonce = random(Nn)
-    byte_t envelope_nonce[Nh];
-    ecc_randombytes(envelope_nonce, Nh);
+    byte_t envelope_nonce[Nn];
+    ecc_randombytes(envelope_nonce, Nn);
 
     ecc_opaque_ristretto255_sha512_CreateEnvelopeWithNonce(
         envelope_raw,
@@ -603,7 +603,7 @@ void ecc_opaque_ristretto255_sha512_CreateRegistrationResponse(
     ecc_memzero(oprf_private_key, sizeof oprf_private_key);
 }
 
-void ecc_opaque_ristretto255_sha512_FinalizeRequest(
+void ecc_opaque_ristretto255_sha512_FinalizeRequestWithNonce(
     byte_t *record_raw, // RegistrationUpload_t
     byte_t *export_key, // 64
     const byte_t *client_private_key,
@@ -611,7 +611,8 @@ void ecc_opaque_ristretto255_sha512_FinalizeRequest(
     const byte_t *blind,
     const byte_t *response_raw, // RegistrationResponse_t
     const byte_t *server_identity, const int server_identity_len,
-    const byte_t *client_identity, const int client_identity_len
+    const byte_t *client_identity, const int client_identity_len,
+    const byte_t *nonce
 ) {
     // Steps:
     // 1. y = Finalize(password, blind, response.data)
@@ -645,7 +646,7 @@ void ecc_opaque_ristretto255_sha512_FinalizeRequest(
     //                    server_identity, client_identity)
     byte_t client_public_key[32];
     byte_t masking_key[64];
-    ecc_opaque_ristretto255_sha512_CreateEnvelope(
+    ecc_opaque_ristretto255_sha512_CreateEnvelopeWithNonce(
         (byte_t *) &record->envelope,
         client_public_key,
         masking_key,
@@ -654,7 +655,8 @@ void ecc_opaque_ristretto255_sha512_FinalizeRequest(
         response->server_public_key,
         client_private_key,
         server_identity, server_identity_len,
-        client_identity, client_identity_len
+        client_identity, client_identity_len,
+        nonce
     );
 
     // 4. Create RegistrationUpload record with (client_public_key, masking_key, envelope)
@@ -668,6 +670,35 @@ void ecc_opaque_ristretto255_sha512_FinalizeRequest(
     ecc_memzero(randomized_pwd, sizeof randomized_pwd);
     ecc_memzero(client_public_key, sizeof client_public_key);
     ecc_memzero(masking_key, sizeof masking_key);
+}
+
+void ecc_opaque_ristretto255_sha512_FinalizeRequest(
+    byte_t *record_raw, // RegistrationUpload_t
+    byte_t *export_key, // 64
+    const byte_t *client_private_key,
+    const byte_t *password, const int password_len,
+    const byte_t *blind,
+    const byte_t *response_raw, // RegistrationResponse_t
+    const byte_t *server_identity, const int server_identity_len,
+    const byte_t *client_identity, const int client_identity_len
+) {
+    byte_t nonce[Nn];
+    ecc_randombytes(nonce, Nn);
+
+    ecc_opaque_ristretto255_sha512_FinalizeRequestWithNonce(
+        record_raw,
+        export_key,
+        client_private_key,
+        password, password_len,
+        blind,
+        response_raw,
+        server_identity, server_identity_len,
+        client_identity, client_identity_len,
+        nonce
+    );
+
+    // cleanup stack memory
+    ecc_memzero(nonce, sizeof nonce);
 }
 
 void ecc_opaque_ristretto255_sha512_CreateCredentialRequest(

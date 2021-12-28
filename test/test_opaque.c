@@ -278,6 +278,69 @@ static void opaque_ristretto255_sha512_RecoverPublicKey_test1(void **state) {
     assert_string_equal(hex, "18d5035fd0a9c1d6412226df037125901a43f4dff660c0549d402f672bcc0933");
 }
 
+static void ecc_opaque_ristretto255_sha512_CreateRegistrationResponse_test1(void **state) {
+    byte_t registration_request[64];
+    ecc_hex2bin(registration_request, "e61a3864330ae06a4fb67dd3710ef96e73ad0fc9f057feedee96307680081518", 64);
+    byte_t server_public_key[64];
+    ecc_hex2bin(server_public_key, "18d5035fd0a9c1d6412226df037125901a43f4dff660c0549d402f672bcc0933", 64);
+    byte_t credential_identifier[4];
+    ecc_hex2bin(credential_identifier, "31323334", 8);
+    byte_t oprf_seed[64];
+    ecc_hex2bin(oprf_seed, "5c4f99877d253be5817b4b03f37b6da680b0d5671d1ec5351fa61c5d82eab28b9de4c4e170f27e433ba377c71c49aa62ad26391ee1cac17011d8a7e9406657c8", 128);
+
+    byte_t registration_response[64];
+    byte_t oprf_key[32];
+    ecc_opaque_ristretto255_sha512_CreateRegistrationResponse(
+        registration_response,
+        oprf_key,
+        registration_request,
+        server_public_key,
+        credential_identifier, sizeof credential_identifier,
+        oprf_seed
+    );
+    char hex[129];
+    ecc_bin2hex(hex, registration_response, 64);
+    assert_string_equal(hex, "8e7f5534f0a2ff2e2c0bc9ac5952f870711f74e1547199425b79ca80c9656b0d18d5035fd0a9c1d6412226df037125901a43f4dff660c0549d402f672bcc0933");
+    ecc_bin2hex(hex, oprf_key, 32);
+    assert_string_equal(hex, "840f43a856a90968af35423ef4951133ba2fed30f7679ec1ee490fb257ef4f02");
+}
+
+static void ecc_opaque_ristretto255_sha512_FinalizeRequest_test1(void **state) {
+    byte_t password[25];
+    ecc_hex2bin(password, "436f7272656374486f72736542617474657279537461706c65", 50);
+    byte_t blind[32];
+    ecc_hex2bin(blind, "17f9d715dcc44faed5608f06d1106c623676206813756f9f888efb7989106c06", 64);
+    byte_t registration_response[64];
+    ecc_hex2bin(registration_response, "8e7f5534f0a2ff2e2c0bc9ac5952f870711f74e1547199425b79ca80c9656b0d18d5035fd0a9c1d6412226df037125901a43f4dff660c0549d402f672bcc0933", 128);
+    byte_t nonce[32];
+    ecc_hex2bin(nonce, "88888888dcc44faed5608f06d1106c623676206813756f9f888efb7989106c06", 64);
+
+    byte_t record[192];
+    byte_t export_key[64];
+    ecc_opaque_ristretto255_sha512_FinalizeRequestWithNonce(
+        record,
+        export_key,
+        NULL,
+        password, sizeof password,
+        blind,
+        registration_response,
+        NULL, 0,
+        NULL, 0,
+        nonce
+    );
+    char hex[385];
+    ecc_bin2hex(hex, record, 192);
+    assert_string_equal(hex, "0436d5abd24da98174f917663ccff94b70b93f81abaf9651539197345f857820d561753"
+                             "b08f52c98a21b62df41366ff3f6f5853108f5a63c574acdd56db5885e8ff145ad6f100d"
+                             "14763ca834b0d599d4bc8da03261dc2fb42b27ac495f0bb09588888888dcc44faed5608"
+                             "f06d1106c623676206813756f9f888efb7989106c06e8d34f02855380ad30d71710833b"
+                             "708330305cb5ced5d373b721ced517dd75d621b9d12ad9646a60dffd80b5ab98018d04e"
+                             "a32677f29808d62de81aff22c0535");
+    ecc_bin2hex(hex, export_key, 64);
+    assert_string_equal(hex, "8a17e3b8fdbf042a36383a8be6479ce66fd5e916969266a45f7957f1bbd585d566c62f1"
+                             "91c6ad70fd2ac5b784c79355b5e9ecd35bee4fe27b2ece31e1133ad06");
+}
+
 int main() {
     const struct CMUnitTest tests[] = {
         cmocka_unit_test(opaque_CreateCleartextCredentials_test),
@@ -286,6 +349,8 @@ int main() {
         //cmocka_unit_test(opaque_ristretto255_sha512_CreateRegistrationRequestWithBlind_test1),
         //cmocka_unit_test(opaque_ristretto255_sha512_CreateRegistrationRequestWithBlind_test2),
         cmocka_unit_test(opaque_ristretto255_sha512_RecoverPublicKey_test1),
+        cmocka_unit_test(ecc_opaque_ristretto255_sha512_CreateRegistrationResponse_test1),
+        cmocka_unit_test(ecc_opaque_ristretto255_sha512_FinalizeRequest_test1),
         // protocol
         cmocka_unit_test(opaque_ristretto255_sha512_test1),
     };
