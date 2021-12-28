@@ -18,7 +18,7 @@ import static org.ssohub.crypto.ecc.libecc.ecc_randombytes;
 public class UtilTest {
 
     @Test
-    void ecc_randombytes_test() {
+    void test_ecc_randombytes() {
         byte[] buf = new byte[10];
         ecc_randombytes(buf, buf.length);
         int count = 0;

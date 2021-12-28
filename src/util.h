@@ -10,7 +10,8 @@
 
 #include "export.h"
 
-// internal
+// This is useful to avoid warnings of unused arguments in the
+// implementations. You can use it in your own code.
 #define ECC_UNUSED(x) (void)(x)
 
 /**
@@ -21,13 +22,10 @@
  * @param len the length of `buf`
  */
 ECC_EXPORT
-void ecc_memzero(
-    byte_t *buf,
-    int len
-);
+void ecc_memzero(byte_t *buf, int len);
 
 /**
- * Fills `n` bytes at buf with an unpredictable sequence of bytes.
+ * Fills `n` bytes at `buf` with an unpredictable sequence of bytes.
  *
  * @param[out] buf the byte array to fill, size:n
  * @param n the number of bytes to fill
@@ -56,7 +54,7 @@ ECC_EXPORT
 void ecc_hex2bin(byte_t *bin, const char *hex, int hex_len);
 
 /**
- * Concatenates two byte arrays. Sames as a || b.
+ * Concatenates two byte arrays. Same as a || b.
  *
  * a || b: denotes the concatenation of byte strings a and b. For
  * example, "ABC" || "DEF" == "ABCDEF".
@@ -165,7 +163,7 @@ int ecc_compare(const byte_t *a, const byte_t *b, int len);
 
 /**
  * Takes a byte array and test if it contains only zeros. It runs
- * in constant-time.
+ * in constant time.
  *
  * @param n the byte array, size:len
  * @param len the length of `n`
@@ -175,10 +173,10 @@ ECC_EXPORT
 int ecc_is_zero(const byte_t *n, int len);
 
 /**
- * Allocates size bytes of uninitialized storage.
+ * Allocates `size` bytes of uninitialized storage.
  *
- * To avoid a memory leak, the returned pointer must be deallocated
- * with `ecc_free`.
+ * To avoid a memory leak and for security reasons, the returned
+ * pointer must be deallocated with `ecc_free`.
  *
  * NOTE: this is mostly to help binding implementations.
  *

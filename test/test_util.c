@@ -11,7 +11,7 @@
 #include <string.h>
 #include <cmocka.h>
 
-static void ecc_memzero_test(void **state) {
+static void test_ecc_memzero(void **state) {
     ECC_UNUSED(state);
 
     const int len = 100;
@@ -25,7 +25,7 @@ static void ecc_memzero_test(void **state) {
     assert_int_equal(count, len);
 }
 
-static void ecc_randombytes_test(void **state) {
+static void test_ecc_randombytes(void **state) {
     ECC_UNUSED(state);
 
     const int len = 10;
@@ -39,7 +39,7 @@ static void ecc_randombytes_test(void **state) {
     assert_true(count < 2);
 }
 
-static void ecc_bin2hex_test(void **state) {
+static void test_ecc_bin2hex(void **state) {
     ECC_UNUSED(state);
 
     const byte_t bin[2] = {0xab, 0xcd};
@@ -48,7 +48,7 @@ static void ecc_bin2hex_test(void **state) {
     assert_string_equal(hex, "abcd");
 }
 
-static void ecc_hex2bin_test(void **state) {
+static void test_ecc_hex2bin(void **state) {
     ECC_UNUSED(state);
 
     const char hex[4] = "abcd";
@@ -58,7 +58,17 @@ static void ecc_hex2bin_test(void **state) {
     assert_memory_equal(bin, r, 2);
 }
 
-static void ecc_concat3_test1(void **state) {
+static void test_ecc_concat2(void **state) {
+    ECC_UNUSED(state);
+    byte_t a1[2] = "a1";
+    byte_t a2[3] = "b22";
+    byte_t r1[9];
+    ecc_concat2(r1, a1, 2, a2, 3);
+    const byte_t r2[5] = "a1b22";
+    assert_memory_equal(r1, r2, 5);
+}
+
+static void test_ecc_concat3(void **state) {
     ECC_UNUSED(state);
     byte_t a1[2] = "a1";
     byte_t a2[3] = "b22";
@@ -69,7 +79,7 @@ static void ecc_concat3_test1(void **state) {
     assert_memory_equal(r1, r2, 9);
 }
 
-static void ecc_concat4_test1(void **state) {
+static void test_ecc_concat4(void **state) {
     ECC_UNUSED(state);
     byte_t a1[2] = "a1";
     byte_t a2[3] = "b22";
@@ -81,34 +91,78 @@ static void ecc_concat4_test1(void **state) {
     assert_memory_equal(r1, r2, 14);
 }
 
-static void ecc_strxor_test1(void **state) {
+static void test_ecc_strxor(void **state) {
     ECC_UNUSED(state);
     byte_t a[3] = "abc";
     byte_t b[3] = "XYZ";
     byte_t r[3];
     ecc_strxor(r, a, b, 3);
-    assert_memory_equal(r, "9;9", 2);
+    assert_memory_equal(r, "9;9", 3);
 }
 
-static void ecc_I2OSP_test1(void **state) {
+static void test_ecc_I2OSP(void **state) {
     ECC_UNUSED(state);
-    const char hex[4] = "abcd";
-    byte_t bin[2];
-    ecc_hex2bin(bin, hex, 4);
+    byte_t buf[2];
+    ecc_I2OSP(buf, 0xabcd, 2);
     const byte_t r[2] = {0xab, 0xcd};
-    assert_memory_equal(bin, r, 2);
+    assert_memory_equal(buf, r, 2);
+}
+
+static void test_ecc_compare_equal(void **state) {
+    ECC_UNUSED(state);
+
+    const byte_t a[2] = {0xab, 0xcd};
+    const byte_t b[2] = {0xab, 0xcd};
+    const int r = ecc_compare(a, b, 2);
+    assert_int_equal(r, 0);
+}
+
+static void test_ecc_compare_different(void **state) {
+    ECC_UNUSED(state);
+
+    const byte_t a[2] = {0xfb, 0xcd};
+    const byte_t b[2] = {0xab, 0xcd};
+    const int r1 = ecc_compare(a, b, 2);
+    const int r2 = ecc_compare(b, a, 2);
+    assert_int_equal(r1, 1);
+    assert_int_equal(r2, -1);
+}
+
+static void test_ecc_is_zero(void **state) {
+    ECC_UNUSED(state);
+
+    const byte_t a[2] = {0x0, 0x0};
+    const byte_t b[2] = {0xab, 0xcd};
+    const int r1 = ecc_is_zero(a, 2);
+    const int r2 = ecc_is_zero(b, 2);
+    assert_true(r1);
+    assert_false(r2);
+}
+
+static void test_ecc_malloc(void **state) {
+    ECC_UNUSED(state);
+
+    const int len = 100;
+    byte_t *ptr = ecc_malloc(len);
+    assert_non_null(ptr);
+    ecc_free(ptr, len);
 }
 
 int main() {
     const struct CMUnitTest tests[] = {
-        cmocka_unit_test(ecc_memzero_test),
-        cmocka_unit_test(ecc_randombytes_test),
-        cmocka_unit_test(ecc_bin2hex_test),
-        cmocka_unit_test(ecc_hex2bin_test),
-        cmocka_unit_test(ecc_concat3_test1),
-        cmocka_unit_test(ecc_concat4_test1),
-        cmocka_unit_test(ecc_strxor_test1),
-        cmocka_unit_test(ecc_I2OSP_test1),
+        cmocka_unit_test(test_ecc_memzero),
+        cmocka_unit_test(test_ecc_randombytes),
+        cmocka_unit_test(test_ecc_bin2hex),
+        cmocka_unit_test(test_ecc_hex2bin),
+        cmocka_unit_test(test_ecc_concat2),
+        cmocka_unit_test(test_ecc_concat3),
+        cmocka_unit_test(test_ecc_concat4),
+        cmocka_unit_test(test_ecc_strxor),
+        cmocka_unit_test(test_ecc_I2OSP),
+        cmocka_unit_test(test_ecc_compare_equal),
+        cmocka_unit_test(test_ecc_compare_different),
+        cmocka_unit_test(test_ecc_is_zero),
+        cmocka_unit_test(test_ecc_malloc),
     };
 
     return cmocka_run_group_tests(tests, NULL, NULL);

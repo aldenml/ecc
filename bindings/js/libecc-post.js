@@ -41,7 +41,7 @@ function mfree(ptr, size) {
 
 
 /**
- * Fills `n` bytes at buf with an unpredictable sequence of bytes.
+ * Fills `n` bytes at `buf` with an unpredictable sequence of bytes.
  *
  * @param {Uint8Array} buf (output) the byte array to fill, size:n
  * @param {number} n the number of bytes to fill
@@ -60,7 +60,7 @@ Module.ecc_randombytes = (
 }
 
 /**
- * Concatenates two byte arrays. Sames as a || b.
+ * Concatenates two byte arrays. Same as a || b.
  * 
  * a || b: denotes the concatenation of byte strings a and b. For
  * example, "ABC" || "DEF" == "ABCDEF".
@@ -278,7 +278,7 @@ Module.ecc_compare = (
 
 /**
  * Takes a byte array and test if it contains only zeros. It runs
- * in constant-time.
+ * in constant time.
  *
  * @param {Uint8Array} n the byte array, size:len
  * @param {number} len the length of `n`
