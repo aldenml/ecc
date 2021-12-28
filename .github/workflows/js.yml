@@ -38,13 +38,7 @@ jobs:
 
       - name: js tests
         run: |
-          cd js/ecc
-          npm install
-          npm test
-          cd ../oprf
-          npm install
-          npm test
-          cd ../opaque
+          cd bindings/js
           npm install
           npm test
           cd ../..
