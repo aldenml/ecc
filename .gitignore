@@ -4,9 +4,7 @@
 /build
 /cmake-build*
 node_modules/
-/bindings/js/ecc/dist
-/bindings/js/oprf/dist
-/bindings/js/opaque/dist
+/bindings/js/dist
 /bindings/jvm/.gradle
 /bindings/jvm/.idea
 /bindings/jvm/build

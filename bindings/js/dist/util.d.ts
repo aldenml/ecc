@@ -20,7 +20,7 @@ export function bin2hex(bin: Uint8Array): string;
  */
 export function hex2bin(hex: string): Uint8Array;
 /**
- * Converts an hex string to a byte array.
+ * Converts a hex string to a byte array.
  *
  * @param {Uint8Array} buf
  * @returns {number}
