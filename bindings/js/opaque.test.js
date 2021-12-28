@@ -81,6 +81,44 @@ describe("OPAQUE(ristretto255, SHA-512)", () => {
             "91c6ad70fd2ac5b784c79355b5e9ecd35bee4fe27b2ece31e1133ad06");
     });
 
+    it("3DH_ClientFinish", async () => {
+        const libecc = await libecc_module();
+
+        const client_state = hex2bin("b5930d735a1597cce3960cc32f9a1f4f9cc26bfbd2c407943a82e9c0b6f180073702b" +
+            "fee4e40c83aa38da4ce17d6bcd96e3274dea12ec9d97f1799f7e19058031ee702a87bc07e07f3" +
+            "1970b3307b54d4f274cc93a590a2fa381634b4c06c7117fb99917146a372df1719bddbd5e473e" +
+            "ee4a356586e72a7db0cef8bbfa9a333de0661feae590c9763a19a82dcab3fa5fe7f97cf97c9a1" +
+            "20dba8c32ff141e7f556");
+        const password = hex2bin("436f7272656374486f72736542617474657279537461706c65");
+        const ke2 = hex2bin("f8d47b6db3cbd250aa9bf7f6c41b9da24e97a289727e23a700ddac799b607f74136d601f183137" +
+            "f322ab7dc60453ae33d53ae6773a23a502ab2cc4769d8c0d83e702999f994663953d966573825eb9f99160" +
+            "bef3bf176629bf41ef06e1edca08d8065f5638fa4e6dcfe635d2523c2e168023cf50be01255a3a3774a586" +
+            "9aa3d5f1eaa1bc064c88d63732917b005fdec8009b6634c8f63c0fb2caf8f50cabc76f7a75544fb5d9a438" +
+            "57b224d5d523384628fcd26d70ac9900a8369522f779e96630ab26eff16259d4eba34ca1a9086fee0a9b0c" +
+            "d7588fce39e8f47412864bccbe360f95705d41173f01694a7156436eaeb245c8df77e22e2a804a14ae900e" +
+            "3c0b25cf06d722ea56e0b5690f2ee02725f5599d443b88acf36816d184222113d1bef32fdc1fe7b01f2361" +
+            "d871ed23a72543a60cb7caf6c5aaa78a2991a12fb6237b");
+
+        let ke3 = new Uint8Array(64);
+        let client_session_key = new Uint8Array(64);
+        let export_key2 = new Uint8Array(64);
+        const client_finish_ret = libecc.ecc_opaque_ristretto255_sha512_3DH_ClientFinish(
+            ke3,
+            client_session_key,
+            export_key2,
+            client_state,
+            password, password.length,
+            new Uint8Array(0), 0,
+            new Uint8Array(0), 0,
+            ke2
+        );
+
+        assert.strictEqual(client_finish_ret, 0);
+        assert.strictEqual(bin2hex(ke3), "83e2b6b89377355759664bac9759565e3e24ce7f8cc0a1ada9d97dae6ceab83c61ef1f07b6dc3ce7d3b393e95a68ee8004195522b3833f484fa42a9a3b3038e7");
+        assert.strictEqual(bin2hex(client_session_key), "a53ea052c3d32fb9521ecca5b0c4b921450761e1403a9673ea367d382806e1fc8e6094d647553c61e734f891b4887c0fcdec05076f74283b487bf375619bab61");
+        assert.strictEqual(bin2hex(export_key2), "fe015f5e10a485383bdd638b3387e9ac074b3fbc183d927896a9b1acf720a60ab56b4f7aef7ce2db9619e806f960f293e0857d60bd74d766da44d43ad88850a1");
+    });
+
     it("Test 1 (random input)", async () => {
         // client
         const password = await randombytes(10);
