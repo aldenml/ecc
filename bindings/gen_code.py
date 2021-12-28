@@ -427,6 +427,13 @@ def gen_js(headers, ignore):
 
 def gen_jni_c(headers, ignore):
     out = ""
+    out += "/*\n"
+    out += " * Copyright (c) 2021, Alden Torres\n"
+    out += " *\n"
+    out += " * Licensed under the terms of the MIT license.\n"
+    out += " * Copy of the license at https://opensource.org/licenses/MIT\n"
+    out += " */\n"
+    out += "\n"
     out += "#include \"jni.h\"\n"
     out += "#include <ecc.h>\n"
     out += "\n"
@@ -512,5 +519,13 @@ def gen_jni_java(headers, ignore):
     return out
 
 
-print(gen_jni_java(ecc_headers, ecc_ignore))
+def gen_code(headers, ignore):
+    with open("bindings/js/libecc-post.js", "w") as f:
+        f.write(gen_js(headers, ignore))
+    with open("bindings/jvm/libecc.c", "w") as f:
+        f.write(gen_jni_c(headers, ignore))
+    with open("bindings/jvm/src/main/java/org/ssohub/crypto/ecc/libecc.java", "w") as f:
+        f.write(gen_jni_java(headers, ignore))
 
+
+gen_code(ecc_headers, ecc_ignore)

@@ -282,7 +282,8 @@ Module.ecc_compare = (
  *
  * @param {Uint8Array} n the byte array, size:len
  * @param {number} len the length of `n`
- * @return {number} 0 if non-zero bits are found */
+ * @return {number} 0 if non-zero bits are found
+ */
 Module.ecc_is_zero = (
     n,
     len,
@@ -689,7 +690,8 @@ Module.ecc_ed25519_sign_SECRETKEYSIZE = ecc_ed25519_sign_SECRETKEYSIZE;
  * form, on the main subgroup, and that the point doesn't have a small order.
  *
  * @param {Uint8Array} p potential point to test, size:ecc_ed25519_SIZE
- * @return {number} 1 on success, and 0 if the checks didn't pass */
+ * @return {number} 1 on success, and 0 if the checks didn't pass
+ */
 Module.ecc_ed25519_is_valid_point = (
     p,
 ) => {
@@ -707,7 +709,8 @@ Module.ecc_ed25519_is_valid_point = (
  * @param {Uint8Array} r (output) the result, size:ecc_ed25519_SIZE
  * @param {Uint8Array} p input point operand, size:ecc_ed25519_SIZE
  * @param {Uint8Array} q input point operand, size:ecc_ed25519_SIZE
- * @return {number} 0 on success, or -1 if p and/or q are not valid points */
+ * @return {number} 0 on success, or -1 if p and/or q are not valid points
+ */
 Module.ecc_ed25519_add = (
     r,
     p,
@@ -734,7 +737,8 @@ Module.ecc_ed25519_add = (
  * @param {Uint8Array} r (output) the result, size:ecc_ed25519_SIZE
  * @param {Uint8Array} p input point operand, size:ecc_ed25519_SIZE
  * @param {Uint8Array} q input point operand, size:ecc_ed25519_SIZE
- * @return {number} 0 on success, or -1 if p and/or q are not valid points */
+ * @return {number} 0 on success, or -1 if p and/or q are not valid points
+ */
 Module.ecc_ed25519_sub = (
     r,
     p,
@@ -821,7 +825,8 @@ Module.ecc_ed25519_scalar_random = (
  *
  * @param {Uint8Array} recip (output) the result, size:ecc_ed25519_SCALARSIZE
  * @param {Uint8Array} s an scalar, size:ecc_ed25519_SCALARSIZE
- * @return {number} 0 on success, or -1 if s is zero */
+ * @return {number} 0 on success, or -1 if s is zero
+ */
 Module.ecc_ed25519_scalar_invert = (
     recip,
     s,
@@ -995,7 +1000,8 @@ Module.ecc_ed25519_scalar_reduce = (
  * @param {Uint8Array} q (output) the result, size:ecc_ed25519_SIZE
  * @param {Uint8Array} n the valid input scalar, size:ecc_ed25519_SCALARSIZE
  * @param {Uint8Array} p the point on the curve, size:ecc_ed25519_SIZE
- * @return {number} 0 on success, or -1 otherwise. */
+ * @return {number} 0 on success, or -1 otherwise.
+ */
 Module.ecc_ed25519_scalarmult = (
     q,
     n,
@@ -1022,7 +1028,8 @@ Module.ecc_ed25519_scalarmult = (
  *
  * @param {Uint8Array} q (output) the result, size:ecc_ed25519_SIZE
  * @param {Uint8Array} n the valid input scalar, size:ecc_ed25519_SCALARSIZE
- * @return {number} -1 if n is 0, and 0 otherwise. */
+ * @return {number} -1 if n is 0, and 0 otherwise.
+ */
 Module.ecc_ed25519_scalarmult_base = (
     q,
     n,
@@ -1077,7 +1084,8 @@ Module.ecc_ed25519_sign = (
  * @param {Uint8Array} msg input message, size:msg_len
  * @param {number} msg_len the length of `msg`
  * @param {Uint8Array} pk the public key, size:ecc_ed25519_sign_PUBLICKEYSIZE
- * @return {number} -1 if the signature fails verification, or 0 on success */
+ * @return {number} -1 if the signature fails verification, or 0 on success
+ */
 Module.ecc_ed25519_sign_verify = (
     sig,
     msg,
@@ -1230,7 +1238,8 @@ Module.ecc_ristretto255_NONREDUCEDSCALARSIZE = ecc_ristretto255_NONREDUCEDSCALAR
  * only checks that p is in canonical form.
  *
  * @param {Uint8Array} p potential point to test, size:ecc_ristretto255_SIZE
- * @return {number} 1 on success, and 0 if the checks didn't pass. */
+ * @return {number} 1 on success, and 0 if the checks didn't pass.
+ */
 Module.ecc_ristretto255_is_valid_point = (
     p,
 ) => {
@@ -1249,7 +1258,8 @@ Module.ecc_ristretto255_is_valid_point = (
  * @param {Uint8Array} r (output) the result, size:ecc_ristretto255_SIZE
  * @param {Uint8Array} p input point operand, size:ecc_ristretto255_SIZE
  * @param {Uint8Array} q input point operand, size:ecc_ristretto255_SIZE
- * @return {number} 0 on success, or -1 if p and/or q are not valid encoded elements */
+ * @return {number} 0 on success, or -1 if p and/or q are not valid encoded elements
+ */
 Module.ecc_ristretto255_add = (
     r,
     p,
@@ -1277,7 +1287,8 @@ Module.ecc_ristretto255_add = (
  * @param {Uint8Array} r (output) the result, size:ecc_ristretto255_SIZE
  * @param {Uint8Array} p input point operand, size:ecc_ristretto255_SIZE
  * @param {Uint8Array} q input point operand, size:ecc_ristretto255_SIZE
- * @return {number} 0 on success, or -1 if p and/or q are not valid encoded elements */
+ * @return {number} 0 on success, or -1 if p and/or q are not valid encoded elements
+ */
 Module.ecc_ristretto255_sub = (
     r,
     p,
@@ -1359,7 +1370,8 @@ Module.ecc_ristretto255_scalar_random = (
  *
  * @param {Uint8Array} recip (output) the result, size:ecc_ristretto255_SCALARSIZE
  * @param {Uint8Array} s an scalar, size:ecc_ristretto255_SCALARSIZE
- * @return {number} 0 on success, or -1 if s is zero */
+ * @return {number} 0 on success, or -1 if s is zero
+ */
 Module.ecc_ristretto255_scalar_invert = (
     recip,
     s,
@@ -1529,7 +1541,8 @@ Module.ecc_ristretto255_scalar_reduce = (
  * @param {Uint8Array} q (output) the result, size:ecc_ristretto255_SIZE
  * @param {Uint8Array} n the valid input scalar, size:ecc_ristretto255_SCALARSIZE
  * @param {Uint8Array} p the point on the curve, size:ecc_ristretto255_SIZE
- * @return {number} 0 on success, or -1 if q is the identity element. */
+ * @return {number} 0 on success, or -1 if q is the identity element.
+ */
 Module.ecc_ristretto255_scalarmult = (
     q,
     n,
@@ -1556,7 +1569,8 @@ Module.ecc_ristretto255_scalarmult = (
  *
  * @param {Uint8Array} q (output) the result, size:ecc_ristretto255_SIZE
  * @param {Uint8Array} n the valid input scalar, size:ecc_ristretto255_SCALARSIZE
- * @return {number} -1 if n is 0, and 0 otherwise. */
+ * @return {number} -1 if n is 0, and 0 otherwise.
+ */
 Module.ecc_ristretto255_scalarmult_base = (
     q,
     n,
@@ -1651,7 +1665,8 @@ Module.ecc_bls12_381_fp12_one = (
  * Determine if an element is the identity in BLS12-381 Fp12.
  *
  * @param {Uint8Array} a the input, size:ecc_bls12_381_FP12SIZE
- * @return {number} 0 if the element a is the identity in BLS12-381 Fp12. */
+ * @return {number} 0 if the element a is the identity in BLS12-381 Fp12.
+ */
 Module.ecc_bls12_381_fp12_is_one = (
     a,
 ) => {
@@ -2073,7 +2088,8 @@ Module.ecc_bls12_381_pairing_final_exp = (
  *
  * @param {Uint8Array} a the first argument to verify, size:ecc_bls12_381_FP12SIZE
  * @param {Uint8Array} b the second argument to verify, size:ecc_bls12_381_FP12SIZE
- * @return {number} 1 if it's a pairing match, else 0 */
+ * @return {number} 1 if it's a pairing match, else 0
+ */
 Module.ecc_bls12_381_pairing_final_verify = (
     a,
     b,
@@ -2698,7 +2714,8 @@ Module.ecc_opaque_ristretto255_sha512_SERVERSTATESIZE = ecc_opaque_ristretto255_
  * @param {number} server_identity_len the length of `server_identity`
  * @param {Uint8Array} client_identity the optional encoded client identity, size:client_identity_len
  * @param {number} client_identity_len the length of `client_identity`
- * @return {number} the size of the serialized structure */
+ * @return {number} the size of the serialized structure
+ */
 Module.ecc_opaque_ristretto255_sha512_CreateCleartextCredentials = (
     cleartext_credentials,
     cleartext_credentials_len,
@@ -2892,7 +2909,8 @@ Module.ecc_opaque_ristretto255_sha512_CreateEnvelope = (
  * @param {number} server_identity_len 
  * @param {Uint8Array} client_identity size:client_identity_len
  * @param {number} client_identity_len 
- * @return {number} on success returns 0, else -1. */
+ * @return {number} on success returns 0, else -1.
+ */
 Module.ecc_opaque_ristretto255_sha512_RecoverEnvelope = (
     client_private_key,
     export_key,
@@ -3438,11 +3456,45 @@ Module.ecc_opaque_ristretto255_sha512_CreateCredentialRequest = (
  * 
  * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-05#section-6.1.2.2
  *
+ * @param {Uint8Array} response_raw (output) size:ecc_opaque_ristretto255_sha512_CREDENTIALRESPONSESIZE
+ * @param {Uint8Array} request_raw size:ecc_opaque_ristretto255_sha512_CREDENTIALREQUESTSIZE
+ * @param {Uint8Array} server_public_key size:ecc_opaque_ristretto255_sha512_Npk
+ * @param {Uint8Array} record_raw size:ecc_opaque_ristretto255_sha512_REGISTRATIONUPLOADSIZE
+ * @param {Uint8Array} credential_identifier size:credential_identifier_len
+ * @param {number} credential_identifier_len 
+ * @param {Uint8Array} oprf_seed size:ecc_opaque_ristretto255_sha512_Nh
  */
 Module.ecc_opaque_ristretto255_sha512_CreateCredentialResponse = (
+    response_raw,
+    request_raw,
+    server_public_key,
+    record_raw,
+    credential_identifier,
+    credential_identifier_len,
+    oprf_seed,
 ) => {
+    const ptr_response_raw = mput(response_raw, ecc_opaque_ristretto255_sha512_CREDENTIALRESPONSESIZE);
+    const ptr_request_raw = mput(request_raw, ecc_opaque_ristretto255_sha512_CREDENTIALREQUESTSIZE);
+    const ptr_server_public_key = mput(server_public_key, ecc_opaque_ristretto255_sha512_Npk);
+    const ptr_record_raw = mput(record_raw, ecc_opaque_ristretto255_sha512_REGISTRATIONUPLOADSIZE);
+    const ptr_credential_identifier = mput(credential_identifier, credential_identifier_len);
+    const ptr_oprf_seed = mput(oprf_seed, ecc_opaque_ristretto255_sha512_Nh);
     _ecc_opaque_ristretto255_sha512_CreateCredentialResponse(
+        ptr_response_raw,
+        ptr_request_raw,
+        ptr_server_public_key,
+        ptr_record_raw,
+        ptr_credential_identifier,
+        credential_identifier_len,
+        ptr_oprf_seed,
     );
+    mget(response_raw, ptr_response_raw, ecc_opaque_ristretto255_sha512_CREDENTIALRESPONSESIZE);
+    mfree(ptr_response_raw, ecc_opaque_ristretto255_sha512_CREDENTIALRESPONSESIZE);
+    mfree(ptr_request_raw, ecc_opaque_ristretto255_sha512_CREDENTIALREQUESTSIZE);
+    mfree(ptr_server_public_key, ecc_opaque_ristretto255_sha512_Npk);
+    mfree(ptr_record_raw, ecc_opaque_ristretto255_sha512_REGISTRATIONUPLOADSIZE);
+    mfree(ptr_credential_identifier, credential_identifier_len);
+    mfree(ptr_oprf_seed, ecc_opaque_ristretto255_sha512_Nh);
 }
 
 /**
@@ -3459,7 +3511,8 @@ Module.ecc_opaque_ristretto255_sha512_CreateCredentialResponse = (
  * @param {number} server_identity_len 
  * @param {Uint8Array} client_identity size:client_identity_len
  * @param {number} client_identity_len 
- * @return {number} on success returns 0, else -1. */
+ * @return {number} on success returns 0, else -1.
+ */
 Module.ecc_opaque_ristretto255_sha512_RecoverCredentials = (
     client_private_key,
     server_public_key,
@@ -3606,7 +3659,8 @@ Module.ecc_opaque_ristretto255_sha512_3DH_Derive_Secret = (
  * @param {number} server_identity_len the length of `server_identity`
  * @param {Uint8Array} inner_ke2 an inner_ke2 structure as defined in KE2, size:inner_ke2_len
  * @param {number} inner_ke2_len the length of `inner_ke2`
- * @return {number} the protocol transcript with identities and messages */
+ * @return {number} the protocol transcript with identities and messages
+ */
 Module.ecc_opaque_ristretto255_sha512_3DH_Preamble = (
     preamble,
     preamble_len,
@@ -3798,7 +3852,8 @@ Module.ecc_opaque_ristretto255_sha512_3DH_ClientInit = (
  * to server_public_key if not specified, size:server_identity_len
  * @param {number} server_identity_len the length of `server_identity`
  * @param {Uint8Array} ke2_raw a KE2 message structure, size:ecc_opaque_ristretto255_sha512_KE2SIZE
- * @return {number} 0 if is able to recover credentials and authenticate with the server, else -1 */
+ * @return {number} 0 if is able to recover credentials and authenticate with the server, else -1
+ */
 Module.ecc_opaque_ristretto255_sha512_3DH_ClientFinish = (
     ke3_raw,
     session_key,
@@ -3889,7 +3944,10 @@ Module.ecc_opaque_ristretto255_sha512_3DH_Start = (
  * @param {number} server_identity_len 
  * @param {Uint8Array} server_public_key size:ecc_opaque_ristretto255_sha512_Npk
  * @param {Uint8Array} ke2_raw size:ecc_opaque_ristretto255_sha512_KE2SIZE
- * @return {number} 0 if success, else -1 */
+ * @param {Uint8Array} context the application specific context, size:context_len
+ * @param {number} context_len the length of `context`
+ * @return {number} 0 if success, else -1
+ */
 Module.ecc_opaque_ristretto255_sha512_3DH_ClientFinalize = (
     ke3_raw,
     session_key,
@@ -3901,6 +3959,8 @@ Module.ecc_opaque_ristretto255_sha512_3DH_ClientFinalize = (
     server_identity_len,
     server_public_key,
     ke2_raw,
+    context,
+    context_len,
 ) => {
     const ptr_ke3_raw = mput(ke3_raw, ecc_opaque_ristretto255_sha512_KE3SIZE);
     const ptr_session_key = mput(session_key, 64);
@@ -3910,6 +3970,7 @@ Module.ecc_opaque_ristretto255_sha512_3DH_ClientFinalize = (
     const ptr_server_identity = mput(server_identity, server_identity_len);
     const ptr_server_public_key = mput(server_public_key, ecc_opaque_ristretto255_sha512_Npk);
     const ptr_ke2_raw = mput(ke2_raw, ecc_opaque_ristretto255_sha512_KE2SIZE);
+    const ptr_context = mput(context, context_len);
     const fun_ret = _ecc_opaque_ristretto255_sha512_3DH_ClientFinalize(
         ptr_ke3_raw,
         ptr_session_key,
@@ -3921,6 +3982,8 @@ Module.ecc_opaque_ristretto255_sha512_3DH_ClientFinalize = (
         server_identity_len,
         ptr_server_public_key,
         ptr_ke2_raw,
+        ptr_context,
+        context_len,
     );
     mget(ke3_raw, ptr_ke3_raw, ecc_opaque_ristretto255_sha512_KE3SIZE);
     mget(session_key, ptr_session_key, 64);
@@ -3933,6 +3996,7 @@ Module.ecc_opaque_ristretto255_sha512_3DH_ClientFinalize = (
     mfree(ptr_server_identity, server_identity_len);
     mfree(ptr_server_public_key, ecc_opaque_ristretto255_sha512_Npk);
     mfree(ptr_ke2_raw, ecc_opaque_ristretto255_sha512_KE2SIZE);
+    mfree(ptr_context, context_len);
     return fun_ret;
 }
 
@@ -4015,7 +4079,8 @@ Module.ecc_opaque_ristretto255_sha512_3DH_ServerInit = (
  * @param {Uint8Array} session_key (output) the shared session secret if and only if KE3 is valid, size:64
  * @param {Uint8Array} state_raw (input, output) a ServerState structure, size:ecc_opaque_ristretto255_sha512_SERVERSTATESIZE
  * @param {Uint8Array} ke3_raw a KE3 structure, size:ecc_opaque_ristretto255_sha512_KE3SIZE
- * @return {number} 0 if the user was authenticated, else -1 */
+ * @return {number} 0 if the user was authenticated, else -1
+ */
 Module.ecc_opaque_ristretto255_sha512_3DH_ServerFinish = (
     session_key,
     state_raw,
@@ -4190,7 +4255,8 @@ Module.ecc_sign_bls12_381_SkToPk = (
  * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-bls-signature-04#section-2.5
  *
  * @param {Uint8Array} pk a public key in the format output by SkToPk, size:ecc_sign_bls12_381_PUBLICKEYSIZE
- * @return {number} 0 for valid or -1 for invalid */
+ * @return {number} 0 for valid or -1 for invalid
+ */
 Module.ecc_sign_bls12_381_KeyValidate = (
     pk,
 ) => {
@@ -4243,7 +4309,8 @@ Module.ecc_sign_bls12_381_CoreSign = (
  * @param {Uint8Array} msg input message, size:msg_len
  * @param {number} msg_len the length of `msg`
  * @param {Uint8Array} sig the signature, size:ecc_sign_bls12_381_SIGNATURESIZE
- * @return {number} 0 if valid, -1 if invalid */
+ * @return {number} 0 if valid, -1 if invalid
+ */
 Module.ecc_sign_bls12_381_CoreVerify = (
     pk,
     msg,
@@ -4609,7 +4676,8 @@ Module.ecc_pre_schema1_ReKeyGen = (
  * @param {Uint8Array} pk_j delegatee’s public key, size:ecc_pre_schema1_PUBLICKEYSIZE
  * @param {Uint8Array} spk proxy’s signing public key, size:ecc_pre_schema1_SIGNINGPUBLICKEYSIZE
  * @param {Uint8Array} ssk proxy’s signing private key, size:ecc_pre_schema1_SIGNINGPRIVATEKEYSIZE
- * @return {number} 0 if all the signatures are valid, -1 if there is an error */
+ * @return {number} 0 if all the signatures are valid, -1 if there is an error
+ */
 Module.ecc_pre_schema1_ReEncrypt = (
     C_j_raw,
     C_i_raw,
@@ -4659,7 +4727,8 @@ Module.ecc_pre_schema1_ReEncrypt = (
  * @param {Uint8Array} C_i_raw a CiphertextLevel1_t structure, size:ecc_pre_schema1_CIPHERTEXTLEVEL1SIZE
  * @param {Uint8Array} sk_i recipient private key, size:ecc_pre_schema1_PRIVATEKEYSIZE
  * @param {Uint8Array} spk_i recipient signing public key, size:ecc_pre_schema1_SIGNINGPUBLICKEYSIZE
- * @return {number} 0 if all the signatures are valid, -1 if there is an error */
+ * @return {number} 0 if all the signatures are valid, -1 if there is an error
+ */
 Module.ecc_pre_schema1_DecryptLevel1 = (
     m,
     C_i_raw,
@@ -4697,7 +4766,8 @@ Module.ecc_pre_schema1_DecryptLevel1 = (
  * @param {Uint8Array} C_j_raw a CiphertextLevel2_t structure, size:ecc_pre_schema1_CIPHERTEXTLEVEL2SIZE
  * @param {Uint8Array} sk_j recipient private key, size:ecc_pre_schema1_PRIVATEKEYSIZE
  * @param {Uint8Array} spk proxy’s signing public key, size:ecc_pre_schema1_SIGNINGPUBLICKEYSIZE
- * @return {number} 0 if all the signatures are valid, -1 if there is an error */
+ * @return {number} 0 if all the signatures are valid, -1 if there is an error
+ */
 Module.ecc_pre_schema1_DecryptLevel2 = (
     m,
     C_j_raw,
@@ -4721,4 +4791,3 @@ Module.ecc_pre_schema1_DecryptLevel2 = (
     mfree(ptr_spk, ecc_pre_schema1_SIGNINGPUBLICKEYSIZE);
     return fun_ret;
 }
-

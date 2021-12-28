@@ -1,3 +1,10 @@
+/*
+ * Copyright (c) 2021, Alden Torres
+ *
+ * Licensed under the terms of the MIT license.
+ * Copy of the license at https://opensource.org/licenses/MIT
+ */
+
 #include "jni.h"
 #include <ecc.h>
 
@@ -3047,5 +3054,4 @@ JNIEXPORT int JNICALL Java_org_ssohub_crypto_ecc_libecc_ecc_1pre_1schema1_1Decry
 #ifdef __cplusplus
 }
 #endif
-
 
