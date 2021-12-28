@@ -34,10 +34,10 @@ jobs:
 
       - name: jvm tests
         run: |
-          readelf -d jvm/libecc-jvm.so
-          cd jvm
+          readelf -d bindings/jvm/libecc-jvm.so
+          cd bindings/jvm
           ./gradlew test
-          cd ..
+          cd ../..
 
       - uses: actions/upload-artifact@v2
         with:
