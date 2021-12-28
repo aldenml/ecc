@@ -5,8 +5,6 @@
  * Copy of the license at https://opensource.org/licenses/MIT
  */
 
-import org.gradle.api.tasks.testing.logging.TestExceptionFormat
-
 plugins {
     id "java-library"
     id "maven-publish"
@@ -14,7 +12,7 @@ plugins {
 }
 
 group = "org.ssohub"
-version = "1.0.3"
+version = "1.0.5"
 
 java {
     sourceCompatibility = JavaVersion.VERSION_1_8
@@ -41,7 +39,7 @@ test {
     testLogging {
         events "passed", "skipped", "failed", "standard_out"
 
-        exceptionFormat = TestExceptionFormat.FULL
+        exceptionFormat = org.gradle.api.tasks.testing.logging.TestExceptionFormat.FULL
         showExceptions = true
         showCauses = true
         showStackTraces = true

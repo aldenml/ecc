@@ -40,7 +40,7 @@ public final class libecc {
 
 
     /**
-     * Fills `n` bytes at buf with an unpredictable sequence of bytes.
+     * Fills `n` bytes at `buf` with an unpredictable sequence of bytes.
      *
      * @param buf (output) the byte array to fill, size:n
      * @param n the number of bytes to fill
@@ -51,7 +51,7 @@ public final class libecc {
     );
 
     /**
-     * Concatenates two byte arrays. Sames as a || b.
+     * Concatenates two byte arrays. Same as a || b.
      * 
      * a || b: denotes the concatenation of byte strings a and b. For
      * example, "ABC" || "DEF" == "ABCDEF".
@@ -178,7 +178,7 @@ public final class libecc {
 
     /**
      * Takes a byte array and test if it contains only zeros. It runs
-     * in constant-time.
+     * in constant time.
      *
      * @param n the byte array, size:len
      * @param len the length of `n`

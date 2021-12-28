@@ -16,6 +16,7 @@ else()
     set(BUILD_SHARED_LIBS ON)
 endif()
 
+project(ecc VERSION 1.0.5)
 project(ecc LANGUAGES C)
 
 include(ExternalProject)
