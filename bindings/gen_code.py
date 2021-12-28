@@ -112,6 +112,16 @@ class DefineDecl:
         out += "Module." + self.name + " = " + self.name + ";\n"
         return out
 
+    def build_jni_java(self):
+        out = ""
+        out += "    /**\n"
+        out += "     * "
+        out += "     * ".join(self.comment.splitlines(True)) + "\n"
+        out += "     *\n"
+        out += "     */\n"
+        out += "    public static final int " + self.name + " = " + self.value + ";\n"
+        return out
+
 
 class VarDecl:
     def __init__(self, ast):
@@ -191,7 +201,7 @@ class FunctionDecl:
             out += " "
             out += " * ".join(param.comment.comment_text().splitlines(True)) + "\n"
         if comment.comment_return() is not None:
-            out += " * @return {number} " + comment.comment_return()
+            out += " * @return {number} " + comment.comment_return() + "\n"
         out += " */\n"
         out += "Module." + self.name + " = (\n"
         for param in self.params():
@@ -263,6 +273,37 @@ class FunctionDecl:
         out += "}\n"
         return out
 
+    def build_jni_java(self):
+        comment = self.comment()
+        out = ""
+        out += "    /**\n"
+        out += "     * "
+        out += "     * ".join(comment.comment_text().splitlines(True)) + "\n"
+        out += "     *\n"
+        for param in self.params():
+            out += "     * @param " + param.name
+            if param.is_out():
+                out += " (output)"
+            if param.is_inout():
+                out += " (input, output)"
+            out += " "
+            out += "     * ".join(param.comment.comment_text().splitlines(True)) + "\n"
+        if comment.comment_return() is not None:
+            out += "     * @return " + comment.comment_return() + "\n"
+        out += "     */\n"
+        out += "    public static  "
+        if self.return_type() != "void":
+            out += "int"
+        else:
+            out += "void"
+        out += " " + self.name + "(\n"
+        out += ",\n".join(map(
+            lambda p: "        byte[] " + p.name if (p.is_array()) else "        int " + p.name,
+            self.params()
+        ))
+        out += "\n    );\n"
+        return out
+
 
 class TranslationUnitDecl:
     def __init__(self, ast, text):
@@ -302,6 +343,15 @@ class TranslationUnitDecl:
         functions = self.functions(ignore)
         out = ""
         out += "\n".join(map(lambda f: f.build_jni_c(), functions))
+        return out
+
+    def build_jni_java(self, ignore):
+        defines = self.defines()
+        functions = self.functions(ignore)
+        out = ""
+        out += "\n".join(map(lambda c: c.build_jni_java(), defines))
+        out += "\n"
+        out += "\n".join(map(lambda f: f.build_jni_java(), functions))
         return out
 
 
@@ -413,5 +463,15 @@ def gen_jni_c(headers, ignore):
     return out
 
 
-print(gen_jni_c(ecc_headers, ecc_ignore))
+def gen_jni_java(headers, ignore):
+    out = ""
+    out += "\n".join(map(
+        lambda h: "    // " + h + "\n\n" + TranslationUnitDecl(gen_ast(h), read_header(h)).build_jni_java(ignore),
+        headers
+    ))
+    out += "\n"
+    return out
+
+
+print(gen_jni_java(ecc_headers, ecc_ignore))
 
