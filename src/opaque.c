@@ -1075,7 +1075,7 @@ void ecc_opaque_ristretto255_sha512_3DH_DeriveKeys(
 
 void ecc_opaque_ristretto255_sha512_3DH_ClientInit(
     byte_t *ke1_raw,
-    const byte_t *state_raw,
+    byte_t *state_raw,
     const byte_t *client_identity, int client_identity_len,
     const byte_t *password, int password_len
 ) {
@@ -1107,7 +1107,7 @@ int ecc_opaque_ristretto255_sha512_3DH_ClientFinish(
     byte_t *ke3_raw,
     byte_t *session_key,
     byte_t *export_key, // 64
-    const byte_t *state_raw,
+    byte_t *state_raw,
     const byte_t *password, int password_len,
     const byte_t *client_identity, int client_identity_len,
     const byte_t *server_identity, int server_identity_len,
@@ -1169,7 +1169,7 @@ int ecc_opaque_ristretto255_sha512_3DH_ClientFinish(
 
 void ecc_opaque_ristretto255_sha512_3DH_Start(
     byte_t *ke1_raw,
-    const byte_t *state_raw,
+    byte_t *state_raw,
     const byte_t *credential_request
 ) {
     // Steps:
@@ -1211,7 +1211,7 @@ void ecc_opaque_ristretto255_sha512_3DH_Start(
 int ecc_opaque_ristretto255_sha512_3DH_ClientFinalize(
     byte_t *ke3_raw, // 64
     byte_t *session_key,
-    const byte_t *state_raw,
+    byte_t *state_raw,
     const byte_t *client_identity, int client_identity_len,
     const byte_t *client_private_key,
     const byte_t *server_identity, int server_identity_len,
@@ -1322,7 +1322,7 @@ int ecc_opaque_ristretto255_sha512_3DH_ClientFinalize(
 
 void ecc_opaque_ristretto255_sha512_3DH_ServerInit(
     byte_t *ke2_raw,
-    const byte_t *state_raw,
+    byte_t *state_raw,
     const byte_t *server_identity, int server_identity_len,
     const byte_t *server_private_key,
     const byte_t *server_public_key,
@@ -1367,7 +1367,7 @@ void ecc_opaque_ristretto255_sha512_3DH_ServerInit(
 
 int ecc_opaque_ristretto255_sha512_3DH_ServerFinish(
     byte_t *session_key,
-    const byte_t *state_raw,
+    byte_t *state_raw,
     const byte_t *ke3_raw
 ) {
     // Steps:
@@ -1388,7 +1388,7 @@ int ecc_opaque_ristretto255_sha512_3DH_ServerFinish(
 
 void ecc_opaque_ristretto255_sha512_3DH_Response(
     byte_t *ke2_raw,
-    const byte_t *state_raw,
+    byte_t *state_raw,
     const byte_t *server_identity, int server_identity_len,
     const byte_t *server_private_key,
     const byte_t *client_identity, int client_identity_len,

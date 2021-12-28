@@ -75,6 +75,9 @@ class ParmVarDecl:
     def is_out(self):
         return self.direction() == "out"
 
+    def is_inout(self):
+        return self.direction() == "in,out"
+
     def size(self):
         text = self.comment.comment_text()
         match = re.search(r"\bsize:([A-Za-z0-9_+\-*/]+)", text)
@@ -183,6 +186,8 @@ class FunctionDecl:
             out += " * @param {" + param.type_js() + "} " + param.name
             if param.is_out():
                 out += " (output)"
+            if param.is_inout():
+                out += " (input, output)"
             out += " "
             out += " * ".join(param.comment.comment_text().splitlines(True)) + "\n"
         if comment.comment_return() is not None:
@@ -206,7 +211,7 @@ class FunctionDecl:
         out += "    );\n"
         # get
         for param in self.params():
-            if param.is_array() and param.is_out():
+            if param.is_array() and (param.is_out() or param.is_inout()):
                 out += "    mget(" + param.name + ", " + param.impl_name() + ", " + param.size() + ");\n"
         # free
         for param in self.params():

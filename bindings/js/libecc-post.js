@@ -3748,7 +3748,7 @@ Module.ecc_opaque_ristretto255_sha512_3DH_DeriveKeys = (
  * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-05#section-6.2.3
  *
  * @param {Uint8Array} ke1_raw (output) a KE1 message structure, size:ecc_opaque_ristretto255_sha512_KE1SIZE
- * @param {Uint8Array} state_raw a ClientState structure, size:ecc_opaque_ristretto255_sha512_CLIENTSTATESIZE
+ * @param {Uint8Array} state_raw (input, output) a ClientState structure, size:ecc_opaque_ristretto255_sha512_CLIENTSTATESIZE
  * @param {Uint8Array} client_identity the optional encoded client identity, which is null if not specified, size:client_identity_len
  * @param {number} client_identity_len the length of `client_identity`
  * @param {Uint8Array} password an opaque byte string containing the client's password, size:password_len
@@ -3775,6 +3775,7 @@ Module.ecc_opaque_ristretto255_sha512_3DH_ClientInit = (
         password_len,
     );
     mget(ke1_raw, ptr_ke1_raw, ecc_opaque_ristretto255_sha512_KE1SIZE);
+    mget(state_raw, ptr_state_raw, ecc_opaque_ristretto255_sha512_CLIENTSTATESIZE);
     mfree(ptr_ke1_raw, ecc_opaque_ristretto255_sha512_KE1SIZE);
     mfree(ptr_state_raw, ecc_opaque_ristretto255_sha512_CLIENTSTATESIZE);
     mfree(ptr_client_identity, client_identity_len);
@@ -3787,7 +3788,7 @@ Module.ecc_opaque_ristretto255_sha512_3DH_ClientInit = (
  * @param {Uint8Array} ke3_raw (output) a KE3 message structure, size:ecc_opaque_ristretto255_sha512_KE3SIZE
  * @param {Uint8Array} session_key (output) the session's shared secret, size:64
  * @param {Uint8Array} export_key (output) an additional client key, size:64
- * @param {Uint8Array} state_raw a ClientState structure, size:ecc_opaque_ristretto255_sha512_CLIENTSTATESIZE
+ * @param {Uint8Array} state_raw (input, output) a ClientState structure, size:ecc_opaque_ristretto255_sha512_CLIENTSTATESIZE
  * @param {Uint8Array} password an opaque byte string containing the client's password, size:password_len
  * @param {number} password_len the length of `password`
  * @param {Uint8Array} client_identity the optional encoded client identity, which is set
@@ -3835,6 +3836,7 @@ Module.ecc_opaque_ristretto255_sha512_3DH_ClientFinish = (
     mget(ke3_raw, ptr_ke3_raw, ecc_opaque_ristretto255_sha512_KE3SIZE);
     mget(session_key, ptr_session_key, 64);
     mget(export_key, ptr_export_key, 64);
+    mget(state_raw, ptr_state_raw, ecc_opaque_ristretto255_sha512_CLIENTSTATESIZE);
     mfree(ptr_ke3_raw, ecc_opaque_ristretto255_sha512_KE3SIZE);
     mfree(ptr_session_key, 64);
     mfree(ptr_export_key, 64);
@@ -3850,7 +3852,7 @@ Module.ecc_opaque_ristretto255_sha512_3DH_ClientFinish = (
  * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-05#section-6.2.3.1
  *
  * @param {Uint8Array} ke1_raw (output) size:ecc_opaque_ristretto255_sha512_KE1SIZE
- * @param {Uint8Array} state_raw size:ecc_opaque_ristretto255_sha512_CLIENTSTATESIZE
+ * @param {Uint8Array} state_raw (input, output) size:ecc_opaque_ristretto255_sha512_CLIENTSTATESIZE
  * @param {Uint8Array} credential_request size:ecc_opaque_ristretto255_sha512_CREDENTIALREQUESTSIZE
  */
 Module.ecc_opaque_ristretto255_sha512_3DH_Start = (
@@ -3867,6 +3869,7 @@ Module.ecc_opaque_ristretto255_sha512_3DH_Start = (
         ptr_credential_request,
     );
     mget(ke1_raw, ptr_ke1_raw, ecc_opaque_ristretto255_sha512_KE1SIZE);
+    mget(state_raw, ptr_state_raw, ecc_opaque_ristretto255_sha512_CLIENTSTATESIZE);
     mfree(ptr_ke1_raw, ecc_opaque_ristretto255_sha512_KE1SIZE);
     mfree(ptr_state_raw, ecc_opaque_ristretto255_sha512_CLIENTSTATESIZE);
     mfree(ptr_credential_request, ecc_opaque_ristretto255_sha512_CREDENTIALREQUESTSIZE);
@@ -3878,7 +3881,7 @@ Module.ecc_opaque_ristretto255_sha512_3DH_Start = (
  *
  * @param {Uint8Array} ke3_raw (output) size:ecc_opaque_ristretto255_sha512_KE3SIZE
  * @param {Uint8Array} session_key (output) size:64
- * @param {Uint8Array} state_raw size:ecc_opaque_ristretto255_sha512_CLIENTSTATESIZE
+ * @param {Uint8Array} state_raw (input, output) size:ecc_opaque_ristretto255_sha512_CLIENTSTATESIZE
  * @param {Uint8Array} client_identity size:client_identity_len
  * @param {number} client_identity_len 
  * @param {Uint8Array} client_private_key size:ecc_opaque_ristretto255_sha512_Nsk
@@ -3921,6 +3924,7 @@ Module.ecc_opaque_ristretto255_sha512_3DH_ClientFinalize = (
     );
     mget(ke3_raw, ptr_ke3_raw, ecc_opaque_ristretto255_sha512_KE3SIZE);
     mget(session_key, ptr_session_key, 64);
+    mget(state_raw, ptr_state_raw, ecc_opaque_ristretto255_sha512_CLIENTSTATESIZE);
     mfree(ptr_ke3_raw, ecc_opaque_ristretto255_sha512_KE3SIZE);
     mfree(ptr_session_key, 64);
     mfree(ptr_state_raw, ecc_opaque_ristretto255_sha512_CLIENTSTATESIZE);
@@ -3936,7 +3940,7 @@ Module.ecc_opaque_ristretto255_sha512_3DH_ClientFinalize = (
  * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-05#section-6.2.4
  *
  * @param {Uint8Array} ke2_raw (output) a KE2 structure, size:ecc_opaque_ristretto255_sha512_KE2SIZE
- * @param {Uint8Array} state_raw a ServerState structure, size:ecc_opaque_ristretto255_sha512_SERVERSTATESIZE
+ * @param {Uint8Array} state_raw (input, output) a ServerState structure, size:ecc_opaque_ristretto255_sha512_SERVERSTATESIZE
  * @param {Uint8Array} server_identity the optional encoded server identity, which is set to
  * server_public_key if null, size:server_identity_len
  * @param {number} server_identity_len the length of `server_identity`
@@ -3992,6 +3996,7 @@ Module.ecc_opaque_ristretto255_sha512_3DH_ServerInit = (
         context_len,
     );
     mget(ke2_raw, ptr_ke2_raw, ecc_opaque_ristretto255_sha512_KE2SIZE);
+    mget(state_raw, ptr_state_raw, ecc_opaque_ristretto255_sha512_SERVERSTATESIZE);
     mfree(ptr_ke2_raw, ecc_opaque_ristretto255_sha512_KE2SIZE);
     mfree(ptr_state_raw, ecc_opaque_ristretto255_sha512_SERVERSTATESIZE);
     mfree(ptr_server_identity, server_identity_len);
@@ -4008,7 +4013,7 @@ Module.ecc_opaque_ristretto255_sha512_3DH_ServerInit = (
  * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-05#section-6.2.4
  *
  * @param {Uint8Array} session_key (output) the shared session secret if and only if KE3 is valid, size:64
- * @param {Uint8Array} state_raw a ServerState structure, size:ecc_opaque_ristretto255_sha512_SERVERSTATESIZE
+ * @param {Uint8Array} state_raw (input, output) a ServerState structure, size:ecc_opaque_ristretto255_sha512_SERVERSTATESIZE
  * @param {Uint8Array} ke3_raw a KE3 structure, size:ecc_opaque_ristretto255_sha512_KE3SIZE
  * @return {number} 0 if the user was authenticated, else -1 */
 Module.ecc_opaque_ristretto255_sha512_3DH_ServerFinish = (
@@ -4025,6 +4030,7 @@ Module.ecc_opaque_ristretto255_sha512_3DH_ServerFinish = (
         ptr_ke3_raw,
     );
     mget(session_key, ptr_session_key, 64);
+    mget(state_raw, ptr_state_raw, ecc_opaque_ristretto255_sha512_SERVERSTATESIZE);
     mfree(ptr_session_key, 64);
     mfree(ptr_state_raw, ecc_opaque_ristretto255_sha512_SERVERSTATESIZE);
     mfree(ptr_ke3_raw, ecc_opaque_ristretto255_sha512_KE3SIZE);
@@ -4035,7 +4041,7 @@ Module.ecc_opaque_ristretto255_sha512_3DH_ServerFinish = (
  * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-05#section-6.2.4
  *
  * @param {Uint8Array} ke2_raw (output) size:ecc_opaque_ristretto255_sha512_KE2SIZE
- * @param {Uint8Array} state_raw size:ecc_opaque_ristretto255_sha512_SERVERSTATESIZE
+ * @param {Uint8Array} state_raw (input, output) size:ecc_opaque_ristretto255_sha512_SERVERSTATESIZE
  * @param {Uint8Array} server_identity size:server_identity_len
  * @param {number} server_identity_len 
  * @param {Uint8Array} server_private_key size:ecc_opaque_ristretto255_sha512_Nsk
@@ -4085,6 +4091,7 @@ Module.ecc_opaque_ristretto255_sha512_3DH_Response = (
         context_len,
     );
     mget(ke2_raw, ptr_ke2_raw, ecc_opaque_ristretto255_sha512_KE2SIZE);
+    mget(state_raw, ptr_state_raw, ecc_opaque_ristretto255_sha512_SERVERSTATESIZE);
     mfree(ptr_ke2_raw, ecc_opaque_ristretto255_sha512_KE2SIZE);
     mfree(ptr_state_raw, ecc_opaque_ristretto255_sha512_SERVERSTATESIZE);
     mfree(ptr_server_identity, server_identity_len);

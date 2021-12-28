@@ -738,7 +738,7 @@ void ecc_opaque_ristretto255_sha512_3DH_DeriveKeys(
  * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-05#section-6.2.3
  *
  * @param[out] ke1_raw a KE1 message structure, size:ecc_opaque_ristretto255_sha512_KE1SIZE
- * @param state_raw a ClientState structure, size:ecc_opaque_ristretto255_sha512_CLIENTSTATESIZE
+ * @param[in,out] state_raw a ClientState structure, size:ecc_opaque_ristretto255_sha512_CLIENTSTATESIZE
  * @param client_identity the optional encoded client identity, which is null if not specified, size:client_identity_len
  * @param client_identity_len the length of `client_identity`
  * @param password an opaque byte string containing the client's password, size:password_len
@@ -747,7 +747,7 @@ void ecc_opaque_ristretto255_sha512_3DH_DeriveKeys(
 ECC_EXPORT
 void ecc_opaque_ristretto255_sha512_3DH_ClientInit(
     byte_t *ke1_raw,
-    const byte_t *state_raw,
+    byte_t *state_raw,
     const byte_t *client_identity, int client_identity_len,
     const byte_t *password, int password_len
 );
@@ -758,7 +758,7 @@ void ecc_opaque_ristretto255_sha512_3DH_ClientInit(
  * @param[out] ke3_raw a KE3 message structure, size:ecc_opaque_ristretto255_sha512_KE3SIZE
  * @param[out] session_key the session's shared secret, size:64
  * @param[out] export_key an additional client key, size:64
- * @param state_raw a ClientState structure, size:ecc_opaque_ristretto255_sha512_CLIENTSTATESIZE
+ * @param[in,out] state_raw a ClientState structure, size:ecc_opaque_ristretto255_sha512_CLIENTSTATESIZE
  * @param password an opaque byte string containing the client's password, size:password_len
  * @param password_len the length of `password`
  * @param client_identity the optional encoded client identity, which is set
@@ -775,7 +775,7 @@ int ecc_opaque_ristretto255_sha512_3DH_ClientFinish(
     byte_t *ke3_raw,
     byte_t *session_key,
     byte_t *export_key,
-    const byte_t *state_raw,
+    byte_t *state_raw,
     const byte_t *password, int password_len,
     const byte_t *client_identity, int client_identity_len,
     const byte_t *server_identity, int server_identity_len,
@@ -786,13 +786,13 @@ int ecc_opaque_ristretto255_sha512_3DH_ClientFinish(
  * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-05#section-6.2.3.1
  *
  * @param[out] ke1_raw size:ecc_opaque_ristretto255_sha512_KE1SIZE
- * @param state_raw size:ecc_opaque_ristretto255_sha512_CLIENTSTATESIZE
+ * @param[in,out] state_raw size:ecc_opaque_ristretto255_sha512_CLIENTSTATESIZE
  * @param credential_request size:ecc_opaque_ristretto255_sha512_CREDENTIALREQUESTSIZE
  */
 ECC_EXPORT
 void ecc_opaque_ristretto255_sha512_3DH_Start(
     byte_t *ke1_raw,
-    const byte_t *state_raw,
+    byte_t *state_raw,
     const byte_t *credential_request
 );
 
@@ -800,7 +800,7 @@ void ecc_opaque_ristretto255_sha512_3DH_Start(
  * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-05#section-6.2.3.1
  * @param[out] ke3_raw size:ecc_opaque_ristretto255_sha512_KE3SIZE
  * @param[out] session_key size:64
- * @param state_raw size:ecc_opaque_ristretto255_sha512_CLIENTSTATESIZE
+ * @param[in,out] state_raw size:ecc_opaque_ristretto255_sha512_CLIENTSTATESIZE
  * @param client_identity size:client_identity_len
  * @param client_identity_len
  * @param client_private_key size:ecc_opaque_ristretto255_sha512_Nsk
@@ -814,7 +814,7 @@ ECC_EXPORT
 int ecc_opaque_ristretto255_sha512_3DH_ClientFinalize(
     byte_t *ke3_raw,
     byte_t *session_key,
-    const byte_t *state_raw,
+    byte_t *state_raw,
     const byte_t *client_identity, int client_identity_len,
     const byte_t *client_private_key,
     const byte_t *server_identity, int server_identity_len,
@@ -827,7 +827,7 @@ int ecc_opaque_ristretto255_sha512_3DH_ClientFinalize(
  * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-05#section-6.2.4
  *
  * @param[out] ke2_raw a KE2 structure, size:ecc_opaque_ristretto255_sha512_KE2SIZE
- * @param state_raw a ServerState structure, size:ecc_opaque_ristretto255_sha512_SERVERSTATESIZE
+ * @param[in,out] state_raw a ServerState structure, size:ecc_opaque_ristretto255_sha512_SERVERSTATESIZE
  * @param server_identity the optional encoded server identity, which is set to
  * server_public_key if null, size:server_identity_len
  * @param server_identity_len the length of `server_identity`
@@ -845,7 +845,7 @@ int ecc_opaque_ristretto255_sha512_3DH_ClientFinalize(
 ECC_EXPORT
 void ecc_opaque_ristretto255_sha512_3DH_ServerInit(
     byte_t *ke2_raw,
-    const byte_t *state_raw,
+    byte_t *state_raw,
     const byte_t *server_identity, int server_identity_len,
     const byte_t *server_private_key,
     const byte_t *server_public_key,
@@ -860,14 +860,14 @@ void ecc_opaque_ristretto255_sha512_3DH_ServerInit(
  * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-05#section-6.2.4
  *
  * @param[out] session_key the shared session secret if and only if KE3 is valid, size:64
- * @param state_raw a ServerState structure, size:ecc_opaque_ristretto255_sha512_SERVERSTATESIZE
+ * @param[in,out] state_raw a ServerState structure, size:ecc_opaque_ristretto255_sha512_SERVERSTATESIZE
  * @param ke3_raw a KE3 structure, size:ecc_opaque_ristretto255_sha512_KE3SIZE
  * @return 0 if the user was authenticated, else -1
  */
 ECC_EXPORT
 int ecc_opaque_ristretto255_sha512_3DH_ServerFinish(
     byte_t *session_key,
-    const byte_t *state_raw,
+    byte_t *state_raw,
     const byte_t *ke3_raw
 );
 
@@ -875,7 +875,7 @@ int ecc_opaque_ristretto255_sha512_3DH_ServerFinish(
  * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-05#section-6.2.4
  *
  * @param[out] ke2_raw size:ecc_opaque_ristretto255_sha512_KE2SIZE
- * @param state_raw size:ecc_opaque_ristretto255_sha512_SERVERSTATESIZE
+ * @param[in,out] state_raw size:ecc_opaque_ristretto255_sha512_SERVERSTATESIZE
  * @param server_identity size:server_identity_len
  * @param server_identity_len
  * @param server_private_key size:ecc_opaque_ristretto255_sha512_Nsk
@@ -890,7 +890,7 @@ int ecc_opaque_ristretto255_sha512_3DH_ServerFinish(
 ECC_EXPORT
 void ecc_opaque_ristretto255_sha512_3DH_Response(
     byte_t *ke2_raw,
-    const byte_t *state_raw,
+    byte_t *state_raw,
     const byte_t *server_identity, int server_identity_len,
     const byte_t *server_private_key,
     const byte_t *client_identity, int client_identity_len,
