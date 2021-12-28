@@ -291,7 +291,7 @@ class FunctionDecl:
         if comment.comment_return() is not None:
             out += "     * @return " + comment.comment_return() + "\n"
         out += "     */\n"
-        out += "    public static  "
+        out += "    public static native "
         if self.return_type() != "void":
             out += "int"
         else:
@@ -465,11 +465,50 @@ def gen_jni_c(headers, ignore):
 
 def gen_jni_java(headers, ignore):
     out = ""
+    out += "/*\n"
+    out += " * Copyright (c) 2021, Alden Torres\n"
+    out += " *\n"
+    out += " * Licensed under the terms of the MIT license.\n"
+    out += " * Copy of the license at https://opensource.org/licenses/MIT\n"
+    out += " */\n"
+    out += "\n"
+    out += "package org.ssohub.crypto.ecc;\n"
+    out += "\n"
+    out += "/**\n"
+    out += " * JNI java interface for libecc-jvm.\n"
+    out += " *\n"
+    out += " * @author aldenml\n"
+    out += " */\n"
+    out += "public final class libecc {\n"
+    out += "\n"
+    out += "    static {\n"
+    out += "        try {\n"
+    out += "            String path = System.getProperty(\"libecc.jni.path\", \"\");\n"
+    out += "            if (\"\".equals(path)) {\n"
+    out += "                String libname = \"ecc-jvm\";\n"
+    out += "                String os = System.getProperty(\"os.name\");\n"
+    out += "                if (os != null && os.toLowerCase(java.util.Locale.US).contains(\"windows\"))\n"
+    out += "                    libname = \"lib\" + libname;\n"
+    out += "                System.loadLibrary(libname);\n"
+    out += "            } else {\n"
+    out += "                System.load(path);\n"
+    out += "            }\n"
+    out += "        } catch (LinkageError e) {\n"
+    out += "            throw new LinkageError(\n"
+    out += "                \"Look for your architecture binary instructions at: https://github.com/aldenml/ecc\",\n"
+    out += "                e);\n"
+    out += "        }\n"
+    out += "    }\n"
+    out += "\n"
+    out += "    private libecc() {\n"
+    out += "    }\n"
+    out += "\n"
     out += "\n".join(map(
         lambda h: "    // " + h + "\n\n" + TranslationUnitDecl(gen_ast(h), read_header(h)).build_jni_java(ignore),
         headers
     ))
     out += "\n"
+    out += "}\n"
     return out
 
 

@@ -9,27 +9,13 @@ package org.ssohub.crypto.ecc;
 
 import org.junit.jupiter.api.Test;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.ssohub.crypto.ecc.libecc.ecc_memzero;
 import static org.ssohub.crypto.ecc.libecc.ecc_randombytes;
 
 /**
  * @author aldenml
  */
 public class UtilTest {
-
-    @Test
-    void ecc_memzero_test() {
-        byte[] buf = new byte[100];
-        ecc_randombytes(buf, buf.length);
-        ecc_memzero(buf, buf.length);
-        int count = 0;
-        for (byte b : buf) {
-            if (b == 0) count++;
-        }
-        assertEquals(buf.length, count);
-    }
 
     @Test
     void ecc_randombytes_test() {
