@@ -575,9 +575,10 @@ void ecc_opaque_ristretto255_sha512_CreateCredentialRequest(
  *
  * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-05#section-6.1.2.2
  *
- * @param[out] response size:ecc_opaque_ristretto255_sha512_CREDENTIALRESPONSESIZE
- * @param request size:ecc_opaque_ristretto255_sha512_CREDENTIALREQUESTSIZE
+ * @param[out] response_raw size:ecc_opaque_ristretto255_sha512_CREDENTIALRESPONSESIZE
+ * @param request_raw size:ecc_opaque_ristretto255_sha512_CREDENTIALREQUESTSIZE
  * @param server_public_key size:ecc_opaque_ristretto255_sha512_Npk
+ * @param record_raw size:ecc_opaque_ristretto255_sha512_REGISTRATIONUPLOADSIZE
  * @param credential_identifier size:credential_identifier_len
  * @param credential_identifier_len
  * @param oprf_seed size:ecc_opaque_ristretto255_sha512_Nh
@@ -808,6 +809,8 @@ void ecc_opaque_ristretto255_sha512_3DH_Start(
  * @param server_identity_len
  * @param server_public_key size:ecc_opaque_ristretto255_sha512_Npk
  * @param ke2_raw size:ecc_opaque_ristretto255_sha512_KE2SIZE
+ * @param context the application specific context, size:context_len
+ * @param context_len the length of `context`
  * @return 0 if success, else -1
  */
 ECC_EXPORT

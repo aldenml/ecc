@@ -223,6 +223,46 @@ class FunctionDecl:
         out += "}\n"
         return out
 
+    def build_jni_c(self):
+        out = ""
+        out += "JNIEXPORT "
+        if self.return_type() != "void":
+            out += "int"
+        else:
+            out += "void"
+        out += " JNICALL Java_org_ssohub_crypto_ecc_libecc_" + self.name.replace("_", "_1") + "(\n"
+        out += "    JNIEnv *env, jclass cls,\n"
+        out += ",\n".join(map(
+            lambda p: "    jbyteArray " + p.name if (p.is_array()) else "    jint " + p.name,
+            self.params()
+        ))
+        out += "\n) {\n"
+        # alloc
+        for param in self.params():
+            if param.is_array():
+                out += "    byte_t *" + param.impl_name() + " = mput(env, " + param.name + ", " + param.size() + ");\n"
+        # invoke
+        if self.return_type() != "void":
+            out += "    const int fun_ret = " + self.name + "(\n"
+        else:
+            out += "    " + self.name + "(\n"
+        out += ",\n".join(map(lambda p: "        " + p.impl_name(), self.params()))
+        out += "\n"
+        out += "    );\n"
+        # get
+        for param in self.params():
+            if param.is_array() and (param.is_out() or param.is_inout()):
+                out += "    mget(env, " + param.name + ", " + param.impl_name() + ", " + param.size() + ");\n"
+        # free
+        for param in self.params():
+            if param.is_array():
+                out += "    mfree(" + param.impl_name() + ", " + param.size() + ");\n"
+        # return
+        if self.return_type() != "void":
+            out += "    return fun_ret;\n"
+        out += "}\n"
+        return out
+
 
 class TranslationUnitDecl:
     def __init__(self, ast, text):
@@ -256,6 +296,12 @@ class TranslationUnitDecl:
         out += "\n".join(map(lambda c: c.build_js(), defines))
         out += "\n"
         out += "\n".join(map(lambda f: f.build_js(), functions))
+        return out
+
+    def build_jni_c(self, ignore):
+        functions = self.functions(ignore)
+        out = ""
+        out += "\n".join(map(lambda f: f.build_jni_c(), functions))
         return out
 
 
@@ -329,5 +375,43 @@ def gen_js(headers, ignore):
     return out
 
 
-print(gen_js(ecc_headers, ecc_ignore))
-#print(gen_ast("opaque"))
+def gen_jni_c(headers, ignore):
+    out = ""
+    out += "#include \"jni.h\"\n"
+    out += "#include <ecc.h>\n"
+    out += "\n"
+    out += "byte_t *mput(JNIEnv *env, jbyteArray src, int size) {\n"
+    out += "    if (src != NULL) {\n"
+    out += "        byte_t *ptr = ecc_malloc(size);\n"
+    out += "        (*env)->GetByteArrayRegion(env, src, 0, size, (jbyte *) ptr);\n"
+    out += "        return ptr;\n"
+    out += "    }\n"
+    out += "    return NULL;\n"
+    out += "}\n"
+    out += "\n"
+    out += "void mget(JNIEnv *env, jbyteArray dest, byte_t *ptr, int size) {\n"
+    out += "    (*env)->SetByteArrayRegion(env, dest, 0, size, (jbyte *) ptr);\n"
+    out += "}\n"
+    out += "\n"
+    out += "void mfree(byte_t *ptr, int size) {\n"
+    out += "    ecc_free(ptr, size);\n"
+    out += "}\n"
+    out += "\n"
+    out += "#ifdef __cplusplus\n"
+    out += "extern \"C\" {\n"
+    out += "#endif\n"
+    out += "\n"
+    out += "\n".join(map(
+        lambda h: "// " + h + "\n\n" + TranslationUnitDecl(gen_ast(h), read_header(h)).build_jni_c(ignore),
+        headers
+    ))
+    out += "\n"
+    out += "#ifdef __cplusplus\n"
+    out += "}\n"
+    out += "#endif\n"
+    out += "\n"
+    return out
+
+
+print(gen_jni_c(ecc_headers, ecc_ignore))
+
