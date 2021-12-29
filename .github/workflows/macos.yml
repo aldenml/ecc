@@ -1,0 +1,35 @@
+name: macOS
+
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    branches:
+      - master
+
+jobs:
+
+  x86_64:
+    runs-on: macos-11
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          submodules: recursive
+      - name: install packages
+        run: |
+          brew install ninja
+
+      - name: build coverage
+        run: |
+          cmake -DCMAKE_BUILD_TYPE=Debug -DCODE_COVERAGE=ON -DLLVM_COV_PATH=/Library/Developer/CommandLineTools/usr/bin/llvm-cov -DLLVM_PROFDATA_PATH=/Library/Developer/CommandLineTools/usr/bin/llvm-profdata -B build-cov -G "Ninja" .
+          cmake --build build-cov --config Debug --parallel 2 --target libsodium-external
+          cmake --build build-cov --config Debug --parallel 2 --target blst-external
+
+      - name: test coverage
+        run: cmake --build build-cov --config Debug --parallel 2 --target ccov-all-export
+
+      - name: upload coverage
+        run: bash <(curl -Ls https://coverage.codacy.com/get.sh) report -l C -r ./build-cov/ccov/coverage.lcov
+        env:
+          CODACY_PROJECT_TOKEN: ${{ secrets.CODACY_PROJECT_TOKEN }}

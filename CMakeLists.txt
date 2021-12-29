@@ -19,6 +19,8 @@ endif()
 project(ecc VERSION 1.0.5)
 project(ecc LANGUAGES C)
 
+list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake/Modules)
+
 include(ExternalProject)
 if(EMSCRIPTEN)
     ExternalProject_Add(
@@ -144,7 +146,7 @@ if(NOT DEFINED EMSCRIPTEN)
 endif()
 
 if(NOT DEFINED EMSCRIPTEN)
-    include(cmake/FetchCmocka.cmake)
+    include(FetchCmocka)
 
     # tests executables
     add_executable(test_util test/test_util.c)
@@ -163,6 +165,21 @@ if(NOT DEFINED EMSCRIPTEN)
     target_link_libraries(test_sign PRIVATE ecc cmocka-static)
     add_executable(test_pre test/test_pre.c)
     target_link_libraries(test_pre PRIVATE ecc cmocka-static)
+
+    # setup coverage
+    if(CODE_COVERAGE)
+        include(code-coverage)
+        add_code_coverage_all_targets(EXCLUDE test/*)
+        target_code_coverage(ecc AUTO ALL)
+        target_code_coverage(test_util AUTO ALL EXTERNAL)
+        target_code_coverage(test_kdf AUTO ALL EXTERNAL)
+        target_code_coverage(test_bls12_381 AUTO ALL EXTERNAL)
+        target_code_coverage(test_h2c AUTO ALL EXTERNAL)
+        target_code_coverage(test_oprf AUTO ALL EXTERNAL)
+        target_code_coverage(test_opaque AUTO ALL EXTERNAL)
+        target_code_coverage(test_sign AUTO ALL EXTERNAL)
+        target_code_coverage(test_pre AUTO ALL EXTERNAL)
+    endif()
 
     enable_testing()
     add_test(NAME test_util COMMAND test_util)
