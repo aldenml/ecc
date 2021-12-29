@@ -150,43 +150,38 @@ endif()
 if(NOT DEFINED EMSCRIPTEN)
     include(FetchCmocka)
 
-    # setup coverage
-    include(code-coverage)
-    add_code_coverage_all_targets(EXCLUDE test/*)
-    target_code_coverage(ecc AUTO ALL)
-
     # tests executables
     add_executable(test_util test/test_util.c)
     target_link_libraries(test_util PRIVATE ecc cmocka-static)
-    target_code_coverage(test_util AUTO ALL EXTERNAL)
-
     add_executable(test_kdf test/test_kdf.c)
     target_link_libraries(test_kdf PRIVATE ecc cmocka-static)
-    target_code_coverage(test_kdf AUTO ALL EXTERNAL)
-
     add_executable(test_bls12_381 test/test_bls12_381.c)
     target_link_libraries(test_bls12_381 PRIVATE ecc cmocka-static)
-    target_code_coverage(test_bls12_381 AUTO ALL EXTERNAL)
-
     add_executable(test_h2c test/test_h2c.c)
     target_link_libraries(test_h2c PRIVATE ecc cmocka-static)
-    target_code_coverage(test_h2c AUTO ALL EXTERNAL)
-
     add_executable(test_oprf test/test_oprf.c)
     target_link_libraries(test_oprf PRIVATE ecc cmocka-static)
-    target_code_coverage(test_oprf AUTO ALL EXTERNAL)
-
     add_executable(test_opaque test/test_opaque.c)
     target_link_libraries(test_opaque PRIVATE ecc cmocka-static)
-    target_code_coverage(test_opaque AUTO ALL EXTERNAL)
-
     add_executable(test_sign test/test_sign.c)
     target_link_libraries(test_sign PRIVATE ecc cmocka-static)
-    target_code_coverage(test_sign AUTO ALL EXTERNAL)
-
     add_executable(test_pre test/test_pre.c)
     target_link_libraries(test_pre PRIVATE ecc cmocka-static)
-    target_code_coverage(test_pre AUTO ALL EXTERNAL)
+
+    # setup coverage
+    if(CODE_COVERAGE)
+        include(code-coverage)
+        add_code_coverage_all_targets(EXCLUDE test/*)
+        target_code_coverage(ecc AUTO ALL)
+        target_code_coverage(test_util AUTO ALL EXTERNAL)
+        target_code_coverage(test_kdf AUTO ALL EXTERNAL)
+        target_code_coverage(test_bls12_381 AUTO ALL EXTERNAL)
+        target_code_coverage(test_h2c AUTO ALL EXTERNAL)
+        target_code_coverage(test_oprf AUTO ALL EXTERNAL)
+        target_code_coverage(test_opaque AUTO ALL EXTERNAL)
+        target_code_coverage(test_sign AUTO ALL EXTERNAL)
+        target_code_coverage(test_pre AUTO ALL EXTERNAL)
+    endif()
 
     enable_testing()
     add_test(NAME test_util COMMAND test_util)
