@@ -8,6 +8,8 @@
 cmake_minimum_required(VERSION 3.16)
 
 set(CMAKE_C_STANDARD 11)
+set(CMAKE_C_STANDARD_REQUIRED ON)
+set(CMAKE_C_EXTENSIONS OFF)
 set(CMAKE_C_VISIBILITY_PRESET hidden)
 
 if(EMSCRIPTEN)
@@ -15,6 +17,8 @@ if(EMSCRIPTEN)
 else()
     set(BUILD_SHARED_LIBS ON)
 endif()
+
+list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake/Modules)
 
 project(ecc VERSION 1.0.5)
 project(ecc LANGUAGES C)
@@ -144,25 +148,45 @@ if(NOT DEFINED EMSCRIPTEN)
 endif()
 
 if(NOT DEFINED EMSCRIPTEN)
-    include(cmake/FetchCmocka.cmake)
+    include(FetchCmocka)
+
+    # setup coverage
+    include(code-coverage)
+    add_code_coverage_all_targets(EXCLUDE test/*)
+    target_code_coverage(ecc AUTO ALL)
 
     # tests executables
     add_executable(test_util test/test_util.c)
     target_link_libraries(test_util PRIVATE ecc cmocka-static)
+    target_code_coverage(test_util AUTO ALL EXTERNAL)
+
     add_executable(test_kdf test/test_kdf.c)
     target_link_libraries(test_kdf PRIVATE ecc cmocka-static)
+    target_code_coverage(test_kdf AUTO ALL EXTERNAL)
+
     add_executable(test_bls12_381 test/test_bls12_381.c)
     target_link_libraries(test_bls12_381 PRIVATE ecc cmocka-static)
+    target_code_coverage(test_bls12_381 AUTO ALL EXTERNAL)
+
     add_executable(test_h2c test/test_h2c.c)
     target_link_libraries(test_h2c PRIVATE ecc cmocka-static)
+    target_code_coverage(test_h2c AUTO ALL EXTERNAL)
+
     add_executable(test_oprf test/test_oprf.c)
     target_link_libraries(test_oprf PRIVATE ecc cmocka-static)
+    target_code_coverage(test_oprf AUTO ALL EXTERNAL)
+
     add_executable(test_opaque test/test_opaque.c)
     target_link_libraries(test_opaque PRIVATE ecc cmocka-static)
+    target_code_coverage(test_opaque AUTO ALL EXTERNAL)
+
     add_executable(test_sign test/test_sign.c)
     target_link_libraries(test_sign PRIVATE ecc cmocka-static)
+    target_code_coverage(test_sign AUTO ALL EXTERNAL)
+
     add_executable(test_pre test/test_pre.c)
     target_link_libraries(test_pre PRIVATE ecc cmocka-static)
+    target_code_coverage(test_pre AUTO ALL EXTERNAL)
 
     enable_testing()
     add_test(NAME test_util COMMAND test_util)

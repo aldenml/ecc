@@ -2,6 +2,7 @@
 *~
 /.idea
 /build
+/build-cov
 /cmake-build*
 node_modules/
 /bindings/js/dist
