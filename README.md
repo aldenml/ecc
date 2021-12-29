@@ -3,16 +3,15 @@
 [![c](https://github.com/aldenml/ecc/actions/workflows/c.yml/badge.svg?branch=master)](https://github.com/aldenml/ecc/actions/workflows/c.yml)
 [![js](https://github.com/aldenml/ecc/actions/workflows/js.yml/badge.svg?branch=master)](https://github.com/aldenml/ecc/actions/workflows/js.yml)
 [![Codacy Badge](https://app.codacy.com/project/badge/Grade/5fac0b504c25497ca621938007bc1cf6)](https://app.codacy.com/gh/aldenml/ecc/dashboard)
+[![Codacy Badge](https://app.codacy.com/project/badge/Coverage/5fac0b504c25497ca621938007bc1cf6)](https://www.codacy.com/gh/aldenml/ecc/dashboard)
 
-Set of libraries to work with elliptic-curve cryptography based on [libsodium](https://github.com/jedisct1/libsodium)
+Library to work with elliptic-curve cryptography based on [libsodium](https://github.com/jedisct1/libsodium)
 and [blst](https://github.com/supranational/blst).
 
-| Library |   |   |
-|---|---|---|
-| Java binding | [jvm](jvm) | [![maven](https://img.shields.io/maven-central/v/org.ssohub/ecc.svg?label=maven)](https://search.maven.org/search?q=g:%22org.ssohub%22%20AND%20a:%22ecc%22) |
-| Javascript binding | [js/ecc](js/ecc) | [![npm](https://img.shields.io/npm/v/@aldenml/ecc)](https://www.npmjs.com/package/@aldenml/ecc) |
-| OPAQUE Asymmetric PAKE Protocol | [js/opaque](js/opaque) | [![npm](https://img.shields.io/npm/v/@aldenml/opaque)](https://www.npmjs.com/package/@aldenml/opaque) |
-| OPRF Oblivious pseudo-random | [js/oprf](js/oprf) | [![npm](https://img.shields.io/npm/v/@aldenml/oprf)](https://www.npmjs.com/package/@aldenml/oprf) |
+| Bindings and ports |   |   |
+|--------------------|---|---|
+| Java               | [jvm](jvm) | [![maven](https://img.shields.io/maven-central/v/org.ssohub/ecc.svg?label=maven)](https://search.maven.org/search?q=g:%22org.ssohub%22%20AND%20a:%22ecc%22) |
+| Javascript         | [js/ecc](js/ecc) | [![npm](https://img.shields.io/npm/v/@aldenml/ecc)](https://www.npmjs.com/package/@aldenml/ecc) |
 
 ### BLS12-381 Pairing
 
