@@ -18,8 +18,6 @@ else()
     set(BUILD_SHARED_LIBS ON)
 endif()
 
-list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake/Modules)
-
 project(ecc VERSION 1.0.5)
 project(ecc LANGUAGES C)
 
@@ -148,7 +146,7 @@ if(NOT DEFINED EMSCRIPTEN)
 endif()
 
 if(NOT DEFINED EMSCRIPTEN)
-    include(FetchCmocka)
+    include(cmake/FetchCmocka.cmake)
 
     # tests executables
     add_executable(test_util test/test_util.c)
@@ -170,7 +168,7 @@ if(NOT DEFINED EMSCRIPTEN)
 
     # setup coverage
     if(CODE_COVERAGE)
-        include(code-coverage)
+        include(cmake/code-coverage.cmake)
         add_code_coverage_all_targets(EXCLUDE test/*)
         target_code_coverage(ecc AUTO ALL)
         target_code_coverage(test_util AUTO ALL EXTERNAL)

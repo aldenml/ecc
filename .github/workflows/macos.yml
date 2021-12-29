@@ -30,6 +30,6 @@ jobs:
         run: cmake --build build-cov --config Debug --parallel 2 --target ccov-all-export
 
       - name: upload coverage
-        run: bash <(curl -Ls https://coverage.codacy.com/get.sh) report -l C -r ./build-cov/ccov/coverage.json
+        run: bash <(curl -Ls https://coverage.codacy.com/get.sh) report -l C -r ./build-cov/ccov/coverage.lcov
         env:
           CODACY_PROJECT_TOKEN: ${{ secrets.CODACY_PROJECT_TOKEN }}
