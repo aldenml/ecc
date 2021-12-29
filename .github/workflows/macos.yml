@@ -16,6 +16,9 @@ jobs:
       - uses: actions/checkout@v2
         with:
           submodules: recursive
+      - name: install packages
+        run: |
+          brew install ninja
 
       - name: build coverage
         run: |
