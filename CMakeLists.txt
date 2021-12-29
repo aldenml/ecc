@@ -8,8 +8,6 @@
 cmake_minimum_required(VERSION 3.16)
 
 set(CMAKE_C_STANDARD 11)
-set(CMAKE_C_STANDARD_REQUIRED ON)
-set(CMAKE_C_EXTENSIONS OFF)
 set(CMAKE_C_VISIBILITY_PRESET hidden)
 
 if(EMSCRIPTEN)
@@ -20,6 +18,8 @@ endif()
 
 project(ecc VERSION 1.0.5)
 project(ecc LANGUAGES C)
+
+list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake/Modules)
 
 include(ExternalProject)
 if(EMSCRIPTEN)
@@ -146,7 +146,7 @@ if(NOT DEFINED EMSCRIPTEN)
 endif()
 
 if(NOT DEFINED EMSCRIPTEN)
-    include(cmake/FetchCmocka.cmake)
+    include(FetchCmocka)
 
     # tests executables
     add_executable(test_util test/test_util.c)
@@ -168,7 +168,7 @@ if(NOT DEFINED EMSCRIPTEN)
 
     # setup coverage
     if(CODE_COVERAGE)
-        include(cmake/code-coverage.cmake)
+        include(code-coverage)
         add_code_coverage_all_targets(EXCLUDE test/*)
         target_code_coverage(ecc AUTO ALL)
         target_code_coverage(test_util AUTO ALL EXTERNAL)
