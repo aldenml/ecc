@@ -41,7 +41,7 @@
 /**
  * A client and server interact to compute output = F(skS, input, info).
  */
-#define ecc_oprf_ristretto255_sha512_MODE_BASE 0x00
+#define ecc_oprf_ristretto255_sha512_MODE_BASE 0
 
 // const
 /**
@@ -49,7 +49,7 @@
  * the client also receives proof that the server used skS in computing
  * the function.
  */
-#define ecc_oprf_ristretto255_sha512_MODE_VERIFIABLE 0x01
+#define ecc_oprf_ristretto255_sha512_MODE_VERIFIABLE 1
 
 /**
  * Evaluates serialized representations of blinded group elements from the
@@ -275,6 +275,8 @@ void ecc_oprf_ristretto255_sha512_Unblind(
  * @param inputLen the length of `input`
  * @param blind size:ecc_oprf_ristretto255_sha512_SCALARSIZE
  * @param evaluatedElement size:ecc_oprf_ristretto255_sha512_ELEMENTSIZE
+ * @param info size:infoLen
+ * @param infoLen
  */
 ECC_EXPORT
 void ecc_oprf_ristretto255_sha512_Finalize(

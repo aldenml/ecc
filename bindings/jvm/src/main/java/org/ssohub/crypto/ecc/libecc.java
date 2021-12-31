@@ -780,6 +780,15 @@ public final class libecc {
     );
 
     /**
+     * 
+     *
+     * @param g (output) size:ecc_ristretto255_SIZE
+     */
+    public static native void ecc_ristretto255_generator(
+        byte[] g
+    );
+
+    /**
      * Maps a 64 bytes vector r (usually the output of a hash function) to
      * a group element, and stores its representation into p.
      *
@@ -1319,6 +1328,12 @@ public final class libecc {
     public static final int ecc_oprf_ristretto255_sha512_SCALARSIZE = 32;
 
     /**
+     * Size of a proof. Proof is a sequence of two scalars.
+     *
+     */
+    public static final int ecc_oprf_ristretto255_sha512_PROOFSIZE = 64;
+
+    /**
      * Size of the protocol output in the `Finalize` operations, since
      * this is ristretto255 with SHA-512, the size is 64 bytes.
      *
@@ -1326,58 +1341,220 @@ public final class libecc {
     public static final int ecc_oprf_ristretto255_sha512_Nh = 64;
 
     /**
+     * A client and server interact to compute output = F(skS, input, info).
+     *
+     */
+    public static final int ecc_oprf_ristretto255_sha512_MODE_BASE = 0;
+
+    /**
+     * A client and server interact to compute output = F(skS, input, info) and
+     * the client also receives proof that the server used skS in computing
+     * the function.
+     *
+     */
+    public static final int ecc_oprf_ristretto255_sha512_MODE_VERIFIABLE = 1;
+
+    /**
      * Evaluates serialized representations of blinded group elements from the
      * client as inputs.
      * 
-     * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-voprf-07#section-3.3.1.1
+     * This operation could fail if internally, there is an attempt to invert
+     * the `0` scalar.
+     * 
+     * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-voprf-08#section-3.3.1.1
      *
      * @param evaluatedElement (output) evaluated element, size:ecc_oprf_ristretto255_sha512_ELEMENTSIZE
      * @param skS private key, size:ecc_oprf_ristretto255_sha512_SCALARSIZE
      * @param blindedElement blinded element, size:ecc_oprf_ristretto255_sha512_ELEMENTSIZE
+     * @param info opaque byte string no larger than 200 bytes, size:infoLen
+     * @param infoLen the size of `info`
+     * @return 0 on success, or -1 if an error
      */
-    public static native void ecc_oprf_ristretto255_sha512_Evaluate(
+    public static native int ecc_oprf_ristretto255_sha512_Evaluate(
         byte[] evaluatedElement,
         byte[] skS,
-        byte[] blindedElement
+        byte[] blindedElement,
+        byte[] info,
+        int infoLen
+    );
+
+    /**
+     * Evaluates serialized representations of blinded group elements from the
+     * client as inputs and produces a proof that `skS` was used in computing
+     * the result.
+     * 
+     * This operation could fail if internally, there is an attempt to invert
+     * the `0` scalar.
+     * 
+     * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-voprf-08#section-3.3.2.1
+     *
+     * @param evaluatedElement (output) evaluated element, size:ecc_oprf_ristretto255_sha512_ELEMENTSIZE
+     * @param proof (output) size:ecc_oprf_ristretto255_sha512_PROOFSIZE
+     * @param skS private key, size:ecc_oprf_ristretto255_sha512_SCALARSIZE
+     * @param blindedElement blinded element, size:ecc_oprf_ristretto255_sha512_ELEMENTSIZE
+     * @param info opaque byte string no larger than 200 bytes, size:infoLen
+     * @param infoLen the size of `info`
+     * @param r size:ecc_oprf_ristretto255_sha512_SCALARSIZE
+     * @return 0 on success, or -1 if an error
+     */
+    public static native int ecc_oprf_ristretto255_sha512_VerifiableEvaluateWithScalar(
+        byte[] evaluatedElement,
+        byte[] proof,
+        byte[] skS,
+        byte[] blindedElement,
+        byte[] info,
+        int infoLen,
+        byte[] r
+    );
+
+    /**
+     * Evaluates serialized representations of blinded group elements from the
+     * client as inputs and produces a proof that `skS` was used in computing
+     * the result.
+     * 
+     * This operation could fail if internally, there is an attempt to invert
+     * the `0` scalar.
+     * 
+     * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-voprf-08#section-3.3.2.1
+     *
+     * @param evaluatedElement (output) evaluated element, size:ecc_oprf_ristretto255_sha512_ELEMENTSIZE
+     * @param proof (output) size:ecc_oprf_ristretto255_sha512_PROOFSIZE
+     * @param skS private key, size:ecc_oprf_ristretto255_sha512_SCALARSIZE
+     * @param blindedElement blinded element, size:ecc_oprf_ristretto255_sha512_ELEMENTSIZE
+     * @param info opaque byte string no larger than 200 bytes, size:infoLen
+     * @param infoLen the size of `info`
+     * @return 0 on success, or -1 if an error
+     */
+    public static native int ecc_oprf_ristretto255_sha512_VerifiableEvaluate(
+        byte[] evaluatedElement,
+        byte[] proof,
+        byte[] skS,
+        byte[] blindedElement,
+        byte[] info,
+        int infoLen
+    );
+
+    /**
+     * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-voprf-08#section-3.3.2.2
+     *
+     * @param proof (output) size:ecc_oprf_ristretto255_sha512_PROOFSIZE
+     * @param k size:ecc_oprf_ristretto255_sha512_SCALARSIZE
+     * @param A size:ecc_oprf_ristretto255_sha512_ELEMENTSIZE
+     * @param B size:ecc_oprf_ristretto255_sha512_ELEMENTSIZE
+     * @param C size:ecc_oprf_ristretto255_sha512_ELEMENTSIZE
+     * @param D size:ecc_oprf_ristretto255_sha512_ELEMENTSIZE
+     * @param r size:ecc_oprf_ristretto255_sha512_SCALARSIZE
+     */
+    public static native void ecc_oprf_ristretto255_sha512_GenerateProofWithScalar(
+        byte[] proof,
+        byte[] k,
+        byte[] A,
+        byte[] B,
+        byte[] C,
+        byte[] D,
+        byte[] r
+    );
+
+    /**
+     * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-voprf-08#section-3.3.2.2
+     *
+     * @param proof (output) size:ecc_oprf_ristretto255_sha512_PROOFSIZE
+     * @param k size:ecc_oprf_ristretto255_sha512_SCALARSIZE
+     * @param A size:ecc_oprf_ristretto255_sha512_ELEMENTSIZE
+     * @param B size:ecc_oprf_ristretto255_sha512_ELEMENTSIZE
+     * @param C size:ecc_oprf_ristretto255_sha512_ELEMENTSIZE
+     * @param D size:ecc_oprf_ristretto255_sha512_ELEMENTSIZE
+     */
+    public static native void ecc_oprf_ristretto255_sha512_GenerateProof(
+        byte[] proof,
+        byte[] k,
+        byte[] A,
+        byte[] B,
+        byte[] C,
+        byte[] D
+    );
+
+    /**
+     * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-voprf-08#section-3.3.2.3
+     *
+     * @param M (output) size:ecc_oprf_ristretto255_sha512_ELEMENTSIZE
+     * @param Z (output) size:ecc_oprf_ristretto255_sha512_ELEMENTSIZE
+     * @param B size:ecc_oprf_ristretto255_sha512_ELEMENTSIZE
+     * @param Cs size:m*ecc_oprf_ristretto255_sha512_ELEMENTSIZE
+     * @param Ds size:m*ecc_oprf_ristretto255_sha512_ELEMENTSIZE
+     * @param m 
+     */
+    public static native void ecc_oprf_ristretto255_sha512_ComputeComposites(
+        byte[] M,
+        byte[] Z,
+        byte[] B,
+        byte[] Cs,
+        byte[] Ds,
+        int m
+    );
+
+    /**
+     * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-voprf-08#section-3.3.2.3
+     *
+     * @param M (output) size:ecc_oprf_ristretto255_sha512_ELEMENTSIZE
+     * @param Z (output) size:ecc_oprf_ristretto255_sha512_ELEMENTSIZE
+     * @param k size:ecc_oprf_ristretto255_sha512_SCALARSIZE
+     * @param B size:ecc_oprf_ristretto255_sha512_ELEMENTSIZE
+     * @param Cs size:m*ecc_oprf_ristretto255_sha512_ELEMENTSIZE
+     * @param Ds size:m*ecc_oprf_ristretto255_sha512_ELEMENTSIZE
+     * @param m 
+     */
+    public static native void ecc_oprf_ristretto255_sha512_ComputeCompositesFast(
+        byte[] M,
+        byte[] Z,
+        byte[] k,
+        byte[] B,
+        byte[] Cs,
+        byte[] Ds,
+        int m
     );
 
     /**
      * Same as calling `ecc_oprf_ristretto255_sha512_Blind` with an
      * specified scalar blind.
      * 
-     * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-voprf-07#section-3.3.3.1
+     * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-voprf-08#section-3.3.3.1
      *
      * @param blindedElement (output) blinded element, size:ecc_oprf_ristretto255_sha512_ELEMENTSIZE
-     * @param input message to blind, size:input_len
-     * @param input_len length of `input`
+     * @param input message to blind, size:inputLen
+     * @param inputLen length of `input`
      * @param blind scalar to use in the blind operation, size:ecc_oprf_ristretto255_sha512_SCALARSIZE
+     * @param mode 
      */
     public static native void ecc_oprf_ristretto255_sha512_BlindWithScalar(
         byte[] blindedElement,
         byte[] input,
-        int input_len,
-        byte[] blind
+        int inputLen,
+        byte[] blind,
+        int mode
     );
 
     /**
-     * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-voprf-07#section-3.3.3.1
+     * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-voprf-08#section-3.3.3.1
      *
      * @param blindedElement (output) blinded element, size:ecc_oprf_ristretto255_sha512_ELEMENTSIZE
      * @param blind (output) scalar used in the blind operation, size:ecc_oprf_ristretto255_sha512_SCALARSIZE
-     * @param input message to blind, size:input_len
-     * @param input_len length of `input`
+     * @param input message to blind, size:inputLen
+     * @param inputLen length of `input`
+     * @param mode 
      */
     public static native void ecc_oprf_ristretto255_sha512_Blind(
         byte[] blindedElement,
         byte[] blind,
         byte[] input,
-        int input_len
+        int inputLen,
+        int mode
     );
 
     /**
-     * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-voprf-07#section-3.3.3.1
+     * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-voprf-08#section-3.3.3.1
      *
-     * @param unblindedElement size:ecc_oprf_ristretto255_sha512_ELEMENTSIZE
+     * @param unblindedElement (output) size:ecc_oprf_ristretto255_sha512_ELEMENTSIZE
      * @param blind size:ecc_oprf_ristretto255_sha512_SCALARSIZE
      * @param evaluatedElement size:ecc_oprf_ristretto255_sha512_ELEMENTSIZE
      */
@@ -1388,63 +1565,135 @@ public final class libecc {
     );
 
     /**
-     * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-voprf-07#section-3.3.3.2
+     * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-voprf-08#section-3.3.3.2
      *
-     * @param output (output) size:64
-     * @param input the input message, size:input_len
-     * @param input_len the length of `input`
+     * @param output (output) size:ecc_oprf_ristretto255_sha512_Nh
+     * @param input the input message, size:inputLen
+     * @param inputLen the length of `input`
      * @param blind size:ecc_oprf_ristretto255_sha512_SCALARSIZE
      * @param evaluatedElement size:ecc_oprf_ristretto255_sha512_ELEMENTSIZE
-     * @param mode mode to build the internal DST string (modeBase=0x00, modeVerifiable=0x01)
+     * @param info size:infoLen
+     * @param infoLen 
      */
     public static native void ecc_oprf_ristretto255_sha512_Finalize(
         byte[] output,
         byte[] input,
-        int input_len,
+        int inputLen,
         byte[] blind,
         byte[] evaluatedElement,
-        int mode
+        byte[] info,
+        int infoLen
+    );
+
+    /**
+     * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-voprf-08#section-3.3.4.1
+     *
+     * @param A size:ecc_oprf_ristretto255_sha512_ELEMENTSIZE
+     * @param B size:ecc_oprf_ristretto255_sha512_ELEMENTSIZE
+     * @param C size:ecc_oprf_ristretto255_sha512_ELEMENTSIZE
+     * @param D size:ecc_oprf_ristretto255_sha512_ELEMENTSIZE
+     * @param proof size:ecc_oprf_ristretto255_sha512_PROOFSIZE
+     * @return on success verification returns 1, else 0.
+     */
+    public static native int ecc_oprf_ristretto255_sha512_VerifyProof(
+        byte[] A,
+        byte[] B,
+        byte[] C,
+        byte[] D,
+        byte[] proof
+    );
+
+    /**
+     * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-voprf-08#section-3.3.4.2
+     *
+     * @param unblindedElement (output) size:ecc_oprf_ristretto255_sha512_ELEMENTSIZE
+     * @param blind size:ecc_oprf_ristretto255_sha512_SCALARSIZE
+     * @param evaluatedElement size:ecc_oprf_ristretto255_sha512_ELEMENTSIZE
+     * @param blindedElement size:ecc_oprf_ristretto255_sha512_ELEMENTSIZE
+     * @param pkS size:ecc_oprf_ristretto255_sha512_ELEMENTSIZE
+     * @param proof size:ecc_oprf_ristretto255_sha512_PROOFSIZE
+     * @param info size:infoLen
+     * @param infoLen 
+     * @return on success verification returns 0, else -1.
+     */
+    public static native int ecc_oprf_ristretto255_sha512_VerifiableUnblind(
+        byte[] unblindedElement,
+        byte[] blind,
+        byte[] evaluatedElement,
+        byte[] blindedElement,
+        byte[] pkS,
+        byte[] proof,
+        byte[] info,
+        int infoLen
+    );
+
+    /**
+     * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-voprf-08#section-3.3.4.3
+     *
+     * @param output (output) size:ecc_oprf_ristretto255_sha512_Nh
+     * @param input size:inputLen
+     * @param inputLen 
+     * @param blind size:ecc_oprf_ristretto255_sha512_SCALARSIZE
+     * @param evaluatedElement size:ecc_oprf_ristretto255_sha512_ELEMENTSIZE
+     * @param blindedElement size:ecc_oprf_ristretto255_sha512_ELEMENTSIZE
+     * @param pkS size:ecc_oprf_ristretto255_sha512_ELEMENTSIZE
+     * @param proof size:ecc_oprf_ristretto255_sha512_PROOFSIZE
+     * @param info size:infoLen
+     * @param infoLen 
+     * @return on success verification returns 0, else -1.
+     */
+    public static native int ecc_oprf_ristretto255_sha512_VerifiableFinalize(
+        byte[] output,
+        byte[] input,
+        int inputLen,
+        byte[] blind,
+        byte[] evaluatedElement,
+        byte[] blindedElement,
+        byte[] pkS,
+        byte[] proof,
+        byte[] info,
+        int infoLen
     );
 
     /**
      * Same as calling `ecc_oprf_ristretto255_sha512_HashToGroup` with an
      * specified DST string.
      * 
-     * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-voprf-07#section-2.1
-     * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-voprf-07#section-4.1
+     * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-voprf-08#section-2.1
+     * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-voprf-08#section-4.1
      *
      * @param out (output) element of the group, size:ecc_oprf_ristretto255_sha512_ELEMENTSIZE
-     * @param input input string to map, size:input_len
-     * @param input_len length of `input`
-     * @param dst domain separation tag (DST), size:dst_len
-     * @param dst_len length of `dst`
+     * @param input input string to map, size:inputLen
+     * @param inputLen length of `input`
+     * @param dst domain separation tag (DST), size:dstLen
+     * @param dstLen length of `dst`
      */
     public static native void ecc_oprf_ristretto255_sha512_HashToGroupWithDST(
         byte[] out,
         byte[] input,
-        int input_len,
+        int inputLen,
         byte[] dst,
-        int dst_len
+        int dstLen
     );
 
     /**
      * Deterministically maps an array of bytes "x" to an element of "GG" in
      * the ristretto255 curve.
      * 
-     * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-voprf-07#section-2.1
-     * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-voprf-07#section-4.1
-     * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-hash-to-curve-11#section-2.2.5
-     * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-voprf-07#section-3
+     * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-voprf-08#section-2.1
+     * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-voprf-08#section-4.1
+     * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-hash-to-curve-13#section-2.2.5
+     * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-voprf-08#section-3
      *
      * @param out (output) element of the group, size:ecc_oprf_ristretto255_sha512_ELEMENTSIZE
-     * @param input input string to map, size:input_len
-     * @param input_len length of `input`
+     * @param input input string to map, size:inputLen
+     * @param inputLen length of `input`
      * @param mode mode to build the internal DST string (modeBase=0x00, modeVerifiable=0x01)
      */
     public static native void ecc_oprf_ristretto255_sha512_HashToGroup(
         byte[] out,
         byte[] input,
-        int input_len,
+        int inputLen,
         int mode
     );
 
@@ -1452,31 +1701,31 @@ public final class libecc {
      * 
      *
      * @param out (output) size:ecc_oprf_ristretto255_sha512_SCALARSIZE
-     * @param input size:input_len
-     * @param input_len 
-     * @param dst size:dst_len
-     * @param dst_len 
+     * @param input size:inputLen
+     * @param inputLen 
+     * @param dst size:dstLen
+     * @param dstLen 
      */
     public static native void ecc_oprf_ristretto255_sha512_HashToScalarWithDST(
         byte[] out,
         byte[] input,
-        int input_len,
+        int inputLen,
         byte[] dst,
-        int dst_len
+        int dstLen
     );
 
     /**
      * 
      *
      * @param out (output) size:ecc_oprf_ristretto255_sha512_SCALARSIZE
-     * @param input size:input_len
-     * @param input_len 
+     * @param input size:inputLen
+     * @param inputLen 
      * @param mode 
      */
     public static native void ecc_oprf_ristretto255_sha512_HashToScalar(
         byte[] out,
         byte[] input,
-        int input_len,
+        int inputLen,
         int mode
     );
 
