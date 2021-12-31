@@ -20,6 +20,12 @@ int ecc_ristretto255_sub(byte_t *r, const byte_t *p, const byte_t *q) {
     return crypto_core_ristretto255_sub(r, p, q);
 }
 
+void ecc_ristretto255_generator(byte_t *g) {
+    byte_t one[ecc_ristretto255_SCALARSIZE] = {0};
+    one[0] = 0x01;
+    ecc_ristretto255_scalarmult_base(g, one);
+}
+
 void ecc_ristretto255_from_hash(byte_t *p, const byte_t *r) {
     crypto_core_ristretto255_from_hash(p, r);
 }

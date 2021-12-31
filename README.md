@@ -8,7 +8,7 @@
 Library to work with elliptic-curve cryptography based on [libsodium](https://github.com/jedisct1/libsodium)
 and [blst](https://github.com/supranational/blst).
 
-| Bindings and ports |   |   |
+| Bindings |   |   |
 |--------------------|---|---|
 | Java               | [jvm](jvm) | [![maven](https://img.shields.io/maven-central/v/org.ssohub/ecc.svg?label=maven)](https://search.maven.org/search?q=g:%22org.ssohub%22%20AND%20a:%22ecc%22) |
 | Javascript         | [js/ecc](js/ecc) | [![npm](https://img.shields.io/npm/v/@aldenml/ecc)](https://www.npmjs.com/package/@aldenml/ecc) |
