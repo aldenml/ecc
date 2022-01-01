@@ -16,38 +16,40 @@ import {
 } from "./oprf.js";
 import assert from "assert";
 
-// https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-voprf-07#appendix-A.1
+// https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-voprf-08#appendix-A.1
 
 describe("OPRF(ristretto255, SHA-512)", () => {
 
-    // https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-voprf-07#appendix-A.1.1
-    const skSm = hex2bin("caeff69352df4905a9121a4997704ca8cee1524a110819eb87deba1a39ec1701");
+    // https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-voprf-08#appendix-A.1.1
+    const skSm = hex2bin("74db8e13d2c5148a1181d57cc06debd730da4df1978b72ac18bc48992a0d2c0f");
 
-    // https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-voprf-07#appendix-A.1.1.1
+    // https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-voprf-08#appendix-A.1.1.1
     it("input 00", async () => {
         const input = hex2bin("00");
+        const info = hex2bin("7465737420696e666f");
         const blind = hex2bin("c604c785ada70d77a5256ae21767de8c3304115237d262134f5e46e512cf8e03");
 
         const blindedElement = await oprf_ristretto255_sha512_BlindWithScalar(input, blind);
-        const evaluationElement = await oprf_ristretto255_sha512_Evaluate(skSm, blindedElement);
-        const output = await oprf_ristretto255_sha512_Finalize(input, blind, evaluationElement);
+        const evaluationElement = await oprf_ristretto255_sha512_Evaluate(skSm, blindedElement, info);
+        const output = await oprf_ristretto255_sha512_Finalize(input, blind, evaluationElement, info);
 
-        assert.strictEqual(bin2hex(blindedElement), "fc20e03aff3a9de9b37e8d35886ade11ec7d85c2a1fb5bb0b1686c64e07ac467");
-        assert.strictEqual(bin2hex(evaluationElement), "7c72cc293cd7d44c0b57c273f27befd598b132edc665694bdc9c42a4d3083c0a");
-        assert.strictEqual(bin2hex(output), "e3a209dce2d3ea3d84fcddb282818caebb756a341e08a310d9904314f5392085d13c3f76339d745db0f46974a6049c3ea9546305af55d37760b2136d9b3f0134");
+        assert.strictEqual(bin2hex(blindedElement), "744441a5d3ee12571a84d34812443eba2b6521a47265ad655f01e759b3dd7d35");
+        assert.strictEqual(bin2hex(evaluationElement), "4254c503ee2013262473eec926b109b018d699b8dd954ee878bc17b159696353");
+        assert.strictEqual(bin2hex(output), "9aef8983b729baacb7ecf1be98d1276ca29e7d62dbf39bc595be018b66b199119f18579a9ae96a39d7d506c9e00f75b433a870d76ba755a3e7196911fff89ff3");
     });
 
-    // https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-voprf-07#appendix-A.1.1.2
+    // https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-voprf-08#appendix-A.1.1.2
     it("input 5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a", async () => {
         const input = hex2bin("5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a");
+        const info = hex2bin("7465737420696e666f");
         const blind = hex2bin("5ed895206bfc53316d307b23e46ecc6623afb3086da74189a416012be037e50b");
 
         const blindedElement = await oprf_ristretto255_sha512_BlindWithScalar(input, blind);
-        const evaluationElement = await oprf_ristretto255_sha512_Evaluate(skSm, blindedElement);
-        const output = await oprf_ristretto255_sha512_Finalize(input, blind, evaluationElement);
+        const evaluationElement = await oprf_ristretto255_sha512_Evaluate(skSm, blindedElement, info);
+        const output = await oprf_ristretto255_sha512_Finalize(input, blind, evaluationElement, info);
 
-        assert.strictEqual(bin2hex(blindedElement), "483d4f39de5ff77fa0f9a0ad2334dd5bf87f2cda868539d21de67ce49e7d1536");
-        assert.strictEqual(bin2hex(evaluationElement), "026f2758fc62f02a7ff95f35ec6f20186aa57c0274361655543ea235d7b2aa34");
-        assert.strictEqual(bin2hex(output), "2c17dc3e9398dadb44bb2d3360c446302e99f1fe0ec40f0b1ad25c9cf002be1e4b41b4900ef056537fe8c14532ccea4d796f5feab9541af48057d83c0db86fe9");
+        assert.strictEqual(bin2hex(blindedElement), "f4eeea4e1bcb2ec818ee2d5c1fcec56c24064a9ff4bea5b3dd6877800fc28e4d");
+        assert.strictEqual(bin2hex(evaluationElement), "185dae43b6209dacbc41a62fd4889700d11eeeff4e83ffbc72d54daee7e25659");
+        assert.strictEqual(bin2hex(output), "f556e2d83e576b4edc890472572d08f0d90d2ecc52a73b35b2a8416a72ff676549e3a83054fdf4fd16fe03e03bee7bb32cbd83c7ca212ea0d03b8996c2c268b2");
     });
 });

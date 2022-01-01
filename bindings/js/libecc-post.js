@@ -1310,6 +1310,22 @@ Module.ecc_ristretto255_sub = (
 }
 
 /**
+ * 
+ *
+ * @param {Uint8Array} g (output) size:ecc_ristretto255_SIZE
+ */
+Module.ecc_ristretto255_generator = (
+    g,
+) => {
+    const ptr_g = mput(g, ecc_ristretto255_SIZE);
+    _ecc_ristretto255_generator(
+        ptr_g,
+    );
+    mget(g, ptr_g, ecc_ristretto255_SIZE);
+    mfree(ptr_g, ecc_ristretto255_SIZE);
+}
+
+/**
  * Maps a 64 bytes vector r (usually the output of a hash function) to
  * a group element, and stores its representation into p.
  *
@@ -2249,6 +2265,14 @@ const ecc_oprf_ristretto255_sha512_SCALARSIZE = 32;
  */
 Module.ecc_oprf_ristretto255_sha512_SCALARSIZE = ecc_oprf_ristretto255_sha512_SCALARSIZE;
 
+const ecc_oprf_ristretto255_sha512_PROOFSIZE = 64;
+/**
+ * Size of a proof. Proof is a sequence of two scalars.
+ *
+ * @type {number}
+ */
+Module.ecc_oprf_ristretto255_sha512_PROOFSIZE = ecc_oprf_ristretto255_sha512_PROOFSIZE;
+
 const ecc_oprf_ristretto255_sha512_Nh = 64;
 /**
  * Size of the protocol output in the `Finalize` operations, since
@@ -2258,101 +2282,413 @@ const ecc_oprf_ristretto255_sha512_Nh = 64;
  */
 Module.ecc_oprf_ristretto255_sha512_Nh = ecc_oprf_ristretto255_sha512_Nh;
 
+const ecc_oprf_ristretto255_sha512_MODE_BASE = 0;
+/**
+ * A client and server interact to compute output = F(skS, input, info).
+ *
+ * @type {number}
+ */
+Module.ecc_oprf_ristretto255_sha512_MODE_BASE = ecc_oprf_ristretto255_sha512_MODE_BASE;
+
+const ecc_oprf_ristretto255_sha512_MODE_VERIFIABLE = 1;
+/**
+ * A client and server interact to compute output = F(skS, input, info) and
+ * the client also receives proof that the server used skS in computing
+ * the function.
+ *
+ * @type {number}
+ */
+Module.ecc_oprf_ristretto255_sha512_MODE_VERIFIABLE = ecc_oprf_ristretto255_sha512_MODE_VERIFIABLE;
+
 /**
  * Evaluates serialized representations of blinded group elements from the
  * client as inputs.
  * 
- * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-voprf-07#section-3.3.1.1
+ * This operation could fail if internally, there is an attempt to invert
+ * the `0` scalar.
+ * 
+ * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-voprf-08#section-3.3.1.1
  *
  * @param {Uint8Array} evaluatedElement (output) evaluated element, size:ecc_oprf_ristretto255_sha512_ELEMENTSIZE
  * @param {Uint8Array} skS private key, size:ecc_oprf_ristretto255_sha512_SCALARSIZE
  * @param {Uint8Array} blindedElement blinded element, size:ecc_oprf_ristretto255_sha512_ELEMENTSIZE
+ * @param {Uint8Array} info opaque byte string no larger than 200 bytes, size:infoLen
+ * @param {number} infoLen the size of `info`
+ * @return {number} 0 on success, or -1 if an error
  */
 Module.ecc_oprf_ristretto255_sha512_Evaluate = (
     evaluatedElement,
     skS,
     blindedElement,
+    info,
+    infoLen,
 ) => {
     const ptr_evaluatedElement = mput(evaluatedElement, ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
     const ptr_skS = mput(skS, ecc_oprf_ristretto255_sha512_SCALARSIZE);
     const ptr_blindedElement = mput(blindedElement, ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
-    _ecc_oprf_ristretto255_sha512_Evaluate(
+    const ptr_info = mput(info, infoLen);
+    const fun_ret = _ecc_oprf_ristretto255_sha512_Evaluate(
         ptr_evaluatedElement,
         ptr_skS,
         ptr_blindedElement,
+        ptr_info,
+        infoLen,
     );
     mget(evaluatedElement, ptr_evaluatedElement, ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
     mfree(ptr_evaluatedElement, ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
     mfree(ptr_skS, ecc_oprf_ristretto255_sha512_SCALARSIZE);
     mfree(ptr_blindedElement, ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
+    mfree(ptr_info, infoLen);
+    return fun_ret;
+}
+
+/**
+ * Evaluates serialized representations of blinded group elements from the
+ * client as inputs and produces a proof that `skS` was used in computing
+ * the result.
+ * 
+ * This operation could fail if internally, there is an attempt to invert
+ * the `0` scalar.
+ * 
+ * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-voprf-08#section-3.3.2.1
+ *
+ * @param {Uint8Array} evaluatedElement (output) evaluated element, size:ecc_oprf_ristretto255_sha512_ELEMENTSIZE
+ * @param {Uint8Array} proof (output) size:ecc_oprf_ristretto255_sha512_PROOFSIZE
+ * @param {Uint8Array} skS private key, size:ecc_oprf_ristretto255_sha512_SCALARSIZE
+ * @param {Uint8Array} blindedElement blinded element, size:ecc_oprf_ristretto255_sha512_ELEMENTSIZE
+ * @param {Uint8Array} info opaque byte string no larger than 200 bytes, size:infoLen
+ * @param {number} infoLen the size of `info`
+ * @param {Uint8Array} r size:ecc_oprf_ristretto255_sha512_SCALARSIZE
+ * @return {number} 0 on success, or -1 if an error
+ */
+Module.ecc_oprf_ristretto255_sha512_VerifiableEvaluateWithScalar = (
+    evaluatedElement,
+    proof,
+    skS,
+    blindedElement,
+    info,
+    infoLen,
+    r,
+) => {
+    const ptr_evaluatedElement = mput(evaluatedElement, ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
+    const ptr_proof = mput(proof, ecc_oprf_ristretto255_sha512_PROOFSIZE);
+    const ptr_skS = mput(skS, ecc_oprf_ristretto255_sha512_SCALARSIZE);
+    const ptr_blindedElement = mput(blindedElement, ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
+    const ptr_info = mput(info, infoLen);
+    const ptr_r = mput(r, ecc_oprf_ristretto255_sha512_SCALARSIZE);
+    const fun_ret = _ecc_oprf_ristretto255_sha512_VerifiableEvaluateWithScalar(
+        ptr_evaluatedElement,
+        ptr_proof,
+        ptr_skS,
+        ptr_blindedElement,
+        ptr_info,
+        infoLen,
+        ptr_r,
+    );
+    mget(evaluatedElement, ptr_evaluatedElement, ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
+    mget(proof, ptr_proof, ecc_oprf_ristretto255_sha512_PROOFSIZE);
+    mfree(ptr_evaluatedElement, ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
+    mfree(ptr_proof, ecc_oprf_ristretto255_sha512_PROOFSIZE);
+    mfree(ptr_skS, ecc_oprf_ristretto255_sha512_SCALARSIZE);
+    mfree(ptr_blindedElement, ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
+    mfree(ptr_info, infoLen);
+    mfree(ptr_r, ecc_oprf_ristretto255_sha512_SCALARSIZE);
+    return fun_ret;
+}
+
+/**
+ * Evaluates serialized representations of blinded group elements from the
+ * client as inputs and produces a proof that `skS` was used in computing
+ * the result.
+ * 
+ * This operation could fail if internally, there is an attempt to invert
+ * the `0` scalar.
+ * 
+ * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-voprf-08#section-3.3.2.1
+ *
+ * @param {Uint8Array} evaluatedElement (output) evaluated element, size:ecc_oprf_ristretto255_sha512_ELEMENTSIZE
+ * @param {Uint8Array} proof (output) size:ecc_oprf_ristretto255_sha512_PROOFSIZE
+ * @param {Uint8Array} skS private key, size:ecc_oprf_ristretto255_sha512_SCALARSIZE
+ * @param {Uint8Array} blindedElement blinded element, size:ecc_oprf_ristretto255_sha512_ELEMENTSIZE
+ * @param {Uint8Array} info opaque byte string no larger than 200 bytes, size:infoLen
+ * @param {number} infoLen the size of `info`
+ * @return {number} 0 on success, or -1 if an error
+ */
+Module.ecc_oprf_ristretto255_sha512_VerifiableEvaluate = (
+    evaluatedElement,
+    proof,
+    skS,
+    blindedElement,
+    info,
+    infoLen,
+) => {
+    const ptr_evaluatedElement = mput(evaluatedElement, ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
+    const ptr_proof = mput(proof, ecc_oprf_ristretto255_sha512_PROOFSIZE);
+    const ptr_skS = mput(skS, ecc_oprf_ristretto255_sha512_SCALARSIZE);
+    const ptr_blindedElement = mput(blindedElement, ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
+    const ptr_info = mput(info, infoLen);
+    const fun_ret = _ecc_oprf_ristretto255_sha512_VerifiableEvaluate(
+        ptr_evaluatedElement,
+        ptr_proof,
+        ptr_skS,
+        ptr_blindedElement,
+        ptr_info,
+        infoLen,
+    );
+    mget(evaluatedElement, ptr_evaluatedElement, ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
+    mget(proof, ptr_proof, ecc_oprf_ristretto255_sha512_PROOFSIZE);
+    mfree(ptr_evaluatedElement, ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
+    mfree(ptr_proof, ecc_oprf_ristretto255_sha512_PROOFSIZE);
+    mfree(ptr_skS, ecc_oprf_ristretto255_sha512_SCALARSIZE);
+    mfree(ptr_blindedElement, ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
+    mfree(ptr_info, infoLen);
+    return fun_ret;
+}
+
+/**
+ * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-voprf-08#section-3.3.2.2
+ *
+ * @param {Uint8Array} proof (output) size:ecc_oprf_ristretto255_sha512_PROOFSIZE
+ * @param {Uint8Array} k size:ecc_oprf_ristretto255_sha512_SCALARSIZE
+ * @param {Uint8Array} A size:ecc_oprf_ristretto255_sha512_ELEMENTSIZE
+ * @param {Uint8Array} B size:ecc_oprf_ristretto255_sha512_ELEMENTSIZE
+ * @param {Uint8Array} C size:ecc_oprf_ristretto255_sha512_ELEMENTSIZE
+ * @param {Uint8Array} D size:ecc_oprf_ristretto255_sha512_ELEMENTSIZE
+ * @param {Uint8Array} r size:ecc_oprf_ristretto255_sha512_SCALARSIZE
+ */
+Module.ecc_oprf_ristretto255_sha512_GenerateProofWithScalar = (
+    proof,
+    k,
+    A,
+    B,
+    C,
+    D,
+    r,
+) => {
+    const ptr_proof = mput(proof, ecc_oprf_ristretto255_sha512_PROOFSIZE);
+    const ptr_k = mput(k, ecc_oprf_ristretto255_sha512_SCALARSIZE);
+    const ptr_A = mput(A, ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
+    const ptr_B = mput(B, ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
+    const ptr_C = mput(C, ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
+    const ptr_D = mput(D, ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
+    const ptr_r = mput(r, ecc_oprf_ristretto255_sha512_SCALARSIZE);
+    _ecc_oprf_ristretto255_sha512_GenerateProofWithScalar(
+        ptr_proof,
+        ptr_k,
+        ptr_A,
+        ptr_B,
+        ptr_C,
+        ptr_D,
+        ptr_r,
+    );
+    mget(proof, ptr_proof, ecc_oprf_ristretto255_sha512_PROOFSIZE);
+    mfree(ptr_proof, ecc_oprf_ristretto255_sha512_PROOFSIZE);
+    mfree(ptr_k, ecc_oprf_ristretto255_sha512_SCALARSIZE);
+    mfree(ptr_A, ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
+    mfree(ptr_B, ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
+    mfree(ptr_C, ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
+    mfree(ptr_D, ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
+    mfree(ptr_r, ecc_oprf_ristretto255_sha512_SCALARSIZE);
+}
+
+/**
+ * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-voprf-08#section-3.3.2.2
+ *
+ * @param {Uint8Array} proof (output) size:ecc_oprf_ristretto255_sha512_PROOFSIZE
+ * @param {Uint8Array} k size:ecc_oprf_ristretto255_sha512_SCALARSIZE
+ * @param {Uint8Array} A size:ecc_oprf_ristretto255_sha512_ELEMENTSIZE
+ * @param {Uint8Array} B size:ecc_oprf_ristretto255_sha512_ELEMENTSIZE
+ * @param {Uint8Array} C size:ecc_oprf_ristretto255_sha512_ELEMENTSIZE
+ * @param {Uint8Array} D size:ecc_oprf_ristretto255_sha512_ELEMENTSIZE
+ */
+Module.ecc_oprf_ristretto255_sha512_GenerateProof = (
+    proof,
+    k,
+    A,
+    B,
+    C,
+    D,
+) => {
+    const ptr_proof = mput(proof, ecc_oprf_ristretto255_sha512_PROOFSIZE);
+    const ptr_k = mput(k, ecc_oprf_ristretto255_sha512_SCALARSIZE);
+    const ptr_A = mput(A, ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
+    const ptr_B = mput(B, ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
+    const ptr_C = mput(C, ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
+    const ptr_D = mput(D, ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
+    _ecc_oprf_ristretto255_sha512_GenerateProof(
+        ptr_proof,
+        ptr_k,
+        ptr_A,
+        ptr_B,
+        ptr_C,
+        ptr_D,
+    );
+    mget(proof, ptr_proof, ecc_oprf_ristretto255_sha512_PROOFSIZE);
+    mfree(ptr_proof, ecc_oprf_ristretto255_sha512_PROOFSIZE);
+    mfree(ptr_k, ecc_oprf_ristretto255_sha512_SCALARSIZE);
+    mfree(ptr_A, ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
+    mfree(ptr_B, ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
+    mfree(ptr_C, ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
+    mfree(ptr_D, ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
+}
+
+/**
+ * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-voprf-08#section-3.3.2.3
+ *
+ * @param {Uint8Array} M (output) size:ecc_oprf_ristretto255_sha512_ELEMENTSIZE
+ * @param {Uint8Array} Z (output) size:ecc_oprf_ristretto255_sha512_ELEMENTSIZE
+ * @param {Uint8Array} B size:ecc_oprf_ristretto255_sha512_ELEMENTSIZE
+ * @param {Uint8Array} Cs size:m*ecc_oprf_ristretto255_sha512_ELEMENTSIZE
+ * @param {Uint8Array} Ds size:m*ecc_oprf_ristretto255_sha512_ELEMENTSIZE
+ * @param {number} m 
+ */
+Module.ecc_oprf_ristretto255_sha512_ComputeComposites = (
+    M,
+    Z,
+    B,
+    Cs,
+    Ds,
+    m,
+) => {
+    const ptr_M = mput(M, ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
+    const ptr_Z = mput(Z, ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
+    const ptr_B = mput(B, ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
+    const ptr_Cs = mput(Cs, m*ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
+    const ptr_Ds = mput(Ds, m*ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
+    _ecc_oprf_ristretto255_sha512_ComputeComposites(
+        ptr_M,
+        ptr_Z,
+        ptr_B,
+        ptr_Cs,
+        ptr_Ds,
+        m,
+    );
+    mget(M, ptr_M, ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
+    mget(Z, ptr_Z, ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
+    mfree(ptr_M, ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
+    mfree(ptr_Z, ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
+    mfree(ptr_B, ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
+    mfree(ptr_Cs, m*ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
+    mfree(ptr_Ds, m*ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
+}
+
+/**
+ * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-voprf-08#section-3.3.2.3
+ *
+ * @param {Uint8Array} M (output) size:ecc_oprf_ristretto255_sha512_ELEMENTSIZE
+ * @param {Uint8Array} Z (output) size:ecc_oprf_ristretto255_sha512_ELEMENTSIZE
+ * @param {Uint8Array} k size:ecc_oprf_ristretto255_sha512_SCALARSIZE
+ * @param {Uint8Array} B size:ecc_oprf_ristretto255_sha512_ELEMENTSIZE
+ * @param {Uint8Array} Cs size:m*ecc_oprf_ristretto255_sha512_ELEMENTSIZE
+ * @param {Uint8Array} Ds size:m*ecc_oprf_ristretto255_sha512_ELEMENTSIZE
+ * @param {number} m 
+ */
+Module.ecc_oprf_ristretto255_sha512_ComputeCompositesFast = (
+    M,
+    Z,
+    k,
+    B,
+    Cs,
+    Ds,
+    m,
+) => {
+    const ptr_M = mput(M, ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
+    const ptr_Z = mput(Z, ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
+    const ptr_k = mput(k, ecc_oprf_ristretto255_sha512_SCALARSIZE);
+    const ptr_B = mput(B, ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
+    const ptr_Cs = mput(Cs, m*ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
+    const ptr_Ds = mput(Ds, m*ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
+    _ecc_oprf_ristretto255_sha512_ComputeCompositesFast(
+        ptr_M,
+        ptr_Z,
+        ptr_k,
+        ptr_B,
+        ptr_Cs,
+        ptr_Ds,
+        m,
+    );
+    mget(M, ptr_M, ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
+    mget(Z, ptr_Z, ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
+    mfree(ptr_M, ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
+    mfree(ptr_Z, ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
+    mfree(ptr_k, ecc_oprf_ristretto255_sha512_SCALARSIZE);
+    mfree(ptr_B, ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
+    mfree(ptr_Cs, m*ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
+    mfree(ptr_Ds, m*ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
 }
 
 /**
  * Same as calling `ecc_oprf_ristretto255_sha512_Blind` with an
  * specified scalar blind.
  * 
- * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-voprf-07#section-3.3.3.1
+ * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-voprf-08#section-3.3.3.1
  *
  * @param {Uint8Array} blindedElement (output) blinded element, size:ecc_oprf_ristretto255_sha512_ELEMENTSIZE
- * @param {Uint8Array} input message to blind, size:input_len
- * @param {number} input_len length of `input`
+ * @param {Uint8Array} input message to blind, size:inputLen
+ * @param {number} inputLen length of `input`
  * @param {Uint8Array} blind scalar to use in the blind operation, size:ecc_oprf_ristretto255_sha512_SCALARSIZE
+ * @param {number} mode 
  */
 Module.ecc_oprf_ristretto255_sha512_BlindWithScalar = (
     blindedElement,
     input,
-    input_len,
+    inputLen,
     blind,
+    mode,
 ) => {
     const ptr_blindedElement = mput(blindedElement, ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
-    const ptr_input = mput(input, input_len);
+    const ptr_input = mput(input, inputLen);
     const ptr_blind = mput(blind, ecc_oprf_ristretto255_sha512_SCALARSIZE);
     _ecc_oprf_ristretto255_sha512_BlindWithScalar(
         ptr_blindedElement,
         ptr_input,
-        input_len,
+        inputLen,
         ptr_blind,
+        mode,
     );
     mget(blindedElement, ptr_blindedElement, ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
     mfree(ptr_blindedElement, ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
-    mfree(ptr_input, input_len);
+    mfree(ptr_input, inputLen);
     mfree(ptr_blind, ecc_oprf_ristretto255_sha512_SCALARSIZE);
 }
 
 /**
- * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-voprf-07#section-3.3.3.1
+ * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-voprf-08#section-3.3.3.1
  *
  * @param {Uint8Array} blindedElement (output) blinded element, size:ecc_oprf_ristretto255_sha512_ELEMENTSIZE
  * @param {Uint8Array} blind (output) scalar used in the blind operation, size:ecc_oprf_ristretto255_sha512_SCALARSIZE
- * @param {Uint8Array} input message to blind, size:input_len
- * @param {number} input_len length of `input`
+ * @param {Uint8Array} input message to blind, size:inputLen
+ * @param {number} inputLen length of `input`
+ * @param {number} mode 
  */
 Module.ecc_oprf_ristretto255_sha512_Blind = (
     blindedElement,
     blind,
     input,
-    input_len,
+    inputLen,
+    mode,
 ) => {
     const ptr_blindedElement = mput(blindedElement, ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
     const ptr_blind = mput(blind, ecc_oprf_ristretto255_sha512_SCALARSIZE);
-    const ptr_input = mput(input, input_len);
+    const ptr_input = mput(input, inputLen);
     _ecc_oprf_ristretto255_sha512_Blind(
         ptr_blindedElement,
         ptr_blind,
         ptr_input,
-        input_len,
+        inputLen,
+        mode,
     );
     mget(blindedElement, ptr_blindedElement, ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
     mget(blind, ptr_blind, ecc_oprf_ristretto255_sha512_SCALARSIZE);
     mfree(ptr_blindedElement, ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
     mfree(ptr_blind, ecc_oprf_ristretto255_sha512_SCALARSIZE);
-    mfree(ptr_input, input_len);
+    mfree(ptr_input, inputLen);
 }
 
 /**
- * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-voprf-07#section-3.3.3.1
+ * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-voprf-08#section-3.3.3.1
  *
- * @param {Uint8Array} unblindedElement size:ecc_oprf_ristretto255_sha512_ELEMENTSIZE
+ * @param {Uint8Array} unblindedElement (output) size:ecc_oprf_ristretto255_sha512_ELEMENTSIZE
  * @param {Uint8Array} blind size:ecc_oprf_ristretto255_sha512_SCALARSIZE
  * @param {Uint8Array} evaluatedElement size:ecc_oprf_ristretto255_sha512_ELEMENTSIZE
  */
@@ -2369,174 +2705,327 @@ Module.ecc_oprf_ristretto255_sha512_Unblind = (
         ptr_blind,
         ptr_evaluatedElement,
     );
+    mget(unblindedElement, ptr_unblindedElement, ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
     mfree(ptr_unblindedElement, ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
     mfree(ptr_blind, ecc_oprf_ristretto255_sha512_SCALARSIZE);
     mfree(ptr_evaluatedElement, ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
 }
 
 /**
- * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-voprf-07#section-3.3.3.2
+ * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-voprf-08#section-3.3.3.2
  *
- * @param {Uint8Array} output (output) size:64
- * @param {Uint8Array} input the input message, size:input_len
- * @param {number} input_len the length of `input`
+ * @param {Uint8Array} output (output) size:ecc_oprf_ristretto255_sha512_Nh
+ * @param {Uint8Array} input the input message, size:inputLen
+ * @param {number} inputLen the length of `input`
  * @param {Uint8Array} blind size:ecc_oprf_ristretto255_sha512_SCALARSIZE
  * @param {Uint8Array} evaluatedElement size:ecc_oprf_ristretto255_sha512_ELEMENTSIZE
- * @param {number} mode mode to build the internal DST string (modeBase=0x00, modeVerifiable=0x01)
+ * @param {Uint8Array} info size:infoLen
+ * @param {number} infoLen 
  */
 Module.ecc_oprf_ristretto255_sha512_Finalize = (
     output,
     input,
-    input_len,
+    inputLen,
     blind,
     evaluatedElement,
-    mode,
+    info,
+    infoLen,
 ) => {
-    const ptr_output = mput(output, 64);
-    const ptr_input = mput(input, input_len);
+    const ptr_output = mput(output, ecc_oprf_ristretto255_sha512_Nh);
+    const ptr_input = mput(input, inputLen);
     const ptr_blind = mput(blind, ecc_oprf_ristretto255_sha512_SCALARSIZE);
     const ptr_evaluatedElement = mput(evaluatedElement, ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
+    const ptr_info = mput(info, infoLen);
     _ecc_oprf_ristretto255_sha512_Finalize(
         ptr_output,
         ptr_input,
-        input_len,
+        inputLen,
         ptr_blind,
         ptr_evaluatedElement,
-        mode,
+        ptr_info,
+        infoLen,
     );
-    mget(output, ptr_output, 64);
-    mfree(ptr_output, 64);
-    mfree(ptr_input, input_len);
+    mget(output, ptr_output, ecc_oprf_ristretto255_sha512_Nh);
+    mfree(ptr_output, ecc_oprf_ristretto255_sha512_Nh);
+    mfree(ptr_input, inputLen);
     mfree(ptr_blind, ecc_oprf_ristretto255_sha512_SCALARSIZE);
     mfree(ptr_evaluatedElement, ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
+    mfree(ptr_info, infoLen);
+}
+
+/**
+ * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-voprf-08#section-3.3.4.1
+ *
+ * @param {Uint8Array} A size:ecc_oprf_ristretto255_sha512_ELEMENTSIZE
+ * @param {Uint8Array} B size:ecc_oprf_ristretto255_sha512_ELEMENTSIZE
+ * @param {Uint8Array} C size:ecc_oprf_ristretto255_sha512_ELEMENTSIZE
+ * @param {Uint8Array} D size:ecc_oprf_ristretto255_sha512_ELEMENTSIZE
+ * @param {Uint8Array} proof size:ecc_oprf_ristretto255_sha512_PROOFSIZE
+ * @return {number} on success verification returns 1, else 0.
+ */
+Module.ecc_oprf_ristretto255_sha512_VerifyProof = (
+    A,
+    B,
+    C,
+    D,
+    proof,
+) => {
+    const ptr_A = mput(A, ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
+    const ptr_B = mput(B, ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
+    const ptr_C = mput(C, ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
+    const ptr_D = mput(D, ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
+    const ptr_proof = mput(proof, ecc_oprf_ristretto255_sha512_PROOFSIZE);
+    const fun_ret = _ecc_oprf_ristretto255_sha512_VerifyProof(
+        ptr_A,
+        ptr_B,
+        ptr_C,
+        ptr_D,
+        ptr_proof,
+    );
+    mfree(ptr_A, ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
+    mfree(ptr_B, ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
+    mfree(ptr_C, ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
+    mfree(ptr_D, ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
+    mfree(ptr_proof, ecc_oprf_ristretto255_sha512_PROOFSIZE);
+    return fun_ret;
+}
+
+/**
+ * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-voprf-08#section-3.3.4.2
+ *
+ * @param {Uint8Array} unblindedElement (output) size:ecc_oprf_ristretto255_sha512_ELEMENTSIZE
+ * @param {Uint8Array} blind size:ecc_oprf_ristretto255_sha512_SCALARSIZE
+ * @param {Uint8Array} evaluatedElement size:ecc_oprf_ristretto255_sha512_ELEMENTSIZE
+ * @param {Uint8Array} blindedElement size:ecc_oprf_ristretto255_sha512_ELEMENTSIZE
+ * @param {Uint8Array} pkS size:ecc_oprf_ristretto255_sha512_ELEMENTSIZE
+ * @param {Uint8Array} proof size:ecc_oprf_ristretto255_sha512_PROOFSIZE
+ * @param {Uint8Array} info size:infoLen
+ * @param {number} infoLen 
+ * @return {number} on success verification returns 0, else -1.
+ */
+Module.ecc_oprf_ristretto255_sha512_VerifiableUnblind = (
+    unblindedElement,
+    blind,
+    evaluatedElement,
+    blindedElement,
+    pkS,
+    proof,
+    info,
+    infoLen,
+) => {
+    const ptr_unblindedElement = mput(unblindedElement, ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
+    const ptr_blind = mput(blind, ecc_oprf_ristretto255_sha512_SCALARSIZE);
+    const ptr_evaluatedElement = mput(evaluatedElement, ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
+    const ptr_blindedElement = mput(blindedElement, ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
+    const ptr_pkS = mput(pkS, ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
+    const ptr_proof = mput(proof, ecc_oprf_ristretto255_sha512_PROOFSIZE);
+    const ptr_info = mput(info, infoLen);
+    const fun_ret = _ecc_oprf_ristretto255_sha512_VerifiableUnblind(
+        ptr_unblindedElement,
+        ptr_blind,
+        ptr_evaluatedElement,
+        ptr_blindedElement,
+        ptr_pkS,
+        ptr_proof,
+        ptr_info,
+        infoLen,
+    );
+    mget(unblindedElement, ptr_unblindedElement, ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
+    mfree(ptr_unblindedElement, ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
+    mfree(ptr_blind, ecc_oprf_ristretto255_sha512_SCALARSIZE);
+    mfree(ptr_evaluatedElement, ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
+    mfree(ptr_blindedElement, ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
+    mfree(ptr_pkS, ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
+    mfree(ptr_proof, ecc_oprf_ristretto255_sha512_PROOFSIZE);
+    mfree(ptr_info, infoLen);
+    return fun_ret;
+}
+
+/**
+ * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-voprf-08#section-3.3.4.3
+ *
+ * @param {Uint8Array} output (output) size:ecc_oprf_ristretto255_sha512_Nh
+ * @param {Uint8Array} input size:inputLen
+ * @param {number} inputLen 
+ * @param {Uint8Array} blind size:ecc_oprf_ristretto255_sha512_SCALARSIZE
+ * @param {Uint8Array} evaluatedElement size:ecc_oprf_ristretto255_sha512_ELEMENTSIZE
+ * @param {Uint8Array} blindedElement size:ecc_oprf_ristretto255_sha512_ELEMENTSIZE
+ * @param {Uint8Array} pkS size:ecc_oprf_ristretto255_sha512_ELEMENTSIZE
+ * @param {Uint8Array} proof size:ecc_oprf_ristretto255_sha512_PROOFSIZE
+ * @param {Uint8Array} info size:infoLen
+ * @param {number} infoLen 
+ * @return {number} on success verification returns 0, else -1.
+ */
+Module.ecc_oprf_ristretto255_sha512_VerifiableFinalize = (
+    output,
+    input,
+    inputLen,
+    blind,
+    evaluatedElement,
+    blindedElement,
+    pkS,
+    proof,
+    info,
+    infoLen,
+) => {
+    const ptr_output = mput(output, ecc_oprf_ristretto255_sha512_Nh);
+    const ptr_input = mput(input, inputLen);
+    const ptr_blind = mput(blind, ecc_oprf_ristretto255_sha512_SCALARSIZE);
+    const ptr_evaluatedElement = mput(evaluatedElement, ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
+    const ptr_blindedElement = mput(blindedElement, ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
+    const ptr_pkS = mput(pkS, ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
+    const ptr_proof = mput(proof, ecc_oprf_ristretto255_sha512_PROOFSIZE);
+    const ptr_info = mput(info, infoLen);
+    const fun_ret = _ecc_oprf_ristretto255_sha512_VerifiableFinalize(
+        ptr_output,
+        ptr_input,
+        inputLen,
+        ptr_blind,
+        ptr_evaluatedElement,
+        ptr_blindedElement,
+        ptr_pkS,
+        ptr_proof,
+        ptr_info,
+        infoLen,
+    );
+    mget(output, ptr_output, ecc_oprf_ristretto255_sha512_Nh);
+    mfree(ptr_output, ecc_oprf_ristretto255_sha512_Nh);
+    mfree(ptr_input, inputLen);
+    mfree(ptr_blind, ecc_oprf_ristretto255_sha512_SCALARSIZE);
+    mfree(ptr_evaluatedElement, ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
+    mfree(ptr_blindedElement, ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
+    mfree(ptr_pkS, ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
+    mfree(ptr_proof, ecc_oprf_ristretto255_sha512_PROOFSIZE);
+    mfree(ptr_info, infoLen);
+    return fun_ret;
 }
 
 /**
  * Same as calling `ecc_oprf_ristretto255_sha512_HashToGroup` with an
  * specified DST string.
  * 
- * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-voprf-07#section-2.1
- * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-voprf-07#section-4.1
+ * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-voprf-08#section-2.1
+ * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-voprf-08#section-4.1
  *
  * @param {Uint8Array} out (output) element of the group, size:ecc_oprf_ristretto255_sha512_ELEMENTSIZE
- * @param {Uint8Array} input input string to map, size:input_len
- * @param {number} input_len length of `input`
- * @param {Uint8Array} dst domain separation tag (DST), size:dst_len
- * @param {number} dst_len length of `dst`
+ * @param {Uint8Array} input input string to map, size:inputLen
+ * @param {number} inputLen length of `input`
+ * @param {Uint8Array} dst domain separation tag (DST), size:dstLen
+ * @param {number} dstLen length of `dst`
  */
 Module.ecc_oprf_ristretto255_sha512_HashToGroupWithDST = (
     out,
     input,
-    input_len,
+    inputLen,
     dst,
-    dst_len,
+    dstLen,
 ) => {
     const ptr_out = mput(out, ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
-    const ptr_input = mput(input, input_len);
-    const ptr_dst = mput(dst, dst_len);
+    const ptr_input = mput(input, inputLen);
+    const ptr_dst = mput(dst, dstLen);
     _ecc_oprf_ristretto255_sha512_HashToGroupWithDST(
         ptr_out,
         ptr_input,
-        input_len,
+        inputLen,
         ptr_dst,
-        dst_len,
+        dstLen,
     );
     mget(out, ptr_out, ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
     mfree(ptr_out, ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
-    mfree(ptr_input, input_len);
-    mfree(ptr_dst, dst_len);
+    mfree(ptr_input, inputLen);
+    mfree(ptr_dst, dstLen);
 }
 
 /**
  * Deterministically maps an array of bytes "x" to an element of "GG" in
  * the ristretto255 curve.
  * 
- * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-voprf-07#section-2.1
- * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-voprf-07#section-4.1
- * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-hash-to-curve-11#section-2.2.5
- * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-voprf-07#section-3
+ * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-voprf-08#section-2.1
+ * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-voprf-08#section-4.1
+ * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-hash-to-curve-13#section-2.2.5
+ * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-voprf-08#section-3
  *
  * @param {Uint8Array} out (output) element of the group, size:ecc_oprf_ristretto255_sha512_ELEMENTSIZE
- * @param {Uint8Array} input input string to map, size:input_len
- * @param {number} input_len length of `input`
+ * @param {Uint8Array} input input string to map, size:inputLen
+ * @param {number} inputLen length of `input`
  * @param {number} mode mode to build the internal DST string (modeBase=0x00, modeVerifiable=0x01)
  */
 Module.ecc_oprf_ristretto255_sha512_HashToGroup = (
     out,
     input,
-    input_len,
+    inputLen,
     mode,
 ) => {
     const ptr_out = mput(out, ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
-    const ptr_input = mput(input, input_len);
+    const ptr_input = mput(input, inputLen);
     _ecc_oprf_ristretto255_sha512_HashToGroup(
         ptr_out,
         ptr_input,
-        input_len,
+        inputLen,
         mode,
     );
     mget(out, ptr_out, ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
     mfree(ptr_out, ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
-    mfree(ptr_input, input_len);
+    mfree(ptr_input, inputLen);
 }
 
 /**
  * 
  *
  * @param {Uint8Array} out (output) size:ecc_oprf_ristretto255_sha512_SCALARSIZE
- * @param {Uint8Array} input size:input_len
- * @param {number} input_len 
- * @param {Uint8Array} dst size:dst_len
- * @param {number} dst_len 
+ * @param {Uint8Array} input size:inputLen
+ * @param {number} inputLen 
+ * @param {Uint8Array} dst size:dstLen
+ * @param {number} dstLen 
  */
 Module.ecc_oprf_ristretto255_sha512_HashToScalarWithDST = (
     out,
     input,
-    input_len,
+    inputLen,
     dst,
-    dst_len,
+    dstLen,
 ) => {
     const ptr_out = mput(out, ecc_oprf_ristretto255_sha512_SCALARSIZE);
-    const ptr_input = mput(input, input_len);
-    const ptr_dst = mput(dst, dst_len);
+    const ptr_input = mput(input, inputLen);
+    const ptr_dst = mput(dst, dstLen);
     _ecc_oprf_ristretto255_sha512_HashToScalarWithDST(
         ptr_out,
         ptr_input,
-        input_len,
+        inputLen,
         ptr_dst,
-        dst_len,
+        dstLen,
     );
     mget(out, ptr_out, ecc_oprf_ristretto255_sha512_SCALARSIZE);
     mfree(ptr_out, ecc_oprf_ristretto255_sha512_SCALARSIZE);
-    mfree(ptr_input, input_len);
-    mfree(ptr_dst, dst_len);
+    mfree(ptr_input, inputLen);
+    mfree(ptr_dst, dstLen);
 }
 
 /**
  * 
  *
  * @param {Uint8Array} out (output) size:ecc_oprf_ristretto255_sha512_SCALARSIZE
- * @param {Uint8Array} input size:input_len
- * @param {number} input_len 
+ * @param {Uint8Array} input size:inputLen
+ * @param {number} inputLen 
  * @param {number} mode 
  */
 Module.ecc_oprf_ristretto255_sha512_HashToScalar = (
     out,
     input,
-    input_len,
+    inputLen,
     mode,
 ) => {
     const ptr_out = mput(out, ecc_oprf_ristretto255_sha512_SCALARSIZE);
-    const ptr_input = mput(input, input_len);
+    const ptr_input = mput(input, inputLen);
     _ecc_oprf_ristretto255_sha512_HashToScalar(
         ptr_out,
         ptr_input,
-        input_len,
+        inputLen,
         mode,
     );
     mget(out, ptr_out, ecc_oprf_ristretto255_sha512_SCALARSIZE);
     mfree(ptr_out, ecc_oprf_ristretto255_sha512_SCALARSIZE);
-    mfree(ptr_input, input_len);
+    mfree(ptr_input, inputLen);
 }
 
 // opaque

@@ -816,6 +816,18 @@ JNIEXPORT int JNICALL Java_org_ssohub_crypto_ecc_libecc_ecc_1ristretto255_1sub(
     return fun_ret;
 }
 
+JNIEXPORT void JNICALL Java_org_ssohub_crypto_ecc_libecc_ecc_1ristretto255_1generator(
+    JNIEnv *env, jclass cls,
+    jbyteArray g
+) {
+    byte_t *ptr_g = mput(env, g, ecc_ristretto255_SIZE);
+    ecc_ristretto255_generator(
+        ptr_g
+    );
+    mget(env, g, ptr_g, ecc_ristretto255_SIZE);
+    mfree(ptr_g, ecc_ristretto255_SIZE);
+}
+
 JNIEXPORT void JNICALL Java_org_ssohub_crypto_ecc_libecc_ecc_1ristretto255_1from_1hash(
     JNIEnv *env, jclass cls,
     jbyteArray p,
@@ -1427,45 +1439,256 @@ JNIEXPORT void JNICALL Java_org_ssohub_crypto_ecc_libecc_ecc_1h2c_1expand_1messa
 
 // oprf
 
-JNIEXPORT void JNICALL Java_org_ssohub_crypto_ecc_libecc_ecc_1oprf_1ristretto255_1sha512_1Evaluate(
+JNIEXPORT int JNICALL Java_org_ssohub_crypto_ecc_libecc_ecc_1oprf_1ristretto255_1sha512_1Evaluate(
     JNIEnv *env, jclass cls,
     jbyteArray evaluatedElement,
     jbyteArray skS,
-    jbyteArray blindedElement
+    jbyteArray blindedElement,
+    jbyteArray info,
+    jint infoLen
 ) {
     byte_t *ptr_evaluatedElement = mput(env, evaluatedElement, ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
     byte_t *ptr_skS = mput(env, skS, ecc_oprf_ristretto255_sha512_SCALARSIZE);
     byte_t *ptr_blindedElement = mput(env, blindedElement, ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
-    ecc_oprf_ristretto255_sha512_Evaluate(
+    byte_t *ptr_info = mput(env, info, infoLen);
+    const int fun_ret = ecc_oprf_ristretto255_sha512_Evaluate(
         ptr_evaluatedElement,
         ptr_skS,
-        ptr_blindedElement
+        ptr_blindedElement,
+        ptr_info,
+        infoLen
     );
     mget(env, evaluatedElement, ptr_evaluatedElement, ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
     mfree(ptr_evaluatedElement, ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
     mfree(ptr_skS, ecc_oprf_ristretto255_sha512_SCALARSIZE);
     mfree(ptr_blindedElement, ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
+    mfree(ptr_info, infoLen);
+    return fun_ret;
+}
+
+JNIEXPORT int JNICALL Java_org_ssohub_crypto_ecc_libecc_ecc_1oprf_1ristretto255_1sha512_1VerifiableEvaluateWithScalar(
+    JNIEnv *env, jclass cls,
+    jbyteArray evaluatedElement,
+    jbyteArray proof,
+    jbyteArray skS,
+    jbyteArray blindedElement,
+    jbyteArray info,
+    jint infoLen,
+    jbyteArray r
+) {
+    byte_t *ptr_evaluatedElement = mput(env, evaluatedElement, ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
+    byte_t *ptr_proof = mput(env, proof, ecc_oprf_ristretto255_sha512_PROOFSIZE);
+    byte_t *ptr_skS = mput(env, skS, ecc_oprf_ristretto255_sha512_SCALARSIZE);
+    byte_t *ptr_blindedElement = mput(env, blindedElement, ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
+    byte_t *ptr_info = mput(env, info, infoLen);
+    byte_t *ptr_r = mput(env, r, ecc_oprf_ristretto255_sha512_SCALARSIZE);
+    const int fun_ret = ecc_oprf_ristretto255_sha512_VerifiableEvaluateWithScalar(
+        ptr_evaluatedElement,
+        ptr_proof,
+        ptr_skS,
+        ptr_blindedElement,
+        ptr_info,
+        infoLen,
+        ptr_r
+    );
+    mget(env, evaluatedElement, ptr_evaluatedElement, ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
+    mget(env, proof, ptr_proof, ecc_oprf_ristretto255_sha512_PROOFSIZE);
+    mfree(ptr_evaluatedElement, ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
+    mfree(ptr_proof, ecc_oprf_ristretto255_sha512_PROOFSIZE);
+    mfree(ptr_skS, ecc_oprf_ristretto255_sha512_SCALARSIZE);
+    mfree(ptr_blindedElement, ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
+    mfree(ptr_info, infoLen);
+    mfree(ptr_r, ecc_oprf_ristretto255_sha512_SCALARSIZE);
+    return fun_ret;
+}
+
+JNIEXPORT int JNICALL Java_org_ssohub_crypto_ecc_libecc_ecc_1oprf_1ristretto255_1sha512_1VerifiableEvaluate(
+    JNIEnv *env, jclass cls,
+    jbyteArray evaluatedElement,
+    jbyteArray proof,
+    jbyteArray skS,
+    jbyteArray blindedElement,
+    jbyteArray info,
+    jint infoLen
+) {
+    byte_t *ptr_evaluatedElement = mput(env, evaluatedElement, ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
+    byte_t *ptr_proof = mput(env, proof, ecc_oprf_ristretto255_sha512_PROOFSIZE);
+    byte_t *ptr_skS = mput(env, skS, ecc_oprf_ristretto255_sha512_SCALARSIZE);
+    byte_t *ptr_blindedElement = mput(env, blindedElement, ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
+    byte_t *ptr_info = mput(env, info, infoLen);
+    const int fun_ret = ecc_oprf_ristretto255_sha512_VerifiableEvaluate(
+        ptr_evaluatedElement,
+        ptr_proof,
+        ptr_skS,
+        ptr_blindedElement,
+        ptr_info,
+        infoLen
+    );
+    mget(env, evaluatedElement, ptr_evaluatedElement, ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
+    mget(env, proof, ptr_proof, ecc_oprf_ristretto255_sha512_PROOFSIZE);
+    mfree(ptr_evaluatedElement, ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
+    mfree(ptr_proof, ecc_oprf_ristretto255_sha512_PROOFSIZE);
+    mfree(ptr_skS, ecc_oprf_ristretto255_sha512_SCALARSIZE);
+    mfree(ptr_blindedElement, ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
+    mfree(ptr_info, infoLen);
+    return fun_ret;
+}
+
+JNIEXPORT void JNICALL Java_org_ssohub_crypto_ecc_libecc_ecc_1oprf_1ristretto255_1sha512_1GenerateProofWithScalar(
+    JNIEnv *env, jclass cls,
+    jbyteArray proof,
+    jbyteArray k,
+    jbyteArray A,
+    jbyteArray B,
+    jbyteArray C,
+    jbyteArray D,
+    jbyteArray r
+) {
+    byte_t *ptr_proof = mput(env, proof, ecc_oprf_ristretto255_sha512_PROOFSIZE);
+    byte_t *ptr_k = mput(env, k, ecc_oprf_ristretto255_sha512_SCALARSIZE);
+    byte_t *ptr_A = mput(env, A, ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
+    byte_t *ptr_B = mput(env, B, ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
+    byte_t *ptr_C = mput(env, C, ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
+    byte_t *ptr_D = mput(env, D, ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
+    byte_t *ptr_r = mput(env, r, ecc_oprf_ristretto255_sha512_SCALARSIZE);
+    ecc_oprf_ristretto255_sha512_GenerateProofWithScalar(
+        ptr_proof,
+        ptr_k,
+        ptr_A,
+        ptr_B,
+        ptr_C,
+        ptr_D,
+        ptr_r
+    );
+    mget(env, proof, ptr_proof, ecc_oprf_ristretto255_sha512_PROOFSIZE);
+    mfree(ptr_proof, ecc_oprf_ristretto255_sha512_PROOFSIZE);
+    mfree(ptr_k, ecc_oprf_ristretto255_sha512_SCALARSIZE);
+    mfree(ptr_A, ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
+    mfree(ptr_B, ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
+    mfree(ptr_C, ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
+    mfree(ptr_D, ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
+    mfree(ptr_r, ecc_oprf_ristretto255_sha512_SCALARSIZE);
+}
+
+JNIEXPORT void JNICALL Java_org_ssohub_crypto_ecc_libecc_ecc_1oprf_1ristretto255_1sha512_1GenerateProof(
+    JNIEnv *env, jclass cls,
+    jbyteArray proof,
+    jbyteArray k,
+    jbyteArray A,
+    jbyteArray B,
+    jbyteArray C,
+    jbyteArray D
+) {
+    byte_t *ptr_proof = mput(env, proof, ecc_oprf_ristretto255_sha512_PROOFSIZE);
+    byte_t *ptr_k = mput(env, k, ecc_oprf_ristretto255_sha512_SCALARSIZE);
+    byte_t *ptr_A = mput(env, A, ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
+    byte_t *ptr_B = mput(env, B, ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
+    byte_t *ptr_C = mput(env, C, ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
+    byte_t *ptr_D = mput(env, D, ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
+    ecc_oprf_ristretto255_sha512_GenerateProof(
+        ptr_proof,
+        ptr_k,
+        ptr_A,
+        ptr_B,
+        ptr_C,
+        ptr_D
+    );
+    mget(env, proof, ptr_proof, ecc_oprf_ristretto255_sha512_PROOFSIZE);
+    mfree(ptr_proof, ecc_oprf_ristretto255_sha512_PROOFSIZE);
+    mfree(ptr_k, ecc_oprf_ristretto255_sha512_SCALARSIZE);
+    mfree(ptr_A, ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
+    mfree(ptr_B, ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
+    mfree(ptr_C, ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
+    mfree(ptr_D, ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
+}
+
+JNIEXPORT void JNICALL Java_org_ssohub_crypto_ecc_libecc_ecc_1oprf_1ristretto255_1sha512_1ComputeComposites(
+    JNIEnv *env, jclass cls,
+    jbyteArray M,
+    jbyteArray Z,
+    jbyteArray B,
+    jbyteArray Cs,
+    jbyteArray Ds,
+    jint m
+) {
+    byte_t *ptr_M = mput(env, M, ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
+    byte_t *ptr_Z = mput(env, Z, ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
+    byte_t *ptr_B = mput(env, B, ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
+    byte_t *ptr_Cs = mput(env, Cs, m*ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
+    byte_t *ptr_Ds = mput(env, Ds, m*ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
+    ecc_oprf_ristretto255_sha512_ComputeComposites(
+        ptr_M,
+        ptr_Z,
+        ptr_B,
+        ptr_Cs,
+        ptr_Ds,
+        m
+    );
+    mget(env, M, ptr_M, ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
+    mget(env, Z, ptr_Z, ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
+    mfree(ptr_M, ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
+    mfree(ptr_Z, ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
+    mfree(ptr_B, ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
+    mfree(ptr_Cs, m*ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
+    mfree(ptr_Ds, m*ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
+}
+
+JNIEXPORT void JNICALL Java_org_ssohub_crypto_ecc_libecc_ecc_1oprf_1ristretto255_1sha512_1ComputeCompositesFast(
+    JNIEnv *env, jclass cls,
+    jbyteArray M,
+    jbyteArray Z,
+    jbyteArray k,
+    jbyteArray B,
+    jbyteArray Cs,
+    jbyteArray Ds,
+    jint m
+) {
+    byte_t *ptr_M = mput(env, M, ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
+    byte_t *ptr_Z = mput(env, Z, ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
+    byte_t *ptr_k = mput(env, k, ecc_oprf_ristretto255_sha512_SCALARSIZE);
+    byte_t *ptr_B = mput(env, B, ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
+    byte_t *ptr_Cs = mput(env, Cs, m*ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
+    byte_t *ptr_Ds = mput(env, Ds, m*ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
+    ecc_oprf_ristretto255_sha512_ComputeCompositesFast(
+        ptr_M,
+        ptr_Z,
+        ptr_k,
+        ptr_B,
+        ptr_Cs,
+        ptr_Ds,
+        m
+    );
+    mget(env, M, ptr_M, ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
+    mget(env, Z, ptr_Z, ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
+    mfree(ptr_M, ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
+    mfree(ptr_Z, ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
+    mfree(ptr_k, ecc_oprf_ristretto255_sha512_SCALARSIZE);
+    mfree(ptr_B, ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
+    mfree(ptr_Cs, m*ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
+    mfree(ptr_Ds, m*ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
 }
 
 JNIEXPORT void JNICALL Java_org_ssohub_crypto_ecc_libecc_ecc_1oprf_1ristretto255_1sha512_1BlindWithScalar(
     JNIEnv *env, jclass cls,
     jbyteArray blindedElement,
     jbyteArray input,
-    jint input_len,
-    jbyteArray blind
+    jint inputLen,
+    jbyteArray blind,
+    jint mode
 ) {
     byte_t *ptr_blindedElement = mput(env, blindedElement, ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
-    byte_t *ptr_input = mput(env, input, input_len);
+    byte_t *ptr_input = mput(env, input, inputLen);
     byte_t *ptr_blind = mput(env, blind, ecc_oprf_ristretto255_sha512_SCALARSIZE);
     ecc_oprf_ristretto255_sha512_BlindWithScalar(
         ptr_blindedElement,
         ptr_input,
-        input_len,
-        ptr_blind
+        inputLen,
+        ptr_blind,
+        mode
     );
     mget(env, blindedElement, ptr_blindedElement, ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
     mfree(ptr_blindedElement, ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
-    mfree(ptr_input, input_len);
+    mfree(ptr_input, inputLen);
     mfree(ptr_blind, ecc_oprf_ristretto255_sha512_SCALARSIZE);
 }
 
@@ -1474,22 +1697,24 @@ JNIEXPORT void JNICALL Java_org_ssohub_crypto_ecc_libecc_ecc_1oprf_1ristretto255
     jbyteArray blindedElement,
     jbyteArray blind,
     jbyteArray input,
-    jint input_len
+    jint inputLen,
+    jint mode
 ) {
     byte_t *ptr_blindedElement = mput(env, blindedElement, ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
     byte_t *ptr_blind = mput(env, blind, ecc_oprf_ristretto255_sha512_SCALARSIZE);
-    byte_t *ptr_input = mput(env, input, input_len);
+    byte_t *ptr_input = mput(env, input, inputLen);
     ecc_oprf_ristretto255_sha512_Blind(
         ptr_blindedElement,
         ptr_blind,
         ptr_input,
-        input_len
+        inputLen,
+        mode
     );
     mget(env, blindedElement, ptr_blindedElement, ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
     mget(env, blind, ptr_blind, ecc_oprf_ristretto255_sha512_SCALARSIZE);
     mfree(ptr_blindedElement, ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
     mfree(ptr_blind, ecc_oprf_ristretto255_sha512_SCALARSIZE);
-    mfree(ptr_input, input_len);
+    mfree(ptr_input, inputLen);
 }
 
 JNIEXPORT void JNICALL Java_org_ssohub_crypto_ecc_libecc_ecc_1oprf_1ristretto255_1sha512_1Unblind(
@@ -1506,6 +1731,7 @@ JNIEXPORT void JNICALL Java_org_ssohub_crypto_ecc_libecc_ecc_1oprf_1ristretto255
         ptr_blind,
         ptr_evaluatedElement
     );
+    mget(env, unblindedElement, ptr_unblindedElement, ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
     mfree(ptr_unblindedElement, ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
     mfree(ptr_blind, ecc_oprf_ristretto255_sha512_SCALARSIZE);
     mfree(ptr_evaluatedElement, ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
@@ -1515,116 +1741,232 @@ JNIEXPORT void JNICALL Java_org_ssohub_crypto_ecc_libecc_ecc_1oprf_1ristretto255
     JNIEnv *env, jclass cls,
     jbyteArray output,
     jbyteArray input,
-    jint input_len,
+    jint inputLen,
     jbyteArray blind,
     jbyteArray evaluatedElement,
-    jint mode
+    jbyteArray info,
+    jint infoLen
 ) {
-    byte_t *ptr_output = mput(env, output, 64);
-    byte_t *ptr_input = mput(env, input, input_len);
+    byte_t *ptr_output = mput(env, output, ecc_oprf_ristretto255_sha512_Nh);
+    byte_t *ptr_input = mput(env, input, inputLen);
     byte_t *ptr_blind = mput(env, blind, ecc_oprf_ristretto255_sha512_SCALARSIZE);
     byte_t *ptr_evaluatedElement = mput(env, evaluatedElement, ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
+    byte_t *ptr_info = mput(env, info, infoLen);
     ecc_oprf_ristretto255_sha512_Finalize(
         ptr_output,
         ptr_input,
-        input_len,
+        inputLen,
         ptr_blind,
         ptr_evaluatedElement,
-        mode
+        ptr_info,
+        infoLen
     );
-    mget(env, output, ptr_output, 64);
-    mfree(ptr_output, 64);
-    mfree(ptr_input, input_len);
+    mget(env, output, ptr_output, ecc_oprf_ristretto255_sha512_Nh);
+    mfree(ptr_output, ecc_oprf_ristretto255_sha512_Nh);
+    mfree(ptr_input, inputLen);
     mfree(ptr_blind, ecc_oprf_ristretto255_sha512_SCALARSIZE);
     mfree(ptr_evaluatedElement, ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
+    mfree(ptr_info, infoLen);
+}
+
+JNIEXPORT int JNICALL Java_org_ssohub_crypto_ecc_libecc_ecc_1oprf_1ristretto255_1sha512_1VerifyProof(
+    JNIEnv *env, jclass cls,
+    jbyteArray A,
+    jbyteArray B,
+    jbyteArray C,
+    jbyteArray D,
+    jbyteArray proof
+) {
+    byte_t *ptr_A = mput(env, A, ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
+    byte_t *ptr_B = mput(env, B, ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
+    byte_t *ptr_C = mput(env, C, ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
+    byte_t *ptr_D = mput(env, D, ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
+    byte_t *ptr_proof = mput(env, proof, ecc_oprf_ristretto255_sha512_PROOFSIZE);
+    const int fun_ret = ecc_oprf_ristretto255_sha512_VerifyProof(
+        ptr_A,
+        ptr_B,
+        ptr_C,
+        ptr_D,
+        ptr_proof
+    );
+    mfree(ptr_A, ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
+    mfree(ptr_B, ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
+    mfree(ptr_C, ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
+    mfree(ptr_D, ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
+    mfree(ptr_proof, ecc_oprf_ristretto255_sha512_PROOFSIZE);
+    return fun_ret;
+}
+
+JNIEXPORT int JNICALL Java_org_ssohub_crypto_ecc_libecc_ecc_1oprf_1ristretto255_1sha512_1VerifiableUnblind(
+    JNIEnv *env, jclass cls,
+    jbyteArray unblindedElement,
+    jbyteArray blind,
+    jbyteArray evaluatedElement,
+    jbyteArray blindedElement,
+    jbyteArray pkS,
+    jbyteArray proof,
+    jbyteArray info,
+    jint infoLen
+) {
+    byte_t *ptr_unblindedElement = mput(env, unblindedElement, ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
+    byte_t *ptr_blind = mput(env, blind, ecc_oprf_ristretto255_sha512_SCALARSIZE);
+    byte_t *ptr_evaluatedElement = mput(env, evaluatedElement, ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
+    byte_t *ptr_blindedElement = mput(env, blindedElement, ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
+    byte_t *ptr_pkS = mput(env, pkS, ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
+    byte_t *ptr_proof = mput(env, proof, ecc_oprf_ristretto255_sha512_PROOFSIZE);
+    byte_t *ptr_info = mput(env, info, infoLen);
+    const int fun_ret = ecc_oprf_ristretto255_sha512_VerifiableUnblind(
+        ptr_unblindedElement,
+        ptr_blind,
+        ptr_evaluatedElement,
+        ptr_blindedElement,
+        ptr_pkS,
+        ptr_proof,
+        ptr_info,
+        infoLen
+    );
+    mget(env, unblindedElement, ptr_unblindedElement, ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
+    mfree(ptr_unblindedElement, ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
+    mfree(ptr_blind, ecc_oprf_ristretto255_sha512_SCALARSIZE);
+    mfree(ptr_evaluatedElement, ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
+    mfree(ptr_blindedElement, ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
+    mfree(ptr_pkS, ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
+    mfree(ptr_proof, ecc_oprf_ristretto255_sha512_PROOFSIZE);
+    mfree(ptr_info, infoLen);
+    return fun_ret;
+}
+
+JNIEXPORT int JNICALL Java_org_ssohub_crypto_ecc_libecc_ecc_1oprf_1ristretto255_1sha512_1VerifiableFinalize(
+    JNIEnv *env, jclass cls,
+    jbyteArray output,
+    jbyteArray input,
+    jint inputLen,
+    jbyteArray blind,
+    jbyteArray evaluatedElement,
+    jbyteArray blindedElement,
+    jbyteArray pkS,
+    jbyteArray proof,
+    jbyteArray info,
+    jint infoLen
+) {
+    byte_t *ptr_output = mput(env, output, ecc_oprf_ristretto255_sha512_Nh);
+    byte_t *ptr_input = mput(env, input, inputLen);
+    byte_t *ptr_blind = mput(env, blind, ecc_oprf_ristretto255_sha512_SCALARSIZE);
+    byte_t *ptr_evaluatedElement = mput(env, evaluatedElement, ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
+    byte_t *ptr_blindedElement = mput(env, blindedElement, ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
+    byte_t *ptr_pkS = mput(env, pkS, ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
+    byte_t *ptr_proof = mput(env, proof, ecc_oprf_ristretto255_sha512_PROOFSIZE);
+    byte_t *ptr_info = mput(env, info, infoLen);
+    const int fun_ret = ecc_oprf_ristretto255_sha512_VerifiableFinalize(
+        ptr_output,
+        ptr_input,
+        inputLen,
+        ptr_blind,
+        ptr_evaluatedElement,
+        ptr_blindedElement,
+        ptr_pkS,
+        ptr_proof,
+        ptr_info,
+        infoLen
+    );
+    mget(env, output, ptr_output, ecc_oprf_ristretto255_sha512_Nh);
+    mfree(ptr_output, ecc_oprf_ristretto255_sha512_Nh);
+    mfree(ptr_input, inputLen);
+    mfree(ptr_blind, ecc_oprf_ristretto255_sha512_SCALARSIZE);
+    mfree(ptr_evaluatedElement, ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
+    mfree(ptr_blindedElement, ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
+    mfree(ptr_pkS, ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
+    mfree(ptr_proof, ecc_oprf_ristretto255_sha512_PROOFSIZE);
+    mfree(ptr_info, infoLen);
+    return fun_ret;
 }
 
 JNIEXPORT void JNICALL Java_org_ssohub_crypto_ecc_libecc_ecc_1oprf_1ristretto255_1sha512_1HashToGroupWithDST(
     JNIEnv *env, jclass cls,
     jbyteArray out,
     jbyteArray input,
-    jint input_len,
+    jint inputLen,
     jbyteArray dst,
-    jint dst_len
+    jint dstLen
 ) {
     byte_t *ptr_out = mput(env, out, ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
-    byte_t *ptr_input = mput(env, input, input_len);
-    byte_t *ptr_dst = mput(env, dst, dst_len);
+    byte_t *ptr_input = mput(env, input, inputLen);
+    byte_t *ptr_dst = mput(env, dst, dstLen);
     ecc_oprf_ristretto255_sha512_HashToGroupWithDST(
         ptr_out,
         ptr_input,
-        input_len,
+        inputLen,
         ptr_dst,
-        dst_len
+        dstLen
     );
     mget(env, out, ptr_out, ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
     mfree(ptr_out, ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
-    mfree(ptr_input, input_len);
-    mfree(ptr_dst, dst_len);
+    mfree(ptr_input, inputLen);
+    mfree(ptr_dst, dstLen);
 }
 
 JNIEXPORT void JNICALL Java_org_ssohub_crypto_ecc_libecc_ecc_1oprf_1ristretto255_1sha512_1HashToGroup(
     JNIEnv *env, jclass cls,
     jbyteArray out,
     jbyteArray input,
-    jint input_len,
+    jint inputLen,
     jint mode
 ) {
     byte_t *ptr_out = mput(env, out, ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
-    byte_t *ptr_input = mput(env, input, input_len);
+    byte_t *ptr_input = mput(env, input, inputLen);
     ecc_oprf_ristretto255_sha512_HashToGroup(
         ptr_out,
         ptr_input,
-        input_len,
+        inputLen,
         mode
     );
     mget(env, out, ptr_out, ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
     mfree(ptr_out, ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
-    mfree(ptr_input, input_len);
+    mfree(ptr_input, inputLen);
 }
 
 JNIEXPORT void JNICALL Java_org_ssohub_crypto_ecc_libecc_ecc_1oprf_1ristretto255_1sha512_1HashToScalarWithDST(
     JNIEnv *env, jclass cls,
     jbyteArray out,
     jbyteArray input,
-    jint input_len,
+    jint inputLen,
     jbyteArray dst,
-    jint dst_len
+    jint dstLen
 ) {
     byte_t *ptr_out = mput(env, out, ecc_oprf_ristretto255_sha512_SCALARSIZE);
-    byte_t *ptr_input = mput(env, input, input_len);
-    byte_t *ptr_dst = mput(env, dst, dst_len);
+    byte_t *ptr_input = mput(env, input, inputLen);
+    byte_t *ptr_dst = mput(env, dst, dstLen);
     ecc_oprf_ristretto255_sha512_HashToScalarWithDST(
         ptr_out,
         ptr_input,
-        input_len,
+        inputLen,
         ptr_dst,
-        dst_len
+        dstLen
     );
     mget(env, out, ptr_out, ecc_oprf_ristretto255_sha512_SCALARSIZE);
     mfree(ptr_out, ecc_oprf_ristretto255_sha512_SCALARSIZE);
-    mfree(ptr_input, input_len);
-    mfree(ptr_dst, dst_len);
+    mfree(ptr_input, inputLen);
+    mfree(ptr_dst, dstLen);
 }
 
 JNIEXPORT void JNICALL Java_org_ssohub_crypto_ecc_libecc_ecc_1oprf_1ristretto255_1sha512_1HashToScalar(
     JNIEnv *env, jclass cls,
     jbyteArray out,
     jbyteArray input,
-    jint input_len,
+    jint inputLen,
     jint mode
 ) {
     byte_t *ptr_out = mput(env, out, ecc_oprf_ristretto255_sha512_SCALARSIZE);
-    byte_t *ptr_input = mput(env, input, input_len);
+    byte_t *ptr_input = mput(env, input, inputLen);
     ecc_oprf_ristretto255_sha512_HashToScalar(
         ptr_out,
         ptr_input,
-        input_len,
+        inputLen,
         mode
     );
     mget(env, out, ptr_out, ecc_oprf_ristretto255_sha512_SCALARSIZE);
     mfree(ptr_out, ecc_oprf_ristretto255_sha512_SCALARSIZE);
-    mfree(ptr_input, input_len);
+    mfree(ptr_input, inputLen);
 }
 
 // opaque

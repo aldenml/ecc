@@ -11,17 +11,23 @@ import libecc_module from "./libecc.js";
  * Evaluates serialized representations of blinded group elements from the
  * client as inputs.
  *
- * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-voprf-07#section-3.3.1.1
+ * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-voprf-08#section-3.3.1.1
  *
  * @param {Uint8Array} skS private key
  * @param {Uint8Array} blindedElement blinded element
+ * @param {Uint8Array} info
  * @return {Promise<Uint8Array>} evaluated element
  */
-export async function oprf_ristretto255_sha512_Evaluate(skS, blindedElement) {
+export async function oprf_ristretto255_sha512_Evaluate(skS, blindedElement, info) {
     const libecc = await libecc_module();
 
     let evaluatedElement = new Uint8Array(32);
-    libecc.ecc_oprf_ristretto255_sha512_Evaluate(evaluatedElement, skS, blindedElement);
+    libecc.ecc_oprf_ristretto255_sha512_Evaluate(
+        evaluatedElement,
+        skS,
+        blindedElement,
+        info, info.length,
+    );
 
     return evaluatedElement;
 }
@@ -30,7 +36,7 @@ export async function oprf_ristretto255_sha512_Evaluate(skS, blindedElement) {
  * Same as calling `oprf_ristretto255_sha512_Blind` with an
  * specified scalar blind.
  *
- * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-voprf-07#section-3.3.3.1
+ * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-voprf-08#section-3.3.3.1
  *
  * @param {Uint8Array} input message to blind
  * @param {Uint8Array} blind scalar to use in the blind operation
@@ -45,13 +51,14 @@ export async function oprf_ristretto255_sha512_BlindWithScalar(input, blind) {
         blindedElement,
         input, input.length,
         blind,
+        libecc.ecc_oprf_ristretto255_sha512_MODE_BASE,
     );
 
     return blindedElement;
 }
 
 /**
- * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-voprf-07#section-3.3.3.1
+ * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-voprf-08#section-3.3.3.1
  *
  * @param {Uint8Array} input message to blind
  * @return object {blind, blindedElement}
@@ -62,23 +69,25 @@ export async function oprf_ristretto255_sha512_Blind(input) {
     let blindedElement = new Uint8Array(32);
     let blind = new Uint8Array(32);
 
-    await libecc.ecc_oprf_ristretto255_sha512_BlindWithScalar(
+    await libecc.ecc_oprf_ristretto255_sha512_Blind(
         blindedElement,
         blind,
         input, input.length,
+        libecc.ecc_oprf_ristretto255_sha512_MODE_BASE,
     );
 
     return {blind: blind, blindedElement: blindedElement};
 }
 
 /**
- * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-voprf-07#section-3.3.3.2
+ * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-voprf-08#section-3.3.3.2
  *
  * @param input the input message
  * @param blind
  * @param evaluatedElement
+ * @param {Uint8Array} info
  */
-export async function oprf_ristretto255_sha512_Finalize(input, blind, evaluatedElement) {
+export async function oprf_ristretto255_sha512_Finalize(input, blind, evaluatedElement, info) {
     const libecc = await libecc_module();
 
     let output = new Uint8Array(64);
@@ -87,7 +96,7 @@ export async function oprf_ristretto255_sha512_Finalize(input, blind, evaluatedE
         input, input.length,
         blind,
         evaluatedElement,
-        0x00
+        info, info.length,
     );
 
     return output;

@@ -69,6 +69,13 @@ ECC_EXPORT
 int ecc_ristretto255_sub(byte_t *r, const byte_t *p, const byte_t *q);
 
 /**
+ *
+ * @param[out] g size:ecc_ristretto255_SIZE
+ */
+ECC_EXPORT
+void ecc_ristretto255_generator(byte_t *g);
+
+/**
  * Maps a 64 bytes vector r (usually the output of a hash function) to
  * a group element, and stores its representation into p.
  *

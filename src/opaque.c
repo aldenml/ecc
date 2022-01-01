@@ -513,7 +513,8 @@ void ecc_opaque_ristretto255_sha512_CreateRegistrationRequestWithBlind(
     ecc_oprf_ristretto255_sha512_BlindWithScalar(
         request_raw,
         password, password_len,
-        blind
+        blind,
+        ecc_oprf_ristretto255_sha512_MODE_BASE
     );
 }
 
@@ -545,7 +546,7 @@ void ecc_opaque_ristretto255_sha512_CreateRegistrationResponseWithOprfKey(
 
     // 3. Z = Evaluate(oprf_key, request.data)
     byte_t *Z = response->data;
-    ecc_oprf_ristretto255_sha512_Evaluate(Z, oprf_key, request->data);
+    ecc_oprf_ristretto255_sha512_Evaluate(Z, oprf_key, request->data, NULL, 0);
 
     // 4. Create RegistrationResponse response with (Z, server_public_key)
     // 5. Output (response, oprf_key)
@@ -633,7 +634,7 @@ void ecc_opaque_ristretto255_sha512_FinalizeRequestWithNonce(
         password, password_len,
         blind,
         response->data,
-        0x00
+        NULL, 0
     );
 
     // 2. randomized_pwd = Extract("", Harden(y, params))
@@ -712,7 +713,9 @@ void ecc_opaque_ristretto255_sha512_CreateCredentialRequest(
     // 3. Output (request, blind)
 
     CredentialRequest_t *request = (CredentialRequest_t *) request_raw;
-    ecc_oprf_ristretto255_sha512_Blind(request->data, blind, password, password_len);
+    ecc_oprf_ristretto255_sha512_Blind(request->data, blind, password, password_len,
+        ecc_oprf_ristretto255_sha512_MODE_BASE
+    );
 }
 
 void ecc_opaque_ristretto255_sha512_CreateCredentialResponse(
@@ -756,7 +759,7 @@ void ecc_opaque_ristretto255_sha512_CreateCredentialResponse(
 
     // 3. Z = Evaluate(oprf_key, request.data)
     byte_t Z[32];
-    ecc_oprf_ristretto255_sha512_Evaluate(Z, oprf_key, request->data);
+    ecc_oprf_ristretto255_sha512_Evaluate(Z, oprf_key, request->data, NULL, 0);
 
     // 4. masking_nonce = random(Nn)
     byte_t masking_nonce[Nn];
@@ -828,7 +831,7 @@ int ecc_opaque_ristretto255_sha512_RecoverCredentials(
         password, password_len,
         blind,
         res->data,
-        0x00
+        NULL, 0
     );
 
     // 2. randomized_pwd = Extract("", Harden(y, params))
