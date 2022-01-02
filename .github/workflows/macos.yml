@@ -33,3 +33,23 @@ jobs:
         run: bash <(curl -Ls https://coverage.codacy.com/get.sh) report -l C -r ./build-cov/ccov/coverage.lcov
         env:
           CODACY_PROJECT_TOKEN: ${{ secrets.CODACY_PROJECT_TOKEN }}
+
+      - name: c build
+        run: |
+          ./build-c.sh
+          otool -L build/libecc.dylib
+
+      - name: jvm tests
+        run: |
+          otool -L bindings/jvm/libecc-jvm.dylib
+          cd bindings/jvm
+          ./gradlew test
+          cd ../..
+
+      - uses: actions/upload-artifact@v2
+        with:
+          name: ecc-macos
+          path: |
+            build/libecc.dylib
+            build/libecc-jvm.dylib
+          retention-days: 5
