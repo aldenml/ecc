@@ -7,6 +7,40 @@ This is the javascript version of the [ecc](https://github.com/aldenml/ecc) libr
 It is a WebAssembly compilation with a thin layer on
 top to expose the cryptographic primitives.
 
+### OPRF Oblivious pseudo-random functions using ristretto255
+
+This is an implementation of [draft-irtf-cfrg-voprf-08](https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-voprf-08)
+ciphersuite **OPRF(ristretto255, SHA-512)** using `libsodium`.
+
+There are two variants in this protocol: a *base* mode and *verifiable* mode. In the
+base mode, a client and server interact to compute `output = F(skS, input, info)`,
+where `input` is the client's private input, `skS` is the server's private key, `info`
+is the public input, and `output` is the computation output. The client learns `output`
+and the server learns nothing. In the verifiable mode, the client also receives proof
+that the server used `skS` in computing the function.
+
+The flow is shown below (from the irtf draft):
+```
+  Client(input, info)                               Server(skS, info)
+  ----------------------------------------------------------------------
+  blind, blindedElement = Blind(input)
+
+                             blindedElement
+                               ---------->
+
+                 evaluatedElement = Evaluate(skS, blindedElement, info)
+
+                             evaluatedElement
+                               <----------
+
+  output = Finalize(input, blind, evaluatedElement, blindedElement, info)
+```
+
+In the verifiable mode of the protocol, the server additionally
+computes a proof in Evaluate. The client verifies this proof using
+the server's expected public key before completing the protocol and
+producing the protocol output.
+
 ### BLS12-381 Pairing
 
 In the context of pairing friendly elliptic curves, a pairing is a map `e: G1xG2 -> GT` such
