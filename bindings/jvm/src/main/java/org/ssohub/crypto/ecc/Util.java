@@ -67,6 +67,7 @@ public final class Util {
             int digit = Character.digit(hex.charAt(j), 16);
             int f = digit << 4;
             j++;
+            digit = Character.digit(hex.charAt(j), 16);
             f = f | digit;
             j++;
             out[i] = (byte) (f & 0xFF);
