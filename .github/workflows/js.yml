@@ -19,7 +19,7 @@ jobs:
       - name: install packages
         run: |
           sudo apt update
-          sudo apt install ninja-build npm
+          sudo apt install ninja-build autoconf automake npm
       - name: install nodejs
         run: |
           sudo npm install -g n
