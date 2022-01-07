@@ -4,7 +4,7 @@ set -x
 rm -rf build
 
 pushd deps/libsodium
-make clean
+[ -d "build-aux" ] && make clean
 popd
 
 emcmake cmake -DCMAKE_BUILD_TYPE=Release -B build -G "Ninja" .

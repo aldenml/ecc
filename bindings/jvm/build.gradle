@@ -22,6 +22,10 @@ java {
     withSourcesJar()
 }
 
+javadoc {
+    failOnError = false
+}
+
 repositories {
     mavenCentral()
 }

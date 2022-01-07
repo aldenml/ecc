@@ -18,7 +18,7 @@ jobs:
           submodules: recursive
       - name: install packages
         run: |
-          brew install ninja
+          brew install ninja doxygen graphviz autoconf automake
 
       - name: build coverage
         run: |
