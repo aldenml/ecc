@@ -70,12 +70,13 @@ else()
     )
 endif()
 
+# setup build configure for libsodium
 ExternalProject_Add_Step(
     libsodium-external autogen
     COMMAND ./autogen.sh -s
     WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/deps/libsodium
     COMMENT "Running autogen.sh tool"
-    DEPENDEES configure
+    DEPENDERS configure
 )
 
 file(MAKE_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/build/libsodium/include)
