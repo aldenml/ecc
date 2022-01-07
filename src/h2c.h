@@ -36,8 +36,8 @@
  * @param msg a byte string, size:msg_len
  * @param msg_len the length of `msg`
  * @param dst a byte string of at most 255 bytes, size:dst_len
- * @param dst_len the length of `dst`, should be <= 256
- * @param len the length of the requested output in bytes, should be <= 256
+ * @param dst_len the length of `dst`, should be less or equal to 256
+ * @param len the length of the requested output in bytes, should be less or equal to 256
  */
 ECC_EXPORT
 void ecc_h2c_expand_message_xmd_sha256(

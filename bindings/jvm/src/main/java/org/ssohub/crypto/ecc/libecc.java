@@ -158,17 +158,16 @@ public final class libecc {
      * Takes two pointers to unsigned numbers encoded in little-endian
      * format and returns:
      * 
-     * -1 if a
-     * <
-     * b
-     * 0 if a == b
-     * 1 if a > b
+     * -1 if a is less b
+     * 0 if a is equals to b
+     * 1 if a is greater than b
      * 
      * The comparison is done in constant time
      *
      * @param a first unsigned integer argument, size:len
      * @param b second unsigned integer argument, size:len
      * @param len the length of both `a` and `b`
+     * @return the result of the comparison
      */
     public static native int ecc_compare(
         byte[] a,
@@ -337,7 +336,7 @@ public final class libecc {
      * @param prk a pseudorandom key, size:ecc_kdf_hkdf_sha256_KEYSIZE
      * @param info optional context and application specific information, size:info_len
      * @param info_len length of `info`
-     * @param len length of output keying material in octets
+     * @param len length of output keying material in octets, max allowed value is 8160
      */
     public static native void ecc_kdf_hkdf_sha256_expand(
         byte[] okm,
@@ -375,7 +374,7 @@ public final class libecc {
      * @param prk a pseudorandom key, size:ecc_kdf_hkdf_sha512_KEYSIZE
      * @param info optional context and application specific information, size:info_len
      * @param info_len length of `info`
-     * @param len length of output keying material in octets
+     * @param len length of output keying material in octets, max allowed value is 16320
      */
     public static native void ecc_kdf_hkdf_sha512_expand(
         byte[] okm,
@@ -1266,12 +1265,8 @@ public final class libecc {
      * @param msg a byte string, size:msg_len
      * @param msg_len the length of `msg`
      * @param dst a byte string of at most 255 bytes, size:dst_len
-     * @param dst_len the length of `dst`, should be
-     * <
-     * = 256
-     * @param len the length of the requested output in bytes, should be
-     * <
-     * = 256
+     * @param dst_len the length of `dst`, should be less or equal to 256
+     * @param len the length of the requested output in bytes, should be less or equal to 256
      */
     public static native void ecc_h2c_expand_message_xmd_sha256(
         byte[] out,
@@ -1482,7 +1477,7 @@ public final class libecc {
      * @param B size:ecc_oprf_ristretto255_sha512_ELEMENTSIZE
      * @param Cs size:m*ecc_oprf_ristretto255_sha512_ELEMENTSIZE
      * @param Ds size:m*ecc_oprf_ristretto255_sha512_ELEMENTSIZE
-     * @param m 
+     * @param m the size of the `Cs` and `Ds` arrays
      */
     public static native void ecc_oprf_ristretto255_sha512_ComputeComposites(
         byte[] M,
@@ -1502,7 +1497,7 @@ public final class libecc {
      * @param B size:ecc_oprf_ristretto255_sha512_ELEMENTSIZE
      * @param Cs size:m*ecc_oprf_ristretto255_sha512_ELEMENTSIZE
      * @param Ds size:m*ecc_oprf_ristretto255_sha512_ELEMENTSIZE
-     * @param m 
+     * @param m the size of the `Cs` and `Ds` arrays
      */
     public static native void ecc_oprf_ristretto255_sha512_ComputeCompositesFast(
         byte[] M,

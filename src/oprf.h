@@ -182,7 +182,7 @@ void ecc_oprf_ristretto255_sha512_GenerateProof(
  * @param B size:ecc_oprf_ristretto255_sha512_ELEMENTSIZE
  * @param Cs size:m*ecc_oprf_ristretto255_sha512_ELEMENTSIZE
  * @param Ds size:m*ecc_oprf_ristretto255_sha512_ELEMENTSIZE
- * @param m
+ * @param m the size of the `Cs` and `Ds` arrays
  */
 ECC_EXPORT
 void ecc_oprf_ristretto255_sha512_ComputeComposites(
@@ -203,7 +203,7 @@ void ecc_oprf_ristretto255_sha512_ComputeComposites(
  * @param B size:ecc_oprf_ristretto255_sha512_ELEMENTSIZE
  * @param Cs size:m*ecc_oprf_ristretto255_sha512_ELEMENTSIZE
  * @param Ds size:m*ecc_oprf_ristretto255_sha512_ELEMENTSIZE
- * @param m
+ * @param m the size of the `Cs` and `Ds` arrays
  */
 ECC_EXPORT
 void ecc_oprf_ristretto255_sha512_ComputeCompositesFast(
