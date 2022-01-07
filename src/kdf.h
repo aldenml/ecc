@@ -43,7 +43,7 @@ void ecc_kdf_hkdf_sha256_extract(
  * @param prk a pseudorandom key, size:ecc_kdf_hkdf_sha256_KEYSIZE
  * @param info optional context and application specific information, size:info_len
  * @param info_len length of `info`
- * @param len length of output keying material in octets, max allowed value is 8192
+ * @param len length of output keying material in octets, max allowed value is 8160
  */
 ECC_EXPORT
 void ecc_kdf_hkdf_sha256_expand(
@@ -86,7 +86,7 @@ void ecc_kdf_hkdf_sha512_extract(
  * @param prk a pseudorandom key, size:ecc_kdf_hkdf_sha512_KEYSIZE
  * @param info optional context and application specific information, size:info_len
  * @param info_len length of `info`
- * @param len length of output keying material in octets, max allowed value is 16384
+ * @param len length of output keying material in octets, max allowed value is 16320
  */
 ECC_EXPORT
 void ecc_kdf_hkdf_sha512_expand(

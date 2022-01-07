@@ -247,17 +247,16 @@ Module.ecc_I2OSP = (
  * Takes two pointers to unsigned numbers encoded in little-endian
  * format and returns:
  * 
- * -1 if a
- * <
- * b
- * 0 if a == b
- * 1 if a > b
+ * -1 if a is less b
+ * 0 if a is equals to b
+ * 1 if a is greater than b
  * 
  * The comparison is done in constant time
  *
  * @param {Uint8Array} a first unsigned integer argument, size:len
  * @param {Uint8Array} b second unsigned integer argument, size:len
  * @param {number} len the length of both `a` and `b`
+ * @return {number} the result of the comparison
  */
 Module.ecc_compare = (
     a,
@@ -526,7 +525,7 @@ Module.ecc_kdf_hkdf_sha256_extract = (
  * @param {Uint8Array} prk a pseudorandom key, size:ecc_kdf_hkdf_sha256_KEYSIZE
  * @param {Uint8Array} info optional context and application specific information, size:info_len
  * @param {number} info_len length of `info`
- * @param {number} len length of output keying material in octets
+ * @param {number} len length of output keying material in octets, max allowed value is 8160
  */
 Module.ecc_kdf_hkdf_sha256_expand = (
     okm,
@@ -594,7 +593,7 @@ Module.ecc_kdf_hkdf_sha512_extract = (
  * @param {Uint8Array} prk a pseudorandom key, size:ecc_kdf_hkdf_sha512_KEYSIZE
  * @param {Uint8Array} info optional context and application specific information, size:info_len
  * @param {number} info_len length of `info`
- * @param {number} len length of output keying material in octets
+ * @param {number} len length of output keying material in octets, max allowed value is 16320
  */
 Module.ecc_kdf_hkdf_sha512_expand = (
     okm,
@@ -2168,12 +2167,8 @@ Module.ecc_h2c_expand_message_xmd_sha512_DSTMAXSIZE = ecc_h2c_expand_message_xmd
  * @param {Uint8Array} msg a byte string, size:msg_len
  * @param {number} msg_len the length of `msg`
  * @param {Uint8Array} dst a byte string of at most 255 bytes, size:dst_len
- * @param {number} dst_len the length of `dst`, should be
- * <
- * = 256
- * @param {number} len the length of the requested output in bytes, should be
- * <
- * = 256
+ * @param {number} dst_len the length of `dst`, should be less or equal to 256
+ * @param {number} len the length of the requested output in bytes, should be less or equal to 256
  */
 Module.ecc_h2c_expand_message_xmd_sha256 = (
     out,
@@ -2540,7 +2535,7 @@ Module.ecc_oprf_ristretto255_sha512_GenerateProof = (
  * @param {Uint8Array} B size:ecc_oprf_ristretto255_sha512_ELEMENTSIZE
  * @param {Uint8Array} Cs size:m*ecc_oprf_ristretto255_sha512_ELEMENTSIZE
  * @param {Uint8Array} Ds size:m*ecc_oprf_ristretto255_sha512_ELEMENTSIZE
- * @param {number} m 
+ * @param {number} m the size of the `Cs` and `Ds` arrays
  */
 Module.ecc_oprf_ristretto255_sha512_ComputeComposites = (
     M,
@@ -2581,7 +2576,7 @@ Module.ecc_oprf_ristretto255_sha512_ComputeComposites = (
  * @param {Uint8Array} B size:ecc_oprf_ristretto255_sha512_ELEMENTSIZE
  * @param {Uint8Array} Cs size:m*ecc_oprf_ristretto255_sha512_ELEMENTSIZE
  * @param {Uint8Array} Ds size:m*ecc_oprf_ristretto255_sha512_ELEMENTSIZE
- * @param {number} m 
+ * @param {number} m the size of the `Cs` and `Ds` arrays
  */
 Module.ecc_oprf_ristretto255_sha512_ComputeCompositesFast = (
     M,

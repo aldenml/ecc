@@ -148,15 +148,16 @@ void ecc_I2OSP(byte_t *out, int x, int xLen);
  * Takes two pointers to unsigned numbers encoded in little-endian
  * format and returns:
  *
- * -1 if a < b
- * 0 if a == b
- * 1 if a > b
+ * -1 if a is less b
+ * 0 if a is equals to b
+ * 1 if a is greater than b
  *
  * The comparison is done in constant time
  *
  * @param a first unsigned integer argument, size:len
  * @param b second unsigned integer argument, size:len
  * @param len the length of both `a` and `b`
+ * @return the result of the comparison
  */
 ECC_EXPORT
 int ecc_compare(const byte_t *a, const byte_t *b, int len);
