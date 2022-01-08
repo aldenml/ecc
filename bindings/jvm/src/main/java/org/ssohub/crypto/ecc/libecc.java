@@ -1960,7 +1960,7 @@ public final class libecc {
      * @param client_identity_len 
      * @return on success returns 0, else -1.
      */
-    public static native int ecc_opaque_ristretto255_sha512_RecoverEnvelope(
+    public static native int ecc_opaque_ristretto255_sha512_EnvelopeRecover(
         byte[] client_private_key,
         byte[] export_key,
         byte[] randomized_pwd,

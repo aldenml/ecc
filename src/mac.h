@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021, Alden Torres
+ * Copyright (c) 2021-2022, Alden Torres
  *
  * Licensed under the terms of the MIT license.
  * Copy of the license at https://opensource.org/licenses/MIT
@@ -50,7 +50,7 @@ void ecc_mac_hmac_sha256(
 /**
  * Size of a HMAC-SHA-512 key.
  */
-#define ecc_mac_hmac_sha512_KEYSIZE 32
+#define ecc_mac_hmac_sha512_KEYSIZE 64
 
 /**
  * Computes the HMAC-SHA-512 of the input stream.

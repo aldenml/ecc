@@ -2131,7 +2131,7 @@ JNIEXPORT int JNICALL Java_org_ssohub_crypto_ecc_libecc_ecc_1opaque_1ristretto25
     byte_t *ptr_envelope_raw = mput(env, envelope_raw, ecc_opaque_ristretto255_sha512_Ne);
     byte_t *ptr_server_identity = mput(env, server_identity, server_identity_len);
     byte_t *ptr_client_identity = mput(env, client_identity, client_identity_len);
-    const int fun_ret = ecc_opaque_ristretto255_sha512_RecoverEnvelope(
+    const int fun_ret = ecc_opaque_ristretto255_sha512_EnvelopeRecover(
         ptr_client_private_key,
         ptr_export_key,
         ptr_randomized_pwd,

@@ -232,7 +232,7 @@ int ecc_oprf_ristretto255_sha512_VerifiableEvaluate(
 }
 
 void ecc_oprf_ristretto255_sha512_GenerateProofWithScalar(
-    byte_t *proofRaw,
+    byte_t *proofPtr,
     const byte_t *k,
     const byte_t *A,
     const byte_t *B,
@@ -267,7 +267,7 @@ void ecc_oprf_ristretto255_sha512_GenerateProofWithScalar(
     //
     // proof = GG.SerializeScalar(c) || GG.SerializeScalar(s)
 
-    Proof_t *proof = (Proof_t *) proofRaw;
+    Proof_t *proof = (Proof_t *) proofPtr;
 
     // Cs = [C]
     // Ds = [D]
@@ -758,9 +758,9 @@ int ecc_oprf_ristretto255_sha512_VerifyProof(
     const byte_t *B,
     const byte_t *C,
     const byte_t *D,
-    const byte_t *proofRaw
+    const byte_t *proofPtr
 ) {
-    Proof_t *proof = (Proof_t *) proofRaw;
+    Proof_t *proof = (Proof_t *) proofPtr;
 
     // Cs = [C]
     // Ds = [D]

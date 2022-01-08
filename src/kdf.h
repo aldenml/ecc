@@ -96,4 +96,28 @@ void ecc_kdf_hkdf_sha512_expand(
     int len
 );
 
+/**
+ * See https://datatracker.ietf.org/doc/html/rfc7914
+ *
+ * @param[out] out size:len
+ * @param passphrase size:passphrase_len
+ * @param passphrase_len
+ * @param salt size:salt_len
+ * @param salt_len
+ * @param cost
+ * @param block_size
+ * @param parallelization
+ * @param len
+ */
+ECC_EXPORT
+void ecc_kdf_scrypt(
+    byte_t *out,
+    const byte_t *passphrase, int passphrase_len,
+    const byte_t *salt, int salt_len,
+    int cost,
+    int block_size,
+    int parallelization,
+    int len
+);
+
 #endif // ECC_KDF_H
