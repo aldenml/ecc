@@ -1,3 +1,10 @@
+#
+# Copyright (c) 2021-2022, Alden Torres
+#
+# Licensed under the terms of the MIT license.
+# Copy of the license at https://opensource.org/licenses/MIT
+#
+
 import json
 import re
 import subprocess
@@ -396,6 +403,7 @@ def gen_js(headers, ignore):
     out += " * @return {number}\n"
     out += " */\n"
     out += "function mput(src, size) {\n"
+    out += "    if (!src) return 0;\n"
     out += "    const pos = _ecc_malloc(size);\n"
     out += "    arraycopy(src, 0, HEAPU8, pos, size);\n"
     out += "    return pos;\n"
@@ -428,7 +436,7 @@ def gen_js(headers, ignore):
 def gen_jni_c(headers, ignore):
     out = ""
     out += "/*\n"
-    out += " * Copyright (c) 2021, Alden Torres\n"
+    out += " * Copyright (c) 2021-2022, Alden Torres\n"
     out += " *\n"
     out += " * Licensed under the terms of the MIT license.\n"
     out += " * Copy of the license at https://opensource.org/licenses/MIT\n"
@@ -473,7 +481,7 @@ def gen_jni_c(headers, ignore):
 def gen_jni_java(headers, ignore):
     out = ""
     out += "/*\n"
-    out += " * Copyright (c) 2021, Alden Torres\n"
+    out += " * Copyright (c) 2021-2022, Alden Torres\n"
     out += " *\n"
     out += " * Licensed under the terms of the MIT license.\n"
     out += " * Copy of the license at https://opensource.org/licenses/MIT\n"

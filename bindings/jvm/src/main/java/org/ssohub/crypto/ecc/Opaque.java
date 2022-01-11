@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021, Alden Torres
+ * Copyright (c) 2021-2022, Alden Torres
  *
  * Licensed under the terms of the MIT license.
  * Copy of the license at https://opensource.org/licenses/MIT
@@ -7,14 +7,7 @@
 
 package org.ssohub.crypto.ecc;
 
-import static org.ssohub.crypto.ecc.libecc.ecc_opaque_ristretto255_sha512_3DH_ClientFinish;
-import static org.ssohub.crypto.ecc.libecc.ecc_opaque_ristretto255_sha512_3DH_ClientInit;
-import static org.ssohub.crypto.ecc.libecc.ecc_opaque_ristretto255_sha512_3DH_ServerFinish;
-import static org.ssohub.crypto.ecc.libecc.ecc_opaque_ristretto255_sha512_3DH_ServerInit;
-import static org.ssohub.crypto.ecc.libecc.ecc_opaque_ristretto255_sha512_CreateRegistrationRequest;
-import static org.ssohub.crypto.ecc.libecc.ecc_opaque_ristretto255_sha512_CreateRegistrationResponse;
-import static org.ssohub.crypto.ecc.libecc.ecc_opaque_ristretto255_sha512_FinalizeRequest;
-import static org.ssohub.crypto.ecc.libecc.ecc_opaque_ristretto255_sha512_GenerateAuthKeyPair;
+import static org.ssohub.crypto.ecc.libecc.*;
 
 /**
  * @author aldenml
@@ -41,7 +34,7 @@ public final class Opaque {
      * This is implemented by generating a random "seed", then
      * calling internally DeriveAuthKeyPair.
      * <p>
-     * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-05#section-2
+     * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-07#section-2
      *
      * @return object {private_key, public_key}
      */
@@ -66,7 +59,7 @@ public final class Opaque {
     }
 
     /**
-     * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-05#section-5.1.1.1
+     * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-07#section-5.1.1.1
      *
      * @param password an opaque byte string containing the client's password
      * @return object {request, blind}
@@ -99,7 +92,7 @@ public final class Opaque {
      * In order to make this method not to use dynamic memory allocation, there is a
      * limit of credential_identifier to length &lt;= 200.
      * <p>
-     * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-05#section-5.1.1.2
+     * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-07#section-5.1.1.2
      *
      * @param request_raw           a RegistrationRequest structure
      * @param server_public_key     the server's public key
@@ -147,26 +140,22 @@ public final class Opaque {
      * executes the following function. Since this works in the internal key mode, the
      * "client_private_key" is null.
      * <p>
-     * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-05#section-5.1.1.3
+     * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-07#section-5.1.1.3
      *
-     * @param client_private_key the client's private key (always null, internal mode)
-     * @param password           an opaque byte string containing the client's password
-     * @param blind              the OPRF scalar value used for blinding
-     * @param response_raw       a RegistrationResponse structure
-     * @param server_identity    the optional encoded server identity
-     * @param client_identity    the optional encoded client identity
+     * @param password        an opaque byte string containing the client's password
+     * @param blind           the OPRF scalar value used for blinding
+     * @param response_raw    a RegistrationResponse structure
+     * @param server_identity the optional encoded server identity
+     * @param client_identity the optional encoded client identity
      * @return object {record, export_key}
      */
     public static FinalizeRequestResult opaque_ristretto255_sha512_FinalizeRequest(
-        byte[] client_private_key,
         byte[] password,
         byte[] blind,
         byte[] response_raw,
         byte[] server_identity,
         byte[] client_identity
     ) {
-        if (client_private_key == null)
-            client_private_key = new byte[32]; // internally not used
         if (server_identity == null)
             server_identity = new byte[0];
         if (client_identity == null)
@@ -178,12 +167,12 @@ public final class Opaque {
         ecc_opaque_ristretto255_sha512_FinalizeRequest(
             record_raw,
             export_key,
-            client_private_key,
             password, password.length,
             blind,
             response_raw,
             server_identity, server_identity.length,
-            client_identity, client_identity.length
+            client_identity, client_identity.length,
+            ecc_opaque_ristretto255_sha512_MHF_SCRYPT
         );
 
         return new FinalizeRequestResult(
@@ -193,27 +182,21 @@ public final class Opaque {
     }
 
     /**
-     * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-05#section-6.2.3
+     * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-07#section-6.2.3
      *
      * @param state_raw       a ClientState structure
-     * @param client_identity the optional encoded client identity, which is null if not specified
      * @param password        an opaque byte string containing the client's password
      * @return a KE1 message structure
      */
     public static byte[] opaque_ristretto255_sha512_3DH_ClientInit(
         byte[] state_raw,
-        byte[] client_identity,
         byte[] password
     ) {
-        if (client_identity == null)
-            client_identity = new byte[0];
-
         byte[] ke1_raw = new byte[96];
 
         ecc_opaque_ristretto255_sha512_3DH_ClientInit(
             ke1_raw,
             state_raw,
-            client_identity, client_identity.length,
             password, password.length
         );
 
@@ -236,7 +219,7 @@ public final class Opaque {
     }
 
     /**
-     * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-05#section-6.2.3
+     * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-07#section-6.2.3
      *
      * @param state_raw       a ClientState structure
      * @param password        an opaque byte string containing the client's password
@@ -271,7 +254,9 @@ public final class Opaque {
             password, password.length,
             client_identity, client_identity.length,
             server_identity, server_identity.length,
-            ke2_raw
+            ke2_raw,
+            ecc_opaque_ristretto255_sha512_MHF_SCRYPT,
+            new byte[0], 0
         );
 
         return new ClientFinishResult(
@@ -283,7 +268,7 @@ public final class Opaque {
     }
 
     /**
-     * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-05#section-6.2.4
+     * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-07#section-6.2.4
      *
      * @param state_raw             a ServerState structure
      * @param server_identity       the optional encoded server identity, which is set to
@@ -303,6 +288,7 @@ public final class Opaque {
         byte[] server_identity,
         byte[] server_private_key,
         byte[] server_public_key,
+        byte[] client_identity,
         byte[] record_raw,
         byte[] credential_identifier,
         byte[] oprf_seed,
@@ -311,6 +297,8 @@ public final class Opaque {
     ) {
         if (server_identity == null)
             server_identity = new byte[0];
+        if (client_identity == null)
+            client_identity = new byte[0];
         if (context == null)
             context = new byte[0];
 
@@ -322,6 +310,7 @@ public final class Opaque {
             server_identity, server_identity.length,
             server_private_key,
             server_public_key,
+            client_identity, client_identity.length,
             record_raw,
             credential_identifier, credential_identifier.length,
             oprf_seed,
@@ -344,7 +333,7 @@ public final class Opaque {
     }
 
     /**
-     * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-05#section-6.2.4
+     * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-07#section-6.2.4
      *
      * @param state_raw a ServerState structure
      * @param ke3_raw   a KE3 structure

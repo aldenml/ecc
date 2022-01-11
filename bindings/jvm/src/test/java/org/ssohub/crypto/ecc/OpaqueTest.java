@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021, Alden Torres
+ * Copyright (c) 2021-2022, Alden Torres
  *
  * Licensed under the terms of the MIT license.
  * Copy of the license at https://opensource.org/licenses/MIT
@@ -55,7 +55,6 @@ public class OpaqueTest {
         );
 
         FinalizeRequestResult regEnd = opaque_ristretto255_sha512_FinalizeRequest(
-            null,
             password,
             regReq.blind,
             regRes.response,
@@ -70,7 +69,6 @@ public class OpaqueTest {
         byte[] client_state = new byte[160];
         byte[] ke1 = opaque_ristretto255_sha512_3DH_ClientInit(
             client_state,
-            null,
             password
         );
 
@@ -80,6 +78,7 @@ public class OpaqueTest {
             null,
             server_private_key,
             server_public_key,
+            null,
             regEnd.record,
             credential_identifier,
             oprf_seed,

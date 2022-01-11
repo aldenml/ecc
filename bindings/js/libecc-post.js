@@ -15,6 +15,7 @@ function arraycopy(src, srcPos, dest, destPos, length) {
  * @return {number}
  */
 function mput(src, size) {
+    if (!src) return 0;
     const pos = _ecc_malloc(size);
     arraycopy(src, 0, HEAPU8, pos, size);
     return pos;
@@ -392,7 +393,7 @@ const ecc_mac_hmac_sha512_SIZE = 64;
  */
 Module.ecc_mac_hmac_sha512_SIZE = ecc_mac_hmac_sha512_SIZE;
 
-const ecc_mac_hmac_sha512_KEYSIZE = 32;
+const ecc_mac_hmac_sha512_KEYSIZE = 64;
 /**
  * Size of a HMAC-SHA-512 key.
  *
@@ -616,6 +617,50 @@ Module.ecc_kdf_hkdf_sha512_expand = (
     mfree(ptr_okm, len);
     mfree(ptr_prk, ecc_kdf_hkdf_sha512_KEYSIZE);
     mfree(ptr_info, info_len);
+}
+
+/**
+ * See https://datatracker.ietf.org/doc/html/rfc7914
+ *
+ * @param {Uint8Array} out (output) size:len
+ * @param {Uint8Array} passphrase size:passphrase_len
+ * @param {number} passphrase_len 
+ * @param {Uint8Array} salt size:salt_len
+ * @param {number} salt_len 
+ * @param {number} cost 
+ * @param {number} block_size 
+ * @param {number} parallelization 
+ * @param {number} len 
+ */
+Module.ecc_kdf_scrypt = (
+    out,
+    passphrase,
+    passphrase_len,
+    salt,
+    salt_len,
+    cost,
+    block_size,
+    parallelization,
+    len,
+) => {
+    const ptr_out = mput(out, len);
+    const ptr_passphrase = mput(passphrase, passphrase_len);
+    const ptr_salt = mput(salt, salt_len);
+    _ecc_kdf_scrypt(
+        ptr_out,
+        ptr_passphrase,
+        passphrase_len,
+        ptr_salt,
+        salt_len,
+        cost,
+        block_size,
+        parallelization,
+        len,
+    );
+    mget(out, ptr_out, len);
+    mfree(ptr_out, len);
+    mfree(ptr_passphrase, passphrase_len);
+    mfree(ptr_salt, salt_len);
 }
 
 // ed25519
@@ -3097,6 +3142,22 @@ const ecc_opaque_ristretto255_sha512_Ne = 96;
  */
 Module.ecc_opaque_ristretto255_sha512_Ne = ecc_opaque_ristretto255_sha512_Ne;
 
+const ecc_opaque_ristretto255_sha512_IDENTITYMAXSIZE = 200;
+/**
+ * *
+ *
+ * @type {number}
+ */
+Module.ecc_opaque_ristretto255_sha512_IDENTITYMAXSIZE = ecc_opaque_ristretto255_sha512_IDENTITYMAXSIZE;
+
+const ecc_opaque_ristretto255_sha512_CLEARTEXTCREDENTIALSSIZE = 440;
+/**
+ * *
+ *
+ * @type {number}
+ */
+Module.ecc_opaque_ristretto255_sha512_CLEARTEXTCREDENTIALSSIZE = ecc_opaque_ristretto255_sha512_CLEARTEXTCREDENTIALSSIZE;
+
 const ecc_opaque_ristretto255_sha512_REGISTRATIONREQUESTSIZE = 32;
 /**
  * *
@@ -3177,32 +3238,70 @@ const ecc_opaque_ristretto255_sha512_SERVERSTATESIZE = 128;
  */
 Module.ecc_opaque_ristretto255_sha512_SERVERSTATESIZE = ecc_opaque_ristretto255_sha512_SERVERSTATESIZE;
 
+const ecc_opaque_ristretto255_sha512_MHF_IDENTITY = 0;
+/**
+ * Use Identity for the Memory Hard Function (MHF).
+ *
+ * @type {number}
+ */
+Module.ecc_opaque_ristretto255_sha512_MHF_IDENTITY = ecc_opaque_ristretto255_sha512_MHF_IDENTITY;
+
+const ecc_opaque_ristretto255_sha512_MHF_SCRYPT = 1;
+/**
+ * Use Scrypt(32768,8,1) for the Memory Hard Function (MHF).
+ *
+ * @type {number}
+ */
+Module.ecc_opaque_ristretto255_sha512_MHF_SCRYPT = ecc_opaque_ristretto255_sha512_MHF_SCRYPT;
+
+/**
+ * Derive a private and public key pair deterministically from a seed.
+ * 
+ * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-07#section-2.1
+ *
+ * @param {Uint8Array} private_key (output) a private key, size:ecc_opaque_ristretto255_sha512_Nsk
+ * @param {Uint8Array} public_key (output) the associated public key, size:ecc_opaque_ristretto255_sha512_Npk
+ * @param {Uint8Array} seed pseudo-random byte sequence used as a seed, size:seed_len
+ * @param {number} seed_len the length of `seed`
+ */
+Module.ecc_opaque_ristretto255_sha512_DeriveKeyPair = (
+    private_key,
+    public_key,
+    seed,
+    seed_len,
+) => {
+    const ptr_private_key = mput(private_key, ecc_opaque_ristretto255_sha512_Nsk);
+    const ptr_public_key = mput(public_key, ecc_opaque_ristretto255_sha512_Npk);
+    const ptr_seed = mput(seed, seed_len);
+    _ecc_opaque_ristretto255_sha512_DeriveKeyPair(
+        ptr_private_key,
+        ptr_public_key,
+        ptr_seed,
+        seed_len,
+    );
+    mget(private_key, ptr_private_key, ecc_opaque_ristretto255_sha512_Nsk);
+    mget(public_key, ptr_public_key, ecc_opaque_ristretto255_sha512_Npk);
+    mfree(ptr_private_key, ecc_opaque_ristretto255_sha512_Nsk);
+    mfree(ptr_public_key, ecc_opaque_ristretto255_sha512_Npk);
+    mfree(ptr_seed, seed_len);
+}
+
 /**
  * Constructs a "CleartextCredentials" structure given application
  * credential information.
  * 
- * Since the identities are not length fixed, it's not possible to create
- * a static structure for this record. Instead the function returns the
- * length of the record once it's created.
- * 
- * If you pass NULL for `cleartext_credentials` it will return the total
- * size of memory necessary to hold the result.
- * 
- * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-05#section-4
+ * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-07#section-4
  *
- * @param {Uint8Array} cleartext_credentials (output) a CleartextCredentials structure, size:cleartext_credentials_len
- * @param {number} cleartext_credentials_len the length of `cleartext_credentials`
+ * @param {Uint8Array} cleartext_credentials (output) a CleartextCredentials structure, size:ecc_opaque_ristretto255_sha512_CLEARTEXTCREDENTIALSSIZE
  * @param {Uint8Array} server_public_key the encoded server public key for the AKE protocol, size:ecc_opaque_ristretto255_sha512_Npk
  * @param {Uint8Array} client_public_key the encoded client public key for the AKE protocol, size:ecc_opaque_ristretto255_sha512_Npk
  * @param {Uint8Array} server_identity the optional encoded server identity, size:server_identity_len
  * @param {number} server_identity_len the length of `server_identity`
  * @param {Uint8Array} client_identity the optional encoded client identity, size:client_identity_len
  * @param {number} client_identity_len the length of `client_identity`
- * @return {number} the size of the serialized structure
  */
 Module.ecc_opaque_ristretto255_sha512_CreateCleartextCredentials = (
     cleartext_credentials,
-    cleartext_credentials_len,
     server_public_key,
     client_public_key,
     server_identity,
@@ -3210,14 +3309,13 @@ Module.ecc_opaque_ristretto255_sha512_CreateCleartextCredentials = (
     client_identity,
     client_identity_len,
 ) => {
-    const ptr_cleartext_credentials = mput(cleartext_credentials, cleartext_credentials_len);
+    const ptr_cleartext_credentials = mput(cleartext_credentials, ecc_opaque_ristretto255_sha512_CLEARTEXTCREDENTIALSSIZE);
     const ptr_server_public_key = mput(server_public_key, ecc_opaque_ristretto255_sha512_Npk);
     const ptr_client_public_key = mput(client_public_key, ecc_opaque_ristretto255_sha512_Npk);
     const ptr_server_identity = mput(server_identity, server_identity_len);
     const ptr_client_identity = mput(client_identity, client_identity_len);
-    const fun_ret = _ecc_opaque_ristretto255_sha512_CreateCleartextCredentials(
+    _ecc_opaque_ristretto255_sha512_CreateCleartextCredentials(
         ptr_cleartext_credentials,
-        cleartext_credentials_len,
         ptr_server_public_key,
         ptr_client_public_key,
         ptr_server_identity,
@@ -3225,83 +3323,77 @@ Module.ecc_opaque_ristretto255_sha512_CreateCleartextCredentials = (
         ptr_client_identity,
         client_identity_len,
     );
-    mget(cleartext_credentials, ptr_cleartext_credentials, cleartext_credentials_len);
-    mfree(ptr_cleartext_credentials, cleartext_credentials_len);
+    mget(cleartext_credentials, ptr_cleartext_credentials, ecc_opaque_ristretto255_sha512_CLEARTEXTCREDENTIALSSIZE);
+    mfree(ptr_cleartext_credentials, ecc_opaque_ristretto255_sha512_CLEARTEXTCREDENTIALSSIZE);
     mfree(ptr_server_public_key, ecc_opaque_ristretto255_sha512_Npk);
     mfree(ptr_client_public_key, ecc_opaque_ristretto255_sha512_Npk);
     mfree(ptr_server_identity, server_identity_len);
     mfree(ptr_client_identity, client_identity_len);
-    return fun_ret;
 }
 
 /**
- * Same as calling `ecc_opaque_ristretto255_sha512_CreateEnvelope` with an
+ * Same as calling `ecc_opaque_ristretto255_sha512_EnvelopeStore` with an
  * specified `nonce`.
  * 
- * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-05#section-4.2
+ * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-07#section-4.2
  *
- * @param {Uint8Array} envelope_raw (output) size:ecc_opaque_ristretto255_sha512_Ne
+ * @param {Uint8Array} envelope (output) size:ecc_opaque_ristretto255_sha512_Ne
  * @param {Uint8Array} client_public_key (output) size:ecc_opaque_ristretto255_sha512_Npk
  * @param {Uint8Array} masking_key (output) size:ecc_opaque_ristretto255_sha512_Nh
  * @param {Uint8Array} export_key (output) size:ecc_opaque_ristretto255_sha512_Nh
  * @param {Uint8Array} randomized_pwd size:64
  * @param {Uint8Array} server_public_key size:ecc_opaque_ristretto255_sha512_Npk
- * @param {Uint8Array} client_private_key size:ecc_opaque_ristretto255_sha512_Nsk
  * @param {Uint8Array} server_identity size:server_identity_len
  * @param {number} server_identity_len 
  * @param {Uint8Array} client_identity size:client_identity_len
  * @param {number} client_identity_len 
  * @param {Uint8Array} nonce size:ecc_opaque_ristretto255_sha512_Nn
  */
-Module.ecc_opaque_ristretto255_sha512_CreateEnvelopeWithNonce = (
-    envelope_raw,
+Module.ecc_opaque_ristretto255_sha512_EnvelopeStoreWithNonce = (
+    envelope,
     client_public_key,
     masking_key,
     export_key,
     randomized_pwd,
     server_public_key,
-    client_private_key,
     server_identity,
     server_identity_len,
     client_identity,
     client_identity_len,
     nonce,
 ) => {
-    const ptr_envelope_raw = mput(envelope_raw, ecc_opaque_ristretto255_sha512_Ne);
+    const ptr_envelope = mput(envelope, ecc_opaque_ristretto255_sha512_Ne);
     const ptr_client_public_key = mput(client_public_key, ecc_opaque_ristretto255_sha512_Npk);
     const ptr_masking_key = mput(masking_key, ecc_opaque_ristretto255_sha512_Nh);
     const ptr_export_key = mput(export_key, ecc_opaque_ristretto255_sha512_Nh);
     const ptr_randomized_pwd = mput(randomized_pwd, 64);
     const ptr_server_public_key = mput(server_public_key, ecc_opaque_ristretto255_sha512_Npk);
-    const ptr_client_private_key = mput(client_private_key, ecc_opaque_ristretto255_sha512_Nsk);
     const ptr_server_identity = mput(server_identity, server_identity_len);
     const ptr_client_identity = mput(client_identity, client_identity_len);
     const ptr_nonce = mput(nonce, ecc_opaque_ristretto255_sha512_Nn);
-    _ecc_opaque_ristretto255_sha512_CreateEnvelopeWithNonce(
-        ptr_envelope_raw,
+    _ecc_opaque_ristretto255_sha512_EnvelopeStoreWithNonce(
+        ptr_envelope,
         ptr_client_public_key,
         ptr_masking_key,
         ptr_export_key,
         ptr_randomized_pwd,
         ptr_server_public_key,
-        ptr_client_private_key,
         ptr_server_identity,
         server_identity_len,
         ptr_client_identity,
         client_identity_len,
         ptr_nonce,
     );
-    mget(envelope_raw, ptr_envelope_raw, ecc_opaque_ristretto255_sha512_Ne);
+    mget(envelope, ptr_envelope, ecc_opaque_ristretto255_sha512_Ne);
     mget(client_public_key, ptr_client_public_key, ecc_opaque_ristretto255_sha512_Npk);
     mget(masking_key, ptr_masking_key, ecc_opaque_ristretto255_sha512_Nh);
     mget(export_key, ptr_export_key, ecc_opaque_ristretto255_sha512_Nh);
-    mfree(ptr_envelope_raw, ecc_opaque_ristretto255_sha512_Ne);
+    mfree(ptr_envelope, ecc_opaque_ristretto255_sha512_Ne);
     mfree(ptr_client_public_key, ecc_opaque_ristretto255_sha512_Npk);
     mfree(ptr_masking_key, ecc_opaque_ristretto255_sha512_Nh);
     mfree(ptr_export_key, ecc_opaque_ristretto255_sha512_Nh);
     mfree(ptr_randomized_pwd, 64);
     mfree(ptr_server_public_key, ecc_opaque_ristretto255_sha512_Npk);
-    mfree(ptr_client_private_key, ecc_opaque_ristretto255_sha512_Nsk);
     mfree(ptr_server_identity, server_identity_len);
     mfree(ptr_client_identity, client_identity_len);
     mfree(ptr_nonce, ecc_opaque_ristretto255_sha512_Nn);
@@ -3314,7 +3406,7 @@ Module.ecc_opaque_ristretto255_sha512_CreateEnvelopeWithNonce = (
  * allocation), it's necessary to add the restriction on length of the
  * identities to less than 200 bytes.
  * 
- * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-05#section-4.2
+ * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-07#section-4.2
  *
  * @param {Uint8Array} envelope (output) size:ecc_opaque_ristretto255_sha512_Ne
  * @param {Uint8Array} client_public_key (output) size:ecc_opaque_ristretto255_sha512_Npk
@@ -3322,20 +3414,18 @@ Module.ecc_opaque_ristretto255_sha512_CreateEnvelopeWithNonce = (
  * @param {Uint8Array} export_key (output) size:ecc_opaque_ristretto255_sha512_Nh
  * @param {Uint8Array} randomized_pwd size:64
  * @param {Uint8Array} server_public_key size:ecc_opaque_ristretto255_sha512_Npk
- * @param {Uint8Array} client_private_key size:ecc_opaque_ristretto255_sha512_Nsk
  * @param {Uint8Array} server_identity size:server_identity_len
  * @param {number} server_identity_len 
  * @param {Uint8Array} client_identity size:client_identity_len
  * @param {number} client_identity_len 
  */
-Module.ecc_opaque_ristretto255_sha512_CreateEnvelope = (
+Module.ecc_opaque_ristretto255_sha512_EnvelopeStore = (
     envelope,
     client_public_key,
     masking_key,
     export_key,
     randomized_pwd,
     server_public_key,
-    client_private_key,
     server_identity,
     server_identity_len,
     client_identity,
@@ -3347,17 +3437,15 @@ Module.ecc_opaque_ristretto255_sha512_CreateEnvelope = (
     const ptr_export_key = mput(export_key, ecc_opaque_ristretto255_sha512_Nh);
     const ptr_randomized_pwd = mput(randomized_pwd, 64);
     const ptr_server_public_key = mput(server_public_key, ecc_opaque_ristretto255_sha512_Npk);
-    const ptr_client_private_key = mput(client_private_key, ecc_opaque_ristretto255_sha512_Nsk);
     const ptr_server_identity = mput(server_identity, server_identity_len);
     const ptr_client_identity = mput(client_identity, client_identity_len);
-    _ecc_opaque_ristretto255_sha512_CreateEnvelope(
+    _ecc_opaque_ristretto255_sha512_EnvelopeStore(
         ptr_envelope,
         ptr_client_public_key,
         ptr_masking_key,
         ptr_export_key,
         ptr_randomized_pwd,
         ptr_server_public_key,
-        ptr_client_private_key,
         ptr_server_identity,
         server_identity_len,
         ptr_client_identity,
@@ -3373,7 +3461,6 @@ Module.ecc_opaque_ristretto255_sha512_CreateEnvelope = (
     mfree(ptr_export_key, ecc_opaque_ristretto255_sha512_Nh);
     mfree(ptr_randomized_pwd, 64);
     mfree(ptr_server_public_key, ecc_opaque_ristretto255_sha512_Npk);
-    mfree(ptr_client_private_key, ecc_opaque_ristretto255_sha512_Nsk);
     mfree(ptr_server_identity, server_identity_len);
     mfree(ptr_client_identity, client_identity_len);
 }
@@ -3382,7 +3469,7 @@ Module.ecc_opaque_ristretto255_sha512_CreateEnvelope = (
  * This functions attempts to recover the credentials from the input. On
  * success returns 0, else -1.
  * 
- * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-05#section-4.2
+ * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-07#section-4.2
  *
  * @param {Uint8Array} client_private_key (output) size:ecc_opaque_ristretto255_sha512_Nsk
  * @param {Uint8Array} export_key (output) size:ecc_opaque_ristretto255_sha512_Nh
@@ -3395,7 +3482,7 @@ Module.ecc_opaque_ristretto255_sha512_CreateEnvelope = (
  * @param {number} client_identity_len 
  * @return {number} on success returns 0, else -1.
  */
-Module.ecc_opaque_ristretto255_sha512_RecoverEnvelope = (
+Module.ecc_opaque_ristretto255_sha512_EnvelopeRecover = (
     client_private_key,
     export_key,
     randomized_pwd,
@@ -3413,7 +3500,7 @@ Module.ecc_opaque_ristretto255_sha512_RecoverEnvelope = (
     const ptr_envelope_raw = mput(envelope_raw, ecc_opaque_ristretto255_sha512_Ne);
     const ptr_server_identity = mput(server_identity, server_identity_len);
     const ptr_client_identity = mput(client_identity, client_identity_len);
-    const fun_ret = _ecc_opaque_ristretto255_sha512_RecoverEnvelope(
+    const fun_ret = _ecc_opaque_ristretto255_sha512_EnvelopeRecover(
         ptr_client_private_key,
         ptr_export_key,
         ptr_randomized_pwd,
@@ -3439,7 +3526,7 @@ Module.ecc_opaque_ristretto255_sha512_RecoverEnvelope = (
 /**
  * Recover the public key related to the input "private_key".
  * 
- * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-05#section-2
+ * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-07#section-2
  *
  * @param {Uint8Array} public_key (output) size:ecc_opaque_ristretto255_sha512_Npk
  * @param {Uint8Array} private_key size:ecc_opaque_ristretto255_sha512_Nsk
@@ -3465,7 +3552,7 @@ Module.ecc_opaque_ristretto255_sha512_RecoverPublicKey = (
  * This is implemented by generating a random "seed", then
  * calling internally DeriveAuthKeyPair.
  * 
- * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-05#section-2
+ * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-07#section-2
  *
  * @param {Uint8Array} private_key (output) a private key, size:ecc_opaque_ristretto255_sha512_Nsk
  * @param {Uint8Array} public_key (output) the associated public key, size:ecc_opaque_ristretto255_sha512_Npk
@@ -3490,8 +3577,8 @@ Module.ecc_opaque_ristretto255_sha512_GenerateAuthKeyPair = (
  * Derive a private and public authentication key pair deterministically
  * from the input "seed".
  * 
- * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-05#section-4.3.1
- * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-05#section-2
+ * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-07#section-4.3.1
+ * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-07#section-2
  *
  * @param {Uint8Array} private_key (output) a private key, size:ecc_opaque_ristretto255_sha512_Nsk
  * @param {Uint8Array} public_key (output) the associated public key, size:ecc_opaque_ristretto255_sha512_Npk
@@ -3521,136 +3608,62 @@ Module.ecc_opaque_ristretto255_sha512_DeriveAuthKeyPair = (
 }
 
 /**
- * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-05#section-4.3.1
- *
- * @param {Uint8Array} inner_env (output) size:0
- * @param {Uint8Array} client_public_key (output) size:ecc_opaque_ristretto255_sha512_Npk
- * @param {Uint8Array} randomized_pwd size:64
- * @param {Uint8Array} nonce size:ecc_opaque_ristretto255_sha512_Nn
- * @param {Uint8Array} client_private_key size:ecc_opaque_ristretto255_sha512_Nsk
- */
-Module.ecc_opaque_ristretto255_sha512_BuildInnerEnvelope = (
-    inner_env,
-    client_public_key,
-    randomized_pwd,
-    nonce,
-    client_private_key,
-) => {
-    const ptr_inner_env = mput(inner_env, 0);
-    const ptr_client_public_key = mput(client_public_key, ecc_opaque_ristretto255_sha512_Npk);
-    const ptr_randomized_pwd = mput(randomized_pwd, 64);
-    const ptr_nonce = mput(nonce, ecc_opaque_ristretto255_sha512_Nn);
-    const ptr_client_private_key = mput(client_private_key, ecc_opaque_ristretto255_sha512_Nsk);
-    _ecc_opaque_ristretto255_sha512_BuildInnerEnvelope(
-        ptr_inner_env,
-        ptr_client_public_key,
-        ptr_randomized_pwd,
-        ptr_nonce,
-        ptr_client_private_key,
-    );
-    mget(inner_env, ptr_inner_env, 0);
-    mget(client_public_key, ptr_client_public_key, ecc_opaque_ristretto255_sha512_Npk);
-    mfree(ptr_inner_env, 0);
-    mfree(ptr_client_public_key, ecc_opaque_ristretto255_sha512_Npk);
-    mfree(ptr_randomized_pwd, 64);
-    mfree(ptr_nonce, ecc_opaque_ristretto255_sha512_Nn);
-    mfree(ptr_client_private_key, ecc_opaque_ristretto255_sha512_Nsk);
-}
-
-/**
- * 
- *
- * @param {Uint8Array} client_private_key (output) size:ecc_opaque_ristretto255_sha512_Nsk
- * @param {Uint8Array} client_public_key (output) size:ecc_opaque_ristretto255_sha512_Npk
- * @param {Uint8Array} randomized_pwd size:64
- * @param {Uint8Array} nonce size:ecc_opaque_ristretto255_sha512_Nn
- * @param {Uint8Array} inner_env size:0
- */
-Module.ecc_opaque_ristretto255_sha512_RecoverKeys = (
-    client_private_key,
-    client_public_key,
-    randomized_pwd,
-    nonce,
-    inner_env,
-) => {
-    const ptr_client_private_key = mput(client_private_key, ecc_opaque_ristretto255_sha512_Nsk);
-    const ptr_client_public_key = mput(client_public_key, ecc_opaque_ristretto255_sha512_Npk);
-    const ptr_randomized_pwd = mput(randomized_pwd, 64);
-    const ptr_nonce = mput(nonce, ecc_opaque_ristretto255_sha512_Nn);
-    const ptr_inner_env = mput(inner_env, 0);
-    _ecc_opaque_ristretto255_sha512_RecoverKeys(
-        ptr_client_private_key,
-        ptr_client_public_key,
-        ptr_randomized_pwd,
-        ptr_nonce,
-        ptr_inner_env,
-    );
-    mget(client_private_key, ptr_client_private_key, ecc_opaque_ristretto255_sha512_Nsk);
-    mget(client_public_key, ptr_client_public_key, ecc_opaque_ristretto255_sha512_Npk);
-    mfree(ptr_client_private_key, ecc_opaque_ristretto255_sha512_Nsk);
-    mfree(ptr_client_public_key, ecc_opaque_ristretto255_sha512_Npk);
-    mfree(ptr_randomized_pwd, 64);
-    mfree(ptr_nonce, ecc_opaque_ristretto255_sha512_Nn);
-    mfree(ptr_inner_env, 0);
-}
-
-/**
  * Same as calling CreateRegistrationRequest with a specified blind.
  * 
- * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-05#section-5.1.1.1
+ * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-07#section-5.1.1.1
  *
- * @param {Uint8Array} request_raw (output) a RegistrationRequest structure, size:ecc_opaque_ristretto255_sha512_REGISTRATIONREQUESTSIZE
+ * @param {Uint8Array} request (output) a RegistrationRequest structure, size:ecc_opaque_ristretto255_sha512_REGISTRATIONREQUESTSIZE
  * @param {Uint8Array} password an opaque byte string containing the client's password, size:password_len
  * @param {number} password_len the length of `password`
  * @param {Uint8Array} blind the OPRF scalar value to use, size:ecc_opaque_ristretto255_sha512_Noe
  */
 Module.ecc_opaque_ristretto255_sha512_CreateRegistrationRequestWithBlind = (
-    request_raw,
+    request,
     password,
     password_len,
     blind,
 ) => {
-    const ptr_request_raw = mput(request_raw, ecc_opaque_ristretto255_sha512_REGISTRATIONREQUESTSIZE);
+    const ptr_request = mput(request, ecc_opaque_ristretto255_sha512_REGISTRATIONREQUESTSIZE);
     const ptr_password = mput(password, password_len);
     const ptr_blind = mput(blind, ecc_opaque_ristretto255_sha512_Noe);
     _ecc_opaque_ristretto255_sha512_CreateRegistrationRequestWithBlind(
-        ptr_request_raw,
+        ptr_request,
         ptr_password,
         password_len,
         ptr_blind,
     );
-    mget(request_raw, ptr_request_raw, ecc_opaque_ristretto255_sha512_REGISTRATIONREQUESTSIZE);
-    mfree(ptr_request_raw, ecc_opaque_ristretto255_sha512_REGISTRATIONREQUESTSIZE);
+    mget(request, ptr_request, ecc_opaque_ristretto255_sha512_REGISTRATIONREQUESTSIZE);
+    mfree(ptr_request, ecc_opaque_ristretto255_sha512_REGISTRATIONREQUESTSIZE);
     mfree(ptr_password, password_len);
     mfree(ptr_blind, ecc_opaque_ristretto255_sha512_Noe);
 }
 
 /**
- * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-05#section-5.1.1.1
+ * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-07#section-5.1.1.1
  *
- * @param {Uint8Array} request_raw (output) a RegistrationRequest structure, size:ecc_opaque_ristretto255_sha512_REGISTRATIONREQUESTSIZE
+ * @param {Uint8Array} request (output) a RegistrationRequest structure, size:ecc_opaque_ristretto255_sha512_REGISTRATIONREQUESTSIZE
  * @param {Uint8Array} blind (output) an OPRF scalar value, size:ecc_opaque_ristretto255_sha512_Noe
  * @param {Uint8Array} password an opaque byte string containing the client's password, size:password_len
  * @param {number} password_len the length of `password`
  */
 Module.ecc_opaque_ristretto255_sha512_CreateRegistrationRequest = (
-    request_raw,
+    request,
     blind,
     password,
     password_len,
 ) => {
-    const ptr_request_raw = mput(request_raw, ecc_opaque_ristretto255_sha512_REGISTRATIONREQUESTSIZE);
+    const ptr_request = mput(request, ecc_opaque_ristretto255_sha512_REGISTRATIONREQUESTSIZE);
     const ptr_blind = mput(blind, ecc_opaque_ristretto255_sha512_Noe);
     const ptr_password = mput(password, password_len);
     _ecc_opaque_ristretto255_sha512_CreateRegistrationRequest(
-        ptr_request_raw,
+        ptr_request,
         ptr_blind,
         ptr_password,
         password_len,
     );
-    mget(request_raw, ptr_request_raw, ecc_opaque_ristretto255_sha512_REGISTRATIONREQUESTSIZE);
+    mget(request, ptr_request, ecc_opaque_ristretto255_sha512_REGISTRATIONREQUESTSIZE);
     mget(blind, ptr_blind, ecc_opaque_ristretto255_sha512_Noe);
-    mfree(ptr_request_raw, ecc_opaque_ristretto255_sha512_REGISTRATIONREQUESTSIZE);
+    mfree(ptr_request, ecc_opaque_ristretto255_sha512_REGISTRATIONREQUESTSIZE);
     mfree(ptr_blind, ecc_opaque_ristretto255_sha512_Noe);
     mfree(ptr_password, password_len);
 }
@@ -3663,39 +3676,39 @@ Module.ecc_opaque_ristretto255_sha512_CreateRegistrationRequest = (
  * <
  * = 200.
  * 
- * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-05#section-5.1.1.2
+ * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-07#section-5.1.1.2
  *
- * @param {Uint8Array} response_raw (output) size:ecc_opaque_ristretto255_sha512_REGISTRATIONRESPONSESIZE
- * @param {Uint8Array} request_raw size:ecc_opaque_ristretto255_sha512_REGISTRATIONREQUESTSIZE
+ * @param {Uint8Array} response (output) size:ecc_opaque_ristretto255_sha512_REGISTRATIONRESPONSESIZE
+ * @param {Uint8Array} request size:ecc_opaque_ristretto255_sha512_REGISTRATIONREQUESTSIZE
  * @param {Uint8Array} server_public_key size:ecc_opaque_ristretto255_sha512_Npk
  * @param {Uint8Array} credential_identifier size:credential_identifier_len
  * @param {number} credential_identifier_len 
  * @param {Uint8Array} oprf_key size:32
  */
 Module.ecc_opaque_ristretto255_sha512_CreateRegistrationResponseWithOprfKey = (
-    response_raw,
-    request_raw,
+    response,
+    request,
     server_public_key,
     credential_identifier,
     credential_identifier_len,
     oprf_key,
 ) => {
-    const ptr_response_raw = mput(response_raw, ecc_opaque_ristretto255_sha512_REGISTRATIONRESPONSESIZE);
-    const ptr_request_raw = mput(request_raw, ecc_opaque_ristretto255_sha512_REGISTRATIONREQUESTSIZE);
+    const ptr_response = mput(response, ecc_opaque_ristretto255_sha512_REGISTRATIONRESPONSESIZE);
+    const ptr_request = mput(request, ecc_opaque_ristretto255_sha512_REGISTRATIONREQUESTSIZE);
     const ptr_server_public_key = mput(server_public_key, ecc_opaque_ristretto255_sha512_Npk);
     const ptr_credential_identifier = mput(credential_identifier, credential_identifier_len);
     const ptr_oprf_key = mput(oprf_key, 32);
     _ecc_opaque_ristretto255_sha512_CreateRegistrationResponseWithOprfKey(
-        ptr_response_raw,
-        ptr_request_raw,
+        ptr_response,
+        ptr_request,
         ptr_server_public_key,
         ptr_credential_identifier,
         credential_identifier_len,
         ptr_oprf_key,
     );
-    mget(response_raw, ptr_response_raw, ecc_opaque_ristretto255_sha512_REGISTRATIONRESPONSESIZE);
-    mfree(ptr_response_raw, ecc_opaque_ristretto255_sha512_REGISTRATIONRESPONSESIZE);
-    mfree(ptr_request_raw, ecc_opaque_ristretto255_sha512_REGISTRATIONREQUESTSIZE);
+    mget(response, ptr_response, ecc_opaque_ristretto255_sha512_REGISTRATIONRESPONSESIZE);
+    mfree(ptr_response, ecc_opaque_ristretto255_sha512_REGISTRATIONRESPONSESIZE);
+    mfree(ptr_request, ecc_opaque_ristretto255_sha512_REGISTRATIONREQUESTSIZE);
     mfree(ptr_server_public_key, ecc_opaque_ristretto255_sha512_Npk);
     mfree(ptr_credential_identifier, credential_identifier_len);
     mfree(ptr_oprf_key, 32);
@@ -3707,45 +3720,45 @@ Module.ecc_opaque_ristretto255_sha512_CreateRegistrationResponseWithOprfKey = (
  * <
  * = 200.
  * 
- * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-05#section-5.1.1.2
+ * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-07#section-5.1.1.2
  *
- * @param {Uint8Array} response_raw (output) a RegistrationResponse structure, size:ecc_opaque_ristretto255_sha512_REGISTRATIONRESPONSESIZE
- * @param {Uint8Array} oprf_key (output) the per-client OPRF key known only to the server, size:32
- * @param {Uint8Array} request_raw a RegistrationRequest structure, size:ecc_opaque_ristretto255_sha512_REGISTRATIONREQUESTSIZE
+ * @param {Uint8Array} response (output) a RegistrationResponse structure, size:ecc_opaque_ristretto255_sha512_REGISTRATIONRESPONSESIZE
+ * @param {Uint8Array} oprf_key (output) the per-client OPRF key known only to the server, size:ecc_opaque_ristretto255_sha512_Nsk
+ * @param {Uint8Array} request a RegistrationRequest structure, size:ecc_opaque_ristretto255_sha512_REGISTRATIONREQUESTSIZE
  * @param {Uint8Array} server_public_key the server's public key, size:ecc_opaque_ristretto255_sha512_Npk
  * @param {Uint8Array} credential_identifier an identifier that uniquely represents the credential being registered, size:credential_identifier_len
  * @param {number} credential_identifier_len the length of `credential_identifier`
  * @param {Uint8Array} oprf_seed the server-side seed of Nh bytes used to generate an oprf_key, size:ecc_opaque_ristretto255_sha512_Nh
  */
 Module.ecc_opaque_ristretto255_sha512_CreateRegistrationResponse = (
-    response_raw,
+    response,
     oprf_key,
-    request_raw,
+    request,
     server_public_key,
     credential_identifier,
     credential_identifier_len,
     oprf_seed,
 ) => {
-    const ptr_response_raw = mput(response_raw, ecc_opaque_ristretto255_sha512_REGISTRATIONRESPONSESIZE);
-    const ptr_oprf_key = mput(oprf_key, 32);
-    const ptr_request_raw = mput(request_raw, ecc_opaque_ristretto255_sha512_REGISTRATIONREQUESTSIZE);
+    const ptr_response = mput(response, ecc_opaque_ristretto255_sha512_REGISTRATIONRESPONSESIZE);
+    const ptr_oprf_key = mput(oprf_key, ecc_opaque_ristretto255_sha512_Nsk);
+    const ptr_request = mput(request, ecc_opaque_ristretto255_sha512_REGISTRATIONREQUESTSIZE);
     const ptr_server_public_key = mput(server_public_key, ecc_opaque_ristretto255_sha512_Npk);
     const ptr_credential_identifier = mput(credential_identifier, credential_identifier_len);
     const ptr_oprf_seed = mput(oprf_seed, ecc_opaque_ristretto255_sha512_Nh);
     _ecc_opaque_ristretto255_sha512_CreateRegistrationResponse(
-        ptr_response_raw,
+        ptr_response,
         ptr_oprf_key,
-        ptr_request_raw,
+        ptr_request,
         ptr_server_public_key,
         ptr_credential_identifier,
         credential_identifier_len,
         ptr_oprf_seed,
     );
-    mget(response_raw, ptr_response_raw, ecc_opaque_ristretto255_sha512_REGISTRATIONRESPONSESIZE);
-    mget(oprf_key, ptr_oprf_key, 32);
-    mfree(ptr_response_raw, ecc_opaque_ristretto255_sha512_REGISTRATIONRESPONSESIZE);
-    mfree(ptr_oprf_key, 32);
-    mfree(ptr_request_raw, ecc_opaque_ristretto255_sha512_REGISTRATIONREQUESTSIZE);
+    mget(response, ptr_response, ecc_opaque_ristretto255_sha512_REGISTRATIONRESPONSESIZE);
+    mget(oprf_key, ptr_oprf_key, ecc_opaque_ristretto255_sha512_Nsk);
+    mfree(ptr_response, ecc_opaque_ristretto255_sha512_REGISTRATIONRESPONSESIZE);
+    mfree(ptr_oprf_key, ecc_opaque_ristretto255_sha512_Nsk);
+    mfree(ptr_request, ecc_opaque_ristretto255_sha512_REGISTRATIONREQUESTSIZE);
     mfree(ptr_server_public_key, ecc_opaque_ristretto255_sha512_Npk);
     mfree(ptr_credential_identifier, credential_identifier_len);
     mfree(ptr_oprf_seed, ecc_opaque_ristretto255_sha512_Nh);
@@ -3759,66 +3772,64 @@ Module.ecc_opaque_ristretto255_sha512_CreateRegistrationResponse = (
  * executes the following function. Since this works in the internal key mode, the
  * "client_private_key" is null.
  * 
- * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-05#section-5.1.1.3
+ * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-07#section-5.1.1.3
  *
- * @param {Uint8Array} record_raw (output) a RegistrationUpload structure, size:ecc_opaque_ristretto255_sha512_REGISTRATIONUPLOADSIZE
+ * @param {Uint8Array} record (output) a RegistrationUpload structure, size:ecc_opaque_ristretto255_sha512_REGISTRATIONUPLOADSIZE
  * @param {Uint8Array} export_key (output) an additional client key, size:ecc_opaque_ristretto255_sha512_Nh
- * @param {Uint8Array} client_private_key the client's private key (always null, internal mode), size:0
  * @param {Uint8Array} password an opaque byte string containing the client's password, size:password_len
  * @param {number} password_len the length of `password`
  * @param {Uint8Array} blind the OPRF scalar value used for blinding, size:ecc_opaque_ristretto255_sha512_Noe
- * @param {Uint8Array} response_raw a RegistrationResponse structure, size:ecc_opaque_ristretto255_sha512_REGISTRATIONRESPONSESIZE
+ * @param {Uint8Array} response a RegistrationResponse structure, size:ecc_opaque_ristretto255_sha512_REGISTRATIONRESPONSESIZE
  * @param {Uint8Array} server_identity the optional encoded server identity, size:server_identity_len
  * @param {number} server_identity_len the length of `server_identity`
  * @param {Uint8Array} client_identity the optional encoded client identity, size:client_identity_len
  * @param {number} client_identity_len the length of `client_identity`
+ * @param {number} mhf 
  * @param {Uint8Array} nonce size:ecc_opaque_ristretto255_sha512_Nn
  */
 Module.ecc_opaque_ristretto255_sha512_FinalizeRequestWithNonce = (
-    record_raw,
+    record,
     export_key,
-    client_private_key,
     password,
     password_len,
     blind,
-    response_raw,
+    response,
     server_identity,
     server_identity_len,
     client_identity,
     client_identity_len,
+    mhf,
     nonce,
 ) => {
-    const ptr_record_raw = mput(record_raw, ecc_opaque_ristretto255_sha512_REGISTRATIONUPLOADSIZE);
+    const ptr_record = mput(record, ecc_opaque_ristretto255_sha512_REGISTRATIONUPLOADSIZE);
     const ptr_export_key = mput(export_key, ecc_opaque_ristretto255_sha512_Nh);
-    const ptr_client_private_key = mput(client_private_key, 0);
     const ptr_password = mput(password, password_len);
     const ptr_blind = mput(blind, ecc_opaque_ristretto255_sha512_Noe);
-    const ptr_response_raw = mput(response_raw, ecc_opaque_ristretto255_sha512_REGISTRATIONRESPONSESIZE);
+    const ptr_response = mput(response, ecc_opaque_ristretto255_sha512_REGISTRATIONRESPONSESIZE);
     const ptr_server_identity = mput(server_identity, server_identity_len);
     const ptr_client_identity = mput(client_identity, client_identity_len);
     const ptr_nonce = mput(nonce, ecc_opaque_ristretto255_sha512_Nn);
     _ecc_opaque_ristretto255_sha512_FinalizeRequestWithNonce(
-        ptr_record_raw,
+        ptr_record,
         ptr_export_key,
-        ptr_client_private_key,
         ptr_password,
         password_len,
         ptr_blind,
-        ptr_response_raw,
+        ptr_response,
         ptr_server_identity,
         server_identity_len,
         ptr_client_identity,
         client_identity_len,
+        mhf,
         ptr_nonce,
     );
-    mget(record_raw, ptr_record_raw, ecc_opaque_ristretto255_sha512_REGISTRATIONUPLOADSIZE);
+    mget(record, ptr_record, ecc_opaque_ristretto255_sha512_REGISTRATIONUPLOADSIZE);
     mget(export_key, ptr_export_key, ecc_opaque_ristretto255_sha512_Nh);
-    mfree(ptr_record_raw, ecc_opaque_ristretto255_sha512_REGISTRATIONUPLOADSIZE);
+    mfree(ptr_record, ecc_opaque_ristretto255_sha512_REGISTRATIONUPLOADSIZE);
     mfree(ptr_export_key, ecc_opaque_ristretto255_sha512_Nh);
-    mfree(ptr_client_private_key, 0);
     mfree(ptr_password, password_len);
     mfree(ptr_blind, ecc_opaque_ristretto255_sha512_Noe);
-    mfree(ptr_response_raw, ecc_opaque_ristretto255_sha512_REGISTRATIONRESPONSESIZE);
+    mfree(ptr_response, ecc_opaque_ristretto255_sha512_REGISTRATIONRESPONSESIZE);
     mfree(ptr_server_identity, server_identity_len);
     mfree(ptr_client_identity, client_identity_len);
     mfree(ptr_nonce, ecc_opaque_ristretto255_sha512_Nn);
@@ -3829,92 +3840,119 @@ Module.ecc_opaque_ristretto255_sha512_FinalizeRequestWithNonce = (
  * executes the following function. Since this works in the internal key mode, the
  * "client_private_key" is null.
  * 
- * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-05#section-5.1.1.3
+ * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-07#section-5.1.1.3
  *
- * @param {Uint8Array} record_raw (output) a RegistrationUpload structure, size:ecc_opaque_ristretto255_sha512_REGISTRATIONUPLOADSIZE
+ * @param {Uint8Array} record (output) a RegistrationUpload structure, size:ecc_opaque_ristretto255_sha512_REGISTRATIONUPLOADSIZE
  * @param {Uint8Array} export_key (output) an additional client key, size:ecc_opaque_ristretto255_sha512_Nh
- * @param {Uint8Array} client_private_key the client's private key (always null, internal mode), size:0
  * @param {Uint8Array} password an opaque byte string containing the client's password, size:password_len
  * @param {number} password_len the length of `password`
  * @param {Uint8Array} blind the OPRF scalar value used for blinding, size:ecc_opaque_ristretto255_sha512_Noe
- * @param {Uint8Array} response_raw a RegistrationResponse structure, size:ecc_opaque_ristretto255_sha512_REGISTRATIONRESPONSESIZE
+ * @param {Uint8Array} response a RegistrationResponse structure, size:ecc_opaque_ristretto255_sha512_REGISTRATIONRESPONSESIZE
  * @param {Uint8Array} server_identity the optional encoded server identity, size:server_identity_len
  * @param {number} server_identity_len the length of `server_identity`
  * @param {Uint8Array} client_identity the optional encoded client identity, size:client_identity_len
  * @param {number} client_identity_len the length of `client_identity`
+ * @param {number} mhf 
  */
 Module.ecc_opaque_ristretto255_sha512_FinalizeRequest = (
-    record_raw,
+    record,
     export_key,
-    client_private_key,
     password,
     password_len,
     blind,
-    response_raw,
+    response,
     server_identity,
     server_identity_len,
     client_identity,
     client_identity_len,
+    mhf,
 ) => {
-    const ptr_record_raw = mput(record_raw, ecc_opaque_ristretto255_sha512_REGISTRATIONUPLOADSIZE);
+    const ptr_record = mput(record, ecc_opaque_ristretto255_sha512_REGISTRATIONUPLOADSIZE);
     const ptr_export_key = mput(export_key, ecc_opaque_ristretto255_sha512_Nh);
-    const ptr_client_private_key = mput(client_private_key, 0);
     const ptr_password = mput(password, password_len);
     const ptr_blind = mput(blind, ecc_opaque_ristretto255_sha512_Noe);
-    const ptr_response_raw = mput(response_raw, ecc_opaque_ristretto255_sha512_REGISTRATIONRESPONSESIZE);
+    const ptr_response = mput(response, ecc_opaque_ristretto255_sha512_REGISTRATIONRESPONSESIZE);
     const ptr_server_identity = mput(server_identity, server_identity_len);
     const ptr_client_identity = mput(client_identity, client_identity_len);
     _ecc_opaque_ristretto255_sha512_FinalizeRequest(
-        ptr_record_raw,
+        ptr_record,
         ptr_export_key,
-        ptr_client_private_key,
         ptr_password,
         password_len,
         ptr_blind,
-        ptr_response_raw,
+        ptr_response,
         ptr_server_identity,
         server_identity_len,
         ptr_client_identity,
         client_identity_len,
+        mhf,
     );
-    mget(record_raw, ptr_record_raw, ecc_opaque_ristretto255_sha512_REGISTRATIONUPLOADSIZE);
+    mget(record, ptr_record, ecc_opaque_ristretto255_sha512_REGISTRATIONUPLOADSIZE);
     mget(export_key, ptr_export_key, ecc_opaque_ristretto255_sha512_Nh);
-    mfree(ptr_record_raw, ecc_opaque_ristretto255_sha512_REGISTRATIONUPLOADSIZE);
+    mfree(ptr_record, ecc_opaque_ristretto255_sha512_REGISTRATIONUPLOADSIZE);
     mfree(ptr_export_key, ecc_opaque_ristretto255_sha512_Nh);
-    mfree(ptr_client_private_key, 0);
     mfree(ptr_password, password_len);
     mfree(ptr_blind, ecc_opaque_ristretto255_sha512_Noe);
-    mfree(ptr_response_raw, ecc_opaque_ristretto255_sha512_REGISTRATIONRESPONSESIZE);
+    mfree(ptr_response, ecc_opaque_ristretto255_sha512_REGISTRATIONRESPONSESIZE);
     mfree(ptr_server_identity, server_identity_len);
     mfree(ptr_client_identity, client_identity_len);
 }
 
 /**
- * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-05#section-6.1.2.1
+ * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-07#section-6.1.2.1
  *
- * @param {Uint8Array} request_raw (output) a CredentialRequest structure, size:ecc_opaque_ristretto255_sha512_CREDENTIALREQUESTSIZE
+ * @param {Uint8Array} request (output) a CredentialRequest structure, size:ecc_opaque_ristretto255_sha512_CREDENTIALREQUESTSIZE
+ * @param {Uint8Array} password an opaque byte string containing the client's password, size:password_len
+ * @param {number} password_len the length of `password`
+ * @param {Uint8Array} blind an OPRF scalar value, size:ecc_opaque_ristretto255_sha512_Noe
+ */
+Module.ecc_opaque_ristretto255_sha512_CreateCredentialRequestWithBlind = (
+    request,
+    password,
+    password_len,
+    blind,
+) => {
+    const ptr_request = mput(request, ecc_opaque_ristretto255_sha512_CREDENTIALREQUESTSIZE);
+    const ptr_password = mput(password, password_len);
+    const ptr_blind = mput(blind, ecc_opaque_ristretto255_sha512_Noe);
+    _ecc_opaque_ristretto255_sha512_CreateCredentialRequestWithBlind(
+        ptr_request,
+        ptr_password,
+        password_len,
+        ptr_blind,
+    );
+    mget(request, ptr_request, ecc_opaque_ristretto255_sha512_CREDENTIALREQUESTSIZE);
+    mfree(ptr_request, ecc_opaque_ristretto255_sha512_CREDENTIALREQUESTSIZE);
+    mfree(ptr_password, password_len);
+    mfree(ptr_blind, ecc_opaque_ristretto255_sha512_Noe);
+}
+
+/**
+ * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-07#section-6.1.2.1
+ *
+ * @param {Uint8Array} request (output) a CredentialRequest structure, size:ecc_opaque_ristretto255_sha512_CREDENTIALREQUESTSIZE
  * @param {Uint8Array} blind (output) an OPRF scalar value, size:ecc_opaque_ristretto255_sha512_Noe
  * @param {Uint8Array} password an opaque byte string containing the client's password, size:password_len
  * @param {number} password_len the length of `password`
  */
 Module.ecc_opaque_ristretto255_sha512_CreateCredentialRequest = (
-    request_raw,
+    request,
     blind,
     password,
     password_len,
 ) => {
-    const ptr_request_raw = mput(request_raw, ecc_opaque_ristretto255_sha512_CREDENTIALREQUESTSIZE);
+    const ptr_request = mput(request, ecc_opaque_ristretto255_sha512_CREDENTIALREQUESTSIZE);
     const ptr_blind = mput(blind, ecc_opaque_ristretto255_sha512_Noe);
     const ptr_password = mput(password, password_len);
     _ecc_opaque_ristretto255_sha512_CreateCredentialRequest(
-        ptr_request_raw,
+        ptr_request,
         ptr_blind,
         ptr_password,
         password_len,
     );
-    mget(request_raw, ptr_request_raw, ecc_opaque_ristretto255_sha512_CREDENTIALREQUESTSIZE);
+    mget(request, ptr_request, ecc_opaque_ristretto255_sha512_CREDENTIALREQUESTSIZE);
     mget(blind, ptr_blind, ecc_opaque_ristretto255_sha512_Noe);
-    mfree(ptr_request_raw, ecc_opaque_ristretto255_sha512_CREDENTIALREQUESTSIZE);
+    mfree(ptr_request, ecc_opaque_ristretto255_sha512_CREDENTIALREQUESTSIZE);
     mfree(ptr_blind, ecc_opaque_ristretto255_sha512_Noe);
     mfree(ptr_password, password_len);
 }
@@ -3938,7 +3976,74 @@ Module.ecc_opaque_ristretto255_sha512_CreateCredentialRequest = (
  * - record.envelope is set to the byte string consisting only of
  * zeros, of length Ne
  * 
- * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-05#section-6.1.2.2
+ * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-07#section-6.1.2.2
+ *
+ * @param {Uint8Array} response_raw (output) size:ecc_opaque_ristretto255_sha512_CREDENTIALRESPONSESIZE
+ * @param {Uint8Array} request_raw size:ecc_opaque_ristretto255_sha512_CREDENTIALREQUESTSIZE
+ * @param {Uint8Array} server_public_key size:ecc_opaque_ristretto255_sha512_Npk
+ * @param {Uint8Array} record_raw size:ecc_opaque_ristretto255_sha512_REGISTRATIONUPLOADSIZE
+ * @param {Uint8Array} credential_identifier size:credential_identifier_len
+ * @param {number} credential_identifier_len 
+ * @param {Uint8Array} oprf_seed size:ecc_opaque_ristretto255_sha512_Nh
+ * @param {Uint8Array} masking_nonce size:ecc_opaque_ristretto255_sha512_Nn
+ */
+Module.ecc_opaque_ristretto255_sha512_CreateCredentialResponseWithMasking = (
+    response_raw,
+    request_raw,
+    server_public_key,
+    record_raw,
+    credential_identifier,
+    credential_identifier_len,
+    oprf_seed,
+    masking_nonce,
+) => {
+    const ptr_response_raw = mput(response_raw, ecc_opaque_ristretto255_sha512_CREDENTIALRESPONSESIZE);
+    const ptr_request_raw = mput(request_raw, ecc_opaque_ristretto255_sha512_CREDENTIALREQUESTSIZE);
+    const ptr_server_public_key = mput(server_public_key, ecc_opaque_ristretto255_sha512_Npk);
+    const ptr_record_raw = mput(record_raw, ecc_opaque_ristretto255_sha512_REGISTRATIONUPLOADSIZE);
+    const ptr_credential_identifier = mput(credential_identifier, credential_identifier_len);
+    const ptr_oprf_seed = mput(oprf_seed, ecc_opaque_ristretto255_sha512_Nh);
+    const ptr_masking_nonce = mput(masking_nonce, ecc_opaque_ristretto255_sha512_Nn);
+    _ecc_opaque_ristretto255_sha512_CreateCredentialResponseWithMasking(
+        ptr_response_raw,
+        ptr_request_raw,
+        ptr_server_public_key,
+        ptr_record_raw,
+        ptr_credential_identifier,
+        credential_identifier_len,
+        ptr_oprf_seed,
+        ptr_masking_nonce,
+    );
+    mget(response_raw, ptr_response_raw, ecc_opaque_ristretto255_sha512_CREDENTIALRESPONSESIZE);
+    mfree(ptr_response_raw, ecc_opaque_ristretto255_sha512_CREDENTIALRESPONSESIZE);
+    mfree(ptr_request_raw, ecc_opaque_ristretto255_sha512_CREDENTIALREQUESTSIZE);
+    mfree(ptr_server_public_key, ecc_opaque_ristretto255_sha512_Npk);
+    mfree(ptr_record_raw, ecc_opaque_ristretto255_sha512_REGISTRATIONUPLOADSIZE);
+    mfree(ptr_credential_identifier, credential_identifier_len);
+    mfree(ptr_oprf_seed, ecc_opaque_ristretto255_sha512_Nh);
+    mfree(ptr_masking_nonce, ecc_opaque_ristretto255_sha512_Nn);
+}
+
+/**
+ * In order to make this method not to use dynamic memory allocation, there is a
+ * limit of credential_identifier_len
+ * <
+ * = 200.
+ * 
+ * There are two scenarios to handle for the construction of a
+ * CredentialResponse object: either the record for the client exists
+ * (corresponding to a properly registered client), or it was never
+ * created (corresponding to a client that has yet to register).
+ * 
+ * In the case of a record that does not exist, the server SHOULD invoke
+ * the CreateCredentialResponse function where the record argument is
+ * configured so that:
+ * 
+ * - record.masking_key is set to a random byte string of length Nh, and
+ * - record.envelope is set to the byte string consisting only of
+ * zeros, of length Ne
+ * 
+ * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-07#section-6.1.2.2
  *
  * @param {Uint8Array} response_raw (output) size:ecc_opaque_ristretto255_sha512_CREDENTIALRESPONSESIZE
  * @param {Uint8Array} request_raw size:ecc_opaque_ristretto255_sha512_CREDENTIALREQUESTSIZE
@@ -3982,7 +4087,7 @@ Module.ecc_opaque_ristretto255_sha512_CreateCredentialResponse = (
 }
 
 /**
- * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-05#section-6.1.2.3
+ * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-07#section-6.1.2.3
  *
  * @param {Uint8Array} client_private_key (output) size:ecc_opaque_ristretto255_sha512_Nsk
  * @param {Uint8Array} server_public_key (output) size:ecc_opaque_ristretto255_sha512_Npk
@@ -3995,6 +4100,7 @@ Module.ecc_opaque_ristretto255_sha512_CreateCredentialResponse = (
  * @param {number} server_identity_len 
  * @param {Uint8Array} client_identity size:client_identity_len
  * @param {number} client_identity_len 
+ * @param {number} mhf 
  * @return {number} on success returns 0, else -1.
  */
 Module.ecc_opaque_ristretto255_sha512_RecoverCredentials = (
@@ -4009,6 +4115,7 @@ Module.ecc_opaque_ristretto255_sha512_RecoverCredentials = (
     server_identity_len,
     client_identity,
     client_identity_len,
+    mhf,
 ) => {
     const ptr_client_private_key = mput(client_private_key, ecc_opaque_ristretto255_sha512_Nsk);
     const ptr_server_public_key = mput(server_public_key, ecc_opaque_ristretto255_sha512_Npk);
@@ -4030,6 +4137,7 @@ Module.ecc_opaque_ristretto255_sha512_RecoverCredentials = (
         server_identity_len,
         ptr_client_identity,
         client_identity_len,
+        mhf,
     );
     mget(client_private_key, ptr_client_private_key, ecc_opaque_ristretto255_sha512_Nsk);
     mget(server_public_key, ptr_server_public_key, ecc_opaque_ristretto255_sha512_Npk);
@@ -4046,7 +4154,7 @@ Module.ecc_opaque_ristretto255_sha512_RecoverCredentials = (
 }
 
 /**
- * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-05#section-6.2.2.1
+ * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-07#section-6.2.2.1
  *
  * @param {Uint8Array} out (output) size:length
  * @param {Uint8Array} secret size:64
@@ -4086,7 +4194,7 @@ Module.ecc_opaque_ristretto255_sha512_3DH_Expand_Label = (
 }
 
 /**
- * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-05#section-6.2.2.1
+ * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-07#section-6.2.2.1
  *
  * @param {Uint8Array} out (output) size:ecc_opaque_ristretto255_sha512_Nx
  * @param {Uint8Array} secret size:64
@@ -4129,7 +4237,7 @@ Module.ecc_opaque_ristretto255_sha512_3DH_Derive_Secret = (
  * transcript, such as configuration parameters or application-specific
  * info, e.g. "appXYZ-v1.2.3".
  * 
- * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-05#section-6.2.2.1
+ * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-07#section-6.2.2.1
  *
  * @param {Uint8Array} preamble (output) the protocol transcript with identities and messages, size:preamble_len
  * @param {number} preamble_len 
@@ -4137,12 +4245,12 @@ Module.ecc_opaque_ristretto255_sha512_3DH_Derive_Secret = (
  * @param {number} context_len the length of `context`
  * @param {Uint8Array} client_identity the optional encoded client identity, size:client_identity_len
  * @param {number} client_identity_len the length of `client_identity`
- * @param {Uint8Array} ke1 a KE1 message structure, size:ke1_len
- * @param {number} ke1_len the length of `ke1`
+ * @param {Uint8Array} client_public_key size:ecc_opaque_ristretto255_sha512_Npk
+ * @param {Uint8Array} ke1 a KE1 message structure, size:ecc_opaque_ristretto255_sha512_KE1SIZE
  * @param {Uint8Array} server_identity the optional encoded server identity, size:server_identity_len
  * @param {number} server_identity_len the length of `server_identity`
- * @param {Uint8Array} inner_ke2 an inner_ke2 structure as defined in KE2, size:inner_ke2_len
- * @param {number} inner_ke2_len the length of `inner_ke2`
+ * @param {Uint8Array} server_public_key size:ecc_opaque_ristretto255_sha512_Npk
+ * @param {Uint8Array} ke2 a ke2 structure as defined in KE2, size:ecc_opaque_ristretto255_sha512_KE2SIZE
  * @return {number} the protocol transcript with identities and messages
  */
 Module.ecc_opaque_ristretto255_sha512_3DH_Preamble = (
@@ -4152,19 +4260,21 @@ Module.ecc_opaque_ristretto255_sha512_3DH_Preamble = (
     context_len,
     client_identity,
     client_identity_len,
+    client_public_key,
     ke1,
-    ke1_len,
     server_identity,
     server_identity_len,
-    inner_ke2,
-    inner_ke2_len,
+    server_public_key,
+    ke2,
 ) => {
     const ptr_preamble = mput(preamble, preamble_len);
     const ptr_context = mput(context, context_len);
     const ptr_client_identity = mput(client_identity, client_identity_len);
-    const ptr_ke1 = mput(ke1, ke1_len);
+    const ptr_client_public_key = mput(client_public_key, ecc_opaque_ristretto255_sha512_Npk);
+    const ptr_ke1 = mput(ke1, ecc_opaque_ristretto255_sha512_KE1SIZE);
     const ptr_server_identity = mput(server_identity, server_identity_len);
-    const ptr_inner_ke2 = mput(inner_ke2, inner_ke2_len);
+    const ptr_server_public_key = mput(server_public_key, ecc_opaque_ristretto255_sha512_Npk);
+    const ptr_ke2 = mput(ke2, ecc_opaque_ristretto255_sha512_KE2SIZE);
     const fun_ret = _ecc_opaque_ristretto255_sha512_3DH_Preamble(
         ptr_preamble,
         preamble_len,
@@ -4172,20 +4282,22 @@ Module.ecc_opaque_ristretto255_sha512_3DH_Preamble = (
         context_len,
         ptr_client_identity,
         client_identity_len,
+        ptr_client_public_key,
         ptr_ke1,
-        ke1_len,
         ptr_server_identity,
         server_identity_len,
-        ptr_inner_ke2,
-        inner_ke2_len,
+        ptr_server_public_key,
+        ptr_ke2,
     );
     mget(preamble, ptr_preamble, preamble_len);
     mfree(ptr_preamble, preamble_len);
     mfree(ptr_context, context_len);
     mfree(ptr_client_identity, client_identity_len);
-    mfree(ptr_ke1, ke1_len);
+    mfree(ptr_client_public_key, ecc_opaque_ristretto255_sha512_Npk);
+    mfree(ptr_ke1, ecc_opaque_ristretto255_sha512_KE1SIZE);
     mfree(ptr_server_identity, server_identity_len);
-    mfree(ptr_inner_ke2, inner_ke2_len);
+    mfree(ptr_server_public_key, ecc_opaque_ristretto255_sha512_Npk);
+    mfree(ptr_ke2, ecc_opaque_ristretto255_sha512_KE2SIZE);
     return fun_ret;
 }
 
@@ -4193,7 +4305,7 @@ Module.ecc_opaque_ristretto255_sha512_3DH_Preamble = (
  * Computes the OPAQUE-3DH shared secret derived during the key
  * exchange protocol.
  * 
- * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-05#section-6.2.2.2
+ * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-07#section-6.2.2.2
  *
  * @param {Uint8Array} ikm (output) size:96
  * @param {Uint8Array} sk1 size:32
@@ -4239,7 +4351,7 @@ Module.ecc_opaque_ristretto255_sha512_3DH_TripleDHIKM = (
 }
 
 /**
- * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-05#section-6.2.2.2
+ * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-07#section-6.2.2.2
  *
  * @param {Uint8Array} km2 (output) size:64
  * @param {Uint8Array} km3 (output) size:64
@@ -4283,45 +4395,87 @@ Module.ecc_opaque_ristretto255_sha512_3DH_DeriveKeys = (
 }
 
 /**
- * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-05#section-6.2.3
+ * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-07#section-6.2.3
  *
- * @param {Uint8Array} ke1_raw (output) a KE1 message structure, size:ecc_opaque_ristretto255_sha512_KE1SIZE
- * @param {Uint8Array} state_raw (input, output) a ClientState structure, size:ecc_opaque_ristretto255_sha512_CLIENTSTATESIZE
- * @param {Uint8Array} client_identity the optional encoded client identity, which is null if not specified, size:client_identity_len
- * @param {number} client_identity_len the length of `client_identity`
+ * @param {Uint8Array} ke1 (output) a KE1 message structure, size:ecc_opaque_ristretto255_sha512_KE1SIZE
+ * @param {Uint8Array} state (input, output) a ClientState structure, size:ecc_opaque_ristretto255_sha512_CLIENTSTATESIZE
+ * @param {Uint8Array} password an opaque byte string containing the client's password, size:password_len
+ * @param {number} password_len the length of `password`
+ * @param {Uint8Array} blind size:ecc_opaque_ristretto255_sha512_Noe
+ * @param {Uint8Array} client_nonce size:ecc_opaque_ristretto255_sha512_Nn
+ * @param {Uint8Array} client_secret size:ecc_opaque_ristretto255_sha512_Nsk
+ * @param {Uint8Array} client_keyshare size:ecc_opaque_ristretto255_sha512_Npk
+ */
+Module.ecc_opaque_ristretto255_sha512_3DH_ClientInitWithSecrets = (
+    ke1,
+    state,
+    password,
+    password_len,
+    blind,
+    client_nonce,
+    client_secret,
+    client_keyshare,
+) => {
+    const ptr_ke1 = mput(ke1, ecc_opaque_ristretto255_sha512_KE1SIZE);
+    const ptr_state = mput(state, ecc_opaque_ristretto255_sha512_CLIENTSTATESIZE);
+    const ptr_password = mput(password, password_len);
+    const ptr_blind = mput(blind, ecc_opaque_ristretto255_sha512_Noe);
+    const ptr_client_nonce = mput(client_nonce, ecc_opaque_ristretto255_sha512_Nn);
+    const ptr_client_secret = mput(client_secret, ecc_opaque_ristretto255_sha512_Nsk);
+    const ptr_client_keyshare = mput(client_keyshare, ecc_opaque_ristretto255_sha512_Npk);
+    _ecc_opaque_ristretto255_sha512_3DH_ClientInitWithSecrets(
+        ptr_ke1,
+        ptr_state,
+        ptr_password,
+        password_len,
+        ptr_blind,
+        ptr_client_nonce,
+        ptr_client_secret,
+        ptr_client_keyshare,
+    );
+    mget(ke1, ptr_ke1, ecc_opaque_ristretto255_sha512_KE1SIZE);
+    mget(state, ptr_state, ecc_opaque_ristretto255_sha512_CLIENTSTATESIZE);
+    mfree(ptr_ke1, ecc_opaque_ristretto255_sha512_KE1SIZE);
+    mfree(ptr_state, ecc_opaque_ristretto255_sha512_CLIENTSTATESIZE);
+    mfree(ptr_password, password_len);
+    mfree(ptr_blind, ecc_opaque_ristretto255_sha512_Noe);
+    mfree(ptr_client_nonce, ecc_opaque_ristretto255_sha512_Nn);
+    mfree(ptr_client_secret, ecc_opaque_ristretto255_sha512_Nsk);
+    mfree(ptr_client_keyshare, ecc_opaque_ristretto255_sha512_Npk);
+}
+
+/**
+ * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-07#section-6.2.3
+ *
+ * @param {Uint8Array} ke1 (output) a KE1 message structure, size:ecc_opaque_ristretto255_sha512_KE1SIZE
+ * @param {Uint8Array} state (input, output) a ClientState structure, size:ecc_opaque_ristretto255_sha512_CLIENTSTATESIZE
  * @param {Uint8Array} password an opaque byte string containing the client's password, size:password_len
  * @param {number} password_len the length of `password`
  */
 Module.ecc_opaque_ristretto255_sha512_3DH_ClientInit = (
-    ke1_raw,
-    state_raw,
-    client_identity,
-    client_identity_len,
+    ke1,
+    state,
     password,
     password_len,
 ) => {
-    const ptr_ke1_raw = mput(ke1_raw, ecc_opaque_ristretto255_sha512_KE1SIZE);
-    const ptr_state_raw = mput(state_raw, ecc_opaque_ristretto255_sha512_CLIENTSTATESIZE);
-    const ptr_client_identity = mput(client_identity, client_identity_len);
+    const ptr_ke1 = mput(ke1, ecc_opaque_ristretto255_sha512_KE1SIZE);
+    const ptr_state = mput(state, ecc_opaque_ristretto255_sha512_CLIENTSTATESIZE);
     const ptr_password = mput(password, password_len);
     _ecc_opaque_ristretto255_sha512_3DH_ClientInit(
-        ptr_ke1_raw,
-        ptr_state_raw,
-        ptr_client_identity,
-        client_identity_len,
+        ptr_ke1,
+        ptr_state,
         ptr_password,
         password_len,
     );
-    mget(ke1_raw, ptr_ke1_raw, ecc_opaque_ristretto255_sha512_KE1SIZE);
-    mget(state_raw, ptr_state_raw, ecc_opaque_ristretto255_sha512_CLIENTSTATESIZE);
-    mfree(ptr_ke1_raw, ecc_opaque_ristretto255_sha512_KE1SIZE);
-    mfree(ptr_state_raw, ecc_opaque_ristretto255_sha512_CLIENTSTATESIZE);
-    mfree(ptr_client_identity, client_identity_len);
+    mget(ke1, ptr_ke1, ecc_opaque_ristretto255_sha512_KE1SIZE);
+    mget(state, ptr_state, ecc_opaque_ristretto255_sha512_CLIENTSTATESIZE);
+    mfree(ptr_ke1, ecc_opaque_ristretto255_sha512_KE1SIZE);
+    mfree(ptr_state, ecc_opaque_ristretto255_sha512_CLIENTSTATESIZE);
     mfree(ptr_password, password_len);
 }
 
 /**
- * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-05#section-6.2.3
+ * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-07#section-6.2.3
  *
  * @param {Uint8Array} ke3_raw (output) a KE3 message structure, size:ecc_opaque_ristretto255_sha512_KE3SIZE
  * @param {Uint8Array} session_key (output) the session's shared secret, size:64
@@ -4335,7 +4489,10 @@ Module.ecc_opaque_ristretto255_sha512_3DH_ClientInit = (
  * @param {Uint8Array} server_identity the optional encoded server identity, which is set
  * to server_public_key if not specified, size:server_identity_len
  * @param {number} server_identity_len the length of `server_identity`
- * @param {Uint8Array} ke2_raw a KE2 message structure, size:ecc_opaque_ristretto255_sha512_KE2SIZE
+ * @param {Uint8Array} ke2 a KE2 message structure, size:ecc_opaque_ristretto255_sha512_KE2SIZE
+ * @param {number} mhf 
+ * @param {Uint8Array} context the application specific context, size:context_len
+ * @param {number} context_len the length of `context`
  * @return {number} 0 if is able to recover credentials and authenticate with the server, else -1
  */
 Module.ecc_opaque_ristretto255_sha512_3DH_ClientFinish = (
@@ -4349,7 +4506,10 @@ Module.ecc_opaque_ristretto255_sha512_3DH_ClientFinish = (
     client_identity_len,
     server_identity,
     server_identity_len,
-    ke2_raw,
+    ke2,
+    mhf,
+    context,
+    context_len,
 ) => {
     const ptr_ke3_raw = mput(ke3_raw, ecc_opaque_ristretto255_sha512_KE3SIZE);
     const ptr_session_key = mput(session_key, 64);
@@ -4358,7 +4518,8 @@ Module.ecc_opaque_ristretto255_sha512_3DH_ClientFinish = (
     const ptr_password = mput(password, password_len);
     const ptr_client_identity = mput(client_identity, client_identity_len);
     const ptr_server_identity = mput(server_identity, server_identity_len);
-    const ptr_ke2_raw = mput(ke2_raw, ecc_opaque_ristretto255_sha512_KE2SIZE);
+    const ptr_ke2 = mput(ke2, ecc_opaque_ristretto255_sha512_KE2SIZE);
+    const ptr_context = mput(context, context_len);
     const fun_ret = _ecc_opaque_ristretto255_sha512_3DH_ClientFinish(
         ptr_ke3_raw,
         ptr_session_key,
@@ -4370,7 +4531,10 @@ Module.ecc_opaque_ristretto255_sha512_3DH_ClientFinish = (
         client_identity_len,
         ptr_server_identity,
         server_identity_len,
-        ptr_ke2_raw,
+        ptr_ke2,
+        mhf,
+        ptr_context,
+        context_len,
     );
     mget(ke3_raw, ptr_ke3_raw, ecc_opaque_ristretto255_sha512_KE3SIZE);
     mget(session_key, ptr_session_key, 64);
@@ -4383,39 +4547,82 @@ Module.ecc_opaque_ristretto255_sha512_3DH_ClientFinish = (
     mfree(ptr_password, password_len);
     mfree(ptr_client_identity, client_identity_len);
     mfree(ptr_server_identity, server_identity_len);
-    mfree(ptr_ke2_raw, ecc_opaque_ristretto255_sha512_KE2SIZE);
+    mfree(ptr_ke2, ecc_opaque_ristretto255_sha512_KE2SIZE);
+    mfree(ptr_context, context_len);
     return fun_ret;
 }
 
 /**
- * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-05#section-6.2.3.1
+ * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-07#section-6.2.3.1
  *
- * @param {Uint8Array} ke1_raw (output) size:ecc_opaque_ristretto255_sha512_KE1SIZE
- * @param {Uint8Array} state_raw (input, output) size:ecc_opaque_ristretto255_sha512_CLIENTSTATESIZE
+ * @param {Uint8Array} ke1 (output) size:ecc_opaque_ristretto255_sha512_KE1SIZE
+ * @param {Uint8Array} state (input, output) size:ecc_opaque_ristretto255_sha512_CLIENTSTATESIZE
+ * @param {Uint8Array} credential_request size:ecc_opaque_ristretto255_sha512_CREDENTIALREQUESTSIZE
+ * @param {Uint8Array} client_nonce size:ecc_opaque_ristretto255_sha512_Nn
+ * @param {Uint8Array} client_secret size:ecc_opaque_ristretto255_sha512_Nsk
+ * @param {Uint8Array} client_keyshare size:ecc_opaque_ristretto255_sha512_Npk
+ */
+Module.ecc_opaque_ristretto255_sha512_3DH_StartWithSecrets = (
+    ke1,
+    state,
+    credential_request,
+    client_nonce,
+    client_secret,
+    client_keyshare,
+) => {
+    const ptr_ke1 = mput(ke1, ecc_opaque_ristretto255_sha512_KE1SIZE);
+    const ptr_state = mput(state, ecc_opaque_ristretto255_sha512_CLIENTSTATESIZE);
+    const ptr_credential_request = mput(credential_request, ecc_opaque_ristretto255_sha512_CREDENTIALREQUESTSIZE);
+    const ptr_client_nonce = mput(client_nonce, ecc_opaque_ristretto255_sha512_Nn);
+    const ptr_client_secret = mput(client_secret, ecc_opaque_ristretto255_sha512_Nsk);
+    const ptr_client_keyshare = mput(client_keyshare, ecc_opaque_ristretto255_sha512_Npk);
+    _ecc_opaque_ristretto255_sha512_3DH_StartWithSecrets(
+        ptr_ke1,
+        ptr_state,
+        ptr_credential_request,
+        ptr_client_nonce,
+        ptr_client_secret,
+        ptr_client_keyshare,
+    );
+    mget(ke1, ptr_ke1, ecc_opaque_ristretto255_sha512_KE1SIZE);
+    mget(state, ptr_state, ecc_opaque_ristretto255_sha512_CLIENTSTATESIZE);
+    mfree(ptr_ke1, ecc_opaque_ristretto255_sha512_KE1SIZE);
+    mfree(ptr_state, ecc_opaque_ristretto255_sha512_CLIENTSTATESIZE);
+    mfree(ptr_credential_request, ecc_opaque_ristretto255_sha512_CREDENTIALREQUESTSIZE);
+    mfree(ptr_client_nonce, ecc_opaque_ristretto255_sha512_Nn);
+    mfree(ptr_client_secret, ecc_opaque_ristretto255_sha512_Nsk);
+    mfree(ptr_client_keyshare, ecc_opaque_ristretto255_sha512_Npk);
+}
+
+/**
+ * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-07#section-6.2.3.1
+ *
+ * @param {Uint8Array} ke1 (output) size:ecc_opaque_ristretto255_sha512_KE1SIZE
+ * @param {Uint8Array} state (input, output) size:ecc_opaque_ristretto255_sha512_CLIENTSTATESIZE
  * @param {Uint8Array} credential_request size:ecc_opaque_ristretto255_sha512_CREDENTIALREQUESTSIZE
  */
 Module.ecc_opaque_ristretto255_sha512_3DH_Start = (
-    ke1_raw,
-    state_raw,
+    ke1,
+    state,
     credential_request,
 ) => {
-    const ptr_ke1_raw = mput(ke1_raw, ecc_opaque_ristretto255_sha512_KE1SIZE);
-    const ptr_state_raw = mput(state_raw, ecc_opaque_ristretto255_sha512_CLIENTSTATESIZE);
+    const ptr_ke1 = mput(ke1, ecc_opaque_ristretto255_sha512_KE1SIZE);
+    const ptr_state = mput(state, ecc_opaque_ristretto255_sha512_CLIENTSTATESIZE);
     const ptr_credential_request = mput(credential_request, ecc_opaque_ristretto255_sha512_CREDENTIALREQUESTSIZE);
     _ecc_opaque_ristretto255_sha512_3DH_Start(
-        ptr_ke1_raw,
-        ptr_state_raw,
+        ptr_ke1,
+        ptr_state,
         ptr_credential_request,
     );
-    mget(ke1_raw, ptr_ke1_raw, ecc_opaque_ristretto255_sha512_KE1SIZE);
-    mget(state_raw, ptr_state_raw, ecc_opaque_ristretto255_sha512_CLIENTSTATESIZE);
-    mfree(ptr_ke1_raw, ecc_opaque_ristretto255_sha512_KE1SIZE);
-    mfree(ptr_state_raw, ecc_opaque_ristretto255_sha512_CLIENTSTATESIZE);
+    mget(ke1, ptr_ke1, ecc_opaque_ristretto255_sha512_KE1SIZE);
+    mget(state, ptr_state, ecc_opaque_ristretto255_sha512_CLIENTSTATESIZE);
+    mfree(ptr_ke1, ecc_opaque_ristretto255_sha512_KE1SIZE);
+    mfree(ptr_state, ecc_opaque_ristretto255_sha512_CLIENTSTATESIZE);
     mfree(ptr_credential_request, ecc_opaque_ristretto255_sha512_CREDENTIALREQUESTSIZE);
 }
 
 /**
- * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-05#section-6.2.3.1
+ * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-07#section-6.2.3.1
 
  *
  * @param {Uint8Array} ke3_raw (output) size:ecc_opaque_ristretto255_sha512_KE3SIZE
@@ -4485,7 +4692,7 @@ Module.ecc_opaque_ristretto255_sha512_3DH_ClientFinalize = (
 }
 
 /**
- * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-05#section-6.2.4
+ * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-07#section-6.2.4
  *
  * @param {Uint8Array} ke2_raw (output) a KE2 structure, size:ecc_opaque_ristretto255_sha512_KE2SIZE
  * @param {Uint8Array} state_raw (input, output) a ServerState structure, size:ecc_opaque_ristretto255_sha512_SERVERSTATESIZE
@@ -4494,6 +4701,111 @@ Module.ecc_opaque_ristretto255_sha512_3DH_ClientFinalize = (
  * @param {number} server_identity_len the length of `server_identity`
  * @param {Uint8Array} server_private_key the server's private key, size:ecc_opaque_ristretto255_sha512_Nsk
  * @param {Uint8Array} server_public_key the server's public key, size:ecc_opaque_ristretto255_sha512_Npk
+ * @param {Uint8Array} client_identity the optional encoded server identity, which is set to
+ * client_public_key if null, size:client_identity_len
+ * @param {number} client_identity_len the length of `client_identity`
+ * @param {Uint8Array} record_raw the client's RegistrationUpload structure, size:ecc_opaque_ristretto255_sha512_REGISTRATIONUPLOADSIZE
+ * @param {Uint8Array} credential_identifier an identifier that uniquely represents the credential
+ * being registered, size:credential_identifier_len
+ * @param {number} credential_identifier_len the length of `credential_identifier`
+ * @param {Uint8Array} oprf_seed the server-side seed of Nh bytes used to generate an oprf_key, size:ecc_opaque_ristretto255_sha512_Nh
+ * @param {Uint8Array} ke1_raw a KE1 message structure, size:ecc_opaque_ristretto255_sha512_KE1SIZE
+ * @param {Uint8Array} context the application specific context, size:context_len
+ * @param {number} context_len the length of `context`
+ * @param {Uint8Array} masking_nonce size:ecc_opaque_ristretto255_sha512_Nn
+ * @param {Uint8Array} server_nonce size:ecc_opaque_ristretto255_sha512_Nn
+ * @param {Uint8Array} server_secret size:ecc_opaque_ristretto255_sha512_Nsk
+ * @param {Uint8Array} server_keyshare size:ecc_opaque_ristretto255_sha512_Npk
+ */
+Module.ecc_opaque_ristretto255_sha512_3DH_ServerInitWithSecrets = (
+    ke2_raw,
+    state_raw,
+    server_identity,
+    server_identity_len,
+    server_private_key,
+    server_public_key,
+    client_identity,
+    client_identity_len,
+    record_raw,
+    credential_identifier,
+    credential_identifier_len,
+    oprf_seed,
+    ke1_raw,
+    context,
+    context_len,
+    masking_nonce,
+    server_nonce,
+    server_secret,
+    server_keyshare,
+) => {
+    const ptr_ke2_raw = mput(ke2_raw, ecc_opaque_ristretto255_sha512_KE2SIZE);
+    const ptr_state_raw = mput(state_raw, ecc_opaque_ristretto255_sha512_SERVERSTATESIZE);
+    const ptr_server_identity = mput(server_identity, server_identity_len);
+    const ptr_server_private_key = mput(server_private_key, ecc_opaque_ristretto255_sha512_Nsk);
+    const ptr_server_public_key = mput(server_public_key, ecc_opaque_ristretto255_sha512_Npk);
+    const ptr_client_identity = mput(client_identity, client_identity_len);
+    const ptr_record_raw = mput(record_raw, ecc_opaque_ristretto255_sha512_REGISTRATIONUPLOADSIZE);
+    const ptr_credential_identifier = mput(credential_identifier, credential_identifier_len);
+    const ptr_oprf_seed = mput(oprf_seed, ecc_opaque_ristretto255_sha512_Nh);
+    const ptr_ke1_raw = mput(ke1_raw, ecc_opaque_ristretto255_sha512_KE1SIZE);
+    const ptr_context = mput(context, context_len);
+    const ptr_masking_nonce = mput(masking_nonce, ecc_opaque_ristretto255_sha512_Nn);
+    const ptr_server_nonce = mput(server_nonce, ecc_opaque_ristretto255_sha512_Nn);
+    const ptr_server_secret = mput(server_secret, ecc_opaque_ristretto255_sha512_Nsk);
+    const ptr_server_keyshare = mput(server_keyshare, ecc_opaque_ristretto255_sha512_Npk);
+    _ecc_opaque_ristretto255_sha512_3DH_ServerInitWithSecrets(
+        ptr_ke2_raw,
+        ptr_state_raw,
+        ptr_server_identity,
+        server_identity_len,
+        ptr_server_private_key,
+        ptr_server_public_key,
+        ptr_client_identity,
+        client_identity_len,
+        ptr_record_raw,
+        ptr_credential_identifier,
+        credential_identifier_len,
+        ptr_oprf_seed,
+        ptr_ke1_raw,
+        ptr_context,
+        context_len,
+        ptr_masking_nonce,
+        ptr_server_nonce,
+        ptr_server_secret,
+        ptr_server_keyshare,
+    );
+    mget(ke2_raw, ptr_ke2_raw, ecc_opaque_ristretto255_sha512_KE2SIZE);
+    mget(state_raw, ptr_state_raw, ecc_opaque_ristretto255_sha512_SERVERSTATESIZE);
+    mfree(ptr_ke2_raw, ecc_opaque_ristretto255_sha512_KE2SIZE);
+    mfree(ptr_state_raw, ecc_opaque_ristretto255_sha512_SERVERSTATESIZE);
+    mfree(ptr_server_identity, server_identity_len);
+    mfree(ptr_server_private_key, ecc_opaque_ristretto255_sha512_Nsk);
+    mfree(ptr_server_public_key, ecc_opaque_ristretto255_sha512_Npk);
+    mfree(ptr_client_identity, client_identity_len);
+    mfree(ptr_record_raw, ecc_opaque_ristretto255_sha512_REGISTRATIONUPLOADSIZE);
+    mfree(ptr_credential_identifier, credential_identifier_len);
+    mfree(ptr_oprf_seed, ecc_opaque_ristretto255_sha512_Nh);
+    mfree(ptr_ke1_raw, ecc_opaque_ristretto255_sha512_KE1SIZE);
+    mfree(ptr_context, context_len);
+    mfree(ptr_masking_nonce, ecc_opaque_ristretto255_sha512_Nn);
+    mfree(ptr_server_nonce, ecc_opaque_ristretto255_sha512_Nn);
+    mfree(ptr_server_secret, ecc_opaque_ristretto255_sha512_Nsk);
+    mfree(ptr_server_keyshare, ecc_opaque_ristretto255_sha512_Npk);
+}
+
+/**
+ * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-07#section-6.2.4
+ *
+ * @param {Uint8Array} ke2_raw (output) a KE2 structure, size:ecc_opaque_ristretto255_sha512_KE2SIZE
+ * @param {Uint8Array} state_raw (input, output) a ServerState structure, size:ecc_opaque_ristretto255_sha512_SERVERSTATESIZE
+ * @param {Uint8Array} server_identity the optional encoded server identity, which is set to
+ * server_public_key if null, size:server_identity_len
+ * @param {number} server_identity_len the length of `server_identity`
+ * @param {Uint8Array} server_private_key the server's private key, size:ecc_opaque_ristretto255_sha512_Nsk
+ * @param {Uint8Array} server_public_key the server's public key, size:ecc_opaque_ristretto255_sha512_Npk
+ * @param {Uint8Array} client_identity the optional encoded server identity, which is set to
+ * client_public_key if null, size:client_identity_len
+ * @param {number} client_identity_len the length of `client_identity`
  * @param {Uint8Array} record_raw the client's RegistrationUpload structure, size:ecc_opaque_ristretto255_sha512_REGISTRATIONUPLOADSIZE
  * @param {Uint8Array} credential_identifier an identifier that uniquely represents the credential
  * being registered, size:credential_identifier_len
@@ -4510,6 +4822,8 @@ Module.ecc_opaque_ristretto255_sha512_3DH_ServerInit = (
     server_identity_len,
     server_private_key,
     server_public_key,
+    client_identity,
+    client_identity_len,
     record_raw,
     credential_identifier,
     credential_identifier_len,
@@ -4523,6 +4837,7 @@ Module.ecc_opaque_ristretto255_sha512_3DH_ServerInit = (
     const ptr_server_identity = mput(server_identity, server_identity_len);
     const ptr_server_private_key = mput(server_private_key, ecc_opaque_ristretto255_sha512_Nsk);
     const ptr_server_public_key = mput(server_public_key, ecc_opaque_ristretto255_sha512_Npk);
+    const ptr_client_identity = mput(client_identity, client_identity_len);
     const ptr_record_raw = mput(record_raw, ecc_opaque_ristretto255_sha512_REGISTRATIONUPLOADSIZE);
     const ptr_credential_identifier = mput(credential_identifier, credential_identifier_len);
     const ptr_oprf_seed = mput(oprf_seed, ecc_opaque_ristretto255_sha512_Nh);
@@ -4535,6 +4850,8 @@ Module.ecc_opaque_ristretto255_sha512_3DH_ServerInit = (
         server_identity_len,
         ptr_server_private_key,
         ptr_server_public_key,
+        ptr_client_identity,
+        client_identity_len,
         ptr_record_raw,
         ptr_credential_identifier,
         credential_identifier_len,
@@ -4550,6 +4867,7 @@ Module.ecc_opaque_ristretto255_sha512_3DH_ServerInit = (
     mfree(ptr_server_identity, server_identity_len);
     mfree(ptr_server_private_key, ecc_opaque_ristretto255_sha512_Nsk);
     mfree(ptr_server_public_key, ecc_opaque_ristretto255_sha512_Npk);
+    mfree(ptr_client_identity, client_identity_len);
     mfree(ptr_record_raw, ecc_opaque_ristretto255_sha512_REGISTRATIONUPLOADSIZE);
     mfree(ptr_credential_identifier, credential_identifier_len);
     mfree(ptr_oprf_seed, ecc_opaque_ristretto255_sha512_Nh);
@@ -4558,7 +4876,7 @@ Module.ecc_opaque_ristretto255_sha512_3DH_ServerInit = (
 }
 
 /**
- * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-05#section-6.2.4
+ * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-07#section-6.2.4
  *
  * @param {Uint8Array} session_key (output) the shared session secret if and only if KE3 is valid, size:64
  * @param {Uint8Array} state_raw (input, output) a ServerState structure, size:ecc_opaque_ristretto255_sha512_SERVERSTATESIZE
@@ -4587,13 +4905,100 @@ Module.ecc_opaque_ristretto255_sha512_3DH_ServerFinish = (
 }
 
 /**
- * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-05#section-6.2.4
+ * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-07#section-6.2.4
  *
  * @param {Uint8Array} ke2_raw (output) size:ecc_opaque_ristretto255_sha512_KE2SIZE
  * @param {Uint8Array} state_raw (input, output) size:ecc_opaque_ristretto255_sha512_SERVERSTATESIZE
  * @param {Uint8Array} server_identity size:server_identity_len
  * @param {number} server_identity_len 
  * @param {Uint8Array} server_private_key size:ecc_opaque_ristretto255_sha512_Nsk
+ * @param {Uint8Array} server_public_key size:ecc_opaque_ristretto255_sha512_Npk
+ * @param {Uint8Array} client_identity size:client_identity_len
+ * @param {number} client_identity_len 
+ * @param {Uint8Array} client_public_key size:ecc_opaque_ristretto255_sha512_Npk
+ * @param {Uint8Array} ke1_raw size:ecc_opaque_ristretto255_sha512_KE1SIZE
+ * @param {Uint8Array} credential_response_raw size:ecc_opaque_ristretto255_sha512_CREDENTIALRESPONSESIZE
+ * @param {Uint8Array} context size:context_len
+ * @param {number} context_len 
+ * @param {Uint8Array} server_nonce size:ecc_opaque_ristretto255_sha512_Nn
+ * @param {Uint8Array} server_secret size:ecc_opaque_ristretto255_sha512_Nsk
+ * @param {Uint8Array} server_keyshare size:ecc_opaque_ristretto255_sha512_Npk
+ */
+Module.ecc_opaque_ristretto255_sha512_3DH_ResponseWithSecrets = (
+    ke2_raw,
+    state_raw,
+    server_identity,
+    server_identity_len,
+    server_private_key,
+    server_public_key,
+    client_identity,
+    client_identity_len,
+    client_public_key,
+    ke1_raw,
+    credential_response_raw,
+    context,
+    context_len,
+    server_nonce,
+    server_secret,
+    server_keyshare,
+) => {
+    const ptr_ke2_raw = mput(ke2_raw, ecc_opaque_ristretto255_sha512_KE2SIZE);
+    const ptr_state_raw = mput(state_raw, ecc_opaque_ristretto255_sha512_SERVERSTATESIZE);
+    const ptr_server_identity = mput(server_identity, server_identity_len);
+    const ptr_server_private_key = mput(server_private_key, ecc_opaque_ristretto255_sha512_Nsk);
+    const ptr_server_public_key = mput(server_public_key, ecc_opaque_ristretto255_sha512_Npk);
+    const ptr_client_identity = mput(client_identity, client_identity_len);
+    const ptr_client_public_key = mput(client_public_key, ecc_opaque_ristretto255_sha512_Npk);
+    const ptr_ke1_raw = mput(ke1_raw, ecc_opaque_ristretto255_sha512_KE1SIZE);
+    const ptr_credential_response_raw = mput(credential_response_raw, ecc_opaque_ristretto255_sha512_CREDENTIALRESPONSESIZE);
+    const ptr_context = mput(context, context_len);
+    const ptr_server_nonce = mput(server_nonce, ecc_opaque_ristretto255_sha512_Nn);
+    const ptr_server_secret = mput(server_secret, ecc_opaque_ristretto255_sha512_Nsk);
+    const ptr_server_keyshare = mput(server_keyshare, ecc_opaque_ristretto255_sha512_Npk);
+    _ecc_opaque_ristretto255_sha512_3DH_ResponseWithSecrets(
+        ptr_ke2_raw,
+        ptr_state_raw,
+        ptr_server_identity,
+        server_identity_len,
+        ptr_server_private_key,
+        ptr_server_public_key,
+        ptr_client_identity,
+        client_identity_len,
+        ptr_client_public_key,
+        ptr_ke1_raw,
+        ptr_credential_response_raw,
+        ptr_context,
+        context_len,
+        ptr_server_nonce,
+        ptr_server_secret,
+        ptr_server_keyshare,
+    );
+    mget(ke2_raw, ptr_ke2_raw, ecc_opaque_ristretto255_sha512_KE2SIZE);
+    mget(state_raw, ptr_state_raw, ecc_opaque_ristretto255_sha512_SERVERSTATESIZE);
+    mfree(ptr_ke2_raw, ecc_opaque_ristretto255_sha512_KE2SIZE);
+    mfree(ptr_state_raw, ecc_opaque_ristretto255_sha512_SERVERSTATESIZE);
+    mfree(ptr_server_identity, server_identity_len);
+    mfree(ptr_server_private_key, ecc_opaque_ristretto255_sha512_Nsk);
+    mfree(ptr_server_public_key, ecc_opaque_ristretto255_sha512_Npk);
+    mfree(ptr_client_identity, client_identity_len);
+    mfree(ptr_client_public_key, ecc_opaque_ristretto255_sha512_Npk);
+    mfree(ptr_ke1_raw, ecc_opaque_ristretto255_sha512_KE1SIZE);
+    mfree(ptr_credential_response_raw, ecc_opaque_ristretto255_sha512_CREDENTIALRESPONSESIZE);
+    mfree(ptr_context, context_len);
+    mfree(ptr_server_nonce, ecc_opaque_ristretto255_sha512_Nn);
+    mfree(ptr_server_secret, ecc_opaque_ristretto255_sha512_Nsk);
+    mfree(ptr_server_keyshare, ecc_opaque_ristretto255_sha512_Npk);
+}
+
+/**
+ * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-07#section-6.2.4
+ *
+ * @param {Uint8Array} ke2_raw (output) size:ecc_opaque_ristretto255_sha512_KE2SIZE
+ * @param {Uint8Array} state_raw (input, output) size:ecc_opaque_ristretto255_sha512_SERVERSTATESIZE
+ * @param {Uint8Array} server_identity size:server_identity_len
+ * @param {number} server_identity_len 
+ * @param {Uint8Array} server_private_key size:ecc_opaque_ristretto255_sha512_Nsk
+ * @param {Uint8Array} server_public_key size:ecc_opaque_ristretto255_sha512_Npk
  * @param {Uint8Array} client_identity size:client_identity_len
  * @param {number} client_identity_len 
  * @param {Uint8Array} client_public_key size:ecc_opaque_ristretto255_sha512_Npk
@@ -4608,6 +5013,7 @@ Module.ecc_opaque_ristretto255_sha512_3DH_Response = (
     server_identity,
     server_identity_len,
     server_private_key,
+    server_public_key,
     client_identity,
     client_identity_len,
     client_public_key,
@@ -4620,6 +5026,7 @@ Module.ecc_opaque_ristretto255_sha512_3DH_Response = (
     const ptr_state_raw = mput(state_raw, ecc_opaque_ristretto255_sha512_SERVERSTATESIZE);
     const ptr_server_identity = mput(server_identity, server_identity_len);
     const ptr_server_private_key = mput(server_private_key, ecc_opaque_ristretto255_sha512_Nsk);
+    const ptr_server_public_key = mput(server_public_key, ecc_opaque_ristretto255_sha512_Npk);
     const ptr_client_identity = mput(client_identity, client_identity_len);
     const ptr_client_public_key = mput(client_public_key, ecc_opaque_ristretto255_sha512_Npk);
     const ptr_ke1_raw = mput(ke1_raw, ecc_opaque_ristretto255_sha512_KE1SIZE);
@@ -4631,6 +5038,7 @@ Module.ecc_opaque_ristretto255_sha512_3DH_Response = (
         ptr_server_identity,
         server_identity_len,
         ptr_server_private_key,
+        ptr_server_public_key,
         ptr_client_identity,
         client_identity_len,
         ptr_client_public_key,
@@ -4645,6 +5053,7 @@ Module.ecc_opaque_ristretto255_sha512_3DH_Response = (
     mfree(ptr_state_raw, ecc_opaque_ristretto255_sha512_SERVERSTATESIZE);
     mfree(ptr_server_identity, server_identity_len);
     mfree(ptr_server_private_key, ecc_opaque_ristretto255_sha512_Nsk);
+    mfree(ptr_server_public_key, ecc_opaque_ristretto255_sha512_Npk);
     mfree(ptr_client_identity, client_identity_len);
     mfree(ptr_client_public_key, ecc_opaque_ristretto255_sha512_Npk);
     mfree(ptr_ke1_raw, ecc_opaque_ristretto255_sha512_KE1SIZE);

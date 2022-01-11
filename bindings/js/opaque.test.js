@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021, Alden Torres
+ * Copyright (c) 2021-2022, Alden Torres
  *
  * Licensed under the terms of the MIT license.
  * Copy of the license at https://opensource.org/licenses/MIT
@@ -25,100 +25,6 @@ import assert from "assert";
 
 describe("OPAQUE(ristretto255, SHA-512)", () => {
 
-    it("CreateRegistrationResponse", async () => {
-        const libecc = await libecc_module();
-
-        const registration_request = hex2bin("e61a3864330ae06a4fb67dd3710ef96e73ad0fc9f057feedee96307680081518");
-        const server_public_key = hex2bin("18d5035fd0a9c1d6412226df037125901a43f4dff660c0549d402f672bcc0933");
-        const credential_identifier = hex2bin("31323334");
-        const oprf_seed = hex2bin("5c4f99877d253be5817b4b03f37b6da680b0d5671d1ec5351fa61c5d82eab28b9de4c4e170f27e433ba377c71c49aa62ad26391ee1cac17011d8a7e9406657c8");
-
-        let registration_response = new Uint8Array(64);
-        let oprf_key = new Uint8Array(32);
-
-        libecc.ecc_opaque_ristretto255_sha512_CreateRegistrationResponse(
-            registration_response,
-            oprf_key,
-            registration_request,
-            server_public_key,
-            credential_identifier, credential_identifier.length,
-            oprf_seed,
-        );
-
-        // assert.strictEqual(bin2hex(registration_response), "8e7f5534f0a2ff2e2c0bc9ac5952f870711f74e1547199425b79ca80c9656b0d18d5035fd0a9c1d6412226df037125901a43f4dff660c0549d402f672bcc0933");
-        // assert.strictEqual(bin2hex(oprf_key), "840f43a856a90968af35423ef4951133ba2fed30f7679ec1ee490fb257ef4f02");
-    });
-
-    it("FinalizeRequest", async () => {
-        const libecc = await libecc_module();
-
-        const password = hex2bin("436f7272656374486f72736542617474657279537461706c65");
-        const blind = hex2bin("17f9d715dcc44faed5608f06d1106c623676206813756f9f888efb7989106c06");
-        const registration_response = hex2bin("8e7f5534f0a2ff2e2c0bc9ac5952f870711f74e1547199425b79ca80c9656b0d18d5035fd0a9c1d6412226df037125901a43f4dff660c0549d402f672bcc0933");
-        const nonce = hex2bin("88888888dcc44faed5608f06d1106c623676206813756f9f888efb7989106c06");
-
-        let record = new Uint8Array(192);
-        let export_key = new Uint8Array(64);
-        libecc.ecc_opaque_ristretto255_sha512_FinalizeRequestWithNonce(
-            record,
-            export_key,
-            new Uint8Array(0),
-            password, password.length,
-            blind,
-            registration_response,
-            new Uint8Array(0), 0,
-            new Uint8Array(0), 0,
-            nonce
-        );
-
-        // assert.strictEqual(bin2hex(record), "0436d5abd24da98174f917663ccff94b70b93f81abaf9651539197345f857820d561753" +
-        //     "b08f52c98a21b62df41366ff3f6f5853108f5a63c574acdd56db5885e8ff145ad6f100d" +
-        //     "14763ca834b0d599d4bc8da03261dc2fb42b27ac495f0bb09588888888dcc44faed5608" +
-        //     "f06d1106c623676206813756f9f888efb7989106c06e8d34f02855380ad30d71710833b" +
-        //     "708330305cb5ced5d373b721ced517dd75d621b9d12ad9646a60dffd80b5ab98018d04e" +
-        //     "a32677f29808d62de81aff22c0535");
-        // assert.strictEqual(bin2hex(export_key), "8a17e3b8fdbf042a36383a8be6479ce66fd5e916969266a45f7957f1bbd585d566c62f1" +
-        //     "91c6ad70fd2ac5b784c79355b5e9ecd35bee4fe27b2ece31e1133ad06");
-    });
-
-    it("3DH_ClientFinish", async () => {
-        const libecc = await libecc_module();
-
-        const client_state = hex2bin("b5930d735a1597cce3960cc32f9a1f4f9cc26bfbd2c407943a82e9c0b6f180073702b" +
-            "fee4e40c83aa38da4ce17d6bcd96e3274dea12ec9d97f1799f7e19058031ee702a87bc07e07f3" +
-            "1970b3307b54d4f274cc93a590a2fa381634b4c06c7117fb99917146a372df1719bddbd5e473e" +
-            "ee4a356586e72a7db0cef8bbfa9a333de0661feae590c9763a19a82dcab3fa5fe7f97cf97c9a1" +
-            "20dba8c32ff141e7f556");
-        const password = hex2bin("436f7272656374486f72736542617474657279537461706c65");
-        const ke2 = hex2bin("f8d47b6db3cbd250aa9bf7f6c41b9da24e97a289727e23a700ddac799b607f74136d601f183137" +
-            "f322ab7dc60453ae33d53ae6773a23a502ab2cc4769d8c0d83e702999f994663953d966573825eb9f99160" +
-            "bef3bf176629bf41ef06e1edca08d8065f5638fa4e6dcfe635d2523c2e168023cf50be01255a3a3774a586" +
-            "9aa3d5f1eaa1bc064c88d63732917b005fdec8009b6634c8f63c0fb2caf8f50cabc76f7a75544fb5d9a438" +
-            "57b224d5d523384628fcd26d70ac9900a8369522f779e96630ab26eff16259d4eba34ca1a9086fee0a9b0c" +
-            "d7588fce39e8f47412864bccbe360f95705d41173f01694a7156436eaeb245c8df77e22e2a804a14ae900e" +
-            "3c0b25cf06d722ea56e0b5690f2ee02725f5599d443b88acf36816d184222113d1bef32fdc1fe7b01f2361" +
-            "d871ed23a72543a60cb7caf6c5aaa78a2991a12fb6237b");
-
-        let ke3 = new Uint8Array(64);
-        let client_session_key = new Uint8Array(64);
-        let export_key2 = new Uint8Array(64);
-        const client_finish_ret = libecc.ecc_opaque_ristretto255_sha512_3DH_ClientFinish(
-            ke3,
-            client_session_key,
-            export_key2,
-            client_state,
-            password, password.length,
-            new Uint8Array(0), 0,
-            new Uint8Array(0), 0,
-            ke2
-        );
-
-        // assert.strictEqual(client_finish_ret, 0);
-        // assert.strictEqual(bin2hex(ke3), "83e2b6b89377355759664bac9759565e3e24ce7f8cc0a1ada9d97dae6ceab83c61ef1f07b6dc3ce7d3b393e95a68ee8004195522b3833f484fa42a9a3b3038e7");
-        // assert.strictEqual(bin2hex(client_session_key), "a53ea052c3d32fb9521ecca5b0c4b921450761e1403a9673ea367d382806e1fc8e6094d647553c61e734f891b4887c0fcdec05076f74283b487bf375619bab61");
-        // assert.strictEqual(bin2hex(export_key2), "fe015f5e10a485383bdd638b3387e9ac074b3fbc183d927896a9b1acf720a60ab56b4f7aef7ce2db9619e806f960f293e0857d60bd74d766da44d43ad88850a1");
-    });
-
     it("Test 1 (random input)", async () => {
         // client
         const password = await randombytes(10);
@@ -141,7 +47,6 @@ describe("OPAQUE(ristretto255, SHA-512)", () => {
         );
 
         const regEnd = await opaque_ristretto255_sha512_FinalizeRequest(
-            null,
             password,
             regReq.blind,
             regRes.response,
@@ -156,7 +61,6 @@ describe("OPAQUE(ristretto255, SHA-512)", () => {
         const client_state = new Uint8Array(160);
         const ke1 = await opaque_ristretto255_sha512_3DH_ClientInit(
             client_state,
-            null,
             password,
         );
 
@@ -166,6 +70,7 @@ describe("OPAQUE(ristretto255, SHA-512)", () => {
             null,
             server_private_key,
             server_public_key,
+            null,
             regEnd.record,
             credential_identifier,
             oprf_seed,
@@ -191,5 +96,150 @@ describe("OPAQUE(ristretto255, SHA-512)", () => {
         assert.deepStrictEqual(clientEnd.session_key, serverEnd.session_key);
 
         assert.deepStrictEqual(regEnd.export_key, clientEnd.export_key);
+    });
+
+    it("test vector 1", async () => {
+        const libecc = await libecc_module();
+
+        const context = hex2bin("4f50415155452d504f43");
+        const oprf_seed = hex2bin("5c4f99877d253be5817b4b03f37b6da680b0d5671d1ec5351fa61c5d82eab28b9de4c4e170f27e433ba377c71c49aa62ad26391ee1cac17011d8a7e9406657c8");
+        const credential_identifier = hex2bin("31323334");
+        const password = hex2bin("436f7272656374486f72736542617474657279537461706c65");
+        const envelope_nonce = hex2bin("71b8f14b7a1059cdadc414c409064a22cf9e970b0ffc6f1fc6fdd539c4676775");
+        const masking_nonce = hex2bin("54f9341ca183700f6b6acf28dbfe4a86afad788805de49f2d680ab86ff39ed7f");
+        const server_private_key = hex2bin("16eb9dc74a3df2033cd738bf2cfb7a3670c569d7749f284b2b241cb237e7d10f");
+        const server_public_key = hex2bin("18d5035fd0a9c1d6412226df037125901a43f4dff660c0549d402f672bcc0933");
+        const server_nonce = hex2bin("f9c5ec75a8cd571370add249e99cb8a8c43f6ef05610ac6e354642bf4fedbf69");
+        const client_nonce = hex2bin("804133133e7ee6836c8515752e24bb44d323fef4ead34cde967798f2e9784f69");
+        const server_keyshare = hex2bin("6e77d4749eb304c4d74be9457c597546bc22aed699225499910fc913b3e90712");
+        const client_keyshare = hex2bin("f67926bd036c5dc4971816b9376e9f64737f361ef8269c18f69f1ab555e96d4a");
+        const server_private_keyshare = hex2bin("f8e3e31543dd6fc86833296726773d51158291ab9afd666bb55dce83474c1101");
+        const client_private_keyshare = hex2bin("4230d62ea740b13e178185fc517cf2c313e6908c4cd9fb42154870ff3490c608");
+        const blind_registration = hex2bin("c62937d17dc9aa213c9038f84fe8c5bf3d953356db01c4d48acb7cae48e6a504");
+        const blind_login = hex2bin("b5f458822ea11c900ad776e38e29d7be361f75b4d79b55ad74923299bf8d6503");
+
+        let registration_request = new Uint8Array(libecc.ecc_opaque_ristretto255_sha512_REGISTRATIONREQUESTSIZE);
+        libecc.ecc_opaque_ristretto255_sha512_CreateRegistrationRequestWithBlind(
+            registration_request,
+            password, password.length,
+            blind_registration
+        );
+        assert.strictEqual(bin2hex(registration_request), "ac7a6330f91d1e5c87365630c7be58641885d59ffe4d3f8a49c094271993331d");
+
+        let registration_response = new Uint8Array(libecc.ecc_opaque_ristretto255_sha512_REGISTRATIONRESPONSESIZE);
+        let oprf_key = new Uint8Array(32);
+        libecc.ecc_opaque_ristretto255_sha512_CreateRegistrationResponse(
+            registration_response,
+            oprf_key,
+            registration_request,
+            server_public_key,
+            credential_identifier, credential_identifier.length,
+            oprf_seed
+        );
+        assert.strictEqual(bin2hex(registration_response), "5c7d3c70cf7478ead859bb879b37cce78baef3b9d81e04f4c790ce25f2830e2e18d5035fd0a9c1d6412226df037125901a43f4dff660c0549d402f672bcc0933");
+        assert.strictEqual(bin2hex(oprf_key), "3f76113135e6ca7e51ac5bb3e8774eb84709ad36b8907ec8f7bc353782871906");
+
+        let record = new Uint8Array(libecc.ecc_opaque_ristretto255_sha512_REGISTRATIONUPLOADSIZE);
+        let export_key = new Uint8Array(64);
+        libecc.ecc_opaque_ristretto255_sha512_FinalizeRequestWithNonce(
+            record,
+            export_key,
+            password, password.length,
+            blind_registration,
+            registration_response,
+            new Uint8Array(0), 0,
+            new Uint8Array(0), 0,
+            libecc.ecc_opaque_ristretto255_sha512_MHF_IDENTITY,
+            envelope_nonce
+        );
+
+        assert.strictEqual(bin2hex(record), "60c9b59f46e93a2dc8c5dd0dd101fad1838f4c4c026691e9" +
+            "d18d3de8f2b3940d7981498360f8f276df1dfb852a93ec4f4a0189dec5a96363296a6" +
+            "93fc8a51fb052ae8318dac48be7e3c3cd290f7b8c12b807617b7f9399417deed00158" +
+            "281ac771b8f14b7a1059cdadc414c409064a22cf9e970b0ffc6f1fc6fdd539c467677" +
+            "50a343dd3f683692f4ed987ff286a4ece0813a4942e23477920608f261e1ab6f8727f" +
+            "532c9fd0cde8ec492cb76efdc855da76d0b6ccbe8a4dc0ba2709d63c4517");
+
+        let client_state = new Uint8Array(libecc.ecc_opaque_ristretto255_sha512_CLIENTSTATESIZE);
+        let ke1 = new Uint8Array(libecc.ecc_opaque_ristretto255_sha512_KE1SIZE);
+        libecc.ecc_opaque_ristretto255_sha512_3DH_ClientInitWithSecrets(
+            ke1,
+            client_state,
+            password, password.length,
+            blind_login,
+            client_nonce,
+            client_private_keyshare,
+            client_keyshare
+        );
+
+        assert.strictEqual(bin2hex(ke1), "e4e7ce5bf96ddb2924faf816774b26a0ec7a6dd9d3a5bced1f4a3675c3cfd14c" +
+            "804133133e7ee6836c8515752e24bb44d323fef4ead34cde967798f2e9784f69f6792" +
+            "6bd036c5dc4971816b9376e9f64737f361ef8269c18f69f1ab555e96d4a");
+
+        let server_state = new Uint8Array(libecc.ecc_opaque_ristretto255_sha512_SERVERSTATESIZE);
+        let ke2 = new Uint8Array(libecc.ecc_opaque_ristretto255_sha512_KE2SIZE);
+        libecc.ecc_opaque_ristretto255_sha512_3DH_ServerInitWithSecrets(
+            ke2,
+            server_state,
+            null, 0,
+            server_private_key,
+            server_public_key,
+            null, 0,
+            record,
+            credential_identifier, credential_identifier.length,
+            oprf_seed,
+            ke1,
+            context, context.length,
+            masking_nonce,
+            server_nonce,
+            server_private_keyshare,
+            server_keyshare
+        );
+
+        assert.strictEqual(bin2hex(ke2), "1af11be29a90322dc16462d0861b1eb617611fe2f05e5e9860c164592d4f7f62" +
+            "54f9341ca183700f6b6acf28dbfe4a86afad788805de49f2d680ab86ff39ed7f76011" +
+            "9ed2f12f6ec4983f2c598068057af146fd09133c75b229145b7580d53cac4ba581155" +
+            "2e6786837a3e03d9f7971df0dad4a04fd6a6d4164101c91137a87f4afde7dae72daf2" +
+            "620082f46413bbb3071767d549833bcc523acc645b571a66318b0b1f8bf4b23de3542" +
+            "8373aa1d3a45c1e89eff88f03f9446e5dfc23b6f8394f9c5ec75a8cd571370add249e" +
+            "99cb8a8c43f6ef05610ac6e354642bf4fedbf696e77d4749eb304c4d74be9457c5975" +
+            "46bc22aed699225499910fc913b3e907120638f222a1a08460f4e40d0686830d3d608" +
+            "ce89789489161438bf6809dbbce3a6ddb0ce8702576843b58465d6cedd4e965f3f81b" +
+            "92992ecec0e2137b66eff0b4");
+
+        let ke3 = new Uint8Array(libecc.ecc_opaque_ristretto255_sha512_KE3SIZE);
+        let client_session_key = new Uint8Array(64);
+        let export_key2 = new Uint8Array(64);
+        const client_finish_ret = libecc.ecc_opaque_ristretto255_sha512_3DH_ClientFinish(
+            ke3,
+            client_session_key,
+            export_key2,
+            client_state,
+            password, password.length,
+            null, 0,
+            null, 0,
+            ke2,
+            libecc.ecc_opaque_ristretto255_sha512_MHF_IDENTITY,
+            context, context.length
+        );
+        assert.strictEqual(bin2hex(ke3), "1c0c743ff88f1a4ff07350eef61e899ae25d7fb23d555926b218bac4c1963071" +
+            "5038c56cca247630be8a8e66f3ff18b89c1bc97e1e2192fd7f14f2f60ed084a3");
+        assert.strictEqual(client_finish_ret, 0);
+
+        let server_session_key = new Uint8Array(64);
+        const server_finish_ret = libecc.ecc_opaque_ristretto255_sha512_3DH_ServerFinish(
+            server_session_key,
+            server_state,
+            ke3
+        );
+        assert.strictEqual(server_finish_ret, 0);
+
+        assert.deepStrictEqual(client_session_key, server_session_key);
+        assert.deepStrictEqual(export_key, export_key2);
+
+        assert.strictEqual(bin2hex(client_session_key), "05d03f4143e5866844f7ae921d3b48f3d611e930a6c4be0993a98290" +
+            "085110c5a27a2e5f92aeed861b90de068a51a952aa75bf97589be7c7104a4c30cc357506");
+        assert.strictEqual(bin2hex(export_key), "8408f92d282c7f4b0f5462e5206bd92937a4d53b0dcdef90afffd015c" +
+            "5dee44dc4dc5ad35d1681c97e2b66de09203ac359a69f1d45f8c97dbc907589177ccc24");
     });
 });
