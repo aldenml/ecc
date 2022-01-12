@@ -2,16 +2,18 @@
 
 [![c](https://github.com/aldenml/ecc/actions/workflows/c.yml/badge.svg?branch=master)](https://github.com/aldenml/ecc/actions/workflows/c.yml)
 [![js](https://github.com/aldenml/ecc/actions/workflows/js.yml/badge.svg?branch=master)](https://github.com/aldenml/ecc/actions/workflows/js.yml)
+[![macOS](https://github.com/aldenml/ecc/actions/workflows/macos.yml/badge.svg?branch=master)](https://github.com/aldenml/ecc/actions/workflows/macos.yml)
 [![Codacy Badge](https://app.codacy.com/project/badge/Grade/5fac0b504c25497ca621938007bc1cf6)](https://app.codacy.com/gh/aldenml/ecc/dashboard)
 [![Codacy Badge](https://app.codacy.com/project/badge/Coverage/5fac0b504c25497ca621938007bc1cf6)](https://www.codacy.com/gh/aldenml/ecc/dashboard)
+[![javadoc](https://javadoc.io/badge2/org.ssohub/ecc/javadoc.svg)](https://javadoc.io/doc/org.ssohub/ecc)
 
 Library to work with elliptic-curve cryptography based on [libsodium](https://github.com/jedisct1/libsodium)
 and [blst](https://github.com/supranational/blst).
 
-| Bindings |   |   |
-|--------------------|---|---|
-| Java               | [jvm](jvm) | [![maven](https://img.shields.io/maven-central/v/org.ssohub/ecc.svg?label=maven)](https://search.maven.org/search?q=g:%22org.ssohub%22%20AND%20a:%22ecc%22) |
-| Javascript         | [js/ecc](js/ecc) | [![npm](https://img.shields.io/npm/v/@aldenml/ecc)](https://www.npmjs.com/package/@aldenml/ecc) |
+| Bindings |                         |   |
+|--------------------|-------------------------|---|
+| Java               | [jvm/ecc](bindings/jvm) | [![maven](https://img.shields.io/maven-central/v/org.ssohub/ecc.svg?label=maven)](https://search.maven.org/search?q=g:%22org.ssohub%22%20AND%20a:%22ecc%22) |
+| Javascript         | [js/ecc](bindings/js)   | [![npm](https://img.shields.io/npm/v/@aldenml/ecc)](https://www.npmjs.com/package/@aldenml/ecc) |
 
 ### OPRF Oblivious pseudo-random functions using ristretto255
 
