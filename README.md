@@ -6,6 +6,8 @@
 [![Codacy Badge](https://app.codacy.com/project/badge/Grade/5fac0b504c25497ca621938007bc1cf6)](https://app.codacy.com/gh/aldenml/ecc/dashboard)
 [![Codacy Badge](https://app.codacy.com/project/badge/Coverage/5fac0b504c25497ca621938007bc1cf6)](https://www.codacy.com/gh/aldenml/ecc/dashboard)
 [![javadoc](https://javadoc.io/badge2/org.ssohub/ecc/javadoc.svg)](https://javadoc.io/doc/org.ssohub/ecc)
+[![Maintainability Rating](https://sonarcloud.io/api/project_badges/measure?project=aldenml_ecc&metric=sqale_rating)](https://sonarcloud.io/summary/new_code?id=aldenml_ecc)
+[![Security Rating](https://sonarcloud.io/api/project_badges/measure?project=aldenml_ecc&metric=security_rating)](https://sonarcloud.io/summary/new_code?id=aldenml_ecc)
 
 Library to work with elliptic-curve cryptography based on [libsodium](https://github.com/jedisct1/libsodium)
 and [blst](https://github.com/supranational/blst).
@@ -14,6 +16,13 @@ and [blst](https://github.com/supranational/blst).
 |--------------------|-------------------------|---|
 | Java               | [jvm/ecc](bindings/jvm) | [![maven](https://img.shields.io/maven-central/v/org.ssohub/ecc.svg?label=maven)](https://search.maven.org/search?q=g:%22org.ssohub%22%20AND%20a:%22ecc%22) |
 | Javascript         | [js/ecc](bindings/js)   | [![npm](https://img.shields.io/npm/v/@aldenml/ecc)](https://www.npmjs.com/package/@aldenml/ecc) |
+
+### Features
+
+- [OPRF](#oprf-oblivious-pseudo-random-functions-using-ristretto255)
+- [OPAQUE](#opaque-the-opaque-asymmetric-pake-protocol)
+- [BLS12-381 Pairing](#bls12-381-pairing)
+- [Proxy Re-Encryption (PRE)](#proxy-re-encryption-pre)
 
 ### OPRF Oblivious pseudo-random functions using ristretto255
 
@@ -48,6 +57,75 @@ In the verifiable mode of the protocol, the server additionally
 computes a proof in Evaluate. The client verifies this proof using
 the server's expected public key before completing the protocol and
 producing the protocol output.
+
+### OPAQUE The OPAQUE Asymmetric PAKE Protocol
+
+This is an implementation of [draft-irtf-cfrg-opaque-07](https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-07)
+using `libsodium`.
+
+OPAQUE consists of two stages: registration and authenticated key
+exchange. In the first stage, a client registers its password with
+the server and stores its encrypted credentials on the server, but
+the server never knows what the password it.
+
+The registration flow is shown below (from the irtf draft):
+```
+       creds                                   parameters
+         |                                         |
+         v                                         v
+       Client                                    Server
+       ------------------------------------------------
+                   registration request
+                ------------------------->
+                   registration response
+                <-------------------------
+                         record
+                ------------------------->
+      ------------------------------------------------
+         |                                         |
+         v                                         v
+     export_key                                 record
+```
+
+In the second stage, the client outputs two values, an "export_key" (matching
+that from registration) and a "session_key". The server outputs a single value
+"session_key" that matches that of the client.
+
+The authenticated key exchange flow is shown below (from the irtf draft):
+```
+       creds                             (parameters, record)
+         |                                         |
+         v                                         v
+       Client                                    Server
+       ------------------------------------------------
+                      AKE message 1
+                ------------------------->
+                      AKE message 2
+                <-------------------------
+                      AKE message 3
+                ------------------------->
+      ------------------------------------------------
+         |                                         |
+         v                                         v
+   (export_key, session_key)                  session_key
+```
+
+The public API for implementing the protocol is:
+
+- Client
+```
+opaque_ristretto255_sha512_CreateRegistrationRequest
+opaque_ristretto255_sha512_FinalizeRequest
+opaque_ristretto255_sha512_3DH_ClientInit
+opaque_ristretto255_sha512_3DH_ClientFinish
+```
+
+- Server
+```
+opaque_ristretto255_sha512_CreateRegistrationResponse
+opaque_ristretto255_sha512_3DH_ServerInit
+opaque_ristretto255_sha512_3DH_ServerFinish
+```
 
 ### BLS12-381 Pairing
 

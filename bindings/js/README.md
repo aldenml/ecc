@@ -7,6 +7,13 @@ This is the javascript version of the [ecc](https://github.com/aldenml/ecc) libr
 It is a WebAssembly compilation with a thin layer on
 top to expose the cryptographic primitives.
 
+### Features
+
+- [OPRF](#oprf-oblivious-pseudo-random-functions-using-ristretto255)
+- [OPAQUE](#opaque-the-opaque-asymmetric-pake-protocol)
+- [BLS12-381 Pairing](#bls12-381-pairing)
+- [Proxy Re-Encryption (PRE)](#proxy-re-encryption-pre)
+
 ### OPRF Oblivious pseudo-random functions using ristretto255
 
 This is an implementation of [draft-irtf-cfrg-voprf-08](https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-voprf-08)
@@ -40,6 +47,75 @@ In the verifiable mode of the protocol, the server additionally
 computes a proof in Evaluate. The client verifies this proof using
 the server's expected public key before completing the protocol and
 producing the protocol output.
+
+### OPAQUE The OPAQUE Asymmetric PAKE Protocol
+
+This is an implementation of [draft-irtf-cfrg-opaque-07](https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-07)
+using `libsodium`.
+
+OPAQUE consists of two stages: registration and authenticated key
+exchange. In the first stage, a client registers its password with
+the server and stores its encrypted credentials on the server, but
+the server never knows what the password it.
+
+The registration flow is shown below (from the irtf draft):
+```
+       creds                                   parameters
+         |                                         |
+         v                                         v
+       Client                                    Server
+       ------------------------------------------------
+                   registration request
+                ------------------------->
+                   registration response
+                <-------------------------
+                         record
+                ------------------------->
+      ------------------------------------------------
+         |                                         |
+         v                                         v
+     export_key                                 record
+```
+
+In the second stage, the client outputs two values, an "export_key" (matching
+that from registration) and a "session_key". The server outputs a single value
+"session_key" that matches that of the client.
+
+The authenticated key exchange flow is shown below (from the irtf draft):
+```
+       creds                             (parameters, record)
+         |                                         |
+         v                                         v
+       Client                                    Server
+       ------------------------------------------------
+                      AKE message 1
+                ------------------------->
+                      AKE message 2
+                <-------------------------
+                      AKE message 3
+                ------------------------->
+      ------------------------------------------------
+         |                                         |
+         v                                         v
+   (export_key, session_key)                  session_key
+```
+
+The public API for implementing the protocol is:
+
+- Client
+```
+opaque_ristretto255_sha512_CreateRegistrationRequest
+opaque_ristretto255_sha512_FinalizeRequest
+opaque_ristretto255_sha512_3DH_ClientInit
+opaque_ristretto255_sha512_3DH_ClientFinish
+```
+
+- Server
+```
+opaque_ristretto255_sha512_CreateRegistrationResponse
+opaque_ristretto255_sha512_3DH_ServerInit
+opaque_ristretto255_sha512_3DH_ServerFinish
+```
 
 ### BLS12-381 Pairing
 

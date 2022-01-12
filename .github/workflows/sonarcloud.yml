@@ -6,8 +6,8 @@ on:
   pull_request:
     types: [opened, synchronize, reopened]
 jobs:
-  build:
-    name: SonarScanner
+
+  scan:
     runs-on: ubuntu-20.04
     env:
       SONAR_SCANNER_VERSION: 4.6.2.2472
