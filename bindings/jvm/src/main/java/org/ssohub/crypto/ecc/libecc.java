@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021, Alden Torres
+ * Copyright (c) 2021-2022, Alden Torres
  *
  * Licensed under the terms of the MIT license.
  * Copy of the license at https://opensource.org/licenses/MIT
@@ -256,7 +256,7 @@ public final class libecc {
      * Size of a HMAC-SHA-512 key.
      *
      */
-    public static final int ecc_mac_hmac_sha512_KEYSIZE = 32;
+    public static final int ecc_mac_hmac_sha512_KEYSIZE = 64;
 
     /**
      * Computes the HMAC-SHA-256 of the input stream.
@@ -381,6 +381,31 @@ public final class libecc {
         byte[] prk,
         byte[] info,
         int info_len,
+        int len
+    );
+
+    /**
+     * See https://datatracker.ietf.org/doc/html/rfc7914
+     *
+     * @param out (output) size:len
+     * @param passphrase size:passphrase_len
+     * @param passphrase_len 
+     * @param salt size:salt_len
+     * @param salt_len 
+     * @param cost 
+     * @param block_size 
+     * @param parallelization 
+     * @param len 
+     */
+    public static native void ecc_kdf_scrypt(
+        byte[] out,
+        byte[] passphrase,
+        int passphrase_len,
+        byte[] salt,
+        int salt_len,
+        int cost,
+        int block_size,
+        int parallelization,
         int len
     );
 
@@ -1784,6 +1809,18 @@ public final class libecc {
      * *
      *
      */
+    public static final int ecc_opaque_ristretto255_sha512_IDENTITYMAXSIZE = 200;
+
+    /**
+     * *
+     *
+     */
+    public static final int ecc_opaque_ristretto255_sha512_CLEARTEXTCREDENTIALSSIZE = 440;
+
+    /**
+     * *
+     *
+     */
     public static final int ecc_opaque_ristretto255_sha512_REGISTRATIONREQUESTSIZE = 32;
 
     /**
@@ -1841,31 +1878,50 @@ public final class libecc {
     public static final int ecc_opaque_ristretto255_sha512_SERVERSTATESIZE = 128;
 
     /**
+     * Use Identity for the Memory Hard Function (MHF).
+     *
+     */
+    public static final int ecc_opaque_ristretto255_sha512_MHF_IDENTITY = 0;
+
+    /**
+     * Use Scrypt(32768,8,1) for the Memory Hard Function (MHF).
+     *
+     */
+    public static final int ecc_opaque_ristretto255_sha512_MHF_SCRYPT = 1;
+
+    /**
+     * Derive a private and public key pair deterministically from a seed.
+     * 
+     * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-07#section-2.1
+     *
+     * @param private_key (output) a private key, size:ecc_opaque_ristretto255_sha512_Nsk
+     * @param public_key (output) the associated public key, size:ecc_opaque_ristretto255_sha512_Npk
+     * @param seed pseudo-random byte sequence used as a seed, size:seed_len
+     * @param seed_len the length of `seed`
+     */
+    public static native void ecc_opaque_ristretto255_sha512_DeriveKeyPair(
+        byte[] private_key,
+        byte[] public_key,
+        byte[] seed,
+        int seed_len
+    );
+
+    /**
      * Constructs a "CleartextCredentials" structure given application
      * credential information.
      * 
-     * Since the identities are not length fixed, it's not possible to create
-     * a static structure for this record. Instead the function returns the
-     * length of the record once it's created.
-     * 
-     * If you pass NULL for `cleartext_credentials` it will return the total
-     * size of memory necessary to hold the result.
-     * 
-     * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-05#section-4
+     * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-07#section-4
      *
-     * @param cleartext_credentials (output) a CleartextCredentials structure, size:cleartext_credentials_len
-     * @param cleartext_credentials_len the length of `cleartext_credentials`
+     * @param cleartext_credentials (output) a CleartextCredentials structure, size:ecc_opaque_ristretto255_sha512_CLEARTEXTCREDENTIALSSIZE
      * @param server_public_key the encoded server public key for the AKE protocol, size:ecc_opaque_ristretto255_sha512_Npk
      * @param client_public_key the encoded client public key for the AKE protocol, size:ecc_opaque_ristretto255_sha512_Npk
      * @param server_identity the optional encoded server identity, size:server_identity_len
      * @param server_identity_len the length of `server_identity`
      * @param client_identity the optional encoded client identity, size:client_identity_len
      * @param client_identity_len the length of `client_identity`
-     * @return the size of the serialized structure
      */
-    public static native int ecc_opaque_ristretto255_sha512_CreateCleartextCredentials(
+    public static native void ecc_opaque_ristretto255_sha512_CreateCleartextCredentials(
         byte[] cleartext_credentials,
-        int cleartext_credentials_len,
         byte[] server_public_key,
         byte[] client_public_key,
         byte[] server_identity,
@@ -1875,32 +1931,30 @@ public final class libecc {
     );
 
     /**
-     * Same as calling `ecc_opaque_ristretto255_sha512_CreateEnvelope` with an
+     * Same as calling `ecc_opaque_ristretto255_sha512_EnvelopeStore` with an
      * specified `nonce`.
      * 
-     * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-05#section-4.2
+     * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-07#section-4.2
      *
-     * @param envelope_raw (output) size:ecc_opaque_ristretto255_sha512_Ne
+     * @param envelope (output) size:ecc_opaque_ristretto255_sha512_Ne
      * @param client_public_key (output) size:ecc_opaque_ristretto255_sha512_Npk
      * @param masking_key (output) size:ecc_opaque_ristretto255_sha512_Nh
      * @param export_key (output) size:ecc_opaque_ristretto255_sha512_Nh
      * @param randomized_pwd size:64
      * @param server_public_key size:ecc_opaque_ristretto255_sha512_Npk
-     * @param client_private_key size:ecc_opaque_ristretto255_sha512_Nsk
      * @param server_identity size:server_identity_len
      * @param server_identity_len 
      * @param client_identity size:client_identity_len
      * @param client_identity_len 
      * @param nonce size:ecc_opaque_ristretto255_sha512_Nn
      */
-    public static native void ecc_opaque_ristretto255_sha512_CreateEnvelopeWithNonce(
-        byte[] envelope_raw,
+    public static native void ecc_opaque_ristretto255_sha512_EnvelopeStoreWithNonce(
+        byte[] envelope,
         byte[] client_public_key,
         byte[] masking_key,
         byte[] export_key,
         byte[] randomized_pwd,
         byte[] server_public_key,
-        byte[] client_private_key,
         byte[] server_identity,
         int server_identity_len,
         byte[] client_identity,
@@ -1915,7 +1969,7 @@ public final class libecc {
      * allocation), it's necessary to add the restriction on length of the
      * identities to less than 200 bytes.
      * 
-     * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-05#section-4.2
+     * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-07#section-4.2
      *
      * @param envelope (output) size:ecc_opaque_ristretto255_sha512_Ne
      * @param client_public_key (output) size:ecc_opaque_ristretto255_sha512_Npk
@@ -1923,20 +1977,18 @@ public final class libecc {
      * @param export_key (output) size:ecc_opaque_ristretto255_sha512_Nh
      * @param randomized_pwd size:64
      * @param server_public_key size:ecc_opaque_ristretto255_sha512_Npk
-     * @param client_private_key size:ecc_opaque_ristretto255_sha512_Nsk
      * @param server_identity size:server_identity_len
      * @param server_identity_len 
      * @param client_identity size:client_identity_len
      * @param client_identity_len 
      */
-    public static native void ecc_opaque_ristretto255_sha512_CreateEnvelope(
+    public static native void ecc_opaque_ristretto255_sha512_EnvelopeStore(
         byte[] envelope,
         byte[] client_public_key,
         byte[] masking_key,
         byte[] export_key,
         byte[] randomized_pwd,
         byte[] server_public_key,
-        byte[] client_private_key,
         byte[] server_identity,
         int server_identity_len,
         byte[] client_identity,
@@ -1947,7 +1999,7 @@ public final class libecc {
      * This functions attempts to recover the credentials from the input. On
      * success returns 0, else -1.
      * 
-     * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-05#section-4.2
+     * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-07#section-4.2
      *
      * @param client_private_key (output) size:ecc_opaque_ristretto255_sha512_Nsk
      * @param export_key (output) size:ecc_opaque_ristretto255_sha512_Nh
@@ -1960,7 +2012,7 @@ public final class libecc {
      * @param client_identity_len 
      * @return on success returns 0, else -1.
      */
-    public static native int ecc_opaque_ristretto255_sha512_RecoverEnvelope(
+    public static native int ecc_opaque_ristretto255_sha512_EnvelopeRecover(
         byte[] client_private_key,
         byte[] export_key,
         byte[] randomized_pwd,
@@ -1975,7 +2027,7 @@ public final class libecc {
     /**
      * Recover the public key related to the input "private_key".
      * 
-     * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-05#section-2
+     * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-07#section-2
      *
      * @param public_key (output) size:ecc_opaque_ristretto255_sha512_Npk
      * @param private_key size:ecc_opaque_ristretto255_sha512_Nsk
@@ -1991,7 +2043,7 @@ public final class libecc {
      * This is implemented by generating a random "seed", then
      * calling internally DeriveAuthKeyPair.
      * 
-     * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-05#section-2
+     * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-07#section-2
      *
      * @param private_key (output) a private key, size:ecc_opaque_ristretto255_sha512_Nsk
      * @param public_key (output) the associated public key, size:ecc_opaque_ristretto255_sha512_Npk
@@ -2005,8 +2057,8 @@ public final class libecc {
      * Derive a private and public authentication key pair deterministically
      * from the input "seed".
      * 
-     * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-05#section-4.3.1
-     * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-05#section-2
+     * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-07#section-4.3.1
+     * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-07#section-2
      *
      * @param private_key (output) a private key, size:ecc_opaque_ristretto255_sha512_Nsk
      * @param public_key (output) the associated public key, size:ecc_opaque_ristretto255_sha512_Npk
@@ -2021,66 +2073,32 @@ public final class libecc {
     );
 
     /**
-     * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-05#section-4.3.1
-     *
-     * @param inner_env (output) size:0
-     * @param client_public_key (output) size:ecc_opaque_ristretto255_sha512_Npk
-     * @param randomized_pwd size:64
-     * @param nonce size:ecc_opaque_ristretto255_sha512_Nn
-     * @param client_private_key size:ecc_opaque_ristretto255_sha512_Nsk
-     */
-    public static native void ecc_opaque_ristretto255_sha512_BuildInnerEnvelope(
-        byte[] inner_env,
-        byte[] client_public_key,
-        byte[] randomized_pwd,
-        byte[] nonce,
-        byte[] client_private_key
-    );
-
-    /**
-     * 
-     *
-     * @param client_private_key (output) size:ecc_opaque_ristretto255_sha512_Nsk
-     * @param client_public_key (output) size:ecc_opaque_ristretto255_sha512_Npk
-     * @param randomized_pwd size:64
-     * @param nonce size:ecc_opaque_ristretto255_sha512_Nn
-     * @param inner_env size:0
-     */
-    public static native void ecc_opaque_ristretto255_sha512_RecoverKeys(
-        byte[] client_private_key,
-        byte[] client_public_key,
-        byte[] randomized_pwd,
-        byte[] nonce,
-        byte[] inner_env
-    );
-
-    /**
      * Same as calling CreateRegistrationRequest with a specified blind.
      * 
-     * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-05#section-5.1.1.1
+     * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-07#section-5.1.1.1
      *
-     * @param request_raw (output) a RegistrationRequest structure, size:ecc_opaque_ristretto255_sha512_REGISTRATIONREQUESTSIZE
+     * @param request (output) a RegistrationRequest structure, size:ecc_opaque_ristretto255_sha512_REGISTRATIONREQUESTSIZE
      * @param password an opaque byte string containing the client's password, size:password_len
      * @param password_len the length of `password`
      * @param blind the OPRF scalar value to use, size:ecc_opaque_ristretto255_sha512_Noe
      */
     public static native void ecc_opaque_ristretto255_sha512_CreateRegistrationRequestWithBlind(
-        byte[] request_raw,
+        byte[] request,
         byte[] password,
         int password_len,
         byte[] blind
     );
 
     /**
-     * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-05#section-5.1.1.1
+     * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-07#section-5.1.1.1
      *
-     * @param request_raw (output) a RegistrationRequest structure, size:ecc_opaque_ristretto255_sha512_REGISTRATIONREQUESTSIZE
+     * @param request (output) a RegistrationRequest structure, size:ecc_opaque_ristretto255_sha512_REGISTRATIONREQUESTSIZE
      * @param blind (output) an OPRF scalar value, size:ecc_opaque_ristretto255_sha512_Noe
      * @param password an opaque byte string containing the client's password, size:password_len
      * @param password_len the length of `password`
      */
     public static native void ecc_opaque_ristretto255_sha512_CreateRegistrationRequest(
-        byte[] request_raw,
+        byte[] request,
         byte[] blind,
         byte[] password,
         int password_len
@@ -2094,18 +2112,18 @@ public final class libecc {
      * <
      * = 200.
      * 
-     * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-05#section-5.1.1.2
+     * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-07#section-5.1.1.2
      *
-     * @param response_raw (output) size:ecc_opaque_ristretto255_sha512_REGISTRATIONRESPONSESIZE
-     * @param request_raw size:ecc_opaque_ristretto255_sha512_REGISTRATIONREQUESTSIZE
+     * @param response (output) size:ecc_opaque_ristretto255_sha512_REGISTRATIONRESPONSESIZE
+     * @param request size:ecc_opaque_ristretto255_sha512_REGISTRATIONREQUESTSIZE
      * @param server_public_key size:ecc_opaque_ristretto255_sha512_Npk
      * @param credential_identifier size:credential_identifier_len
      * @param credential_identifier_len 
      * @param oprf_key size:32
      */
     public static native void ecc_opaque_ristretto255_sha512_CreateRegistrationResponseWithOprfKey(
-        byte[] response_raw,
-        byte[] request_raw,
+        byte[] response,
+        byte[] request,
         byte[] server_public_key,
         byte[] credential_identifier,
         int credential_identifier_len,
@@ -2118,20 +2136,20 @@ public final class libecc {
      * <
      * = 200.
      * 
-     * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-05#section-5.1.1.2
+     * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-07#section-5.1.1.2
      *
-     * @param response_raw (output) a RegistrationResponse structure, size:ecc_opaque_ristretto255_sha512_REGISTRATIONRESPONSESIZE
-     * @param oprf_key (output) the per-client OPRF key known only to the server, size:32
-     * @param request_raw a RegistrationRequest structure, size:ecc_opaque_ristretto255_sha512_REGISTRATIONREQUESTSIZE
+     * @param response (output) a RegistrationResponse structure, size:ecc_opaque_ristretto255_sha512_REGISTRATIONRESPONSESIZE
+     * @param oprf_key (output) the per-client OPRF key known only to the server, size:ecc_opaque_ristretto255_sha512_Nsk
+     * @param request a RegistrationRequest structure, size:ecc_opaque_ristretto255_sha512_REGISTRATIONREQUESTSIZE
      * @param server_public_key the server's public key, size:ecc_opaque_ristretto255_sha512_Npk
      * @param credential_identifier an identifier that uniquely represents the credential being registered, size:credential_identifier_len
      * @param credential_identifier_len the length of `credential_identifier`
      * @param oprf_seed the server-side seed of Nh bytes used to generate an oprf_key, size:ecc_opaque_ristretto255_sha512_Nh
      */
     public static native void ecc_opaque_ristretto255_sha512_CreateRegistrationResponse(
-        byte[] response_raw,
+        byte[] response,
         byte[] oprf_key,
-        byte[] request_raw,
+        byte[] request,
         byte[] server_public_key,
         byte[] credential_identifier,
         int credential_identifier_len,
@@ -2146,33 +2164,33 @@ public final class libecc {
      * executes the following function. Since this works in the internal key mode, the
      * "client_private_key" is null.
      * 
-     * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-05#section-5.1.1.3
+     * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-07#section-5.1.1.3
      *
-     * @param record_raw (output) a RegistrationUpload structure, size:ecc_opaque_ristretto255_sha512_REGISTRATIONUPLOADSIZE
+     * @param record (output) a RegistrationUpload structure, size:ecc_opaque_ristretto255_sha512_REGISTRATIONUPLOADSIZE
      * @param export_key (output) an additional client key, size:ecc_opaque_ristretto255_sha512_Nh
-     * @param client_private_key the client's private key (always null, internal mode), size:0
      * @param password an opaque byte string containing the client's password, size:password_len
      * @param password_len the length of `password`
      * @param blind the OPRF scalar value used for blinding, size:ecc_opaque_ristretto255_sha512_Noe
-     * @param response_raw a RegistrationResponse structure, size:ecc_opaque_ristretto255_sha512_REGISTRATIONRESPONSESIZE
+     * @param response a RegistrationResponse structure, size:ecc_opaque_ristretto255_sha512_REGISTRATIONRESPONSESIZE
      * @param server_identity the optional encoded server identity, size:server_identity_len
      * @param server_identity_len the length of `server_identity`
      * @param client_identity the optional encoded client identity, size:client_identity_len
      * @param client_identity_len the length of `client_identity`
+     * @param mhf 
      * @param nonce size:ecc_opaque_ristretto255_sha512_Nn
      */
     public static native void ecc_opaque_ristretto255_sha512_FinalizeRequestWithNonce(
-        byte[] record_raw,
+        byte[] record,
         byte[] export_key,
-        byte[] client_private_key,
         byte[] password,
         int password_len,
         byte[] blind,
-        byte[] response_raw,
+        byte[] response,
         byte[] server_identity,
         int server_identity_len,
         byte[] client_identity,
         int client_identity_len,
+        int mhf,
         byte[] nonce
     );
 
@@ -2181,44 +2199,59 @@ public final class libecc {
      * executes the following function. Since this works in the internal key mode, the
      * "client_private_key" is null.
      * 
-     * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-05#section-5.1.1.3
+     * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-07#section-5.1.1.3
      *
-     * @param record_raw (output) a RegistrationUpload structure, size:ecc_opaque_ristretto255_sha512_REGISTRATIONUPLOADSIZE
+     * @param record (output) a RegistrationUpload structure, size:ecc_opaque_ristretto255_sha512_REGISTRATIONUPLOADSIZE
      * @param export_key (output) an additional client key, size:ecc_opaque_ristretto255_sha512_Nh
-     * @param client_private_key the client's private key (always null, internal mode), size:0
      * @param password an opaque byte string containing the client's password, size:password_len
      * @param password_len the length of `password`
      * @param blind the OPRF scalar value used for blinding, size:ecc_opaque_ristretto255_sha512_Noe
-     * @param response_raw a RegistrationResponse structure, size:ecc_opaque_ristretto255_sha512_REGISTRATIONRESPONSESIZE
+     * @param response a RegistrationResponse structure, size:ecc_opaque_ristretto255_sha512_REGISTRATIONRESPONSESIZE
      * @param server_identity the optional encoded server identity, size:server_identity_len
      * @param server_identity_len the length of `server_identity`
      * @param client_identity the optional encoded client identity, size:client_identity_len
      * @param client_identity_len the length of `client_identity`
+     * @param mhf 
      */
     public static native void ecc_opaque_ristretto255_sha512_FinalizeRequest(
-        byte[] record_raw,
+        byte[] record,
         byte[] export_key,
-        byte[] client_private_key,
         byte[] password,
         int password_len,
         byte[] blind,
-        byte[] response_raw,
+        byte[] response,
         byte[] server_identity,
         int server_identity_len,
         byte[] client_identity,
-        int client_identity_len
+        int client_identity_len,
+        int mhf
     );
 
     /**
-     * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-05#section-6.1.2.1
+     * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-07#section-6.1.2.1
      *
-     * @param request_raw (output) a CredentialRequest structure, size:ecc_opaque_ristretto255_sha512_CREDENTIALREQUESTSIZE
+     * @param request (output) a CredentialRequest structure, size:ecc_opaque_ristretto255_sha512_CREDENTIALREQUESTSIZE
+     * @param password an opaque byte string containing the client's password, size:password_len
+     * @param password_len the length of `password`
+     * @param blind an OPRF scalar value, size:ecc_opaque_ristretto255_sha512_Noe
+     */
+    public static native void ecc_opaque_ristretto255_sha512_CreateCredentialRequestWithBlind(
+        byte[] request,
+        byte[] password,
+        int password_len,
+        byte[] blind
+    );
+
+    /**
+     * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-07#section-6.1.2.1
+     *
+     * @param request (output) a CredentialRequest structure, size:ecc_opaque_ristretto255_sha512_CREDENTIALREQUESTSIZE
      * @param blind (output) an OPRF scalar value, size:ecc_opaque_ristretto255_sha512_Noe
      * @param password an opaque byte string containing the client's password, size:password_len
      * @param password_len the length of `password`
      */
     public static native void ecc_opaque_ristretto255_sha512_CreateCredentialRequest(
-        byte[] request_raw,
+        byte[] request,
         byte[] blind,
         byte[] password,
         int password_len
@@ -2243,7 +2276,48 @@ public final class libecc {
      * - record.envelope is set to the byte string consisting only of
      * zeros, of length Ne
      * 
-     * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-05#section-6.1.2.2
+     * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-07#section-6.1.2.2
+     *
+     * @param response_raw (output) size:ecc_opaque_ristretto255_sha512_CREDENTIALRESPONSESIZE
+     * @param request_raw size:ecc_opaque_ristretto255_sha512_CREDENTIALREQUESTSIZE
+     * @param server_public_key size:ecc_opaque_ristretto255_sha512_Npk
+     * @param record_raw size:ecc_opaque_ristretto255_sha512_REGISTRATIONUPLOADSIZE
+     * @param credential_identifier size:credential_identifier_len
+     * @param credential_identifier_len 
+     * @param oprf_seed size:ecc_opaque_ristretto255_sha512_Nh
+     * @param masking_nonce size:ecc_opaque_ristretto255_sha512_Nn
+     */
+    public static native void ecc_opaque_ristretto255_sha512_CreateCredentialResponseWithMasking(
+        byte[] response_raw,
+        byte[] request_raw,
+        byte[] server_public_key,
+        byte[] record_raw,
+        byte[] credential_identifier,
+        int credential_identifier_len,
+        byte[] oprf_seed,
+        byte[] masking_nonce
+    );
+
+    /**
+     * In order to make this method not to use dynamic memory allocation, there is a
+     * limit of credential_identifier_len
+     * <
+     * = 200.
+     * 
+     * There are two scenarios to handle for the construction of a
+     * CredentialResponse object: either the record for the client exists
+     * (corresponding to a properly registered client), or it was never
+     * created (corresponding to a client that has yet to register).
+     * 
+     * In the case of a record that does not exist, the server SHOULD invoke
+     * the CreateCredentialResponse function where the record argument is
+     * configured so that:
+     * 
+     * - record.masking_key is set to a random byte string of length Nh, and
+     * - record.envelope is set to the byte string consisting only of
+     * zeros, of length Ne
+     * 
+     * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-07#section-6.1.2.2
      *
      * @param response_raw (output) size:ecc_opaque_ristretto255_sha512_CREDENTIALRESPONSESIZE
      * @param request_raw size:ecc_opaque_ristretto255_sha512_CREDENTIALREQUESTSIZE
@@ -2264,7 +2338,7 @@ public final class libecc {
     );
 
     /**
-     * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-05#section-6.1.2.3
+     * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-07#section-6.1.2.3
      *
      * @param client_private_key (output) size:ecc_opaque_ristretto255_sha512_Nsk
      * @param server_public_key (output) size:ecc_opaque_ristretto255_sha512_Npk
@@ -2277,6 +2351,7 @@ public final class libecc {
      * @param server_identity_len 
      * @param client_identity size:client_identity_len
      * @param client_identity_len 
+     * @param mhf 
      * @return on success returns 0, else -1.
      */
     public static native int ecc_opaque_ristretto255_sha512_RecoverCredentials(
@@ -2290,11 +2365,12 @@ public final class libecc {
         byte[] server_identity,
         int server_identity_len,
         byte[] client_identity,
-        int client_identity_len
+        int client_identity_len,
+        int mhf
     );
 
     /**
-     * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-05#section-6.2.2.1
+     * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-07#section-6.2.2.1
      *
      * @param out (output) size:length
      * @param secret size:64
@@ -2315,7 +2391,7 @@ public final class libecc {
     );
 
     /**
-     * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-05#section-6.2.2.1
+     * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-07#section-6.2.2.1
      *
      * @param out (output) size:ecc_opaque_ristretto255_sha512_Nx
      * @param secret size:64
@@ -2340,7 +2416,7 @@ public final class libecc {
      * transcript, such as configuration parameters or application-specific
      * info, e.g. "appXYZ-v1.2.3".
      * 
-     * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-05#section-6.2.2.1
+     * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-07#section-6.2.2.1
      *
      * @param preamble (output) the protocol transcript with identities and messages, size:preamble_len
      * @param preamble_len 
@@ -2348,12 +2424,12 @@ public final class libecc {
      * @param context_len the length of `context`
      * @param client_identity the optional encoded client identity, size:client_identity_len
      * @param client_identity_len the length of `client_identity`
-     * @param ke1 a KE1 message structure, size:ke1_len
-     * @param ke1_len the length of `ke1`
+     * @param client_public_key size:ecc_opaque_ristretto255_sha512_Npk
+     * @param ke1 a KE1 message structure, size:ecc_opaque_ristretto255_sha512_KE1SIZE
      * @param server_identity the optional encoded server identity, size:server_identity_len
      * @param server_identity_len the length of `server_identity`
-     * @param inner_ke2 an inner_ke2 structure as defined in KE2, size:inner_ke2_len
-     * @param inner_ke2_len the length of `inner_ke2`
+     * @param server_public_key size:ecc_opaque_ristretto255_sha512_Npk
+     * @param ke2 a ke2 structure as defined in KE2, size:ecc_opaque_ristretto255_sha512_KE2SIZE
      * @return the protocol transcript with identities and messages
      */
     public static native int ecc_opaque_ristretto255_sha512_3DH_Preamble(
@@ -2363,19 +2439,19 @@ public final class libecc {
         int context_len,
         byte[] client_identity,
         int client_identity_len,
+        byte[] client_public_key,
         byte[] ke1,
-        int ke1_len,
         byte[] server_identity,
         int server_identity_len,
-        byte[] inner_ke2,
-        int inner_ke2_len
+        byte[] server_public_key,
+        byte[] ke2
     );
 
     /**
      * Computes the OPAQUE-3DH shared secret derived during the key
      * exchange protocol.
      * 
-     * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-05#section-6.2.2.2
+     * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-07#section-6.2.2.2
      *
      * @param ikm (output) size:96
      * @param sk1 size:32
@@ -2396,7 +2472,7 @@ public final class libecc {
     );
 
     /**
-     * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-05#section-6.2.2.2
+     * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-07#section-6.2.2.2
      *
      * @param km2 (output) size:64
      * @param km3 (output) size:64
@@ -2417,26 +2493,45 @@ public final class libecc {
     );
 
     /**
-     * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-05#section-6.2.3
+     * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-07#section-6.2.3
      *
-     * @param ke1_raw (output) a KE1 message structure, size:ecc_opaque_ristretto255_sha512_KE1SIZE
-     * @param state_raw (input, output) a ClientState structure, size:ecc_opaque_ristretto255_sha512_CLIENTSTATESIZE
-     * @param client_identity the optional encoded client identity, which is null if not specified, size:client_identity_len
-     * @param client_identity_len the length of `client_identity`
+     * @param ke1 (output) a KE1 message structure, size:ecc_opaque_ristretto255_sha512_KE1SIZE
+     * @param state (input, output) a ClientState structure, size:ecc_opaque_ristretto255_sha512_CLIENTSTATESIZE
+     * @param password an opaque byte string containing the client's password, size:password_len
+     * @param password_len the length of `password`
+     * @param blind size:ecc_opaque_ristretto255_sha512_Noe
+     * @param client_nonce size:ecc_opaque_ristretto255_sha512_Nn
+     * @param client_secret size:ecc_opaque_ristretto255_sha512_Nsk
+     * @param client_keyshare size:ecc_opaque_ristretto255_sha512_Npk
+     */
+    public static native void ecc_opaque_ristretto255_sha512_3DH_ClientInitWithSecrets(
+        byte[] ke1,
+        byte[] state,
+        byte[] password,
+        int password_len,
+        byte[] blind,
+        byte[] client_nonce,
+        byte[] client_secret,
+        byte[] client_keyshare
+    );
+
+    /**
+     * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-07#section-6.2.3
+     *
+     * @param ke1 (output) a KE1 message structure, size:ecc_opaque_ristretto255_sha512_KE1SIZE
+     * @param state (input, output) a ClientState structure, size:ecc_opaque_ristretto255_sha512_CLIENTSTATESIZE
      * @param password an opaque byte string containing the client's password, size:password_len
      * @param password_len the length of `password`
      */
     public static native void ecc_opaque_ristretto255_sha512_3DH_ClientInit(
-        byte[] ke1_raw,
-        byte[] state_raw,
-        byte[] client_identity,
-        int client_identity_len,
+        byte[] ke1,
+        byte[] state,
         byte[] password,
         int password_len
     );
 
     /**
-     * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-05#section-6.2.3
+     * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-07#section-6.2.3
      *
      * @param ke3_raw (output) a KE3 message structure, size:ecc_opaque_ristretto255_sha512_KE3SIZE
      * @param session_key (output) the session's shared secret, size:64
@@ -2450,7 +2545,10 @@ public final class libecc {
      * @param server_identity the optional encoded server identity, which is set
      * to server_public_key if not specified, size:server_identity_len
      * @param server_identity_len the length of `server_identity`
-     * @param ke2_raw a KE2 message structure, size:ecc_opaque_ristretto255_sha512_KE2SIZE
+     * @param ke2 a KE2 message structure, size:ecc_opaque_ristretto255_sha512_KE2SIZE
+     * @param mhf 
+     * @param context the application specific context, size:context_len
+     * @param context_len the length of `context`
      * @return 0 if is able to recover credentials and authenticate with the server, else -1
      */
     public static native int ecc_opaque_ristretto255_sha512_3DH_ClientFinish(
@@ -2464,24 +2562,46 @@ public final class libecc {
         int client_identity_len,
         byte[] server_identity,
         int server_identity_len,
-        byte[] ke2_raw
+        byte[] ke2,
+        int mhf,
+        byte[] context,
+        int context_len
     );
 
     /**
-     * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-05#section-6.2.3.1
+     * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-07#section-6.2.3.1
      *
-     * @param ke1_raw (output) size:ecc_opaque_ristretto255_sha512_KE1SIZE
-     * @param state_raw (input, output) size:ecc_opaque_ristretto255_sha512_CLIENTSTATESIZE
+     * @param ke1 (output) size:ecc_opaque_ristretto255_sha512_KE1SIZE
+     * @param state (input, output) size:ecc_opaque_ristretto255_sha512_CLIENTSTATESIZE
+     * @param credential_request size:ecc_opaque_ristretto255_sha512_CREDENTIALREQUESTSIZE
+     * @param client_nonce size:ecc_opaque_ristretto255_sha512_Nn
+     * @param client_secret size:ecc_opaque_ristretto255_sha512_Nsk
+     * @param client_keyshare size:ecc_opaque_ristretto255_sha512_Npk
+     */
+    public static native void ecc_opaque_ristretto255_sha512_3DH_StartWithSecrets(
+        byte[] ke1,
+        byte[] state,
+        byte[] credential_request,
+        byte[] client_nonce,
+        byte[] client_secret,
+        byte[] client_keyshare
+    );
+
+    /**
+     * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-07#section-6.2.3.1
+     *
+     * @param ke1 (output) size:ecc_opaque_ristretto255_sha512_KE1SIZE
+     * @param state (input, output) size:ecc_opaque_ristretto255_sha512_CLIENTSTATESIZE
      * @param credential_request size:ecc_opaque_ristretto255_sha512_CREDENTIALREQUESTSIZE
      */
     public static native void ecc_opaque_ristretto255_sha512_3DH_Start(
-        byte[] ke1_raw,
-        byte[] state_raw,
+        byte[] ke1,
+        byte[] state,
         byte[] credential_request
     );
 
     /**
-     * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-05#section-6.2.3.1
+     * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-07#section-6.2.3.1
 
      *
      * @param ke3_raw (output) size:ecc_opaque_ristretto255_sha512_KE3SIZE
@@ -2514,7 +2634,7 @@ public final class libecc {
     );
 
     /**
-     * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-05#section-6.2.4
+     * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-07#section-6.2.4
      *
      * @param ke2_raw (output) a KE2 structure, size:ecc_opaque_ristretto255_sha512_KE2SIZE
      * @param state_raw (input, output) a ServerState structure, size:ecc_opaque_ristretto255_sha512_SERVERSTATESIZE
@@ -2523,6 +2643,57 @@ public final class libecc {
      * @param server_identity_len the length of `server_identity`
      * @param server_private_key the server's private key, size:ecc_opaque_ristretto255_sha512_Nsk
      * @param server_public_key the server's public key, size:ecc_opaque_ristretto255_sha512_Npk
+     * @param client_identity the optional encoded server identity, which is set to
+     * client_public_key if null, size:client_identity_len
+     * @param client_identity_len the length of `client_identity`
+     * @param record_raw the client's RegistrationUpload structure, size:ecc_opaque_ristretto255_sha512_REGISTRATIONUPLOADSIZE
+     * @param credential_identifier an identifier that uniquely represents the credential
+     * being registered, size:credential_identifier_len
+     * @param credential_identifier_len the length of `credential_identifier`
+     * @param oprf_seed the server-side seed of Nh bytes used to generate an oprf_key, size:ecc_opaque_ristretto255_sha512_Nh
+     * @param ke1_raw a KE1 message structure, size:ecc_opaque_ristretto255_sha512_KE1SIZE
+     * @param context the application specific context, size:context_len
+     * @param context_len the length of `context`
+     * @param masking_nonce size:ecc_opaque_ristretto255_sha512_Nn
+     * @param server_nonce size:ecc_opaque_ristretto255_sha512_Nn
+     * @param server_secret size:ecc_opaque_ristretto255_sha512_Nsk
+     * @param server_keyshare size:ecc_opaque_ristretto255_sha512_Npk
+     */
+    public static native void ecc_opaque_ristretto255_sha512_3DH_ServerInitWithSecrets(
+        byte[] ke2_raw,
+        byte[] state_raw,
+        byte[] server_identity,
+        int server_identity_len,
+        byte[] server_private_key,
+        byte[] server_public_key,
+        byte[] client_identity,
+        int client_identity_len,
+        byte[] record_raw,
+        byte[] credential_identifier,
+        int credential_identifier_len,
+        byte[] oprf_seed,
+        byte[] ke1_raw,
+        byte[] context,
+        int context_len,
+        byte[] masking_nonce,
+        byte[] server_nonce,
+        byte[] server_secret,
+        byte[] server_keyshare
+    );
+
+    /**
+     * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-07#section-6.2.4
+     *
+     * @param ke2_raw (output) a KE2 structure, size:ecc_opaque_ristretto255_sha512_KE2SIZE
+     * @param state_raw (input, output) a ServerState structure, size:ecc_opaque_ristretto255_sha512_SERVERSTATESIZE
+     * @param server_identity the optional encoded server identity, which is set to
+     * server_public_key if null, size:server_identity_len
+     * @param server_identity_len the length of `server_identity`
+     * @param server_private_key the server's private key, size:ecc_opaque_ristretto255_sha512_Nsk
+     * @param server_public_key the server's public key, size:ecc_opaque_ristretto255_sha512_Npk
+     * @param client_identity the optional encoded server identity, which is set to
+     * client_public_key if null, size:client_identity_len
+     * @param client_identity_len the length of `client_identity`
      * @param record_raw the client's RegistrationUpload structure, size:ecc_opaque_ristretto255_sha512_REGISTRATIONUPLOADSIZE
      * @param credential_identifier an identifier that uniquely represents the credential
      * being registered, size:credential_identifier_len
@@ -2539,6 +2710,8 @@ public final class libecc {
         int server_identity_len,
         byte[] server_private_key,
         byte[] server_public_key,
+        byte[] client_identity,
+        int client_identity_len,
         byte[] record_raw,
         byte[] credential_identifier,
         int credential_identifier_len,
@@ -2549,7 +2722,7 @@ public final class libecc {
     );
 
     /**
-     * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-05#section-6.2.4
+     * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-07#section-6.2.4
      *
      * @param session_key (output) the shared session secret if and only if KE3 is valid, size:64
      * @param state_raw (input, output) a ServerState structure, size:ecc_opaque_ristretto255_sha512_SERVERSTATESIZE
@@ -2563,13 +2736,53 @@ public final class libecc {
     );
 
     /**
-     * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-05#section-6.2.4
+     * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-07#section-6.2.4
      *
      * @param ke2_raw (output) size:ecc_opaque_ristretto255_sha512_KE2SIZE
      * @param state_raw (input, output) size:ecc_opaque_ristretto255_sha512_SERVERSTATESIZE
      * @param server_identity size:server_identity_len
      * @param server_identity_len 
      * @param server_private_key size:ecc_opaque_ristretto255_sha512_Nsk
+     * @param server_public_key size:ecc_opaque_ristretto255_sha512_Npk
+     * @param client_identity size:client_identity_len
+     * @param client_identity_len 
+     * @param client_public_key size:ecc_opaque_ristretto255_sha512_Npk
+     * @param ke1_raw size:ecc_opaque_ristretto255_sha512_KE1SIZE
+     * @param credential_response_raw size:ecc_opaque_ristretto255_sha512_CREDENTIALRESPONSESIZE
+     * @param context size:context_len
+     * @param context_len 
+     * @param server_nonce size:ecc_opaque_ristretto255_sha512_Nn
+     * @param server_secret size:ecc_opaque_ristretto255_sha512_Nsk
+     * @param server_keyshare size:ecc_opaque_ristretto255_sha512_Npk
+     */
+    public static native void ecc_opaque_ristretto255_sha512_3DH_ResponseWithSecrets(
+        byte[] ke2_raw,
+        byte[] state_raw,
+        byte[] server_identity,
+        int server_identity_len,
+        byte[] server_private_key,
+        byte[] server_public_key,
+        byte[] client_identity,
+        int client_identity_len,
+        byte[] client_public_key,
+        byte[] ke1_raw,
+        byte[] credential_response_raw,
+        byte[] context,
+        int context_len,
+        byte[] server_nonce,
+        byte[] server_secret,
+        byte[] server_keyshare
+    );
+
+    /**
+     * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-07#section-6.2.4
+     *
+     * @param ke2_raw (output) size:ecc_opaque_ristretto255_sha512_KE2SIZE
+     * @param state_raw (input, output) size:ecc_opaque_ristretto255_sha512_SERVERSTATESIZE
+     * @param server_identity size:server_identity_len
+     * @param server_identity_len 
+     * @param server_private_key size:ecc_opaque_ristretto255_sha512_Nsk
+     * @param server_public_key size:ecc_opaque_ristretto255_sha512_Npk
      * @param client_identity size:client_identity_len
      * @param client_identity_len 
      * @param client_public_key size:ecc_opaque_ristretto255_sha512_Npk
@@ -2584,6 +2797,7 @@ public final class libecc {
         byte[] server_identity,
         int server_identity_len,
         byte[] server_private_key,
+        byte[] server_public_key,
         byte[] client_identity,
         int client_identity_len,
         byte[] client_public_key,

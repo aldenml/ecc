@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021, Alden Torres
+ * Copyright (c) 2021-2022, Alden Torres
  *
  * Licensed under the terms of the MIT license.
  * Copy of the license at https://opensource.org/licenses/MIT
@@ -93,6 +93,30 @@ void ecc_kdf_hkdf_sha512_expand(
     byte_t *okm,
     const byte_t *prk,
     const byte_t *info, int info_len,
+    int len
+);
+
+/**
+ * See https://datatracker.ietf.org/doc/html/rfc7914
+ *
+ * @param[out] out size:len
+ * @param passphrase size:passphrase_len
+ * @param passphrase_len
+ * @param salt size:salt_len
+ * @param salt_len
+ * @param cost
+ * @param block_size
+ * @param parallelization
+ * @param len
+ */
+ECC_EXPORT
+void ecc_kdf_scrypt(
+    byte_t *out,
+    const byte_t *passphrase, int passphrase_len,
+    const byte_t *salt, int salt_len,
+    int cost,
+    int block_size,
+    int parallelization,
     int len
 );
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021, Alden Torres
+ * Copyright (c) 2021-2022, Alden Torres
  *
  * Licensed under the terms of the MIT license.
  * Copy of the license at https://opensource.org/licenses/MIT
@@ -13,7 +13,7 @@ import libecc_module from "./libecc.js";
  * This is implemented by generating a random "seed", then
  * calling internally DeriveAuthKeyPair.
  *
- * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-05#section-2
+ * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-07#section-2
  *
  * @return object {private_key, public_key}
  */
@@ -35,7 +35,7 @@ export async function opaque_ristretto255_sha512_GenerateAuthKeyPair() {
 }
 
 /**
- * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-05#section-5.1.1.1
+ * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-07#section-5.1.1.1
  *
  * @param {Uint8Array} password an opaque byte string containing the client's password
  * @return object {request, blind}
@@ -64,7 +64,7 @@ export async function opaque_ristretto255_sha512_CreateRegistrationRequest(
  * In order to make this method not to use dynamic memory allocation, there is a
  * limit of credential_identifier to length <= 200.
  *
- * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-05#section-5.1.1.2
+ * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-07#section-5.1.1.2
  *
  * @param {Uint8Array} request_raw a RegistrationRequest structure
  * @param {Uint8Array} server_public_key the server's public key
@@ -103,9 +103,8 @@ export async function opaque_ristretto255_sha512_CreateRegistrationResponse(
  * executes the following function. Since this works in the internal key mode, the
  * "client_private_key" is null.
  *
- * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-05#section-5.1.1.3
+ * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-07#section-5.1.1.3
  *
- * @param {Uint8Array} client_private_key the client's private key (always null, internal mode)
  * @param {Uint8Array} password an opaque byte string containing the client's password
  * @param {Uint8Array} blind the OPRF scalar value used for blinding
  * @param {Uint8Array} response_raw a RegistrationResponse structure
@@ -114,7 +113,6 @@ export async function opaque_ristretto255_sha512_CreateRegistrationResponse(
  * @return object {record, export_key}
  */
 export async function opaque_ristretto255_sha512_FinalizeRequest(
-    client_private_key,
     password,
     blind,
     response_raw,
@@ -123,7 +121,6 @@ export async function opaque_ristretto255_sha512_FinalizeRequest(
 ) {
     const libecc = await libecc_module();
 
-    client_private_key = client_private_key || new Uint8Array(0);
     server_identity = server_identity || new Uint8Array(0);
     client_identity = client_identity || new Uint8Array(0);
 
@@ -133,12 +130,12 @@ export async function opaque_ristretto255_sha512_FinalizeRequest(
     await libecc.ecc_opaque_ristretto255_sha512_FinalizeRequest(
         record_raw,
         export_key,
-        client_private_key,
         password, password.length,
         blind,
         response_raw,
         server_identity, server_identity.length,
         client_identity, client_identity.length,
+        libecc.ecc_opaque_ristretto255_sha512_MHF_IDENTITY,
     );
 
     return {
@@ -148,28 +145,23 @@ export async function opaque_ristretto255_sha512_FinalizeRequest(
 }
 
 /**
- * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-05#section-6.2.3
+ * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-07#section-6.2.3
  *
  * @param {Uint8Array} state_raw a ClientState structure
- * @param {Uint8Array} client_identity the optional encoded client identity, which is null if not specified
  * @param {Uint8Array} password an opaque byte string containing the client's password
  * @return {Promise<Uint8Array>} a KE1 message structure
  */
 export async function opaque_ristretto255_sha512_3DH_ClientInit(
     state_raw,
-    client_identity,
     password,
 ) {
     const libecc = await libecc_module();
-
-    client_identity = client_identity || new Uint8Array(0);
 
     let ke1_raw = new Uint8Array(96);
 
     await libecc.ecc_opaque_ristretto255_sha512_3DH_ClientInit(
         ke1_raw,
         state_raw,
-        client_identity, client_identity.length,
         password, password.length,
     );
 
@@ -177,7 +169,7 @@ export async function opaque_ristretto255_sha512_3DH_ClientInit(
 }
 
 /**
- * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-05#section-6.2.3
+ * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-07#section-6.2.3
  *
  * @param {Uint8Array} state_raw a ClientState structure
  * @param {Uint8Array} password an opaque byte string containing the client's password
@@ -213,6 +205,8 @@ export async function opaque_ristretto255_sha512_3DH_ClientFinish(
         client_identity, client_identity.length,
         server_identity, server_identity.length,
         ke2_raw,
+        libecc.ecc_opaque_ristretto255_sha512_MHF_IDENTITY,
+        new Uint8Array(0), 0,
     );
 
     return {
@@ -224,13 +218,14 @@ export async function opaque_ristretto255_sha512_3DH_ClientFinish(
 }
 
 /**
- * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-05#section-6.2.4
+ * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-07#section-6.2.4
  *
  * @param {Uint8Array} state_raw a ServerState structure
  * @param {Uint8Array} server_identity the optional encoded server identity, which is set to
  * server_public_key if null
  * @param {Uint8Array} server_private_key the server's private key
  * @param {Uint8Array} server_public_key the server's public key
+ * @param {Uint8Array} client_identity
  * @param {Uint8Array} record_raw the client's RegistrationUpload structure
  * @param {Uint8Array} credential_identifier an identifier that uniquely represents the credential
  * being registered
@@ -244,6 +239,7 @@ export async function opaque_ristretto255_sha512_3DH_ServerInit(
     server_identity,
     server_private_key,
     server_public_key,
+    client_identity,
     record_raw,
     credential_identifier,
     oprf_seed,
@@ -253,6 +249,7 @@ export async function opaque_ristretto255_sha512_3DH_ServerInit(
     const libecc = await libecc_module();
 
     server_identity = server_identity || new Uint8Array(0);
+    client_identity = client_identity || new Uint8Array(0);
     context = context || new Uint8Array(0);
 
     let ke2_raw = new Uint8Array(320);
@@ -263,6 +260,7 @@ export async function opaque_ristretto255_sha512_3DH_ServerInit(
         server_identity, server_identity.length,
         server_private_key,
         server_public_key,
+        client_identity, client_identity.length,
         record_raw,
         credential_identifier, credential_identifier.length,
         oprf_seed,
@@ -274,7 +272,7 @@ export async function opaque_ristretto255_sha512_3DH_ServerInit(
 }
 
 /**
- * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-05#section-6.2.4
+ * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-07#section-6.2.4
  *
  * @param {Uint8Array} state_raw a ServerState structure
  * @param {Uint8Array} ke3_raw a KE3 structure

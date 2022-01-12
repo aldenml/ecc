@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021, Alden Torres
+ * Copyright (c) 2021-2022, Alden Torres
  *
  * Licensed under the terms of the MIT license.
  * Copy of the license at https://opensource.org/licenses/MIT
@@ -43,6 +43,6 @@ describe("HMAC-SHA-256, HMAC-SHA-512", () => {
         libecc.ecc_mac_hmac_sha512(out512, data, data.length, key);
 
         assert.strictEqual(bin2hex(out256), "5bdcc146bf60754e6a042426089575c75a003f089d2739839dec58b964ec3843");
-        assert.strictEqual(bin2hex(out512), "164b7a7bfcf819e2e395fbe73b56e0a387bd64222e831fd610270cd7ea2505549758bf75c05a994a6d034f65f8f0e6fdcaeab1a34d4a6b4b636e070a38bce737");
+        assert.strictEqual(bin2hex(out512), "1eabf181074125b91b02fe6c9462393793db6d8fb33f65b2fcfd41af8e0884f77fdad9efa28d5f43be81c2df44fa1326b249eced611963a343f811893a81f409");
     });
 });

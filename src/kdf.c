@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021, Alden Torres
+ * Copyright (c) 2021-2022, Alden Torres
  *
  * Licensed under the terms of the MIT license.
  * Copy of the license at https://opensource.org/licenses/MIT
@@ -60,5 +60,24 @@ void ecc_kdf_hkdf_sha512_expand(
         okm, len,
         (const char *) info, info_len,
         prk
+    );
+}
+
+void ecc_kdf_scrypt(
+    byte_t *out,
+    const byte_t *passphrase, const int passphrase_len,
+    const byte_t *salt, const int salt_len,
+    const int cost,
+    const int block_size,
+    const int parallelization,
+    const int len
+) {
+    crypto_pwhash_scryptsalsa208sha256_ll(
+        passphrase, passphrase_len,
+        salt, salt_len,
+        cost,
+        block_size,
+        parallelization,
+        out, len
     );
 }
