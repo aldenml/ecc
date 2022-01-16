@@ -678,120 +678,6 @@ JNIEXPORT int JNICALL Java_org_ssohub_crypto_ecc_libecc_ecc_1ed25519_1scalarmult
     return fun_ret;
 }
 
-JNIEXPORT void JNICALL Java_org_ssohub_crypto_ecc_libecc_ecc_1ed25519_1sign(
-    JNIEnv *env, jclass cls,
-    jbyteArray sig,
-    jbyteArray msg,
-    jint msg_len,
-    jbyteArray sk
-) {
-    byte_t *ptr_sig = mput(env, sig, ecc_ed25519_sign_SIZE);
-    byte_t *ptr_msg = mput(env, msg, msg_len);
-    byte_t *ptr_sk = mput(env, sk, ecc_ed25519_sign_SECRETKEYSIZE);
-    ecc_ed25519_sign(
-        ptr_sig,
-        ptr_msg,
-        msg_len,
-        ptr_sk
-    );
-    mget(env, sig, ptr_sig, ecc_ed25519_sign_SIZE);
-    mfree(ptr_sig, ecc_ed25519_sign_SIZE);
-    mfree(ptr_msg, msg_len);
-    mfree(ptr_sk, ecc_ed25519_sign_SECRETKEYSIZE);
-}
-
-JNIEXPORT int JNICALL Java_org_ssohub_crypto_ecc_libecc_ecc_1ed25519_1sign_1verify(
-    JNIEnv *env, jclass cls,
-    jbyteArray sig,
-    jbyteArray msg,
-    jint msg_len,
-    jbyteArray pk
-) {
-    byte_t *ptr_sig = mput(env, sig, ecc_ed25519_sign_SIZE);
-    byte_t *ptr_msg = mput(env, msg, msg_len);
-    byte_t *ptr_pk = mput(env, pk, ecc_ed25519_sign_PUBLICKEYSIZE);
-    const int fun_ret = ecc_ed25519_sign_verify(
-        ptr_sig,
-        ptr_msg,
-        msg_len,
-        ptr_pk
-    );
-    mfree(ptr_sig, ecc_ed25519_sign_SIZE);
-    mfree(ptr_msg, msg_len);
-    mfree(ptr_pk, ecc_ed25519_sign_PUBLICKEYSIZE);
-    return fun_ret;
-}
-
-JNIEXPORT void JNICALL Java_org_ssohub_crypto_ecc_libecc_ecc_1ed25519_1sign_1keypair(
-    JNIEnv *env, jclass cls,
-    jbyteArray pk,
-    jbyteArray sk
-) {
-    byte_t *ptr_pk = mput(env, pk, ecc_ed25519_sign_PUBLICKEYSIZE);
-    byte_t *ptr_sk = mput(env, sk, ecc_ed25519_sign_SECRETKEYSIZE);
-    ecc_ed25519_sign_keypair(
-        ptr_pk,
-        ptr_sk
-    );
-    mget(env, pk, ptr_pk, ecc_ed25519_sign_PUBLICKEYSIZE);
-    mget(env, sk, ptr_sk, ecc_ed25519_sign_SECRETKEYSIZE);
-    mfree(ptr_pk, ecc_ed25519_sign_PUBLICKEYSIZE);
-    mfree(ptr_sk, ecc_ed25519_sign_SECRETKEYSIZE);
-}
-
-JNIEXPORT void JNICALL Java_org_ssohub_crypto_ecc_libecc_ecc_1ed25519_1sign_1seed_1keypair(
-    JNIEnv *env, jclass cls,
-    jbyteArray pk,
-    jbyteArray sk,
-    jbyteArray seed
-) {
-    byte_t *ptr_pk = mput(env, pk, ecc_ed25519_sign_PUBLICKEYSIZE);
-    byte_t *ptr_sk = mput(env, sk, ecc_ed25519_sign_SECRETKEYSIZE);
-    byte_t *ptr_seed = mput(env, seed, ecc_ed25519_sign_SEEDSIZE);
-    ecc_ed25519_sign_seed_keypair(
-        ptr_pk,
-        ptr_sk,
-        ptr_seed
-    );
-    mget(env, pk, ptr_pk, ecc_ed25519_sign_PUBLICKEYSIZE);
-    mget(env, sk, ptr_sk, ecc_ed25519_sign_SECRETKEYSIZE);
-    mfree(ptr_pk, ecc_ed25519_sign_PUBLICKEYSIZE);
-    mfree(ptr_sk, ecc_ed25519_sign_SECRETKEYSIZE);
-    mfree(ptr_seed, ecc_ed25519_sign_SEEDSIZE);
-}
-
-JNIEXPORT void JNICALL Java_org_ssohub_crypto_ecc_libecc_ecc_1ed25519_1sign_1sk_1to_1seed(
-    JNIEnv *env, jclass cls,
-    jbyteArray seed,
-    jbyteArray sk
-) {
-    byte_t *ptr_seed = mput(env, seed, ecc_ed25519_sign_SEEDSIZE);
-    byte_t *ptr_sk = mput(env, sk, ecc_ed25519_sign_SECRETKEYSIZE);
-    ecc_ed25519_sign_sk_to_seed(
-        ptr_seed,
-        ptr_sk
-    );
-    mget(env, seed, ptr_seed, ecc_ed25519_sign_SEEDSIZE);
-    mfree(ptr_seed, ecc_ed25519_sign_SEEDSIZE);
-    mfree(ptr_sk, ecc_ed25519_sign_SECRETKEYSIZE);
-}
-
-JNIEXPORT void JNICALL Java_org_ssohub_crypto_ecc_libecc_ecc_1ed25519_1sign_1sk_1to_1pk(
-    JNIEnv *env, jclass cls,
-    jbyteArray pk,
-    jbyteArray sk
-) {
-    byte_t *ptr_pk = mput(env, pk, ecc_ed25519_sign_PUBLICKEYSIZE);
-    byte_t *ptr_sk = mput(env, sk, ecc_ed25519_sign_SECRETKEYSIZE);
-    ecc_ed25519_sign_sk_to_pk(
-        ptr_pk,
-        ptr_sk
-    );
-    mget(env, pk, ptr_pk, ecc_ed25519_sign_PUBLICKEYSIZE);
-    mfree(ptr_pk, ecc_ed25519_sign_PUBLICKEYSIZE);
-    mfree(ptr_sk, ecc_ed25519_sign_SECRETKEYSIZE);
-}
-
 // ristretto255
 
 JNIEXPORT int JNICALL Java_org_ssohub_crypto_ecc_libecc_ecc_1ristretto255_1is_1valid_1point(
@@ -3313,6 +3199,120 @@ JNIEXPORT void JNICALL Java_org_ssohub_crypto_ecc_libecc_ecc_1opaque_1ristretto2
 }
 
 // sign
+
+JNIEXPORT void JNICALL Java_org_ssohub_crypto_ecc_libecc_ecc_1sign_1ed25519_1sign(
+    JNIEnv *env, jclass cls,
+    jbyteArray sig,
+    jbyteArray msg,
+    jint msg_len,
+    jbyteArray sk
+) {
+    byte_t *ptr_sig = mput(env, sig, ecc_sign_ed25519_SIZE);
+    byte_t *ptr_msg = mput(env, msg, msg_len);
+    byte_t *ptr_sk = mput(env, sk, ecc_sign_ed25519_SECRETKEYSIZE);
+    ecc_sign_ed25519_sign(
+        ptr_sig,
+        ptr_msg,
+        msg_len,
+        ptr_sk
+    );
+    mget(env, sig, ptr_sig, ecc_sign_ed25519_SIZE);
+    mfree(ptr_sig, ecc_sign_ed25519_SIZE);
+    mfree(ptr_msg, msg_len);
+    mfree(ptr_sk, ecc_sign_ed25519_SECRETKEYSIZE);
+}
+
+JNIEXPORT int JNICALL Java_org_ssohub_crypto_ecc_libecc_ecc_1sign_1ed25519_1verify(
+    JNIEnv *env, jclass cls,
+    jbyteArray sig,
+    jbyteArray msg,
+    jint msg_len,
+    jbyteArray pk
+) {
+    byte_t *ptr_sig = mput(env, sig, ecc_sign_ed25519_SIZE);
+    byte_t *ptr_msg = mput(env, msg, msg_len);
+    byte_t *ptr_pk = mput(env, pk, ecc_sign_ed25519_PUBLICKEYSIZE);
+    const int fun_ret = ecc_sign_ed25519_verify(
+        ptr_sig,
+        ptr_msg,
+        msg_len,
+        ptr_pk
+    );
+    mfree(ptr_sig, ecc_sign_ed25519_SIZE);
+    mfree(ptr_msg, msg_len);
+    mfree(ptr_pk, ecc_sign_ed25519_PUBLICKEYSIZE);
+    return fun_ret;
+}
+
+JNIEXPORT void JNICALL Java_org_ssohub_crypto_ecc_libecc_ecc_1sign_1ed25519_1keypair(
+    JNIEnv *env, jclass cls,
+    jbyteArray pk,
+    jbyteArray sk
+) {
+    byte_t *ptr_pk = mput(env, pk, ecc_sign_ed25519_PUBLICKEYSIZE);
+    byte_t *ptr_sk = mput(env, sk, ecc_sign_ed25519_SECRETKEYSIZE);
+    ecc_sign_ed25519_keypair(
+        ptr_pk,
+        ptr_sk
+    );
+    mget(env, pk, ptr_pk, ecc_sign_ed25519_PUBLICKEYSIZE);
+    mget(env, sk, ptr_sk, ecc_sign_ed25519_SECRETKEYSIZE);
+    mfree(ptr_pk, ecc_sign_ed25519_PUBLICKEYSIZE);
+    mfree(ptr_sk, ecc_sign_ed25519_SECRETKEYSIZE);
+}
+
+JNIEXPORT void JNICALL Java_org_ssohub_crypto_ecc_libecc_ecc_1sign_1ed25519_1seed_1keypair(
+    JNIEnv *env, jclass cls,
+    jbyteArray pk,
+    jbyteArray sk,
+    jbyteArray seed
+) {
+    byte_t *ptr_pk = mput(env, pk, ecc_sign_ed25519_PUBLICKEYSIZE);
+    byte_t *ptr_sk = mput(env, sk, ecc_sign_ed25519_SECRETKEYSIZE);
+    byte_t *ptr_seed = mput(env, seed, ecc_sign_ed25519_SEEDSIZE);
+    ecc_sign_ed25519_seed_keypair(
+        ptr_pk,
+        ptr_sk,
+        ptr_seed
+    );
+    mget(env, pk, ptr_pk, ecc_sign_ed25519_PUBLICKEYSIZE);
+    mget(env, sk, ptr_sk, ecc_sign_ed25519_SECRETKEYSIZE);
+    mfree(ptr_pk, ecc_sign_ed25519_PUBLICKEYSIZE);
+    mfree(ptr_sk, ecc_sign_ed25519_SECRETKEYSIZE);
+    mfree(ptr_seed, ecc_sign_ed25519_SEEDSIZE);
+}
+
+JNIEXPORT void JNICALL Java_org_ssohub_crypto_ecc_libecc_ecc_1sign_1ed25519_1sk_1to_1seed(
+    JNIEnv *env, jclass cls,
+    jbyteArray seed,
+    jbyteArray sk
+) {
+    byte_t *ptr_seed = mput(env, seed, ecc_sign_ed25519_SEEDSIZE);
+    byte_t *ptr_sk = mput(env, sk, ecc_sign_ed25519_SECRETKEYSIZE);
+    ecc_sign_ed25519_sk_to_seed(
+        ptr_seed,
+        ptr_sk
+    );
+    mget(env, seed, ptr_seed, ecc_sign_ed25519_SEEDSIZE);
+    mfree(ptr_seed, ecc_sign_ed25519_SEEDSIZE);
+    mfree(ptr_sk, ecc_sign_ed25519_SECRETKEYSIZE);
+}
+
+JNIEXPORT void JNICALL Java_org_ssohub_crypto_ecc_libecc_ecc_1sign_1ed25519_1sk_1to_1pk(
+    JNIEnv *env, jclass cls,
+    jbyteArray pk,
+    jbyteArray sk
+) {
+    byte_t *ptr_pk = mput(env, pk, ecc_sign_ed25519_PUBLICKEYSIZE);
+    byte_t *ptr_sk = mput(env, sk, ecc_sign_ed25519_SECRETKEYSIZE);
+    ecc_sign_ed25519_sk_to_pk(
+        ptr_pk,
+        ptr_sk
+    );
+    mget(env, pk, ptr_pk, ecc_sign_ed25519_PUBLICKEYSIZE);
+    mfree(ptr_pk, ecc_sign_ed25519_PUBLICKEYSIZE);
+    mfree(ptr_sk, ecc_sign_ed25519_SECRETKEYSIZE);
+}
 
 JNIEXPORT void JNICALL Java_org_ssohub_crypto_ecc_libecc_ecc_1sign_1bls12_1381_1KeyGen(
     JNIEnv *env, jclass cls,

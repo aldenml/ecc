@@ -15,6 +15,7 @@
 #include "ed25519.h"
 #include "bls12_381.h"
 #include "h2c.h"
+#include "sign.h"
 
 typedef struct {
     byte_t epk[ecc_pre_schema1_PUBLICKEYSIZE];
@@ -120,7 +121,7 @@ void ecc_pre_schema1_DeriveSigningKey(
     const byte_t *seed
 ) {
     byte_t dst[28] = "PRE-SCHEMA1-DeriveSigningKey";
-    byte_t s[ecc_ed25519_sign_SEEDSIZE];
+    byte_t s[ecc_sign_ed25519_SEEDSIZE];
     ecc_h2c_expand_message_xmd_sha256(
         s,
         seed, ecc_pre_schema1_SEEDSIZE,
@@ -128,7 +129,7 @@ void ecc_pre_schema1_DeriveSigningKey(
         sizeof s
     );
 
-    ecc_ed25519_sign_seed_keypair(spk, ssk, s);
+    ecc_sign_ed25519_seed_keypair(spk, ssk, s);
 
     // cleanup stack memory
     ecc_memzero(s, sizeof s);

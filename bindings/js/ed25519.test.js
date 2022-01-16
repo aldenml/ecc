@@ -41,7 +41,7 @@ describe("ecc_ed25519_sign_seed_keypair", () => {
         const seed = hex2bin("829ee32a86b93d3766df28d8d77069fdc04e05b17fb095043c72a56d846d0372");
         let pk = new Uint8Array(32);
         let sk = new Uint8Array(64);
-        libecc.ecc_ed25519_sign_seed_keypair(pk, sk, seed);
+        libecc.ecc_sign_ed25519_seed_keypair(pk, sk, seed);
         assert.strictEqual(bin2hex(pk), "b5ed5efc01b59d13708efa6186a6b11df026e1f5f66d417492c795bbc53211ee");
         assert.strictEqual(bin2hex(sk), "829ee32a86b93d3766df28d8d77069fdc04e05b17fb095043c72a56d846d0372b5ed5efc01b59d13708efa6186a6b11df026e1f5f66d417492c795bbc53211ee");
     });
