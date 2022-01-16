@@ -8,6 +8,7 @@
 [![javadoc](https://javadoc.io/badge2/org.ssohub/ecc/javadoc.svg)](https://javadoc.io/doc/org.ssohub/ecc)
 [![Maintainability Rating](https://sonarcloud.io/api/project_badges/measure?project=aldenml_ecc&metric=sqale_rating)](https://sonarcloud.io/summary/new_code?id=aldenml_ecc)
 [![Security Rating](https://sonarcloud.io/api/project_badges/measure?project=aldenml_ecc&metric=security_rating)](https://sonarcloud.io/summary/new_code?id=aldenml_ecc)
+[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=aldenml_ecc&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=aldenml_ecc)
 
 Library to work with elliptic-curve cryptography based on [libsodium](https://github.com/jedisct1/libsodium)
 and [blst](https://github.com/supranational/blst).
