@@ -10,6 +10,101 @@
 
 #include "export.h"
 
+// const
+/**
+ * Signature size.
+ */
+#define ecc_sign_ed25519_SIZE 64
+
+// const
+/**
+ * Seed size.
+ */
+#define ecc_sign_ed25519_SEEDSIZE 32
+
+// const
+/**
+ * Public key size.
+ */
+#define ecc_sign_ed25519_PUBLICKEYSIZE 32
+
+// const
+/**
+ * Secret key size.
+ */
+#define ecc_sign_ed25519_SECRETKEYSIZE 64
+
+/**
+ * Signs the message msg whose length is msg_len bytes, using the
+ * secret key sk, and puts the signature into sig.
+ *
+ * @param[out] sig the signature, size:ecc_sign_ed25519_SIZE
+ * @param msg input message, size:msg_len
+ * @param msg_len the length of `msg`
+ * @param sk the secret key, size:ecc_sign_ed25519_SECRETKEYSIZE
+ */
+ECC_EXPORT
+void ecc_sign_ed25519_sign(
+    byte_t *sig,
+    const byte_t *msg, int msg_len,
+    const byte_t *sk
+);
+
+/**
+ * Verifies that sig is a valid signature for the message msg whose length
+ * is msg_len bytes, using the signer's public key pk.
+ *
+ * @param sig the signature, size:ecc_sign_ed25519_SIZE
+ * @param msg input message, size:msg_len
+ * @param msg_len the length of `msg`
+ * @param pk the public key, size:ecc_sign_ed25519_PUBLICKEYSIZE
+ * @return -1 if the signature fails verification, or 0 on success
+ */
+ECC_EXPORT
+int ecc_sign_ed25519_verify(
+    const byte_t *sig,
+    const byte_t *msg, int msg_len,
+    const byte_t *pk
+);
+
+/**
+ * Generates a random key pair of public and private keys.
+ *
+ * @param[out] pk public key, size:ecc_sign_ed25519_PUBLICKEYSIZE
+ * @param[out] sk private key, size:ecc_sign_ed25519_SECRETKEYSIZE
+ */
+ECC_EXPORT
+void ecc_sign_ed25519_keypair(byte_t *pk, byte_t *sk);
+
+/**
+ * Generates a random key pair of public and private keys derived
+ * from a seed.
+ *
+ * @param[out] pk public key, size:ecc_sign_ed25519_PUBLICKEYSIZE
+ * @param[out] sk private key, size:ecc_sign_ed25519_SECRETKEYSIZE
+ * @param seed seed to generate the keys, size:ecc_sign_ed25519_SEEDSIZE
+ */
+ECC_EXPORT
+void ecc_sign_ed25519_seed_keypair(byte_t *pk, byte_t *sk, const byte_t *seed);
+
+/**
+ * Extracts the seed from the secret key sk and copies it into seed.
+ *
+ * @param[out] seed the seed used to generate the secret key, size:ecc_sign_ed25519_SEEDSIZE
+ * @param sk the secret key, size:ecc_sign_ed25519_SECRETKEYSIZE
+ */
+ECC_EXPORT
+void ecc_sign_ed25519_sk_to_seed(byte_t *seed, const byte_t *sk);
+
+/**
+ * Extracts the public key from the secret key sk and copies it into pk.
+ *
+ * @param[out] pk the public key, size:ecc_sign_ed25519_PUBLICKEYSIZE
+ * @param sk the secret key, size:ecc_sign_ed25519_SECRETKEYSIZE
+ */
+ECC_EXPORT
+void ecc_sign_ed25519_sk_to_pk(byte_t *pk, const byte_t *sk);
+
 // https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-bls-signature-04
 // https://github.com/cfrg/draft-irtf-cfrg-bls-signature
 //

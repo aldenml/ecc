@@ -436,30 +436,6 @@ public final class libecc {
     public static final int ecc_ed25519_NONREDUCEDSCALARSIZE = 64;
 
     /**
-     * Signature size.
-     *
-     */
-    public static final int ecc_ed25519_sign_SIZE = 64;
-
-    /**
-     * Seed size.
-     *
-     */
-    public static final int ecc_ed25519_sign_SEEDSIZE = 32;
-
-    /**
-     * Public key size.
-     *
-     */
-    public static final int ecc_ed25519_sign_PUBLICKEYSIZE = 32;
-
-    /**
-     * Secret key size.
-     *
-     */
-    public static final int ecc_ed25519_sign_SECRETKEYSIZE = 64;
-
-    /**
      * Checks that p represents a point on the edwards25519 curve, in canonical
      * form, on the main subgroup, and that the point doesn't have a small order.
      *
@@ -654,86 +630,6 @@ public final class libecc {
     public static native int ecc_ed25519_scalarmult_base(
         byte[] q,
         byte[] n
-    );
-
-    /**
-     * Signs the message msg whose length is msg_len bytes, using the
-     * secret key sk, and puts the signature into sig.
-     *
-     * @param sig (output) the signature, size:ecc_ed25519_sign_SIZE
-     * @param msg input message, size:msg_len
-     * @param msg_len the length of `msg`
-     * @param sk the secret key, size:ecc_ed25519_sign_SECRETKEYSIZE
-     */
-    public static native void ecc_ed25519_sign(
-        byte[] sig,
-        byte[] msg,
-        int msg_len,
-        byte[] sk
-    );
-
-    /**
-     * Verifies that sig is a valid signature for the message msg whose length
-     * is msg_len bytes, using the signer's public key pk.
-     *
-     * @param sig the signature, size:ecc_ed25519_sign_SIZE
-     * @param msg input message, size:msg_len
-     * @param msg_len the length of `msg`
-     * @param pk the public key, size:ecc_ed25519_sign_PUBLICKEYSIZE
-     * @return -1 if the signature fails verification, or 0 on success
-     */
-    public static native int ecc_ed25519_sign_verify(
-        byte[] sig,
-        byte[] msg,
-        int msg_len,
-        byte[] pk
-    );
-
-    /**
-     * Generates a random key pair of public and private keys.
-     *
-     * @param pk (output) public key, size:ecc_ed25519_sign_PUBLICKEYSIZE
-     * @param sk (output) private key, size:ecc_ed25519_sign_SECRETKEYSIZE
-     */
-    public static native void ecc_ed25519_sign_keypair(
-        byte[] pk,
-        byte[] sk
-    );
-
-    /**
-     * Generates a random key pair of public and private keys derived
-     * from a seed.
-     *
-     * @param pk (output) public key, size:ecc_ed25519_sign_PUBLICKEYSIZE
-     * @param sk (output) private key, size:ecc_ed25519_sign_SECRETKEYSIZE
-     * @param seed seed to generate the keys, size:ecc_ed25519_sign_SEEDSIZE
-     */
-    public static native void ecc_ed25519_sign_seed_keypair(
-        byte[] pk,
-        byte[] sk,
-        byte[] seed
-    );
-
-    /**
-     * Extracts the seed from the secret key sk and copies it into seed.
-     *
-     * @param seed (output) the seed used to generate the secret key, size:ecc_ed25519_sign_SEEDSIZE
-     * @param sk the secret key, size:ecc_ed25519_sign_SECRETKEYSIZE
-     */
-    public static native void ecc_ed25519_sign_sk_to_seed(
-        byte[] seed,
-        byte[] sk
-    );
-
-    /**
-     * Extracts the public key from the secret key sk and copies it into pk.
-     *
-     * @param pk (output) the public key, size:ecc_ed25519_sign_PUBLICKEYSIZE
-     * @param sk the secret key, size:ecc_ed25519_sign_SECRETKEYSIZE
-     */
-    public static native void ecc_ed25519_sign_sk_to_pk(
-        byte[] pk,
-        byte[] sk
     );
 
     // ristretto255
@@ -2810,6 +2706,30 @@ public final class libecc {
     // sign
 
     /**
+     * Signature size.
+     *
+     */
+    public static final int ecc_sign_ed25519_SIZE = 64;
+
+    /**
+     * Seed size.
+     *
+     */
+    public static final int ecc_sign_ed25519_SEEDSIZE = 32;
+
+    /**
+     * Public key size.
+     *
+     */
+    public static final int ecc_sign_ed25519_PUBLICKEYSIZE = 32;
+
+    /**
+     * Secret key size.
+     *
+     */
+    public static final int ecc_sign_ed25519_SECRETKEYSIZE = 64;
+
+    /**
      * Size of the signing public key (size of a compressed G1 element in BLS12-381).
      *
      */
@@ -2826,6 +2746,86 @@ public final class libecc {
      *
      */
     public static final int ecc_sign_bls12_381_SIGNATURESIZE = 96;
+
+    /**
+     * Signs the message msg whose length is msg_len bytes, using the
+     * secret key sk, and puts the signature into sig.
+     *
+     * @param sig (output) the signature, size:ecc_sign_ed25519_SIZE
+     * @param msg input message, size:msg_len
+     * @param msg_len the length of `msg`
+     * @param sk the secret key, size:ecc_sign_ed25519_SECRETKEYSIZE
+     */
+    public static native void ecc_sign_ed25519_sign(
+        byte[] sig,
+        byte[] msg,
+        int msg_len,
+        byte[] sk
+    );
+
+    /**
+     * Verifies that sig is a valid signature for the message msg whose length
+     * is msg_len bytes, using the signer's public key pk.
+     *
+     * @param sig the signature, size:ecc_sign_ed25519_SIZE
+     * @param msg input message, size:msg_len
+     * @param msg_len the length of `msg`
+     * @param pk the public key, size:ecc_sign_ed25519_PUBLICKEYSIZE
+     * @return -1 if the signature fails verification, or 0 on success
+     */
+    public static native int ecc_sign_ed25519_verify(
+        byte[] sig,
+        byte[] msg,
+        int msg_len,
+        byte[] pk
+    );
+
+    /**
+     * Generates a random key pair of public and private keys.
+     *
+     * @param pk (output) public key, size:ecc_sign_ed25519_PUBLICKEYSIZE
+     * @param sk (output) private key, size:ecc_sign_ed25519_SECRETKEYSIZE
+     */
+    public static native void ecc_sign_ed25519_keypair(
+        byte[] pk,
+        byte[] sk
+    );
+
+    /**
+     * Generates a random key pair of public and private keys derived
+     * from a seed.
+     *
+     * @param pk (output) public key, size:ecc_sign_ed25519_PUBLICKEYSIZE
+     * @param sk (output) private key, size:ecc_sign_ed25519_SECRETKEYSIZE
+     * @param seed seed to generate the keys, size:ecc_sign_ed25519_SEEDSIZE
+     */
+    public static native void ecc_sign_ed25519_seed_keypair(
+        byte[] pk,
+        byte[] sk,
+        byte[] seed
+    );
+
+    /**
+     * Extracts the seed from the secret key sk and copies it into seed.
+     *
+     * @param seed (output) the seed used to generate the secret key, size:ecc_sign_ed25519_SEEDSIZE
+     * @param sk the secret key, size:ecc_sign_ed25519_SECRETKEYSIZE
+     */
+    public static native void ecc_sign_ed25519_sk_to_seed(
+        byte[] seed,
+        byte[] sk
+    );
+
+    /**
+     * Extracts the public key from the secret key sk and copies it into pk.
+     *
+     * @param pk (output) the public key, size:ecc_sign_ed25519_PUBLICKEYSIZE
+     * @param sk the secret key, size:ecc_sign_ed25519_SECRETKEYSIZE
+     */
+    public static native void ecc_sign_ed25519_sk_to_pk(
+        byte[] pk,
+        byte[] sk
+    );
 
     /**
      * Generates a secret key `sk` deterministically from a secret
