@@ -1,5 +1,6 @@
 # ecc
 
+[![js](https://github.com/aldenml/ecc/actions/workflows/js.yml/badge.svg?branch=master)](https://github.com/aldenml/ecc/actions/workflows/js.yml)
 [![npm](https://img.shields.io/npm/v/@aldenml/ecc)](https://www.npmjs.com/package/@aldenml/ecc)
 
 This is the javascript version of the [ecc](https://github.com/aldenml/ecc) library.
