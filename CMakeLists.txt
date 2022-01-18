@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2021, Alden Torres
+# Copyright (c) 2021-2022, Alden Torres
 #
 # Licensed under the terms of the MIT license.
 # Copy of the license at https://opensource.org/licenses/MIT
@@ -157,6 +157,12 @@ endif()
 if(NOT DEFINED EMSCRIPTEN)
     include(FetchCmocka)
 
+    add_library(ecc_test STATIC
+        test/ecc_test.h test/ecc_test.c
+        test/cJSON.h test/cJSON.c
+    )
+    target_link_libraries(ecc_test PUBLIC ecc cmocka-static)
+
     # tests executables
     add_executable(test_util test/test_util.c)
     target_link_libraries(test_util PRIVATE ecc cmocka-static)
@@ -174,6 +180,8 @@ if(NOT DEFINED EMSCRIPTEN)
     target_link_libraries(test_sign PRIVATE ecc cmocka-static)
     add_executable(test_pre test/test_pre.c)
     target_link_libraries(test_pre PRIVATE ecc cmocka-static)
+    add_executable(test_json test/test_json.c)
+    target_link_libraries(test_json PRIVATE ecc_test)
 
     # setup coverage
     if(CODE_COVERAGE)
@@ -188,6 +196,7 @@ if(NOT DEFINED EMSCRIPTEN)
         target_code_coverage(test_opaque AUTO ALL EXTERNAL)
         target_code_coverage(test_sign AUTO ALL EXTERNAL)
         target_code_coverage(test_pre AUTO ALL EXTERNAL)
+        target_code_coverage(test_json AUTO ALL EXTERNAL)
     endif()
 
     enable_testing()
@@ -199,4 +208,5 @@ if(NOT DEFINED EMSCRIPTEN)
     add_test(NAME test_opaque COMMAND test_opaque)
     add_test(NAME test_sign COMMAND test_sign)
     add_test(NAME test_pre COMMAND test_pre)
+    add_test(NAME test_json COMMAND test_json)
 endif()
