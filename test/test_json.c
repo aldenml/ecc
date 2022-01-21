@@ -16,7 +16,7 @@
 static void test_read_string(void **state) {
     ECC_UNUSED(state);
 
-    ecc_json_t *json = ecc_json_load("../test/data/json/test1.json");
+    ecc_json_t *json = ecc_json_load("../test/data/read_json_test.json");
 
     const char *v1 = ecc_json_string(json, "p1");
     const char *v2 = ecc_json_string(json, "p2.p3");

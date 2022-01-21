@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021, Alden Torres
+ * Copyright (c) 2021-2022, Alden Torres
  *
  * Licensed under the terms of the MIT license.
  * Copy of the license at https://opensource.org/licenses/MIT
@@ -7,11 +7,13 @@
 
 #include "sign.h"
 #include <assert.h>
+#include <string.h>
 #include <sodium.h>
 #include <blst.h>
 #include "util.h"
+#include "bls12_381.h"
 
-static_assert(sizeof(blst_scalar) == ecc_sign_bls12_381_PRIVATEKEYSIZE, "");
+static_assert(sizeof(blst_scalar) == ecc_sign_eth2_bls_PRIVATEKEYSIZE, "");
 
 void ecc_sign_ed25519_sign(byte_t *sig, const byte_t *msg, int msg_len, const byte_t *sk) {
     crypto_sign_ed25519_detached(sig, NULL, msg, msg_len, sk);
@@ -37,89 +39,95 @@ void ecc_sign_ed25519_sk_to_pk(byte_t *pk, const byte_t *sk) {
     crypto_sign_ed25519_sk_to_pk(pk, sk);
 }
 
-void ecc_sign_bls12_381_KeyGen(byte_t *sk, const byte_t *ikm, int ikm_len) {
-    blst_keygen((blst_scalar *) sk, ikm, ikm_len, 0, 0);
-}
+void ecc_sign_eth2_bls_KeyGen(byte_t *sk, const byte_t *ikm, int ikm_len) {
+    blst_scalar bsk;
+    blst_keygen(&bsk, ikm, ikm_len, 0, 0);
+    blst_bendian_from_scalar(sk, &bsk);
 
-void ecc_sign_bls12_381_SkToPk(byte_t *pk, const byte_t *sk) {
-    blst_p1 p;
-    blst_sk_to_pk_in_g1(&p, (blst_scalar *) sk);
-    blst_p1_compress(pk, &p);
     // cleanup stack memory
-    ecc_memzero((byte_t *) &p, sizeof p);
+    ecc_memzero((byte_t *) &bsk, sizeof bsk);
 }
 
-int ecc_sign_bls12_381_KeyValidate(const byte_t *pk) {
+void ecc_sign_eth2_bls_SkToPk(byte_t *pk, const byte_t *sk) {
+    blst_scalar bsk;
+    blst_scalar_from_bendian(&bsk, sk);
+
+    blst_p1 bpk;
+    blst_sk_to_pk_in_g1(&bpk,  &bsk);
+    blst_p1_compress(pk, &bpk);
+
+    // cleanup stack memory
+    ecc_memzero((byte_t *) &bsk, sizeof bsk);
+    ecc_memzero((byte_t *) &bpk, sizeof bpk);
+}
+
+int ecc_sign_eth2_bls_KeyValidate(const byte_t *pk) {
     // 1. xP = pubkey_to_point(PK)
     // 2. If xP is INVALID, return INVALID
     // 3. If xP is the identity element, return INVALID
     // 4. If pubkey_subgroup_check(xP) is INVALID, return INVALID
     // 5. return VALID
 
-    // 1. xP = pubkey_to_point(PK)
-    blst_p1_affine p;
-    if (blst_p1_uncompress(&p, pk) != BLST_SUCCESS)
+    blst_p1_affine p_affine;
+    if (blst_p1_uncompress(&p_affine, pk) != BLST_SUCCESS)
         return -1;
 
-    // TODO: check for identity
+    blst_p1 p;
+    blst_p1_from_affine(&p, &p_affine);
 
-    // cleanup stack memory
-    ecc_memzero((byte_t *) &p, sizeof p);
+    if (blst_p1_is_inf(&p))
+        return -1;
+
+    if (!blst_p1_in_g1(&p))
+        return -1;
 
     return 0;
 }
 
-void ecc_sign_bls12_381_CoreSign(
-    byte_t *sig,
-    const byte_t *msg, int msg_len,
-    const byte_t *sk
+void ecc_sign_eth2_bls_Sign(
+    byte_t *signature,
+    const byte_t *sk,
+    const byte_t *message, int message_len
 ) {
-    // 1. Q = hash_to_point(message)
-    // 2. R = SK * Q
-    // 3. signature = point_to_signature(R)
-    // 4. return signature
+    blst_scalar bsk;
+    blst_scalar_from_bendian(&bsk, sk);
 
-    byte_t DST[43] = "BLS_SIG_BLS12381G2_XMD:SHA-256_SSWU_RO_NUL_";
+    byte_t DST[43] = "BLS_SIG_BLS12381G2_XMD:SHA-256_SSWU_RO_POP_";
     blst_p2 Q;
-    blst_hash_to_g2(&Q, msg, msg_len, DST, sizeof DST, NULL, 0);
-    blst_p2 R;
-    blst_sign_pk_in_g1(&R, &Q, (blst_scalar *) sk);
+    blst_hash_to_g2(&Q, message, message_len, DST, sizeof DST, NULL, 0);
+    blst_p2 sig;
+    blst_sign_pk_in_g1(&sig, &Q, &bsk);
 
-    blst_p2_compress(sig, &R);
+    blst_p2_compress(signature, &sig);
 
     // cleanup stack memory
+    ecc_memzero((byte_t *) &bsk, sizeof bsk);
     ecc_memzero((byte_t *) &Q, sizeof Q);
-    ecc_memzero((byte_t *) &R, sizeof R);
+    ecc_memzero((byte_t *) &sig, sizeof sig);
 }
 
-int ecc_sign_bls12_381_CoreVerify(
+int ecc_sign_eth2_bls_Verify(
     const byte_t *pk,
-    const byte_t *msg, int msg_len,
-    const byte_t *sig
+    const byte_t *message, int message_len,
+    const byte_t *signature
 ) {
-    // 1. R = signature_to_point(signature)
-    // 2. If R is INVALID, return INVALID
-    // 3. If signature_subgroup_check(R) is INVALID, return INVALID
-    // 4. If KeyValidate(PK) is INVALID, return INVALID
-    // 5. xP = pubkey_to_point(PK)
-    // 6. Q = hash_to_point(message)
-    // 7. C1 = pairing(Q, xP)
-    // 8. C2 = pairing(R, P)
-    // 9. If C1 == C2, return VALID, else return INVALID
-
-    byte_t DST[43] = "BLS_SIG_BLS12381G2_XMD:SHA-256_SSWU_RO_NUL_";
-
-    blst_p2_affine R;
-    if (blst_p2_uncompress(&R, sig) != BLST_SUCCESS)
+    if (ecc_sign_eth2_bls_KeyValidate(pk) != 0)
         return -1;
-    if (ecc_sign_bls12_381_KeyValidate(pk) != 0)
+
+    byte_t DST[43] = "BLS_SIG_BLS12381G2_XMD:SHA-256_SSWU_RO_POP_";
+
+    blst_p2_affine sig;
+    if (blst_p2_uncompress(&sig, signature) != BLST_SUCCESS)
         return -1;
-    blst_p1_affine xP;
-    blst_p1_uncompress(&xP, pk);
+    if (!blst_p2_affine_in_g2(&sig))
+        return -1;
+
+    blst_p1_affine bpk;
+    blst_p1_uncompress(&bpk, pk);
 
     int r = blst_core_verify_pk_in_g1(
-        &xP, &R, 1,
-        msg, msg_len,
+        &bpk, &sig, 1,
+        message, message_len,
         DST, sizeof DST,
         NULL, 0
     );
@@ -127,40 +135,121 @@ int ecc_sign_bls12_381_CoreVerify(
     return r == BLST_SUCCESS ? 0 : -1;
 }
 
-int ecc_sign_bls12_381_Aggregate(
-    byte_t *sig,
-    const byte_t **signatures, int n
+int ecc_sign_eth2_bls_Aggregate(
+    byte_t *signature,
+    const byte_t *signatures, int n
 ) {
-    // 1. aggregate = signature_to_point(signature_1)
-    // 2. If aggregate is INVALID, return INVALID
-    // 3. for i in 2, ..., n:
-    // 4.     next = signature_to_point(signature_i)
-    // 5.     If next is INVALID, return INVALID
-    // 6.     aggregate = aggregate + next
-    // 7. signature = point_to_signature(aggregate)
-    // 8. return signature
-
-    blst_p2_affine first;
-    if (blst_p2_uncompress(&first, sig) != BLST_SUCCESS)
+    blst_p2 aggregate;
+    if (blst_aggregate_in_g2(&aggregate, NULL, &signatures[0]) != BLST_SUCCESS)
         return -1;
 
-    blst_p2 aggregate;
-    blst_p2_from_affine(&aggregate, &first);
-
-    blst_p2_affine next;
     for (int i = 1; i < n; i++) {
-        if (blst_p2_uncompress(&next, sig) != BLST_SUCCESS)
+        if (blst_aggregate_in_g2(
+            &aggregate,
+            &aggregate,
+            &signatures[i * ecc_sign_eth2_bls_SIGNATURESIZE]
+        ) != BLST_SUCCESS)
             return -1;
-
-        blst_p2_add_affine(&aggregate, &aggregate, &next);
     }
 
-    blst_p2_compress(sig, &aggregate);
+    blst_p2_compress(signature, &aggregate);
 
-    // cleanup stack memory
-    ecc_memzero((byte_t *) &first, sizeof first);
-    ecc_memzero((byte_t *) &aggregate, sizeof aggregate);
-    ecc_memzero((byte_t *) &next, sizeof next);
+    return 0;
+}
+
+int ecc_sign_eth2_bls_FastAggregateVerify(
+    const byte_t *pks, const int n,
+    const byte_t *message, const int message_len,
+    const byte_t *signature
+) {
+    byte_t DST[43] = "BLS_SIG_BLS12381G2_XMD:SHA-256_SSWU_RO_POP_";
+
+    blst_p2_affine sig;
+    if (blst_p2_uncompress(&sig, signature) != BLST_SUCCESS)
+        return -1;
+    if (!blst_p2_affine_in_g2(&sig))
+        return -1;
+
+    blst_p1_affine first;
+    if (blst_p1_uncompress(&first, &pks[0]) != BLST_SUCCESS)
+        return -1;
+    if (!blst_p1_affine_in_g1(&first))
+        return -1;
+
+    blst_p1 aggregate;
+    blst_p1_from_affine(&aggregate, &first);
+
+    blst_p1_affine next;
+    for (int i = 1; i < n; i++) {
+        if (blst_p1_uncompress(&next, &pks[i * ecc_sign_eth2_bls_PUBLICKEYSIZE]) != BLST_SUCCESS)
+            return -1;
+        if (!blst_p1_affine_in_g1(&first))
+            return -1;
+
+        blst_p1_add_affine(&aggregate, &aggregate, &next);
+    }
+
+    blst_p1_affine pk;
+    blst_p1_to_affine(&pk, &aggregate);
+
+    const int r = blst_core_verify_pk_in_g1(
+        &pk, &sig, 1,
+        message, message_len,
+        DST, sizeof DST,
+        NULL, 0
+    );
+
+    return r == BLST_SUCCESS ? 0 : -1;
+}
+
+int ecc_sign_eth2_bls_AggregateVerify(
+    const int n,
+    const byte_t *pks,
+    const byte_t *messages, const int messages_len,
+    const byte_t *signature
+) {
+    ECC_UNUSED(messages_len);
+
+    byte_t DST[43] = "BLS_SIG_BLS12381G2_XMD:SHA-256_SSWU_RO_POP_";
+
+    blst_p2_affine sig;
+    if (blst_p2_uncompress(&sig, signature) != BLST_SUCCESS)
+        return -1;
+    if (!blst_p2_affine_in_g2(&sig))
+        return -1;
+
+    blst_fp12 C1;
+    memcpy(&C1, blst_fp12_one(), ecc_bls12_381_FP12SIZE);
+
+    blst_p1_affine pk;
+    int message_offset = 0;
+    for (int i = 0; i < n; i++) {
+#if ECC_LOG
+        ecc_log("pk", &pks[i * ecc_sign_eth2_bls_PUBLICKEYSIZE], ecc_sign_eth2_bls_PUBLICKEYSIZE);
+        ecc_log("message",  &messages[message_offset + 1], messages[message_offset]);
+#endif
+        if (ecc_sign_eth2_bls_KeyValidate(&pks[i * ecc_sign_eth2_bls_PUBLICKEYSIZE]) != 0)
+            return -1;
+        blst_p1_uncompress(&pk, &pks[i * ecc_sign_eth2_bls_PUBLICKEYSIZE]);
+
+        blst_p2 Q;
+        blst_hash_to_g2(&Q, &messages[message_offset + 1], messages[message_offset], DST, sizeof DST, NULL, 0);
+        blst_p2_affine Q_affine;
+        blst_p2_to_affine(&Q_affine, &Q);
+
+        // C1 = C1 * pairing(Q, xP)
+        blst_fp12 pairing;
+        blst_miller_loop(&pairing, &Q_affine, &pk);
+        blst_fp12_mul(&C1, &C1, &pairing);
+
+        message_offset += (1 + messages[message_offset]);
+    }
+
+    // C2 = pairing(R, P)
+    blst_fp12 C2;
+    blst_miller_loop(&C2, &sig, blst_p1_affine_generator());
+    if (!blst_fp12_finalverify(&C1, &C2))
+        return -1;
 
     return 0;
 }

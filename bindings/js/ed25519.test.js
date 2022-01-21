@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021, Alden Torres
+ * Copyright (c) 2021-2022, Alden Torres
  *
  * Licensed under the terms of the MIT license.
  * Copy of the license at https://opensource.org/licenses/MIT
@@ -34,7 +34,7 @@ describe("ecc_ed25519_is_valid_point", () => {
     });
 });
 
-describe("ecc_ed25519_sign_seed_keypair", () => {
+describe("ecc_sign_ed25519_seed_keypair", () => {
 
     it("generates a keypair with a specified seed", async () => {
         const libecc = await libecc_module();
