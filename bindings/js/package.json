@@ -59,7 +59,9 @@
     "pake",
     "apake",
     "authentication",
-    "proxy re-encryption"
+    "bls-signature",
+    "ethereum",
+    "proxy-re-encryption"
   ],
   "author": "aldenml",
   "license": "MIT",
