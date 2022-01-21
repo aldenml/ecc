@@ -23,6 +23,7 @@ java {
 }
 
 javadoc {
+    options.overview = "src/main/java/overview.html"
     failOnError = false
 }
 

@@ -1,0 +1,238 @@
+<html lang="en">
+<body>
+
+This is the java binding of the <a href="https://github.com/aldenml/ecc">ecc</a> library.
+
+<h3>Features</h3>
+
+<ul>
+    <li><a href="#oprf-oblivious-pseudo-random-functions-using-ristretto255">OPRF</a></li>
+    <li><a href="#opaque-the-opaque-asymmetric-pake-protocol">OPAQUE</a></li>
+    <li><a href="#ethereum-2-bls-signature">Ethereum 2 BLS Signature</a></li>
+    <li><a href="#bls12-381-pairing">BLS12-381 Pairing</a></li>
+    <li><a href="#proxy-re-encryption-pre">Proxy Re-Encryption (PRE)</a></li>
+</ul>
+
+<h3 id="oprf-oblivious-pseudo-random-functions-using-ristretto255">OPRF Oblivious pseudo-random functions using ristretto255</h3>
+
+This is an implementation of <a href="https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-voprf-08">draft-irtf-cfrg-voprf-08</a>
+ciphersuite <b>OPRF(ristretto255, SHA-512)</b> using `libsodium`.
+<p>
+There are two variants in this protocol: a <b>base</b> mode and <b>verifiable</b> mode. In the
+base mode, a client and server interact to compute `output = F(skS, input, info)`,
+where `input` is the client's private input, `skS` is the server's private key, `info`
+is the public input, and `output` is the computation output. The client learns `output`
+and the server learns nothing. In the verifiable mode, the client also receives proof
+that the server used `skS` in computing the function.
+<p>
+The flow is shown below (from the irtf draft):
+<pre>
+Client(input, info)                               Server(skS, info)
+----------------------------------------------------------------------
+blind, blindedElement = Blind(input)
+
+blindedElement
+---------->
+
+evaluatedElement = Evaluate(skS, blindedElement, info)
+
+evaluatedElement
+<----------
+
+output = Finalize(input, blind, evaluatedElement, blindedElement, info)
+</pre>
+
+In the verifiable mode of the protocol, the server additionally
+computes a proof in Evaluate. The client verifies this proof using
+the server's expected public key before completing the protocol and
+producing the protocol output.
+
+<h3 id="opaque-the-opaque-asymmetric-pake-protocol">OPAQUE The OPAQUE Asymmetric PAKE Protocol</h3>
+
+This is an implementation of <a href="https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-07">draft-irtf-cfrg-opaque-07</a>
+using `libsodium`.
+<p>
+OPAQUE consists of two stages: registration and authenticated key
+exchange. In the first stage, a client registers its password with
+the server and stores its encrypted credentials on the server, but
+the server never knows what the password it.
+<p>
+The registration flow is shown below (from the irtf draft):
+<pre>
+creds                                   parameters
+|                                         |
+v                                         v
+Client                                    Server
+------------------------------------------------
+registration request
+------------------------->
+registration response
+<-------------------------
+record
+------------------------->
+------------------------------------------------
+|                                         |
+v                                         v
+export_key                                 record
+</pre>
+
+In the second stage, the client outputs two values, an "export_key" (matching
+that from registration) and a "session_key". The server outputs a single value
+"session_key" that matches that of the client.
+<p>
+The authenticated key exchange flow is shown below (from the irtf draft):
+<pre>
+creds                             (parameters, record)
+|                                         |
+v                                         v
+Client                                    Server
+------------------------------------------------
+AKE message 1
+------------------------->
+AKE message 2
+<-------------------------
+AKE message 3
+------------------------->
+------------------------------------------------
+|                                         |
+v                                         v
+(export_key, session_key)                  session_key
+</pre>
+
+The public API for implementing the protocol is:
+<p>
+- Client
+<pre>
+opaque_ristretto255_sha512_CreateRegistrationRequest
+opaque_ristretto255_sha512_FinalizeRequest
+opaque_ristretto255_sha512_3DH_ClientInit
+opaque_ristretto255_sha512_3DH_ClientFinish
+</pre>
+<p>
+- Server
+<pre>
+opaque_ristretto255_sha512_CreateRegistrationResponse
+opaque_ristretto255_sha512_3DH_ServerInit
+opaque_ristretto255_sha512_3DH_ServerFinish
+</pre>
+
+<h3 id="ethereum-2-bls-signature">Ethereum 2 BLS Signature</h3>
+
+Ethereum 2 uses BLS signatures as specified in the IETF
+draft <a href="https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-bls-signature-04">draft-irtf-cfrg-bls-signature-04</a>
+ciphersuite `BLS_SIG_BLS12381G2_XMD:SHA-256_SSWU_RO_POP_`. This library provides the following API:
+
+<pre>
+ecc_sign_eth2_bls_KeyGen
+ecc_sign_eth2_bls_SkToPk
+ecc_sign_eth2_bls_KeyValidate
+ecc_sign_eth2_bls_Sign
+ecc_sign_eth2_bls_Verify
+ecc_sign_eth2_bls_Aggregate
+ecc_sign_eth2_bls_FastAggregateVerify
+ecc_sign_eth2_bls_AggregateVerify
+</pre>
+
+BLS is a digital signature scheme with aggregation properties that can be applied to signatures
+and public keys. For this reason, in the context of blockchains, BLS signatures are used for
+authenticating transactions, votes during the consensus protocol, and to reduce the bandwidth
+and storage requirements.
+
+<h3 id="bls12-381-pairing">BLS12-381 Pairing</h3>
+
+In the context of pairing friendly elliptic curves, a pairing is a map `e: G1xG2 -> GT` such
+that for each a, b, P and Q
+<pre>
+e(a * P, b * Q) = e(P, Q)^(a * b)
+</pre>
+You can use this to obtain such pairings:
+<pre>
+// c code, for a very similar java code, look at the unit tests
+byte_t a[ecc_bls12_381_SCALARSIZE];
+byte_t b[ecc_bls12_381_SCALARSIZE];
+ecc_bls12_381_scalar_random(a);
+ecc_bls12_381_scalar_random(b);
+
+byte_t aP[ecc_bls12_381_G1SIZE];
+byte_t bQ[ecc_bls12_381_G2SIZE];
+
+ecc_bls12_381_g1_scalarmult_base(aP, a); // a * P
+ecc_bls12_381_g2_scalarmult_base(bQ, b); // b * Q
+
+byte_t pairing[ecc_bls12_381_FP12SIZE];
+ecc_bls12_381_pairing(pairing, aP, bQ); // e(a * P, b * Q)
+</pre>
+
+Read more at:<br/>
+https://hackmd.io/@benjaminion/bls12-381<br/>
+https://en.wikipedia.org/wiki/Pairing-based_cryptography
+
+<h3 id="proxy-re-encryption-pre">Proxy Re-Encryption (PRE)</h3>
+
+With a pairing-friendly elliptic curve and a well-defined pairing operation,
+you can implement a proxy re-encryption scheme. This library provides an
+implementation using BLS12-381.
+<p>
+Example of how to use it:
+<pre>
+// This is a java code, but for a similar plain C code, look at unit tests
+
+// client A setup public/private keys and signing keys
+KeyPair keysA = pre_schema1_KeyGen();
+SigningKeyPair signingA = pre_schema1_SigningKeyGen();
+
+// client B setup public/private keys (signing keys are not used here)
+KeyPair keysB = pre_schema1_KeyGen();
+
+// proxy server setup signing keys
+SigningKeyPair signingProxy = pre_schema1_SigningKeyGen();
+
+// client A select a plaintext message, this message
+// in itself is random, but can be used as a seed
+// for symmetric encryption keys
+byte[] message = pre_schema1_MessageGen();
+
+// client A encrypts the message to itself, making it
+// possible to send this ciphertext to the proxy.
+byte[] ciphertextLevel1 = pre_schema1_Encrypt(message, keysA.pk, signingA);
+
+// client A sends ciphertextLevel1 to the proxy server and
+// eventually client A allows client B to see the encrypted
+// message, in this case the proxy needs to re-encrypt
+// ciphertextLevel1 (without ever knowing the plaintext).
+// In order to do that, the client A needs to create a re-encryption
+// key that the proxy can use to perform such operation.
+
+// client A creates a re-encryption key that the proxy can use
+// to re-encrypt the ciphertext (ciphertextLevel1) in order for
+// client B be able to recover the original message
+byte[] reEncKey = pre_schema1_ReKeyGen(keysA.sk, keysB.pk, signingA);
+
+// the proxy re-encrypt the ciphertext ciphertextLevel1 with such
+// a key that allows client B to recover the original message
+byte[] ciphertextLevel2 = pre_schema1_ReEncrypt(
+ciphertextLevel1,
+reEncKey,
+signingA.spk, keysB.pk,
+signingProxy
+);
+
+// client B is able to decrypt ciphertextLevel2 and the result
+// is the original plaintext message
+byte[] messageDecrypted = pre_schema1_DecryptLevel2(
+ciphertextLevel2,
+keysB.sk, signingProxy.spk
+);
+
+// now both client A and client B share the same plaintext message
+// messageDecrypted is equal to message
+</pre>
+
+Read more at:<br/>
+"A Fully Secure Unidirectional and Multi-user Proxy Re-encryption Scheme" by H. Wang and Z. Cao, 2009 <br/>
+"A Multi-User CCA-Secure Proxy Re-Encryption Scheme" by Y. Cai and X. Liu, 2014 <br/>
+"Cryptographically Enforced Orthogonal Access Control at Scale" by B. Wall and P. Walsh, 2018 <br/>
+https://en.wikipedia.org/wiki/Proxy_re-encryption
+
+</body>
+</html>
