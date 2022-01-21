@@ -4910,29 +4910,29 @@ const ecc_sign_ed25519_SECRETKEYSIZE = 64;
  */
 Module.ecc_sign_ed25519_SECRETKEYSIZE = ecc_sign_ed25519_SECRETKEYSIZE;
 
-const ecc_sign_bls12_381_PUBLICKEYSIZE = 48;
-/**
- * Size of the signing public key (size of a compressed G1 element in BLS12-381).
- *
- * @type {number}
- */
-Module.ecc_sign_bls12_381_PUBLICKEYSIZE = ecc_sign_bls12_381_PUBLICKEYSIZE;
-
-const ecc_sign_bls12_381_PRIVATEKEYSIZE = 32;
+const ecc_sign_eth2_bls_PRIVATEKEYSIZE = 32;
 /**
  * Size of the signing private key (size of a scalar in BLS12-381).
  *
  * @type {number}
  */
-Module.ecc_sign_bls12_381_PRIVATEKEYSIZE = ecc_sign_bls12_381_PRIVATEKEYSIZE;
+Module.ecc_sign_eth2_bls_PRIVATEKEYSIZE = ecc_sign_eth2_bls_PRIVATEKEYSIZE;
 
-const ecc_sign_bls12_381_SIGNATURESIZE = 96;
+const ecc_sign_eth2_bls_PUBLICKEYSIZE = 48;
+/**
+ * Size of the signing public key (size of a compressed G1 element in BLS12-381).
+ *
+ * @type {number}
+ */
+Module.ecc_sign_eth2_bls_PUBLICKEYSIZE = ecc_sign_eth2_bls_PUBLICKEYSIZE;
+
+const ecc_sign_eth2_bls_SIGNATURESIZE = 96;
 /**
  * Signature size (size of a compressed G2 element in BLS12-381).
  *
  * @type {number}
  */
-Module.ecc_sign_bls12_381_SIGNATURESIZE = ecc_sign_bls12_381_SIGNATURESIZE;
+Module.ecc_sign_eth2_bls_SIGNATURESIZE = ecc_sign_eth2_bls_SIGNATURESIZE;
 
 /**
  * Signs the message msg whose length is msg_len bytes, using the
@@ -5093,135 +5093,220 @@ Module.ecc_sign_ed25519_sk_to_pk = (
  * 
  * For security, `ikm` MUST be infeasible to guess, e.g., generated
  * by a trusted source of randomness and be at least 32 bytes long.
- * 
- * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-bls-signature-04#section-2.3
  *
- * @param {Uint8Array} sk (output) a secret key, size:ecc_sign_bls12_381_PRIVATEKEYSIZE
+ * @param {Uint8Array} sk (output) a secret key, size:ecc_sign_eth2_bls_PRIVATEKEYSIZE
  * @param {Uint8Array} ikm a secret octet string, size:ikm_len
  * @param {number} ikm_len the length of `ikm`
  */
-Module.ecc_sign_bls12_381_KeyGen = (
+Module.ecc_sign_eth2_bls_KeyGen = (
     sk,
     ikm,
     ikm_len,
 ) => {
-    const ptr_sk = mput(sk, ecc_sign_bls12_381_PRIVATEKEYSIZE);
+    const ptr_sk = mput(sk, ecc_sign_eth2_bls_PRIVATEKEYSIZE);
     const ptr_ikm = mput(ikm, ikm_len);
-    _ecc_sign_bls12_381_KeyGen(
+    _ecc_sign_eth2_bls_KeyGen(
         ptr_sk,
         ptr_ikm,
         ikm_len,
     );
-    mget(sk, ptr_sk, ecc_sign_bls12_381_PRIVATEKEYSIZE);
-    mfree(ptr_sk, ecc_sign_bls12_381_PRIVATEKEYSIZE);
+    mget(sk, ptr_sk, ecc_sign_eth2_bls_PRIVATEKEYSIZE);
+    mfree(ptr_sk, ecc_sign_eth2_bls_PRIVATEKEYSIZE);
     mfree(ptr_ikm, ikm_len);
 }
 
 /**
- * Takes a secret key `sk and outputs the corresponding public key `pk`.
- * 
- * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-bls-signature-04#section-2.4
+ * Takes a secret key `sk` and outputs the corresponding public key `pk`.
  *
- * @param {Uint8Array} pk (output) a public key, size:ecc_sign_bls12_381_PUBLICKEYSIZE
- * @param {Uint8Array} sk the secret key, size:ecc_sign_bls12_381_PRIVATEKEYSIZE
+ * @param {Uint8Array} pk (output) a public key, size:ecc_sign_eth2_bls_PUBLICKEYSIZE
+ * @param {Uint8Array} sk the secret key, size:ecc_sign_eth2_bls_PRIVATEKEYSIZE
  */
-Module.ecc_sign_bls12_381_SkToPk = (
+Module.ecc_sign_eth2_bls_SkToPk = (
     pk,
     sk,
 ) => {
-    const ptr_pk = mput(pk, ecc_sign_bls12_381_PUBLICKEYSIZE);
-    const ptr_sk = mput(sk, ecc_sign_bls12_381_PRIVATEKEYSIZE);
-    _ecc_sign_bls12_381_SkToPk(
+    const ptr_pk = mput(pk, ecc_sign_eth2_bls_PUBLICKEYSIZE);
+    const ptr_sk = mput(sk, ecc_sign_eth2_bls_PRIVATEKEYSIZE);
+    _ecc_sign_eth2_bls_SkToPk(
         ptr_pk,
         ptr_sk,
     );
-    mget(pk, ptr_pk, ecc_sign_bls12_381_PUBLICKEYSIZE);
-    mfree(ptr_pk, ecc_sign_bls12_381_PUBLICKEYSIZE);
-    mfree(ptr_sk, ecc_sign_bls12_381_PRIVATEKEYSIZE);
+    mget(pk, ptr_pk, ecc_sign_eth2_bls_PUBLICKEYSIZE);
+    mfree(ptr_pk, ecc_sign_eth2_bls_PUBLICKEYSIZE);
+    mfree(ptr_sk, ecc_sign_eth2_bls_PRIVATEKEYSIZE);
 }
 
 /**
  * Ensures that a public key is valid.  In particular, it ensures
  * that a public key represents a valid, non-identity point that
  * is in the correct subgroup.
- * 
- * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-bls-signature-04#section-2.5
  *
- * @param {Uint8Array} pk a public key in the format output by SkToPk, size:ecc_sign_bls12_381_PUBLICKEYSIZE
+ * @param {Uint8Array} pk a public key in the format output by SkToPk, size:ecc_sign_eth2_bls_PUBLICKEYSIZE
  * @return {number} 0 for valid or -1 for invalid
  */
-Module.ecc_sign_bls12_381_KeyValidate = (
+Module.ecc_sign_eth2_bls_KeyValidate = (
     pk,
 ) => {
-    const ptr_pk = mput(pk, ecc_sign_bls12_381_PUBLICKEYSIZE);
-    const fun_ret = _ecc_sign_bls12_381_KeyValidate(
+    const ptr_pk = mput(pk, ecc_sign_eth2_bls_PUBLICKEYSIZE);
+    const fun_ret = _ecc_sign_eth2_bls_KeyValidate(
         ptr_pk,
     );
-    mfree(ptr_pk, ecc_sign_bls12_381_PUBLICKEYSIZE);
+    mfree(ptr_pk, ecc_sign_eth2_bls_PUBLICKEYSIZE);
     return fun_ret;
 }
 
 /**
- * Computes a signature from sk, a secret key, and a message msg
+ * Computes a signature from sk, a secret key, and a message message
  * and put the result in sig.
- * 
- * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-bls-signature-04#section-2.6
  *
- * @param {Uint8Array} sig (output) the signature, size:ecc_sign_bls12_381_SIGNATURESIZE
- * @param {Uint8Array} msg input message, size:msg_len
- * @param {number} msg_len the length of `msg`
- * @param {Uint8Array} sk the secret key, size:ecc_sign_bls12_381_PRIVATEKEYSIZE
+ * @param {Uint8Array} signature (output) the signature, size:ecc_sign_eth2_bls_SIGNATURESIZE
+ * @param {Uint8Array} sk the secret key, size:ecc_sign_eth2_bls_PRIVATEKEYSIZE
+ * @param {Uint8Array} message input message, size:message_len
+ * @param {number} message_len the length of `message`
  */
-Module.ecc_sign_bls12_381_CoreSign = (
-    sig,
-    msg,
-    msg_len,
+Module.ecc_sign_eth2_bls_Sign = (
+    signature,
     sk,
+    message,
+    message_len,
 ) => {
-    const ptr_sig = mput(sig, ecc_sign_bls12_381_SIGNATURESIZE);
-    const ptr_msg = mput(msg, msg_len);
-    const ptr_sk = mput(sk, ecc_sign_bls12_381_PRIVATEKEYSIZE);
-    _ecc_sign_bls12_381_CoreSign(
-        ptr_sig,
-        ptr_msg,
-        msg_len,
+    const ptr_signature = mput(signature, ecc_sign_eth2_bls_SIGNATURESIZE);
+    const ptr_sk = mput(sk, ecc_sign_eth2_bls_PRIVATEKEYSIZE);
+    const ptr_message = mput(message, message_len);
+    _ecc_sign_eth2_bls_Sign(
+        ptr_signature,
         ptr_sk,
+        ptr_message,
+        message_len,
     );
-    mget(sig, ptr_sig, ecc_sign_bls12_381_SIGNATURESIZE);
-    mfree(ptr_sig, ecc_sign_bls12_381_SIGNATURESIZE);
-    mfree(ptr_msg, msg_len);
-    mfree(ptr_sk, ecc_sign_bls12_381_PRIVATEKEYSIZE);
+    mget(signature, ptr_signature, ecc_sign_eth2_bls_SIGNATURESIZE);
+    mfree(ptr_signature, ecc_sign_eth2_bls_SIGNATURESIZE);
+    mfree(ptr_sk, ecc_sign_eth2_bls_PRIVATEKEYSIZE);
+    mfree(ptr_message, message_len);
 }
 
 /**
  * Checks that a signature is valid for the message under the public key pk.
- * 
- * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-bls-signature-04#section-2.7
  *
- * @param {Uint8Array} pk the public key, size:ecc_sign_bls12_381_PUBLICKEYSIZE
- * @param {Uint8Array} msg input message, size:msg_len
- * @param {number} msg_len the length of `msg`
- * @param {Uint8Array} sig the signature, size:ecc_sign_bls12_381_SIGNATURESIZE
+ * @param {Uint8Array} pk the public key, size:ecc_sign_eth2_bls_PUBLICKEYSIZE
+ * @param {Uint8Array} message input message, size:message_len
+ * @param {number} message_len the length of `message`
+ * @param {Uint8Array} signature the signature, size:ecc_sign_eth2_bls_SIGNATURESIZE
  * @return {number} 0 if valid, -1 if invalid
  */
-Module.ecc_sign_bls12_381_CoreVerify = (
+Module.ecc_sign_eth2_bls_Verify = (
     pk,
-    msg,
-    msg_len,
-    sig,
+    message,
+    message_len,
+    signature,
 ) => {
-    const ptr_pk = mput(pk, ecc_sign_bls12_381_PUBLICKEYSIZE);
-    const ptr_msg = mput(msg, msg_len);
-    const ptr_sig = mput(sig, ecc_sign_bls12_381_SIGNATURESIZE);
-    const fun_ret = _ecc_sign_bls12_381_CoreVerify(
+    const ptr_pk = mput(pk, ecc_sign_eth2_bls_PUBLICKEYSIZE);
+    const ptr_message = mput(message, message_len);
+    const ptr_signature = mput(signature, ecc_sign_eth2_bls_SIGNATURESIZE);
+    const fun_ret = _ecc_sign_eth2_bls_Verify(
         ptr_pk,
-        ptr_msg,
-        msg_len,
-        ptr_sig,
+        ptr_message,
+        message_len,
+        ptr_signature,
     );
-    mfree(ptr_pk, ecc_sign_bls12_381_PUBLICKEYSIZE);
-    mfree(ptr_msg, msg_len);
-    mfree(ptr_sig, ecc_sign_bls12_381_SIGNATURESIZE);
+    mfree(ptr_pk, ecc_sign_eth2_bls_PUBLICKEYSIZE);
+    mfree(ptr_message, message_len);
+    mfree(ptr_signature, ecc_sign_eth2_bls_SIGNATURESIZE);
+    return fun_ret;
+}
+
+/**
+ * Aggregates multiple signatures into one.
+ *
+ * @param {Uint8Array} signature (output) the aggregated signature that combines all inputs, size:ecc_sign_eth2_bls_SIGNATURESIZE
+ * @param {Uint8Array} signatures array of individual signatures, size:n*ecc_sign_eth2_bls_SIGNATURESIZE
+ * @param {number} n amount of signatures in the array `signatures`
+ * @return {number} 0 if valid, -1 if invalid
+ */
+Module.ecc_sign_eth2_bls_Aggregate = (
+    signature,
+    signatures,
+    n,
+) => {
+    const ptr_signature = mput(signature, ecc_sign_eth2_bls_SIGNATURESIZE);
+    const ptr_signatures = mput(signatures, n*ecc_sign_eth2_bls_SIGNATURESIZE);
+    const fun_ret = _ecc_sign_eth2_bls_Aggregate(
+        ptr_signature,
+        ptr_signatures,
+        n,
+    );
+    mget(signature, ptr_signature, ecc_sign_eth2_bls_SIGNATURESIZE);
+    mfree(ptr_signature, ecc_sign_eth2_bls_SIGNATURESIZE);
+    mfree(ptr_signatures, n*ecc_sign_eth2_bls_SIGNATURESIZE);
+    return fun_ret;
+}
+
+/**
+ * 
+ *
+ * @param {Uint8Array} pks size:n*ecc_sign_eth2_bls_PUBLICKEYSIZE
+ * @param {number} n the number of public keys in `pks`
+ * @param {Uint8Array} message size:message_len
+ * @param {number} message_len the length of `message`
+ * @param {Uint8Array} signature size:ecc_sign_eth2_bls_SIGNATURESIZE
+ * @return {number} 0 if valid, -1 if invalid
+ */
+Module.ecc_sign_eth2_bls_FastAggregateVerify = (
+    pks,
+    n,
+    message,
+    message_len,
+    signature,
+) => {
+    const ptr_pks = mput(pks, n*ecc_sign_eth2_bls_PUBLICKEYSIZE);
+    const ptr_message = mput(message, message_len);
+    const ptr_signature = mput(signature, ecc_sign_eth2_bls_SIGNATURESIZE);
+    const fun_ret = _ecc_sign_eth2_bls_FastAggregateVerify(
+        ptr_pks,
+        n,
+        ptr_message,
+        message_len,
+        ptr_signature,
+    );
+    mfree(ptr_pks, n*ecc_sign_eth2_bls_PUBLICKEYSIZE);
+    mfree(ptr_message, message_len);
+    mfree(ptr_signature, ecc_sign_eth2_bls_SIGNATURESIZE);
+    return fun_ret;
+}
+
+/**
+ * Checks an aggregated signature over several (PK, message) pairs. The
+ * messages are concatenated and in PASCAL-encoded form [size, chars].
+ * 
+ * In order to keep the API simple, the maximum length of a message is 255.
+ *
+ * @param {number} n number of pairs
+ * @param {Uint8Array} pks size:n*ecc_sign_eth2_bls_PUBLICKEYSIZE
+ * @param {Uint8Array} messages size:messages_len
+ * @param {number} messages_len total length of the buffer `messages`
+ * @param {Uint8Array} signature size:ecc_sign_eth2_bls_SIGNATURESIZE
+ * @return {number} 0 if valid, -1 if invalid
+ */
+Module.ecc_sign_eth2_bls_AggregateVerify = (
+    n,
+    pks,
+    messages,
+    messages_len,
+    signature,
+) => {
+    const ptr_pks = mput(pks, n*ecc_sign_eth2_bls_PUBLICKEYSIZE);
+    const ptr_messages = mput(messages, messages_len);
+    const ptr_signature = mput(signature, ecc_sign_eth2_bls_SIGNATURESIZE);
+    const fun_ret = _ecc_sign_eth2_bls_AggregateVerify(
+        n,
+        ptr_pks,
+        ptr_messages,
+        messages_len,
+        ptr_signature,
+    );
+    mfree(ptr_pks, n*ecc_sign_eth2_bls_PUBLICKEYSIZE);
+    mfree(ptr_messages, messages_len);
+    mfree(ptr_signature, ecc_sign_eth2_bls_SIGNATURESIZE);
     return fun_ret;
 }
 

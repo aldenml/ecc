@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021, Alden Torres
+ * Copyright (c) 2021-2022, Alden Torres
  *
  * Licensed under the terms of the MIT license.
  * Copy of the license at https://opensource.org/licenses/MIT
@@ -9,11 +9,11 @@
 #include <string.h>
 #include <sodium.h>
 
-void ecc_memzero(byte_t *buf, int len) {
+void ecc_memzero(byte_t *buf, const int len) {
     sodium_memzero(buf, len);
 }
 
-void ecc_randombytes(byte_t *buf, int n) {
+void ecc_randombytes(byte_t *buf, const int n) {
     randombytes_buf(buf, n);
 }
 
@@ -79,11 +79,11 @@ int ecc_is_zero(const byte_t *n, int len) {
     return sodium_is_zero(n, len);
 }
 
-byte_t *ecc_malloc(int size) {
+byte_t *ecc_malloc(const int size) {
     return malloc(size);
 }
 
-void ecc_free(byte_t *p, int size) {
+void ecc_free(byte_t *p, const int size) {
     ecc_memzero(p, size);
     free(p);
 }

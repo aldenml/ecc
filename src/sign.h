@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021, Alden Torres
+ * Copyright (c) 2021-2022, Alden Torres
  *
  * Licensed under the terms of the MIT license.
  * Copy of the license at https://opensource.org/licenses/MIT
@@ -105,29 +105,32 @@ void ecc_sign_ed25519_sk_to_seed(byte_t *seed, const byte_t *sk);
 ECC_EXPORT
 void ecc_sign_ed25519_sk_to_pk(byte_t *pk, const byte_t *sk);
 
+// Compliant Ethereum 2.0 BLS Signature API implementation.
+//
 // https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-bls-signature-04
 // https://github.com/cfrg/draft-irtf-cfrg-bls-signature
+// https://github.com/ethereum/consensus-specs/blob/v1.0.0/specs/phase0/beacon-chain.md#bls-signatures
+// https://github.com/ethereum/py_ecc
+// https://github.com/ethereum/bls12-381-tests
 //
-// The variant implemented here is the minimal-pubkey-size: public keys are
-// points in G1, signatures are points in G2.
-
-// const
-/**
- * Size of the signing public key (size of a compressed G1 element in BLS12-381).
- */
-#define ecc_sign_bls12_381_PUBLICKEYSIZE 48
 
 // const
 /**
  * Size of the signing private key (size of a scalar in BLS12-381).
  */
-#define ecc_sign_bls12_381_PRIVATEKEYSIZE 32
+#define ecc_sign_eth2_bls_PRIVATEKEYSIZE 32
+
+// const
+/**
+ * Size of the signing public key (size of a compressed G1 element in BLS12-381).
+ */
+#define ecc_sign_eth2_bls_PUBLICKEYSIZE 48
 
 // const
 /**
  * Signature size (size of a compressed G2 element in BLS12-381).
  */
-#define ecc_sign_bls12_381_SIGNATURESIZE 96
+#define ecc_sign_eth2_bls_SIGNATURESIZE 96
 
 /**
  * Generates a secret key `sk` deterministically from a secret
@@ -136,89 +139,114 @@ void ecc_sign_ed25519_sk_to_pk(byte_t *pk, const byte_t *sk);
  * For security, `ikm` MUST be infeasible to guess, e.g., generated
  * by a trusted source of randomness and be at least 32 bytes long.
  *
- * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-bls-signature-04#section-2.3
- *
- * @param[out] sk a secret key, size:ecc_sign_bls12_381_PRIVATEKEYSIZE
+ * @param[out] sk a secret key, size:ecc_sign_eth2_bls_PRIVATEKEYSIZE
  * @param ikm a secret octet string, size:ikm_len
  * @param ikm_len the length of `ikm`
  */
 ECC_EXPORT
-void ecc_sign_bls12_381_KeyGen(byte_t *sk, const byte_t *ikm, int ikm_len);
+void ecc_sign_eth2_bls_KeyGen(byte_t *sk, const byte_t *ikm, int ikm_len);
 
 /**
- * Takes a secret key `sk and outputs the corresponding public key `pk`.
+ * Takes a secret key `sk` and outputs the corresponding public key `pk`.
  *
- * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-bls-signature-04#section-2.4
- *
- * @param[out] pk a public key, size:ecc_sign_bls12_381_PUBLICKEYSIZE
- * @param sk the secret key, size:ecc_sign_bls12_381_PRIVATEKEYSIZE
+ * @param[out] pk a public key, size:ecc_sign_eth2_bls_PUBLICKEYSIZE
+ * @param sk the secret key, size:ecc_sign_eth2_bls_PRIVATEKEYSIZE
  */
 ECC_EXPORT
-void ecc_sign_bls12_381_SkToPk(byte_t *pk, const byte_t *sk);
+void ecc_sign_eth2_bls_SkToPk(byte_t *pk, const byte_t *sk);
 
 /**
  * Ensures that a public key is valid.  In particular, it ensures
  * that a public key represents a valid, non-identity point that
  * is in the correct subgroup.
  *
- * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-bls-signature-04#section-2.5
- *
- * @param pk a public key in the format output by SkToPk, size:ecc_sign_bls12_381_PUBLICKEYSIZE
+ * @param pk a public key in the format output by SkToPk, size:ecc_sign_eth2_bls_PUBLICKEYSIZE
  * @return 0 for valid or -1 for invalid
  */
 ECC_EXPORT
-int ecc_sign_bls12_381_KeyValidate(const byte_t *pk);
+int ecc_sign_eth2_bls_KeyValidate(const byte_t *pk);
 
 /**
- * Computes a signature from sk, a secret key, and a message msg
+ * Computes a signature from sk, a secret key, and a message message
  * and put the result in sig.
  *
- * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-bls-signature-04#section-2.6
- *
- * @param[out] sig the signature, size:ecc_sign_bls12_381_SIGNATURESIZE
- * @param msg input message, size:msg_len
- * @param msg_len the length of `msg`
- * @param sk the secret key, size:ecc_sign_bls12_381_PRIVATEKEYSIZE
+ * @param[out] signature the signature, size:ecc_sign_eth2_bls_SIGNATURESIZE
+ * @param sk the secret key, size:ecc_sign_eth2_bls_PRIVATEKEYSIZE
+ * @param message input message, size:message_len
+ * @param message_len the length of `message`
  */
 ECC_EXPORT
-void ecc_sign_bls12_381_CoreSign(
-    byte_t *sig,
-    const byte_t *msg, int msg_len,
-    const byte_t *sk
+void ecc_sign_eth2_bls_Sign(
+    byte_t *signature,
+    const byte_t *sk,
+    const byte_t *message, int message_len
 );
 
 /**
  * Checks that a signature is valid for the message under the public key pk.
  *
- * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-bls-signature-04#section-2.7
- *
- * @param pk the public key, size:ecc_sign_bls12_381_PUBLICKEYSIZE
- * @param msg input message, size:msg_len
- * @param msg_len the length of `msg`
- * @param sig the signature, size:ecc_sign_bls12_381_SIGNATURESIZE
+ * @param pk the public key, size:ecc_sign_eth2_bls_PUBLICKEYSIZE
+ * @param message input message, size:message_len
+ * @param message_len the length of `message`
+ * @param signature the signature, size:ecc_sign_eth2_bls_SIGNATURESIZE
  * @return 0 if valid, -1 if invalid
  */
 ECC_EXPORT
-int ecc_sign_bls12_381_CoreVerify(
+int ecc_sign_eth2_bls_Verify(
     const byte_t *pk,
-    const byte_t *msg, int msg_len,
-    const byte_t *sig
+    const byte_t *message, int message_len,
+    const byte_t *signature
 );
 
 /**
  * Aggregates multiple signatures into one.
  *
- * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-bls-signature-04#section-2.8
- *
- * @param[out] sig the aggregated signature that combines all inputs, size:ecc_sign_bls12_381_SIGNATURESIZE
- * @param signatures array of individual signatures, size:n*ecc_sign_bls12_381_SIGNATURESIZE
+ * @param[out] signature the aggregated signature that combines all inputs, size:ecc_sign_eth2_bls_SIGNATURESIZE
+ * @param signatures array of individual signatures, size:n*ecc_sign_eth2_bls_SIGNATURESIZE
  * @param n amount of signatures in the array `signatures`
  * @return 0 if valid, -1 if invalid
  */
 ECC_EXPORT
-int ecc_sign_bls12_381_Aggregate(
-    byte_t *sig,
-    const byte_t **signatures, int n
+int ecc_sign_eth2_bls_Aggregate(
+    byte_t *signature,
+    const byte_t *signatures, int n
+);
+
+/**
+ *
+ * @param pks size:n*ecc_sign_eth2_bls_PUBLICKEYSIZE
+ * @param n the number of public keys in `pks`
+ * @param message size:message_len
+ * @param message_len the length of `message`
+ * @param signature size:ecc_sign_eth2_bls_SIGNATURESIZE
+ * @return 0 if valid, -1 if invalid
+ */
+ECC_EXPORT
+int ecc_sign_eth2_bls_FastAggregateVerify(
+    const byte_t *pks, int n,
+    const byte_t *message, int message_len,
+    const byte_t *signature
+);
+
+/**
+ * Checks an aggregated signature over several (PK, message) pairs. The
+ * messages are concatenated and in PASCAL-encoded form [size, chars].
+ *
+ * In order to keep the API simple, the maximum length of a message is 255.
+ *
+ * @param n number of pairs
+ * @param pks size:n*ecc_sign_eth2_bls_PUBLICKEYSIZE
+ * @param messages size:messages_len
+ * @param messages_len total length of the buffer `messages`
+ * @param signature size:ecc_sign_eth2_bls_SIGNATURESIZE
+ * @return 0 if valid, -1 if invalid
+ */
+ECC_EXPORT
+int ecc_sign_eth2_bls_AggregateVerify(
+    int n,
+    const byte_t *pks,
+    const byte_t *messages, int messages_len,
+    const byte_t *signature
 );
 
 #endif // ECC_SIGN_H

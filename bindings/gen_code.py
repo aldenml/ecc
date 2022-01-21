@@ -380,8 +380,7 @@ def read_header(header):
 
 ecc_headers = ["util", "hash", "mac", "kdf", "ed25519", "ristretto255", "bls12_381",
                "h2c", "oprf", "opaque", "sign", "pre"]
-ecc_ignore = ["ecc_memzero", "ecc_bin2hex", "ecc_hex2bin", "ecc_malloc", "ecc_free",
-              "ecc_sign_bls12_381_Aggregate"]
+ecc_ignore = ["ecc_memzero", "ecc_bin2hex", "ecc_hex2bin", "ecc_malloc", "ecc_free", "ecc_log"]
 
 
 def gen_js(headers, ignore):
