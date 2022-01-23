@@ -6,14 +6,14 @@ Copy of the license at https://opensource.org/licenses/MIT
 """
 
 import unittest
-from src.libecc import *
+import src.libecc as libecc
 
 
 class TestUtil(unittest.TestCase):
 
     def test_ecc_randombytes(self):
         buf = bytearray(10)
-        ecc_randombytes(buf, len(buf))
+        libecc.ecc_randombytes(buf, len(buf))
         count = 0
         for b in buf:
             if b == 0:
