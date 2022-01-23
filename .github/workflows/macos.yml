@@ -62,22 +62,6 @@ jobs:
           python3 -m unittest
           cd ../..
 
-      - name: codesign binaries
-        env:
-          MACOS_CERTIFICATE: ${{ secrets.MACOS_CERTIFICATE }}
-          MACOS_CERTIFICATE_PWD: ${{ secrets.MACOS_CERTIFICATE_PWD }}
-        run: |
-          echo $MACOS_CERTIFICATE | base64 -D > certificate.p12
-          security create-keychain -p $MACOS_CERTIFICATE_PWD build.keychain
-          security default-keychain -s build.keychain
-          security unlock-keychain -p $MACOS_CERTIFICATE_PWD build.keychain
-          security import certificate.p12 -k build.keychain -P $MACOS_CERTIFICATE_PWD -T /usr/bin/codesign
-          security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k $MACOS_CERTIFICATE_PWD build.keychain
-          security find-identity -v
-          /usr/bin/codesign --force -s 01D4E6F78C4A0F16D6095D19DDA78C97FDAF5A56 build/libecc.dylib -v
-          /usr/bin/codesign --force -s 01D4E6F78C4A0F16D6095D19DDA78C97FDAF5A56 build/libecc-jvm.dylib -v
-          /usr/bin/codesign --force -s 01D4E6F78C4A0F16D6095D19DDA78C97FDAF5A56 bindings/python/src/libecc/_libecc_cffi.cpython-39-darwin.so -v
-
       - uses: actions/upload-artifact@v2
         with:
           name: ecc-macos
