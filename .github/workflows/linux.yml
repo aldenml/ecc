@@ -1,4 +1,4 @@
-name: c
+name: Linux
 
 on:
   push:
@@ -20,6 +20,9 @@ jobs:
         run: |
           sudo apt update
           sudo apt install ninja-build autoconf automake
+          sudo apt install python3-pip
+          pip3 install --upgrade build
+          pip3 install cffi
 
       - name: c build
         run: |
@@ -39,10 +42,24 @@ jobs:
           ./gradlew test
           cd ../..
 
+      - name: python wheel
+        run: |
+          cd bindings/python
+          python3 cffi_build.py
+          python3 -m build --wheel
+          cd ../..
+
+      - name: python tests
+        run: |
+          cd bindings/python
+          python3 -m unittest
+          cd ../..
+
       - uses: actions/upload-artifact@v2
         with:
           name: ecc-linux
           path: |
             build/libecc.so
             build/libecc-jvm.so
+            bindings/python/src/libecc/_libecc_cffi.*.so
           retention-days: 5
