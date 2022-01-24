@@ -5,8 +5,13 @@
 /build-cov
 /cmake-build*
 node_modules/
+__pycache__/
 /bindings/js/dist
 /bindings/jvm/.gradle
 /bindings/jvm/.idea
 /bindings/jvm/build
 /bindings/jvm/libecc-jvm.dylib
+/bindings/python/build
+/bindings/python/dist
+/bindings/python/src/libecc.egg-info
+/bindings/python/src/libecc/_libecc_cffi.*
