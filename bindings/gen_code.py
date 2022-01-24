@@ -8,6 +8,7 @@
 import json
 import re
 import subprocess
+import textwrap
 
 
 class ParamComment:
@@ -127,6 +128,14 @@ class DefineDecl:
         out += "     *\n"
         out += "     */\n"
         out += "    public static final int " + self.name + " = " + self.value + ";\n"
+        return out
+
+    def build_python(self):
+        out = ""
+        out += self.name + " = " + self.value + "\n"
+        out += "\"\"\"\n"
+        out += "".join(self.comment.splitlines(True)) + "\n"
+        out += "\"\"\"\n"
         return out
 
 
@@ -311,6 +320,70 @@ class FunctionDecl:
         out += "\n    );\n"
         return out
 
+    def build_cffi_python(self):
+        out = ""
+        out += "    "
+        if self.return_type() != "void":
+            out += "int"
+        else:
+            out += "void"
+        out += " " + self.name + "(\n"
+        out += ",\n".join(map(
+            lambda p: "        unsigned char *" + p.name if (p.is_array()) else "        int " + p.name,
+            self.params()
+        ))
+        out += "\n    );\n"
+        return out
+
+    def build_python(self):
+        comment = self.comment()
+        out = ""
+        out += "def " + self.name + "(\n"
+        out += ",\n".join(map(
+            lambda p: "    " + p.name + ((": bytearray" if (p.is_out() or p.is_inout()) else ": bytes") if (p.is_array()) else ": int"),
+            self.params()
+        ))
+        out += "\n) -> "
+        if self.return_type() != "void":
+            out += "int"
+        else:
+            out += "None"
+        out += ":\n"
+        out += "    \"\"\"\n"
+        out += "    "
+        out += "    ".join(comment.comment_text().splitlines(True)) + "\n"
+        out += "    \n"
+        for param in self.params():
+            out += "    " + param.name + " --"
+            if param.is_out():
+                out += " (output)"
+            if param.is_inout():
+                out += " (input, output)"
+            out += " "
+            out += "    ".join(param.comment.comment_text().splitlines(True)) + "\n"
+        if comment.comment_return() is not None:
+            out += "    return " + comment.comment_return() + "\n"
+        out += "    \"\"\"\n"
+        # alloc
+        for param in self.params():
+            if param.is_array():
+                out += "    " + param.impl_name() + " = ffi.from_buffer(" + param.name + ")\n"
+        # invoke
+        if self.return_type() != "void":
+            out += "    fun_ret = lib." + self.name + "(\n"
+        else:
+            out += "    lib." + self.name + "(\n"
+        out += ",\n".join(map(lambda p: "        " + p.impl_name(), self.params()))
+        out += "\n"
+        out += "    )\n"
+        # return
+        if self.return_type() != "void":
+            out += "    return fun_ret\n"
+        else:
+            out += "    return None\n"
+        out += "\n"
+        return out
+
 
 class TranslationUnitDecl:
     def __init__(self, ast, text):
@@ -359,6 +432,21 @@ class TranslationUnitDecl:
         out += "\n".join(map(lambda c: c.build_jni_java(), defines))
         out += "\n"
         out += "\n".join(map(lambda f: f.build_jni_java(), functions))
+        return out
+
+    def build_cffi_python(self, ignore):
+        functions = self.functions(ignore)
+        out = ""
+        out += "\n".join(map(lambda f: f.build_cffi_python(), functions))
+        return out
+
+    def build_python(self, ignore):
+        defines = self.defines()
+        functions = self.functions(ignore)
+        out = ""
+        out += "\n".join(map(lambda c: c.build_python(), defines))
+        out += "\n"
+        out += "\n".join(map(lambda f: f.build_python(), functions))
         return out
 
 
@@ -526,6 +614,63 @@ def gen_jni_java(headers, ignore):
     return out
 
 
+def gen_cffi_python(headers, ignore):
+    out = ""
+    out += "#\n"
+    out += "# Copyright (c) 2021-2022, Alden Torres\n"
+    out += "#\n"
+    out += "# Licensed under the terms of the MIT license.\n"
+    out += "# Copy of the license at https://opensource.org/licenses/MIT\n"
+    out += "#\n"
+    out += "\n"
+    out += "from cffi import FFI\n"
+    out += "\n"
+    out += "ffibuilder = FFI()\n"
+    out += "\n"
+    out += "ffibuilder.cdef(\n"
+    out += "    \"\"\"\n"
+    out += "\n".join(map(
+        lambda h: "    // " + h + "\n\n" + TranslationUnitDecl(gen_ast(h), read_header(h)).build_cffi_python(ignore),
+        headers
+    ))
+    out += "\n    \"\"\"\n"
+    out += ")\n"
+    out += textwrap.dedent(
+        """
+        ffibuilder.set_source(
+            module_name="_libecc_cffi",
+            source=
+            \"\"\"
+            #include "../../../../src/ecc.h"
+            \"\"\",
+            include_dirs=["../../../src"],
+            library_dirs=["../../../../build", "../../../../build/libsodium/lib", "../../../../deps/blst"],
+            libraries=["ecc_static", "sodium", "blst"]
+        )
+    
+        if __name__ == "__main__":
+            ffibuilder.compile(tmpdir="src/libecc", verbose=True)
+        """)
+    return out
+
+
+def gen_python(headers, ignore):
+    out = ""
+    out += "#\n"
+    out += "# Copyright (c) 2021-2022, Alden Torres\n"
+    out += "#\n"
+    out += "# Licensed under the terms of the MIT license.\n"
+    out += "# Copy of the license at https://opensource.org/licenses/MIT\n"
+    out += "#\n"
+    out += "\n"
+    out += "from ._libecc_cffi import ffi, lib\n\n"
+    out += "\n".join(map(
+        lambda h: "# " + h + "\n\n" + TranslationUnitDecl(gen_ast(h), read_header(h)).build_python(ignore),
+        headers
+    ))
+    return out
+
+
 def gen_code(headers, ignore):
     with open("bindings/js/libecc-post.js", "w") as f:
         f.write(gen_js(headers, ignore))
@@ -533,6 +678,10 @@ def gen_code(headers, ignore):
         f.write(gen_jni_c(headers, ignore))
     with open("bindings/jvm/src/main/java/org/ssohub/crypto/ecc/libecc.java", "w") as f:
         f.write(gen_jni_java(headers, ignore))
+    with open("bindings/python/cffi_build.py", "w") as f:
+        f.write(gen_cffi_python(headers, ignore))
+    with open("bindings/python/src/libecc/libecc.py", "w") as f:
+        f.write(gen_python(headers, ignore))
 
 
 gen_code(ecc_headers, ecc_ignore)
