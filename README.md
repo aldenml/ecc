@@ -13,10 +13,11 @@
 Library to work with elliptic-curve cryptography based on [libsodium](https://github.com/jedisct1/libsodium)
 and [blst](https://github.com/supranational/blst).
 
-| Bindings |                         |   |
-|--------------------|-------------------------|---|
-| Java               | [jvm/ecc](bindings/jvm) | [![maven](https://img.shields.io/maven-central/v/org.ssohub/ecc.svg?label=maven)](https://search.maven.org/search?q=g:%22org.ssohub%22%20AND%20a:%22ecc%22) |
-| Javascript         | [js/ecc](bindings/js)   | [![npm](https://img.shields.io/npm/v/@aldenml/ecc)](https://www.npmjs.com/package/@aldenml/ecc) |
+| Bindings   |                               |   |
+|------------|-------------------------------|---|
+| Java       | [jvm/ecc](bindings/jvm)       | [![maven](https://img.shields.io/maven-central/v/org.ssohub/ecc.svg?label=maven)](https://search.maven.org/search?q=g:%22org.ssohub%22%20AND%20a:%22ecc%22) |
+| Javascript | [js/ecc](bindings/js)         | [![npm](https://img.shields.io/npm/v/@aldenml/ecc)](https://www.npmjs.com/package/@aldenml/ecc) |
+| Python     | [python/ecc](bindings/python) | [![PyPI version](https://badge.fury.io/py/libecc.svg)](https://badge.fury.io/py/libecc) |
 
 ### Features
 
