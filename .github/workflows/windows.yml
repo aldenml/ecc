@@ -1,0 +1,100 @@
+name: Windows
+
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    branches:
+      - master
+
+jobs:
+
+  x86_64:
+    runs-on: windows-2022
+    defaults:
+      run:
+        shell: msys2 {0}
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          submodules: recursive
+      - uses: msys2/setup-msys2@v2
+        with:
+          msystem: MINGW64
+          path-type: minimal
+          update: false
+          install: >-
+            mingw-w64-x86_64-gcc
+            mingw-w64-x86_64-cmake
+            mingw-w64-x86_64-ninja
+            make
+            autoconf
+            automake
+            libtool
+            mingw-w64-x86_64-python
+            mingw-w64-x86_64-python-pip
+      - name: install packages
+        run: |
+          pip3 install --upgrade build
+          pip3 install cffi
+
+      - name: cmake configure
+        run: |
+          cmake -DCMAKE_BUILD_TYPE=Release -B build -G "Ninja" .
+
+      - name: build libsodium
+        run: |
+          cd deps/libsodium
+          ./autogen.sh -s
+          ./configure "CFLAGS=-DSODIUM_STATIC=1 -O2" --disable-dependency-tracking --prefix=/d/a/ecc/ecc/build/libsodium --disable-ssp --disable-shared --without-pthreads
+          make -j2
+          make install
+          cd ../..
+
+      - name: build blst
+        run: |
+          cd deps/blst
+          ./build.sh -O2
+          cd ../..
+
+      - name: c build
+        run: |
+          cmake --build build --config Release --parallel 2
+          cp build/libecc-jvm.dll bindings/jvm/
+          objdump -p build/libecc.dll | grep DLL
+
+      - name: c tests
+        run: |
+          cd build
+          ctest -C "Release" --rerun-failed --output-on-failure
+          cd ..
+
+      - name: jvm tests
+        run: |
+          objdump -p build/libecc-jvm.dll | grep DLL
+          cd bindings/jvm
+          ./gradlew test
+          cd ../..
+
+      - name: python wheel
+        run: |
+          cd bindings/python
+          python3 cffi_build.py
+          python3 -m build --wheel
+          cd ../..
+
+      - name: python tests
+        run: |
+          cd bindings/python
+          python3 -m unittest
+          cd ../..
+
+      - uses: actions/upload-artifact@v2
+        with:
+          name: ecc-windows
+          path: |
+            build/libecc.dll
+            build/libecc-jvm.dll
+            bindings/python/src/libecc/_libecc_cffi.*.dll
+          retention-days: 5
