@@ -2,6 +2,7 @@
 
 [![macOS](https://github.com/aldenml/ecc/actions/workflows/macos.yml/badge.svg?branch=master)](https://github.com/aldenml/ecc/actions/workflows/macos.yml)
 [![Linux](https://github.com/aldenml/ecc/actions/workflows/linux.yml/badge.svg?branch=master)](https://github.com/aldenml/ecc/actions/workflows/linux.yml)
+[![Windows](https://github.com/aldenml/ecc/actions/workflows/windows.yml/badge.svg?branch=master)](https://github.com/aldenml/ecc/actions/workflows/windows.yml)
 [![PyPI version](https://badge.fury.io/py/libecc.svg)](https://badge.fury.io/py/libecc)
 
 This is the python binding of the [ecc](https://github.com/aldenml/ecc) library.

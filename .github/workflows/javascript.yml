@@ -1,4 +1,4 @@
-name: js
+name: javascript
 
 on:
   push:

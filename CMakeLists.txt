@@ -46,7 +46,7 @@ if(EMSCRIPTEN)
         BUILD_IN_SOURCE 1
         INSTALL_COMMAND ""
     )
-else()
+elseif(NOT WIN32)
     ExternalProject_Add(
         libsodium-external
         SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/deps/libsodium
@@ -70,19 +70,23 @@ else()
     )
 endif()
 
-# setup build configure for libsodium
-ExternalProject_Add_Step(
-    libsodium-external autogen
-    COMMAND ./autogen.sh -s
-    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/deps/libsodium
-    COMMENT "Running autogen.sh tool"
-    DEPENDERS configure
-)
+if(NOT WIN32)
+    # setup build configure for libsodium
+    ExternalProject_Add_Step(
+        libsodium-external autogen
+        COMMAND ./autogen.sh -s
+        WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/deps/libsodium
+        COMMENT "Running autogen.sh tool"
+        DEPENDERS configure
+    )
+endif()
 
 file(MAKE_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/build/libsodium/include)
 
 add_library(libsodium STATIC IMPORTED GLOBAL)
-add_dependencies(libsodium libsodium-external)
+if(NOT WIN32)
+    add_dependencies(libsodium libsodium-external)
+endif()
 
 set_target_properties(libsodium PROPERTIES
     INTERFACE_INCLUDE_DIRECTORIES ${CMAKE_CURRENT_SOURCE_DIR}/build/libsodium/include
@@ -90,7 +94,9 @@ set_target_properties(libsodium PROPERTIES
 )
 
 add_library(blst STATIC IMPORTED GLOBAL)
-add_dependencies(blst blst-external)
+if(NOT WIN32)
+    add_dependencies(blst blst-external)
+endif()
 
 set_target_properties(blst PROPERTIES
     INTERFACE_INCLUDE_DIRECTORIES ${CMAKE_CURRENT_SOURCE_DIR}/deps/blst/bindings

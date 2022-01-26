@@ -2,7 +2,8 @@
 
 [![macOS](https://github.com/aldenml/ecc/actions/workflows/macos.yml/badge.svg?branch=master)](https://github.com/aldenml/ecc/actions/workflows/macos.yml)
 [![Linux](https://github.com/aldenml/ecc/actions/workflows/linux.yml/badge.svg?branch=master)](https://github.com/aldenml/ecc/actions/workflows/linux.yml)
-[![js](https://github.com/aldenml/ecc/actions/workflows/js.yml/badge.svg?branch=master)](https://github.com/aldenml/ecc/actions/workflows/js.yml)
+[![Windows](https://github.com/aldenml/ecc/actions/workflows/windows.yml/badge.svg?branch=master)](https://github.com/aldenml/ecc/actions/workflows/windows.yml)
+[![javascript](https://github.com/aldenml/ecc/actions/workflows/javascript.yml/badge.svg?branch=master)](https://github.com/aldenml/ecc/actions/workflows/javascript.yml)
 [![Codacy Badge](https://app.codacy.com/project/badge/Grade/b805b9122f2e46d097eab8cefb0df48e)](https://app.codacy.com/gh/aldenml/ecc/dashboard)
 [![Codacy Badge](https://app.codacy.com/project/badge/Coverage/b805b9122f2e46d097eab8cefb0df48e)](https://www.codacy.com/gh/aldenml/ecc/dashboard)
 [![javadoc](https://javadoc.io/badge2/org.ssohub/ecc/javadoc.svg)](https://javadoc.io/doc/org.ssohub/ecc)
