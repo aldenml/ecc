@@ -13,7 +13,7 @@
 #include "util.h"
 #include "bls12_381.h"
 
-static_assert(sizeof(blst_scalar) == ecc_sign_eth2_bls_PRIVATEKEYSIZE, "");
+static_assert(sizeof(blst_scalar) == ecc_sign_eth_bls_PRIVATEKEYSIZE, "");
 
 void ecc_sign_ed25519_sign(byte_t *sig, const byte_t *msg, int msg_len, const byte_t *sk) {
     crypto_sign_ed25519_detached(sig, NULL, msg, msg_len, sk);
@@ -39,7 +39,7 @@ void ecc_sign_ed25519_sk_to_pk(byte_t *pk, const byte_t *sk) {
     crypto_sign_ed25519_sk_to_pk(pk, sk);
 }
 
-void ecc_sign_eth2_bls_KeyGen(byte_t *sk, const byte_t *ikm, int ikm_len) {
+void ecc_sign_eth_bls_KeyGen(byte_t *sk, const byte_t *ikm, int ikm_len) {
     blst_scalar bsk;
     blst_keygen(&bsk, ikm, ikm_len, 0, 0);
     blst_bendian_from_scalar(sk, &bsk);
@@ -48,7 +48,7 @@ void ecc_sign_eth2_bls_KeyGen(byte_t *sk, const byte_t *ikm, int ikm_len) {
     ecc_memzero((byte_t *) &bsk, sizeof bsk);
 }
 
-void ecc_sign_eth2_bls_SkToPk(byte_t *pk, const byte_t *sk) {
+void ecc_sign_eth_bls_SkToPk(byte_t *pk, const byte_t *sk) {
     blst_scalar bsk;
     blst_scalar_from_bendian(&bsk, sk);
 
@@ -61,7 +61,7 @@ void ecc_sign_eth2_bls_SkToPk(byte_t *pk, const byte_t *sk) {
     ecc_memzero((byte_t *) &bpk, sizeof bpk);
 }
 
-int ecc_sign_eth2_bls_KeyValidate(const byte_t *pk) {
+int ecc_sign_eth_bls_KeyValidate(const byte_t *pk) {
     // 1. xP = pubkey_to_point(PK)
     // 2. If xP is INVALID, return INVALID
     // 3. If xP is the identity element, return INVALID
@@ -84,7 +84,7 @@ int ecc_sign_eth2_bls_KeyValidate(const byte_t *pk) {
     return 0;
 }
 
-void ecc_sign_eth2_bls_Sign(
+void ecc_sign_eth_bls_Sign(
     byte_t *signature,
     const byte_t *sk,
     const byte_t *message, int message_len
@@ -106,12 +106,12 @@ void ecc_sign_eth2_bls_Sign(
     ecc_memzero((byte_t *) &sig, sizeof sig);
 }
 
-int ecc_sign_eth2_bls_Verify(
+int ecc_sign_eth_bls_Verify(
     const byte_t *pk,
     const byte_t *message, int message_len,
     const byte_t *signature
 ) {
-    if (ecc_sign_eth2_bls_KeyValidate(pk) != 0)
+    if (ecc_sign_eth_bls_KeyValidate(pk) != 0)
         return -1;
 
     byte_t DST[43] = "BLS_SIG_BLS12381G2_XMD:SHA-256_SSWU_RO_POP_";
@@ -135,7 +135,7 @@ int ecc_sign_eth2_bls_Verify(
     return r == BLST_SUCCESS ? 0 : -1;
 }
 
-int ecc_sign_eth2_bls_Aggregate(
+int ecc_sign_eth_bls_Aggregate(
     byte_t *signature,
     const byte_t *signatures, int n
 ) {
@@ -147,7 +147,7 @@ int ecc_sign_eth2_bls_Aggregate(
         if (blst_aggregate_in_g2(
             &aggregate,
             &aggregate,
-            &signatures[i * ecc_sign_eth2_bls_SIGNATURESIZE]
+            &signatures[i * ecc_sign_eth_bls_SIGNATURESIZE]
         ) != BLST_SUCCESS)
             return -1;
     }
@@ -157,7 +157,7 @@ int ecc_sign_eth2_bls_Aggregate(
     return 0;
 }
 
-int ecc_sign_eth2_bls_FastAggregateVerify(
+int ecc_sign_eth_bls_FastAggregateVerify(
     const byte_t *pks, const int n,
     const byte_t *message, const int message_len,
     const byte_t *signature
@@ -181,7 +181,7 @@ int ecc_sign_eth2_bls_FastAggregateVerify(
 
     blst_p1_affine next;
     for (int i = 1; i < n; i++) {
-        if (blst_p1_uncompress(&next, &pks[i * ecc_sign_eth2_bls_PUBLICKEYSIZE]) != BLST_SUCCESS)
+        if (blst_p1_uncompress(&next, &pks[i * ecc_sign_eth_bls_PUBLICKEYSIZE]) != BLST_SUCCESS)
             return -1;
         if (!blst_p1_affine_in_g1(&first))
             return -1;
@@ -202,7 +202,7 @@ int ecc_sign_eth2_bls_FastAggregateVerify(
     return r == BLST_SUCCESS ? 0 : -1;
 }
 
-int ecc_sign_eth2_bls_AggregateVerify(
+int ecc_sign_eth_bls_AggregateVerify(
     const int n,
     const byte_t *pks,
     const byte_t *messages, const int messages_len,
@@ -225,12 +225,12 @@ int ecc_sign_eth2_bls_AggregateVerify(
     int message_offset = 0;
     for (int i = 0; i < n; i++) {
 #if ECC_LOG
-        ecc_log("pk", &pks[i * ecc_sign_eth2_bls_PUBLICKEYSIZE], ecc_sign_eth2_bls_PUBLICKEYSIZE);
+        ecc_log("pk", &pks[i * ecc_sign_eth_bls_PUBLICKEYSIZE], ecc_sign_eth_bls_PUBLICKEYSIZE);
         ecc_log("message",  &messages[message_offset + 1], messages[message_offset]);
 #endif
-        if (ecc_sign_eth2_bls_KeyValidate(&pks[i * ecc_sign_eth2_bls_PUBLICKEYSIZE]) != 0)
+        if (ecc_sign_eth_bls_KeyValidate(&pks[i * ecc_sign_eth_bls_PUBLICKEYSIZE]) != 0)
             return -1;
-        blst_p1_uncompress(&pk, &pks[i * ecc_sign_eth2_bls_PUBLICKEYSIZE]);
+        blst_p1_uncompress(&pk, &pks[i * ecc_sign_eth_bls_PUBLICKEYSIZE]);
 
         blst_p2 Q;
         blst_hash_to_g2(&Q, &messages[message_offset + 1], messages[message_offset], DST, sizeof DST, NULL, 0);

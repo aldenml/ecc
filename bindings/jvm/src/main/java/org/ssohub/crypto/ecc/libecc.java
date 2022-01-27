@@ -2733,19 +2733,19 @@ public final class libecc {
      * Size of the signing private key (size of a scalar in BLS12-381).
      *
      */
-    public static final int ecc_sign_eth2_bls_PRIVATEKEYSIZE = 32;
+    public static final int ecc_sign_eth_bls_PRIVATEKEYSIZE = 32;
 
     /**
      * Size of the signing public key (size of a compressed G1 element in BLS12-381).
      *
      */
-    public static final int ecc_sign_eth2_bls_PUBLICKEYSIZE = 48;
+    public static final int ecc_sign_eth_bls_PUBLICKEYSIZE = 48;
 
     /**
      * Signature size (size of a compressed G2 element in BLS12-381).
      *
      */
-    public static final int ecc_sign_eth2_bls_SIGNATURESIZE = 96;
+    public static final int ecc_sign_eth_bls_SIGNATURESIZE = 96;
 
     /**
      * Signs the message msg whose length is msg_len bytes, using the
@@ -2834,11 +2834,11 @@ public final class libecc {
      * For security, `ikm` MUST be infeasible to guess, e.g., generated
      * by a trusted source of randomness and be at least 32 bytes long.
      *
-     * @param sk (output) a secret key, size:ecc_sign_eth2_bls_PRIVATEKEYSIZE
+     * @param sk (output) a secret key, size:ecc_sign_eth_bls_PRIVATEKEYSIZE
      * @param ikm a secret octet string, size:ikm_len
      * @param ikm_len the length of `ikm`
      */
-    public static native void ecc_sign_eth2_bls_KeyGen(
+    public static native void ecc_sign_eth_bls_KeyGen(
         byte[] sk,
         byte[] ikm,
         int ikm_len
@@ -2847,10 +2847,10 @@ public final class libecc {
     /**
      * Takes a secret key `sk` and outputs the corresponding public key `pk`.
      *
-     * @param pk (output) a public key, size:ecc_sign_eth2_bls_PUBLICKEYSIZE
-     * @param sk the secret key, size:ecc_sign_eth2_bls_PRIVATEKEYSIZE
+     * @param pk (output) a public key, size:ecc_sign_eth_bls_PUBLICKEYSIZE
+     * @param sk the secret key, size:ecc_sign_eth_bls_PRIVATEKEYSIZE
      */
-    public static native void ecc_sign_eth2_bls_SkToPk(
+    public static native void ecc_sign_eth_bls_SkToPk(
         byte[] pk,
         byte[] sk
     );
@@ -2860,10 +2860,10 @@ public final class libecc {
      * that a public key represents a valid, non-identity point that
      * is in the correct subgroup.
      *
-     * @param pk a public key in the format output by SkToPk, size:ecc_sign_eth2_bls_PUBLICKEYSIZE
+     * @param pk a public key in the format output by SkToPk, size:ecc_sign_eth_bls_PUBLICKEYSIZE
      * @return 0 for valid or -1 for invalid
      */
-    public static native int ecc_sign_eth2_bls_KeyValidate(
+    public static native int ecc_sign_eth_bls_KeyValidate(
         byte[] pk
     );
 
@@ -2871,12 +2871,12 @@ public final class libecc {
      * Computes a signature from sk, a secret key, and a message message
      * and put the result in sig.
      *
-     * @param signature (output) the signature, size:ecc_sign_eth2_bls_SIGNATURESIZE
-     * @param sk the secret key, size:ecc_sign_eth2_bls_PRIVATEKEYSIZE
+     * @param signature (output) the signature, size:ecc_sign_eth_bls_SIGNATURESIZE
+     * @param sk the secret key, size:ecc_sign_eth_bls_PRIVATEKEYSIZE
      * @param message input message, size:message_len
      * @param message_len the length of `message`
      */
-    public static native void ecc_sign_eth2_bls_Sign(
+    public static native void ecc_sign_eth_bls_Sign(
         byte[] signature,
         byte[] sk,
         byte[] message,
@@ -2886,13 +2886,13 @@ public final class libecc {
     /**
      * Checks that a signature is valid for the message under the public key pk.
      *
-     * @param pk the public key, size:ecc_sign_eth2_bls_PUBLICKEYSIZE
+     * @param pk the public key, size:ecc_sign_eth_bls_PUBLICKEYSIZE
      * @param message input message, size:message_len
      * @param message_len the length of `message`
-     * @param signature the signature, size:ecc_sign_eth2_bls_SIGNATURESIZE
+     * @param signature the signature, size:ecc_sign_eth_bls_SIGNATURESIZE
      * @return 0 if valid, -1 if invalid
      */
-    public static native int ecc_sign_eth2_bls_Verify(
+    public static native int ecc_sign_eth_bls_Verify(
         byte[] pk,
         byte[] message,
         int message_len,
@@ -2902,12 +2902,12 @@ public final class libecc {
     /**
      * Aggregates multiple signatures into one.
      *
-     * @param signature (output) the aggregated signature that combines all inputs, size:ecc_sign_eth2_bls_SIGNATURESIZE
-     * @param signatures array of individual signatures, size:n*ecc_sign_eth2_bls_SIGNATURESIZE
+     * @param signature (output) the aggregated signature that combines all inputs, size:ecc_sign_eth_bls_SIGNATURESIZE
+     * @param signatures array of individual signatures, size:n*ecc_sign_eth_bls_SIGNATURESIZE
      * @param n amount of signatures in the array `signatures`
      * @return 0 if valid, -1 if invalid
      */
-    public static native int ecc_sign_eth2_bls_Aggregate(
+    public static native int ecc_sign_eth_bls_Aggregate(
         byte[] signature,
         byte[] signatures,
         int n
@@ -2916,14 +2916,14 @@ public final class libecc {
     /**
      * 
      *
-     * @param pks size:n*ecc_sign_eth2_bls_PUBLICKEYSIZE
+     * @param pks size:n*ecc_sign_eth_bls_PUBLICKEYSIZE
      * @param n the number of public keys in `pks`
      * @param message size:message_len
      * @param message_len the length of `message`
-     * @param signature size:ecc_sign_eth2_bls_SIGNATURESIZE
+     * @param signature size:ecc_sign_eth_bls_SIGNATURESIZE
      * @return 0 if valid, -1 if invalid
      */
-    public static native int ecc_sign_eth2_bls_FastAggregateVerify(
+    public static native int ecc_sign_eth_bls_FastAggregateVerify(
         byte[] pks,
         int n,
         byte[] message,
@@ -2938,13 +2938,13 @@ public final class libecc {
      * In order to keep the API simple, the maximum length of a message is 255.
      *
      * @param n number of pairs
-     * @param pks size:n*ecc_sign_eth2_bls_PUBLICKEYSIZE
+     * @param pks size:n*ecc_sign_eth_bls_PUBLICKEYSIZE
      * @param messages size:messages_len
      * @param messages_len total length of the buffer `messages`
-     * @param signature size:ecc_sign_eth2_bls_SIGNATURESIZE
+     * @param signature size:ecc_sign_eth_bls_SIGNATURESIZE
      * @return 0 if valid, -1 if invalid
      */
-    public static native int ecc_sign_eth2_bls_AggregateVerify(
+    public static native int ecc_sign_eth_bls_AggregateVerify(
         int n,
         byte[] pks,
         byte[] messages,

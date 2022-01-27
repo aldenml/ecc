@@ -14,7 +14,7 @@ top to expose the cryptographic primitives.
 
 - [OPRF](#oprf-oblivious-pseudo-random-functions-using-ristretto255)
 - [OPAQUE](#opaque-the-opaque-asymmetric-pake-protocol)
-- [Ethereum 2 BLS Signature](#ethereum-2-bls-signature)
+- [Ethereum BLS Signature](#ethereum-bls-signature)
 - [BLS12-381 Pairing](#bls12-381-pairing)
 - [Proxy Re-Encryption (PRE)](#proxy-re-encryption-pre)
 
@@ -121,21 +121,21 @@ opaque_ristretto255_sha512_3DH_ServerInit
 opaque_ristretto255_sha512_3DH_ServerFinish
 ```
 
-### Ethereum 2 BLS Signature
+### Ethereum BLS Signature
 
-Ethereum 2 uses BLS signatures as specified in the IETF
+Ethereum uses BLS signatures as specified in the IETF
 draft [draft-irtf-cfrg-bls-signature-04](https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-bls-signature-04)
 ciphersuite `BLS_SIG_BLS12381G2_XMD:SHA-256_SSWU_RO_POP_`. This library provides the following API:
 
 ```
-ecc_sign_eth2_bls_KeyGen
-ecc_sign_eth2_bls_SkToPk
-ecc_sign_eth2_bls_KeyValidate
-ecc_sign_eth2_bls_Sign
-ecc_sign_eth2_bls_Verify
-ecc_sign_eth2_bls_Aggregate
-ecc_sign_eth2_bls_FastAggregateVerify
-ecc_sign_eth2_bls_AggregateVerify
+ecc_sign_eth_bls_KeyGen
+ecc_sign_eth_bls_SkToPk
+ecc_sign_eth_bls_KeyValidate
+ecc_sign_eth_bls_Sign
+ecc_sign_eth_bls_Verify
+ecc_sign_eth_bls_Aggregate
+ecc_sign_eth_bls_FastAggregateVerify
+ecc_sign_eth_bls_AggregateVerify
 ```
 
 BLS is a digital signature scheme with aggregation properties that can be applied to signatures

@@ -105,7 +105,7 @@ void ecc_sign_ed25519_sk_to_seed(byte_t *seed, const byte_t *sk);
 ECC_EXPORT
 void ecc_sign_ed25519_sk_to_pk(byte_t *pk, const byte_t *sk);
 
-// Compliant Ethereum 2.0 BLS Signature API implementation.
+// Compliant Ethereum BLS Signature API implementation.
 //
 // https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-bls-signature-04
 // https://github.com/cfrg/draft-irtf-cfrg-bls-signature
@@ -118,19 +118,19 @@ void ecc_sign_ed25519_sk_to_pk(byte_t *pk, const byte_t *sk);
 /**
  * Size of the signing private key (size of a scalar in BLS12-381).
  */
-#define ecc_sign_eth2_bls_PRIVATEKEYSIZE 32
+#define ecc_sign_eth_bls_PRIVATEKEYSIZE 32
 
 // const
 /**
  * Size of the signing public key (size of a compressed G1 element in BLS12-381).
  */
-#define ecc_sign_eth2_bls_PUBLICKEYSIZE 48
+#define ecc_sign_eth_bls_PUBLICKEYSIZE 48
 
 // const
 /**
  * Signature size (size of a compressed G2 element in BLS12-381).
  */
-#define ecc_sign_eth2_bls_SIGNATURESIZE 96
+#define ecc_sign_eth_bls_SIGNATURESIZE 96
 
 /**
  * Generates a secret key `sk` deterministically from a secret
@@ -139,44 +139,44 @@ void ecc_sign_ed25519_sk_to_pk(byte_t *pk, const byte_t *sk);
  * For security, `ikm` MUST be infeasible to guess, e.g., generated
  * by a trusted source of randomness and be at least 32 bytes long.
  *
- * @param[out] sk a secret key, size:ecc_sign_eth2_bls_PRIVATEKEYSIZE
+ * @param[out] sk a secret key, size:ecc_sign_eth_bls_PRIVATEKEYSIZE
  * @param ikm a secret octet string, size:ikm_len
  * @param ikm_len the length of `ikm`
  */
 ECC_EXPORT
-void ecc_sign_eth2_bls_KeyGen(byte_t *sk, const byte_t *ikm, int ikm_len);
+void ecc_sign_eth_bls_KeyGen(byte_t *sk, const byte_t *ikm, int ikm_len);
 
 /**
  * Takes a secret key `sk` and outputs the corresponding public key `pk`.
  *
- * @param[out] pk a public key, size:ecc_sign_eth2_bls_PUBLICKEYSIZE
- * @param sk the secret key, size:ecc_sign_eth2_bls_PRIVATEKEYSIZE
+ * @param[out] pk a public key, size:ecc_sign_eth_bls_PUBLICKEYSIZE
+ * @param sk the secret key, size:ecc_sign_eth_bls_PRIVATEKEYSIZE
  */
 ECC_EXPORT
-void ecc_sign_eth2_bls_SkToPk(byte_t *pk, const byte_t *sk);
+void ecc_sign_eth_bls_SkToPk(byte_t *pk, const byte_t *sk);
 
 /**
  * Ensures that a public key is valid.  In particular, it ensures
  * that a public key represents a valid, non-identity point that
  * is in the correct subgroup.
  *
- * @param pk a public key in the format output by SkToPk, size:ecc_sign_eth2_bls_PUBLICKEYSIZE
+ * @param pk a public key in the format output by SkToPk, size:ecc_sign_eth_bls_PUBLICKEYSIZE
  * @return 0 for valid or -1 for invalid
  */
 ECC_EXPORT
-int ecc_sign_eth2_bls_KeyValidate(const byte_t *pk);
+int ecc_sign_eth_bls_KeyValidate(const byte_t *pk);
 
 /**
  * Computes a signature from sk, a secret key, and a message message
  * and put the result in sig.
  *
- * @param[out] signature the signature, size:ecc_sign_eth2_bls_SIGNATURESIZE
- * @param sk the secret key, size:ecc_sign_eth2_bls_PRIVATEKEYSIZE
+ * @param[out] signature the signature, size:ecc_sign_eth_bls_SIGNATURESIZE
+ * @param sk the secret key, size:ecc_sign_eth_bls_PRIVATEKEYSIZE
  * @param message input message, size:message_len
  * @param message_len the length of `message`
  */
 ECC_EXPORT
-void ecc_sign_eth2_bls_Sign(
+void ecc_sign_eth_bls_Sign(
     byte_t *signature,
     const byte_t *sk,
     const byte_t *message, int message_len
@@ -185,14 +185,14 @@ void ecc_sign_eth2_bls_Sign(
 /**
  * Checks that a signature is valid for the message under the public key pk.
  *
- * @param pk the public key, size:ecc_sign_eth2_bls_PUBLICKEYSIZE
+ * @param pk the public key, size:ecc_sign_eth_bls_PUBLICKEYSIZE
  * @param message input message, size:message_len
  * @param message_len the length of `message`
- * @param signature the signature, size:ecc_sign_eth2_bls_SIGNATURESIZE
+ * @param signature the signature, size:ecc_sign_eth_bls_SIGNATURESIZE
  * @return 0 if valid, -1 if invalid
  */
 ECC_EXPORT
-int ecc_sign_eth2_bls_Verify(
+int ecc_sign_eth_bls_Verify(
     const byte_t *pk,
     const byte_t *message, int message_len,
     const byte_t *signature
@@ -201,28 +201,28 @@ int ecc_sign_eth2_bls_Verify(
 /**
  * Aggregates multiple signatures into one.
  *
- * @param[out] signature the aggregated signature that combines all inputs, size:ecc_sign_eth2_bls_SIGNATURESIZE
- * @param signatures array of individual signatures, size:n*ecc_sign_eth2_bls_SIGNATURESIZE
+ * @param[out] signature the aggregated signature that combines all inputs, size:ecc_sign_eth_bls_SIGNATURESIZE
+ * @param signatures array of individual signatures, size:n*ecc_sign_eth_bls_SIGNATURESIZE
  * @param n amount of signatures in the array `signatures`
  * @return 0 if valid, -1 if invalid
  */
 ECC_EXPORT
-int ecc_sign_eth2_bls_Aggregate(
+int ecc_sign_eth_bls_Aggregate(
     byte_t *signature,
     const byte_t *signatures, int n
 );
 
 /**
  *
- * @param pks size:n*ecc_sign_eth2_bls_PUBLICKEYSIZE
+ * @param pks size:n*ecc_sign_eth_bls_PUBLICKEYSIZE
  * @param n the number of public keys in `pks`
  * @param message size:message_len
  * @param message_len the length of `message`
- * @param signature size:ecc_sign_eth2_bls_SIGNATURESIZE
+ * @param signature size:ecc_sign_eth_bls_SIGNATURESIZE
  * @return 0 if valid, -1 if invalid
  */
 ECC_EXPORT
-int ecc_sign_eth2_bls_FastAggregateVerify(
+int ecc_sign_eth_bls_FastAggregateVerify(
     const byte_t *pks, int n,
     const byte_t *message, int message_len,
     const byte_t *signature
@@ -235,14 +235,14 @@ int ecc_sign_eth2_bls_FastAggregateVerify(
  * In order to keep the API simple, the maximum length of a message is 255.
  *
  * @param n number of pairs
- * @param pks size:n*ecc_sign_eth2_bls_PUBLICKEYSIZE
+ * @param pks size:n*ecc_sign_eth_bls_PUBLICKEYSIZE
  * @param messages size:messages_len
  * @param messages_len total length of the buffer `messages`
- * @param signature size:ecc_sign_eth2_bls_SIGNATURESIZE
+ * @param signature size:ecc_sign_eth_bls_SIGNATURESIZE
  * @return 0 if valid, -1 if invalid
  */
 ECC_EXPORT
-int ecc_sign_eth2_bls_AggregateVerify(
+int ecc_sign_eth_bls_AggregateVerify(
     int n,
     const byte_t *pks,
     const byte_t *messages, int messages_len,
