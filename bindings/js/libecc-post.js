@@ -4910,29 +4910,29 @@ const ecc_sign_ed25519_SECRETKEYSIZE = 64;
  */
 Module.ecc_sign_ed25519_SECRETKEYSIZE = ecc_sign_ed25519_SECRETKEYSIZE;
 
-const ecc_sign_eth2_bls_PRIVATEKEYSIZE = 32;
+const ecc_sign_eth_bls_PRIVATEKEYSIZE = 32;
 /**
  * Size of the signing private key (size of a scalar in BLS12-381).
  *
  * @type {number}
  */
-Module.ecc_sign_eth2_bls_PRIVATEKEYSIZE = ecc_sign_eth2_bls_PRIVATEKEYSIZE;
+Module.ecc_sign_eth_bls_PRIVATEKEYSIZE = ecc_sign_eth_bls_PRIVATEKEYSIZE;
 
-const ecc_sign_eth2_bls_PUBLICKEYSIZE = 48;
+const ecc_sign_eth_bls_PUBLICKEYSIZE = 48;
 /**
  * Size of the signing public key (size of a compressed G1 element in BLS12-381).
  *
  * @type {number}
  */
-Module.ecc_sign_eth2_bls_PUBLICKEYSIZE = ecc_sign_eth2_bls_PUBLICKEYSIZE;
+Module.ecc_sign_eth_bls_PUBLICKEYSIZE = ecc_sign_eth_bls_PUBLICKEYSIZE;
 
-const ecc_sign_eth2_bls_SIGNATURESIZE = 96;
+const ecc_sign_eth_bls_SIGNATURESIZE = 96;
 /**
  * Signature size (size of a compressed G2 element in BLS12-381).
  *
  * @type {number}
  */
-Module.ecc_sign_eth2_bls_SIGNATURESIZE = ecc_sign_eth2_bls_SIGNATURESIZE;
+Module.ecc_sign_eth_bls_SIGNATURESIZE = ecc_sign_eth_bls_SIGNATURESIZE;
 
 /**
  * Signs the message msg whose length is msg_len bytes, using the
@@ -5094,46 +5094,46 @@ Module.ecc_sign_ed25519_sk_to_pk = (
  * For security, `ikm` MUST be infeasible to guess, e.g., generated
  * by a trusted source of randomness and be at least 32 bytes long.
  *
- * @param {Uint8Array} sk (output) a secret key, size:ecc_sign_eth2_bls_PRIVATEKEYSIZE
+ * @param {Uint8Array} sk (output) a secret key, size:ecc_sign_eth_bls_PRIVATEKEYSIZE
  * @param {Uint8Array} ikm a secret octet string, size:ikm_len
  * @param {number} ikm_len the length of `ikm`
  */
-Module.ecc_sign_eth2_bls_KeyGen = (
+Module.ecc_sign_eth_bls_KeyGen = (
     sk,
     ikm,
     ikm_len,
 ) => {
-    const ptr_sk = mput(sk, ecc_sign_eth2_bls_PRIVATEKEYSIZE);
+    const ptr_sk = mput(sk, ecc_sign_eth_bls_PRIVATEKEYSIZE);
     const ptr_ikm = mput(ikm, ikm_len);
-    _ecc_sign_eth2_bls_KeyGen(
+    _ecc_sign_eth_bls_KeyGen(
         ptr_sk,
         ptr_ikm,
         ikm_len,
     );
-    mget(sk, ptr_sk, ecc_sign_eth2_bls_PRIVATEKEYSIZE);
-    mfree(ptr_sk, ecc_sign_eth2_bls_PRIVATEKEYSIZE);
+    mget(sk, ptr_sk, ecc_sign_eth_bls_PRIVATEKEYSIZE);
+    mfree(ptr_sk, ecc_sign_eth_bls_PRIVATEKEYSIZE);
     mfree(ptr_ikm, ikm_len);
 }
 
 /**
  * Takes a secret key `sk` and outputs the corresponding public key `pk`.
  *
- * @param {Uint8Array} pk (output) a public key, size:ecc_sign_eth2_bls_PUBLICKEYSIZE
- * @param {Uint8Array} sk the secret key, size:ecc_sign_eth2_bls_PRIVATEKEYSIZE
+ * @param {Uint8Array} pk (output) a public key, size:ecc_sign_eth_bls_PUBLICKEYSIZE
+ * @param {Uint8Array} sk the secret key, size:ecc_sign_eth_bls_PRIVATEKEYSIZE
  */
-Module.ecc_sign_eth2_bls_SkToPk = (
+Module.ecc_sign_eth_bls_SkToPk = (
     pk,
     sk,
 ) => {
-    const ptr_pk = mput(pk, ecc_sign_eth2_bls_PUBLICKEYSIZE);
-    const ptr_sk = mput(sk, ecc_sign_eth2_bls_PRIVATEKEYSIZE);
-    _ecc_sign_eth2_bls_SkToPk(
+    const ptr_pk = mput(pk, ecc_sign_eth_bls_PUBLICKEYSIZE);
+    const ptr_sk = mput(sk, ecc_sign_eth_bls_PRIVATEKEYSIZE);
+    _ecc_sign_eth_bls_SkToPk(
         ptr_pk,
         ptr_sk,
     );
-    mget(pk, ptr_pk, ecc_sign_eth2_bls_PUBLICKEYSIZE);
-    mfree(ptr_pk, ecc_sign_eth2_bls_PUBLICKEYSIZE);
-    mfree(ptr_sk, ecc_sign_eth2_bls_PRIVATEKEYSIZE);
+    mget(pk, ptr_pk, ecc_sign_eth_bls_PUBLICKEYSIZE);
+    mfree(ptr_pk, ecc_sign_eth_bls_PUBLICKEYSIZE);
+    mfree(ptr_sk, ecc_sign_eth_bls_PRIVATEKEYSIZE);
 }
 
 /**
@@ -5141,17 +5141,17 @@ Module.ecc_sign_eth2_bls_SkToPk = (
  * that a public key represents a valid, non-identity point that
  * is in the correct subgroup.
  *
- * @param {Uint8Array} pk a public key in the format output by SkToPk, size:ecc_sign_eth2_bls_PUBLICKEYSIZE
+ * @param {Uint8Array} pk a public key in the format output by SkToPk, size:ecc_sign_eth_bls_PUBLICKEYSIZE
  * @return {number} 0 for valid or -1 for invalid
  */
-Module.ecc_sign_eth2_bls_KeyValidate = (
+Module.ecc_sign_eth_bls_KeyValidate = (
     pk,
 ) => {
-    const ptr_pk = mput(pk, ecc_sign_eth2_bls_PUBLICKEYSIZE);
-    const fun_ret = _ecc_sign_eth2_bls_KeyValidate(
+    const ptr_pk = mput(pk, ecc_sign_eth_bls_PUBLICKEYSIZE);
+    const fun_ret = _ecc_sign_eth_bls_KeyValidate(
         ptr_pk,
     );
-    mfree(ptr_pk, ecc_sign_eth2_bls_PUBLICKEYSIZE);
+    mfree(ptr_pk, ecc_sign_eth_bls_PUBLICKEYSIZE);
     return fun_ret;
 }
 
@@ -5159,118 +5159,118 @@ Module.ecc_sign_eth2_bls_KeyValidate = (
  * Computes a signature from sk, a secret key, and a message message
  * and put the result in sig.
  *
- * @param {Uint8Array} signature (output) the signature, size:ecc_sign_eth2_bls_SIGNATURESIZE
- * @param {Uint8Array} sk the secret key, size:ecc_sign_eth2_bls_PRIVATEKEYSIZE
+ * @param {Uint8Array} signature (output) the signature, size:ecc_sign_eth_bls_SIGNATURESIZE
+ * @param {Uint8Array} sk the secret key, size:ecc_sign_eth_bls_PRIVATEKEYSIZE
  * @param {Uint8Array} message input message, size:message_len
  * @param {number} message_len the length of `message`
  */
-Module.ecc_sign_eth2_bls_Sign = (
+Module.ecc_sign_eth_bls_Sign = (
     signature,
     sk,
     message,
     message_len,
 ) => {
-    const ptr_signature = mput(signature, ecc_sign_eth2_bls_SIGNATURESIZE);
-    const ptr_sk = mput(sk, ecc_sign_eth2_bls_PRIVATEKEYSIZE);
+    const ptr_signature = mput(signature, ecc_sign_eth_bls_SIGNATURESIZE);
+    const ptr_sk = mput(sk, ecc_sign_eth_bls_PRIVATEKEYSIZE);
     const ptr_message = mput(message, message_len);
-    _ecc_sign_eth2_bls_Sign(
+    _ecc_sign_eth_bls_Sign(
         ptr_signature,
         ptr_sk,
         ptr_message,
         message_len,
     );
-    mget(signature, ptr_signature, ecc_sign_eth2_bls_SIGNATURESIZE);
-    mfree(ptr_signature, ecc_sign_eth2_bls_SIGNATURESIZE);
-    mfree(ptr_sk, ecc_sign_eth2_bls_PRIVATEKEYSIZE);
+    mget(signature, ptr_signature, ecc_sign_eth_bls_SIGNATURESIZE);
+    mfree(ptr_signature, ecc_sign_eth_bls_SIGNATURESIZE);
+    mfree(ptr_sk, ecc_sign_eth_bls_PRIVATEKEYSIZE);
     mfree(ptr_message, message_len);
 }
 
 /**
  * Checks that a signature is valid for the message under the public key pk.
  *
- * @param {Uint8Array} pk the public key, size:ecc_sign_eth2_bls_PUBLICKEYSIZE
+ * @param {Uint8Array} pk the public key, size:ecc_sign_eth_bls_PUBLICKEYSIZE
  * @param {Uint8Array} message input message, size:message_len
  * @param {number} message_len the length of `message`
- * @param {Uint8Array} signature the signature, size:ecc_sign_eth2_bls_SIGNATURESIZE
+ * @param {Uint8Array} signature the signature, size:ecc_sign_eth_bls_SIGNATURESIZE
  * @return {number} 0 if valid, -1 if invalid
  */
-Module.ecc_sign_eth2_bls_Verify = (
+Module.ecc_sign_eth_bls_Verify = (
     pk,
     message,
     message_len,
     signature,
 ) => {
-    const ptr_pk = mput(pk, ecc_sign_eth2_bls_PUBLICKEYSIZE);
+    const ptr_pk = mput(pk, ecc_sign_eth_bls_PUBLICKEYSIZE);
     const ptr_message = mput(message, message_len);
-    const ptr_signature = mput(signature, ecc_sign_eth2_bls_SIGNATURESIZE);
-    const fun_ret = _ecc_sign_eth2_bls_Verify(
+    const ptr_signature = mput(signature, ecc_sign_eth_bls_SIGNATURESIZE);
+    const fun_ret = _ecc_sign_eth_bls_Verify(
         ptr_pk,
         ptr_message,
         message_len,
         ptr_signature,
     );
-    mfree(ptr_pk, ecc_sign_eth2_bls_PUBLICKEYSIZE);
+    mfree(ptr_pk, ecc_sign_eth_bls_PUBLICKEYSIZE);
     mfree(ptr_message, message_len);
-    mfree(ptr_signature, ecc_sign_eth2_bls_SIGNATURESIZE);
+    mfree(ptr_signature, ecc_sign_eth_bls_SIGNATURESIZE);
     return fun_ret;
 }
 
 /**
  * Aggregates multiple signatures into one.
  *
- * @param {Uint8Array} signature (output) the aggregated signature that combines all inputs, size:ecc_sign_eth2_bls_SIGNATURESIZE
- * @param {Uint8Array} signatures array of individual signatures, size:n*ecc_sign_eth2_bls_SIGNATURESIZE
+ * @param {Uint8Array} signature (output) the aggregated signature that combines all inputs, size:ecc_sign_eth_bls_SIGNATURESIZE
+ * @param {Uint8Array} signatures array of individual signatures, size:n*ecc_sign_eth_bls_SIGNATURESIZE
  * @param {number} n amount of signatures in the array `signatures`
  * @return {number} 0 if valid, -1 if invalid
  */
-Module.ecc_sign_eth2_bls_Aggregate = (
+Module.ecc_sign_eth_bls_Aggregate = (
     signature,
     signatures,
     n,
 ) => {
-    const ptr_signature = mput(signature, ecc_sign_eth2_bls_SIGNATURESIZE);
-    const ptr_signatures = mput(signatures, n*ecc_sign_eth2_bls_SIGNATURESIZE);
-    const fun_ret = _ecc_sign_eth2_bls_Aggregate(
+    const ptr_signature = mput(signature, ecc_sign_eth_bls_SIGNATURESIZE);
+    const ptr_signatures = mput(signatures, n*ecc_sign_eth_bls_SIGNATURESIZE);
+    const fun_ret = _ecc_sign_eth_bls_Aggregate(
         ptr_signature,
         ptr_signatures,
         n,
     );
-    mget(signature, ptr_signature, ecc_sign_eth2_bls_SIGNATURESIZE);
-    mfree(ptr_signature, ecc_sign_eth2_bls_SIGNATURESIZE);
-    mfree(ptr_signatures, n*ecc_sign_eth2_bls_SIGNATURESIZE);
+    mget(signature, ptr_signature, ecc_sign_eth_bls_SIGNATURESIZE);
+    mfree(ptr_signature, ecc_sign_eth_bls_SIGNATURESIZE);
+    mfree(ptr_signatures, n*ecc_sign_eth_bls_SIGNATURESIZE);
     return fun_ret;
 }
 
 /**
  * 
  *
- * @param {Uint8Array} pks size:n*ecc_sign_eth2_bls_PUBLICKEYSIZE
+ * @param {Uint8Array} pks size:n*ecc_sign_eth_bls_PUBLICKEYSIZE
  * @param {number} n the number of public keys in `pks`
  * @param {Uint8Array} message size:message_len
  * @param {number} message_len the length of `message`
- * @param {Uint8Array} signature size:ecc_sign_eth2_bls_SIGNATURESIZE
+ * @param {Uint8Array} signature size:ecc_sign_eth_bls_SIGNATURESIZE
  * @return {number} 0 if valid, -1 if invalid
  */
-Module.ecc_sign_eth2_bls_FastAggregateVerify = (
+Module.ecc_sign_eth_bls_FastAggregateVerify = (
     pks,
     n,
     message,
     message_len,
     signature,
 ) => {
-    const ptr_pks = mput(pks, n*ecc_sign_eth2_bls_PUBLICKEYSIZE);
+    const ptr_pks = mput(pks, n*ecc_sign_eth_bls_PUBLICKEYSIZE);
     const ptr_message = mput(message, message_len);
-    const ptr_signature = mput(signature, ecc_sign_eth2_bls_SIGNATURESIZE);
-    const fun_ret = _ecc_sign_eth2_bls_FastAggregateVerify(
+    const ptr_signature = mput(signature, ecc_sign_eth_bls_SIGNATURESIZE);
+    const fun_ret = _ecc_sign_eth_bls_FastAggregateVerify(
         ptr_pks,
         n,
         ptr_message,
         message_len,
         ptr_signature,
     );
-    mfree(ptr_pks, n*ecc_sign_eth2_bls_PUBLICKEYSIZE);
+    mfree(ptr_pks, n*ecc_sign_eth_bls_PUBLICKEYSIZE);
     mfree(ptr_message, message_len);
-    mfree(ptr_signature, ecc_sign_eth2_bls_SIGNATURESIZE);
+    mfree(ptr_signature, ecc_sign_eth_bls_SIGNATURESIZE);
     return fun_ret;
 }
 
@@ -5281,32 +5281,32 @@ Module.ecc_sign_eth2_bls_FastAggregateVerify = (
  * In order to keep the API simple, the maximum length of a message is 255.
  *
  * @param {number} n number of pairs
- * @param {Uint8Array} pks size:n*ecc_sign_eth2_bls_PUBLICKEYSIZE
+ * @param {Uint8Array} pks size:n*ecc_sign_eth_bls_PUBLICKEYSIZE
  * @param {Uint8Array} messages size:messages_len
  * @param {number} messages_len total length of the buffer `messages`
- * @param {Uint8Array} signature size:ecc_sign_eth2_bls_SIGNATURESIZE
+ * @param {Uint8Array} signature size:ecc_sign_eth_bls_SIGNATURESIZE
  * @return {number} 0 if valid, -1 if invalid
  */
-Module.ecc_sign_eth2_bls_AggregateVerify = (
+Module.ecc_sign_eth_bls_AggregateVerify = (
     n,
     pks,
     messages,
     messages_len,
     signature,
 ) => {
-    const ptr_pks = mput(pks, n*ecc_sign_eth2_bls_PUBLICKEYSIZE);
+    const ptr_pks = mput(pks, n*ecc_sign_eth_bls_PUBLICKEYSIZE);
     const ptr_messages = mput(messages, messages_len);
-    const ptr_signature = mput(signature, ecc_sign_eth2_bls_SIGNATURESIZE);
-    const fun_ret = _ecc_sign_eth2_bls_AggregateVerify(
+    const ptr_signature = mput(signature, ecc_sign_eth_bls_SIGNATURESIZE);
+    const fun_ret = _ecc_sign_eth_bls_AggregateVerify(
         n,
         ptr_pks,
         ptr_messages,
         messages_len,
         ptr_signature,
     );
-    mfree(ptr_pks, n*ecc_sign_eth2_bls_PUBLICKEYSIZE);
+    mfree(ptr_pks, n*ecc_sign_eth_bls_PUBLICKEYSIZE);
     mfree(ptr_messages, messages_len);
-    mfree(ptr_signature, ecc_sign_eth2_bls_SIGNATURESIZE);
+    mfree(ptr_signature, ecc_sign_eth_bls_SIGNATURESIZE);
     return fun_ret;
 }
 

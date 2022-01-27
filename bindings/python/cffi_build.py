@@ -1029,42 +1029,42 @@ ffibuilder.cdef(
         unsigned char *sk
     );
 
-    void ecc_sign_eth2_bls_KeyGen(
+    void ecc_sign_eth_bls_KeyGen(
         unsigned char *sk,
         unsigned char *ikm,
         int ikm_len
     );
 
-    void ecc_sign_eth2_bls_SkToPk(
+    void ecc_sign_eth_bls_SkToPk(
         unsigned char *pk,
         unsigned char *sk
     );
 
-    int ecc_sign_eth2_bls_KeyValidate(
+    int ecc_sign_eth_bls_KeyValidate(
         unsigned char *pk
     );
 
-    void ecc_sign_eth2_bls_Sign(
+    void ecc_sign_eth_bls_Sign(
         unsigned char *signature,
         unsigned char *sk,
         unsigned char *message,
         int message_len
     );
 
-    int ecc_sign_eth2_bls_Verify(
+    int ecc_sign_eth_bls_Verify(
         unsigned char *pk,
         unsigned char *message,
         int message_len,
         unsigned char *signature
     );
 
-    int ecc_sign_eth2_bls_Aggregate(
+    int ecc_sign_eth_bls_Aggregate(
         unsigned char *signature,
         unsigned char *signatures,
         int n
     );
 
-    int ecc_sign_eth2_bls_FastAggregateVerify(
+    int ecc_sign_eth_bls_FastAggregateVerify(
         unsigned char *pks,
         int n,
         unsigned char *message,
@@ -1072,7 +1072,7 @@ ffibuilder.cdef(
         unsigned char *signature
     );
 
-    int ecc_sign_eth2_bls_AggregateVerify(
+    int ecc_sign_eth_bls_AggregateVerify(
         int n,
         unsigned char *pks,
         unsigned char *messages,

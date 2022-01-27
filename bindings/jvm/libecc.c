@@ -3314,116 +3314,116 @@ JNIEXPORT void JNICALL Java_org_ssohub_crypto_ecc_libecc_ecc_1sign_1ed25519_1sk_
     mfree(ptr_sk, ecc_sign_ed25519_SECRETKEYSIZE);
 }
 
-JNIEXPORT void JNICALL Java_org_ssohub_crypto_ecc_libecc_ecc_1sign_1eth2_1bls_1KeyGen(
+JNIEXPORT void JNICALL Java_org_ssohub_crypto_ecc_libecc_ecc_1sign_1eth_1bls_1KeyGen(
     JNIEnv *env, jclass cls,
     jbyteArray sk,
     jbyteArray ikm,
     jint ikm_len
 ) {
-    byte_t *ptr_sk = mput(env, sk, ecc_sign_eth2_bls_PRIVATEKEYSIZE);
+    byte_t *ptr_sk = mput(env, sk, ecc_sign_eth_bls_PRIVATEKEYSIZE);
     byte_t *ptr_ikm = mput(env, ikm, ikm_len);
-    ecc_sign_eth2_bls_KeyGen(
+    ecc_sign_eth_bls_KeyGen(
         ptr_sk,
         ptr_ikm,
         ikm_len
     );
-    mget(env, sk, ptr_sk, ecc_sign_eth2_bls_PRIVATEKEYSIZE);
-    mfree(ptr_sk, ecc_sign_eth2_bls_PRIVATEKEYSIZE);
+    mget(env, sk, ptr_sk, ecc_sign_eth_bls_PRIVATEKEYSIZE);
+    mfree(ptr_sk, ecc_sign_eth_bls_PRIVATEKEYSIZE);
     mfree(ptr_ikm, ikm_len);
 }
 
-JNIEXPORT void JNICALL Java_org_ssohub_crypto_ecc_libecc_ecc_1sign_1eth2_1bls_1SkToPk(
+JNIEXPORT void JNICALL Java_org_ssohub_crypto_ecc_libecc_ecc_1sign_1eth_1bls_1SkToPk(
     JNIEnv *env, jclass cls,
     jbyteArray pk,
     jbyteArray sk
 ) {
-    byte_t *ptr_pk = mput(env, pk, ecc_sign_eth2_bls_PUBLICKEYSIZE);
-    byte_t *ptr_sk = mput(env, sk, ecc_sign_eth2_bls_PRIVATEKEYSIZE);
-    ecc_sign_eth2_bls_SkToPk(
+    byte_t *ptr_pk = mput(env, pk, ecc_sign_eth_bls_PUBLICKEYSIZE);
+    byte_t *ptr_sk = mput(env, sk, ecc_sign_eth_bls_PRIVATEKEYSIZE);
+    ecc_sign_eth_bls_SkToPk(
         ptr_pk,
         ptr_sk
     );
-    mget(env, pk, ptr_pk, ecc_sign_eth2_bls_PUBLICKEYSIZE);
-    mfree(ptr_pk, ecc_sign_eth2_bls_PUBLICKEYSIZE);
-    mfree(ptr_sk, ecc_sign_eth2_bls_PRIVATEKEYSIZE);
+    mget(env, pk, ptr_pk, ecc_sign_eth_bls_PUBLICKEYSIZE);
+    mfree(ptr_pk, ecc_sign_eth_bls_PUBLICKEYSIZE);
+    mfree(ptr_sk, ecc_sign_eth_bls_PRIVATEKEYSIZE);
 }
 
-JNIEXPORT int JNICALL Java_org_ssohub_crypto_ecc_libecc_ecc_1sign_1eth2_1bls_1KeyValidate(
+JNIEXPORT int JNICALL Java_org_ssohub_crypto_ecc_libecc_ecc_1sign_1eth_1bls_1KeyValidate(
     JNIEnv *env, jclass cls,
     jbyteArray pk
 ) {
-    byte_t *ptr_pk = mput(env, pk, ecc_sign_eth2_bls_PUBLICKEYSIZE);
-    const int fun_ret = ecc_sign_eth2_bls_KeyValidate(
+    byte_t *ptr_pk = mput(env, pk, ecc_sign_eth_bls_PUBLICKEYSIZE);
+    const int fun_ret = ecc_sign_eth_bls_KeyValidate(
         ptr_pk
     );
-    mfree(ptr_pk, ecc_sign_eth2_bls_PUBLICKEYSIZE);
+    mfree(ptr_pk, ecc_sign_eth_bls_PUBLICKEYSIZE);
     return fun_ret;
 }
 
-JNIEXPORT void JNICALL Java_org_ssohub_crypto_ecc_libecc_ecc_1sign_1eth2_1bls_1Sign(
+JNIEXPORT void JNICALL Java_org_ssohub_crypto_ecc_libecc_ecc_1sign_1eth_1bls_1Sign(
     JNIEnv *env, jclass cls,
     jbyteArray signature,
     jbyteArray sk,
     jbyteArray message,
     jint message_len
 ) {
-    byte_t *ptr_signature = mput(env, signature, ecc_sign_eth2_bls_SIGNATURESIZE);
-    byte_t *ptr_sk = mput(env, sk, ecc_sign_eth2_bls_PRIVATEKEYSIZE);
+    byte_t *ptr_signature = mput(env, signature, ecc_sign_eth_bls_SIGNATURESIZE);
+    byte_t *ptr_sk = mput(env, sk, ecc_sign_eth_bls_PRIVATEKEYSIZE);
     byte_t *ptr_message = mput(env, message, message_len);
-    ecc_sign_eth2_bls_Sign(
+    ecc_sign_eth_bls_Sign(
         ptr_signature,
         ptr_sk,
         ptr_message,
         message_len
     );
-    mget(env, signature, ptr_signature, ecc_sign_eth2_bls_SIGNATURESIZE);
-    mfree(ptr_signature, ecc_sign_eth2_bls_SIGNATURESIZE);
-    mfree(ptr_sk, ecc_sign_eth2_bls_PRIVATEKEYSIZE);
+    mget(env, signature, ptr_signature, ecc_sign_eth_bls_SIGNATURESIZE);
+    mfree(ptr_signature, ecc_sign_eth_bls_SIGNATURESIZE);
+    mfree(ptr_sk, ecc_sign_eth_bls_PRIVATEKEYSIZE);
     mfree(ptr_message, message_len);
 }
 
-JNIEXPORT int JNICALL Java_org_ssohub_crypto_ecc_libecc_ecc_1sign_1eth2_1bls_1Verify(
+JNIEXPORT int JNICALL Java_org_ssohub_crypto_ecc_libecc_ecc_1sign_1eth_1bls_1Verify(
     JNIEnv *env, jclass cls,
     jbyteArray pk,
     jbyteArray message,
     jint message_len,
     jbyteArray signature
 ) {
-    byte_t *ptr_pk = mput(env, pk, ecc_sign_eth2_bls_PUBLICKEYSIZE);
+    byte_t *ptr_pk = mput(env, pk, ecc_sign_eth_bls_PUBLICKEYSIZE);
     byte_t *ptr_message = mput(env, message, message_len);
-    byte_t *ptr_signature = mput(env, signature, ecc_sign_eth2_bls_SIGNATURESIZE);
-    const int fun_ret = ecc_sign_eth2_bls_Verify(
+    byte_t *ptr_signature = mput(env, signature, ecc_sign_eth_bls_SIGNATURESIZE);
+    const int fun_ret = ecc_sign_eth_bls_Verify(
         ptr_pk,
         ptr_message,
         message_len,
         ptr_signature
     );
-    mfree(ptr_pk, ecc_sign_eth2_bls_PUBLICKEYSIZE);
+    mfree(ptr_pk, ecc_sign_eth_bls_PUBLICKEYSIZE);
     mfree(ptr_message, message_len);
-    mfree(ptr_signature, ecc_sign_eth2_bls_SIGNATURESIZE);
+    mfree(ptr_signature, ecc_sign_eth_bls_SIGNATURESIZE);
     return fun_ret;
 }
 
-JNIEXPORT int JNICALL Java_org_ssohub_crypto_ecc_libecc_ecc_1sign_1eth2_1bls_1Aggregate(
+JNIEXPORT int JNICALL Java_org_ssohub_crypto_ecc_libecc_ecc_1sign_1eth_1bls_1Aggregate(
     JNIEnv *env, jclass cls,
     jbyteArray signature,
     jbyteArray signatures,
     jint n
 ) {
-    byte_t *ptr_signature = mput(env, signature, ecc_sign_eth2_bls_SIGNATURESIZE);
-    byte_t *ptr_signatures = mput(env, signatures, n*ecc_sign_eth2_bls_SIGNATURESIZE);
-    const int fun_ret = ecc_sign_eth2_bls_Aggregate(
+    byte_t *ptr_signature = mput(env, signature, ecc_sign_eth_bls_SIGNATURESIZE);
+    byte_t *ptr_signatures = mput(env, signatures, n*ecc_sign_eth_bls_SIGNATURESIZE);
+    const int fun_ret = ecc_sign_eth_bls_Aggregate(
         ptr_signature,
         ptr_signatures,
         n
     );
-    mget(env, signature, ptr_signature, ecc_sign_eth2_bls_SIGNATURESIZE);
-    mfree(ptr_signature, ecc_sign_eth2_bls_SIGNATURESIZE);
-    mfree(ptr_signatures, n*ecc_sign_eth2_bls_SIGNATURESIZE);
+    mget(env, signature, ptr_signature, ecc_sign_eth_bls_SIGNATURESIZE);
+    mfree(ptr_signature, ecc_sign_eth_bls_SIGNATURESIZE);
+    mfree(ptr_signatures, n*ecc_sign_eth_bls_SIGNATURESIZE);
     return fun_ret;
 }
 
-JNIEXPORT int JNICALL Java_org_ssohub_crypto_ecc_libecc_ecc_1sign_1eth2_1bls_1FastAggregateVerify(
+JNIEXPORT int JNICALL Java_org_ssohub_crypto_ecc_libecc_ecc_1sign_1eth_1bls_1FastAggregateVerify(
     JNIEnv *env, jclass cls,
     jbyteArray pks,
     jint n,
@@ -3431,23 +3431,23 @@ JNIEXPORT int JNICALL Java_org_ssohub_crypto_ecc_libecc_ecc_1sign_1eth2_1bls_1Fa
     jint message_len,
     jbyteArray signature
 ) {
-    byte_t *ptr_pks = mput(env, pks, n*ecc_sign_eth2_bls_PUBLICKEYSIZE);
+    byte_t *ptr_pks = mput(env, pks, n*ecc_sign_eth_bls_PUBLICKEYSIZE);
     byte_t *ptr_message = mput(env, message, message_len);
-    byte_t *ptr_signature = mput(env, signature, ecc_sign_eth2_bls_SIGNATURESIZE);
-    const int fun_ret = ecc_sign_eth2_bls_FastAggregateVerify(
+    byte_t *ptr_signature = mput(env, signature, ecc_sign_eth_bls_SIGNATURESIZE);
+    const int fun_ret = ecc_sign_eth_bls_FastAggregateVerify(
         ptr_pks,
         n,
         ptr_message,
         message_len,
         ptr_signature
     );
-    mfree(ptr_pks, n*ecc_sign_eth2_bls_PUBLICKEYSIZE);
+    mfree(ptr_pks, n*ecc_sign_eth_bls_PUBLICKEYSIZE);
     mfree(ptr_message, message_len);
-    mfree(ptr_signature, ecc_sign_eth2_bls_SIGNATURESIZE);
+    mfree(ptr_signature, ecc_sign_eth_bls_SIGNATURESIZE);
     return fun_ret;
 }
 
-JNIEXPORT int JNICALL Java_org_ssohub_crypto_ecc_libecc_ecc_1sign_1eth2_1bls_1AggregateVerify(
+JNIEXPORT int JNICALL Java_org_ssohub_crypto_ecc_libecc_ecc_1sign_1eth_1bls_1AggregateVerify(
     JNIEnv *env, jclass cls,
     jint n,
     jbyteArray pks,
@@ -3455,19 +3455,19 @@ JNIEXPORT int JNICALL Java_org_ssohub_crypto_ecc_libecc_ecc_1sign_1eth2_1bls_1Ag
     jint messages_len,
     jbyteArray signature
 ) {
-    byte_t *ptr_pks = mput(env, pks, n*ecc_sign_eth2_bls_PUBLICKEYSIZE);
+    byte_t *ptr_pks = mput(env, pks, n*ecc_sign_eth_bls_PUBLICKEYSIZE);
     byte_t *ptr_messages = mput(env, messages, messages_len);
-    byte_t *ptr_signature = mput(env, signature, ecc_sign_eth2_bls_SIGNATURESIZE);
-    const int fun_ret = ecc_sign_eth2_bls_AggregateVerify(
+    byte_t *ptr_signature = mput(env, signature, ecc_sign_eth_bls_SIGNATURESIZE);
+    const int fun_ret = ecc_sign_eth_bls_AggregateVerify(
         n,
         ptr_pks,
         ptr_messages,
         messages_len,
         ptr_signature
     );
-    mfree(ptr_pks, n*ecc_sign_eth2_bls_PUBLICKEYSIZE);
+    mfree(ptr_pks, n*ecc_sign_eth_bls_PUBLICKEYSIZE);
     mfree(ptr_messages, messages_len);
-    mfree(ptr_signature, ecc_sign_eth2_bls_SIGNATURESIZE);
+    mfree(ptr_signature, ecc_sign_eth_bls_SIGNATURESIZE);
     return fun_ret;
 }
 

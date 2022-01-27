@@ -4187,17 +4187,17 @@ ecc_sign_ed25519_SECRETKEYSIZE = 64
 Secret key size.
 """
 
-ecc_sign_eth2_bls_PRIVATEKEYSIZE = 32
+ecc_sign_eth_bls_PRIVATEKEYSIZE = 32
 """
 Size of the signing private key (size of a scalar in BLS12-381).
 """
 
-ecc_sign_eth2_bls_PUBLICKEYSIZE = 48
+ecc_sign_eth_bls_PUBLICKEYSIZE = 48
 """
 Size of the signing public key (size of a compressed G1 element in BLS12-381).
 """
 
-ecc_sign_eth2_bls_SIGNATURESIZE = 96
+ecc_sign_eth_bls_SIGNATURESIZE = 96
 """
 Signature size (size of a compressed G2 element in BLS12-381).
 """
@@ -4338,7 +4338,7 @@ def ecc_sign_ed25519_sk_to_pk(
     return None
 
 
-def ecc_sign_eth2_bls_KeyGen(
+def ecc_sign_eth_bls_KeyGen(
     sk: bytearray,
     ikm: bytes,
     ikm_len: int
@@ -4350,13 +4350,13 @@ def ecc_sign_eth2_bls_KeyGen(
     For security, `ikm` MUST be infeasible to guess, e.g., generated
     by a trusted source of randomness and be at least 32 bytes long.
     
-    sk -- (output) a secret key, size:ecc_sign_eth2_bls_PRIVATEKEYSIZE
+    sk -- (output) a secret key, size:ecc_sign_eth_bls_PRIVATEKEYSIZE
     ikm -- a secret octet string, size:ikm_len
     ikm_len -- the length of `ikm`
     """
     ptr_sk = ffi.from_buffer(sk)
     ptr_ikm = ffi.from_buffer(ikm)
-    lib.ecc_sign_eth2_bls_KeyGen(
+    lib.ecc_sign_eth_bls_KeyGen(
         ptr_sk,
         ptr_ikm,
         ikm_len
@@ -4364,26 +4364,26 @@ def ecc_sign_eth2_bls_KeyGen(
     return None
 
 
-def ecc_sign_eth2_bls_SkToPk(
+def ecc_sign_eth_bls_SkToPk(
     pk: bytearray,
     sk: bytes
 ) -> None:
     """
     Takes a secret key `sk` and outputs the corresponding public key `pk`.
     
-    pk -- (output) a public key, size:ecc_sign_eth2_bls_PUBLICKEYSIZE
-    sk -- the secret key, size:ecc_sign_eth2_bls_PRIVATEKEYSIZE
+    pk -- (output) a public key, size:ecc_sign_eth_bls_PUBLICKEYSIZE
+    sk -- the secret key, size:ecc_sign_eth_bls_PRIVATEKEYSIZE
     """
     ptr_pk = ffi.from_buffer(pk)
     ptr_sk = ffi.from_buffer(sk)
-    lib.ecc_sign_eth2_bls_SkToPk(
+    lib.ecc_sign_eth_bls_SkToPk(
         ptr_pk,
         ptr_sk
     )
     return None
 
 
-def ecc_sign_eth2_bls_KeyValidate(
+def ecc_sign_eth_bls_KeyValidate(
     pk: bytes
 ) -> int:
     """
@@ -4391,17 +4391,17 @@ def ecc_sign_eth2_bls_KeyValidate(
     that a public key represents a valid, non-identity point that
     is in the correct subgroup.
     
-    pk -- a public key in the format output by SkToPk, size:ecc_sign_eth2_bls_PUBLICKEYSIZE
+    pk -- a public key in the format output by SkToPk, size:ecc_sign_eth_bls_PUBLICKEYSIZE
     return 0 for valid or -1 for invalid
     """
     ptr_pk = ffi.from_buffer(pk)
-    fun_ret = lib.ecc_sign_eth2_bls_KeyValidate(
+    fun_ret = lib.ecc_sign_eth_bls_KeyValidate(
         ptr_pk
     )
     return fun_ret
 
 
-def ecc_sign_eth2_bls_Sign(
+def ecc_sign_eth_bls_Sign(
     signature: bytearray,
     sk: bytes,
     message: bytes,
@@ -4411,15 +4411,15 @@ def ecc_sign_eth2_bls_Sign(
     Computes a signature from sk, a secret key, and a message message
     and put the result in sig.
     
-    signature -- (output) the signature, size:ecc_sign_eth2_bls_SIGNATURESIZE
-    sk -- the secret key, size:ecc_sign_eth2_bls_PRIVATEKEYSIZE
+    signature -- (output) the signature, size:ecc_sign_eth_bls_SIGNATURESIZE
+    sk -- the secret key, size:ecc_sign_eth_bls_PRIVATEKEYSIZE
     message -- input message, size:message_len
     message_len -- the length of `message`
     """
     ptr_signature = ffi.from_buffer(signature)
     ptr_sk = ffi.from_buffer(sk)
     ptr_message = ffi.from_buffer(message)
-    lib.ecc_sign_eth2_bls_Sign(
+    lib.ecc_sign_eth_bls_Sign(
         ptr_signature,
         ptr_sk,
         ptr_message,
@@ -4428,7 +4428,7 @@ def ecc_sign_eth2_bls_Sign(
     return None
 
 
-def ecc_sign_eth2_bls_Verify(
+def ecc_sign_eth_bls_Verify(
     pk: bytes,
     message: bytes,
     message_len: int,
@@ -4437,16 +4437,16 @@ def ecc_sign_eth2_bls_Verify(
     """
     Checks that a signature is valid for the message under the public key pk.
     
-    pk -- the public key, size:ecc_sign_eth2_bls_PUBLICKEYSIZE
+    pk -- the public key, size:ecc_sign_eth_bls_PUBLICKEYSIZE
     message -- input message, size:message_len
     message_len -- the length of `message`
-    signature -- the signature, size:ecc_sign_eth2_bls_SIGNATURESIZE
+    signature -- the signature, size:ecc_sign_eth_bls_SIGNATURESIZE
     return 0 if valid, -1 if invalid
     """
     ptr_pk = ffi.from_buffer(pk)
     ptr_message = ffi.from_buffer(message)
     ptr_signature = ffi.from_buffer(signature)
-    fun_ret = lib.ecc_sign_eth2_bls_Verify(
+    fun_ret = lib.ecc_sign_eth_bls_Verify(
         ptr_pk,
         ptr_message,
         message_len,
@@ -4455,7 +4455,7 @@ def ecc_sign_eth2_bls_Verify(
     return fun_ret
 
 
-def ecc_sign_eth2_bls_Aggregate(
+def ecc_sign_eth_bls_Aggregate(
     signature: bytearray,
     signatures: bytes,
     n: int
@@ -4463,14 +4463,14 @@ def ecc_sign_eth2_bls_Aggregate(
     """
     Aggregates multiple signatures into one.
     
-    signature -- (output) the aggregated signature that combines all inputs, size:ecc_sign_eth2_bls_SIGNATURESIZE
-    signatures -- array of individual signatures, size:n*ecc_sign_eth2_bls_SIGNATURESIZE
+    signature -- (output) the aggregated signature that combines all inputs, size:ecc_sign_eth_bls_SIGNATURESIZE
+    signatures -- array of individual signatures, size:n*ecc_sign_eth_bls_SIGNATURESIZE
     n -- amount of signatures in the array `signatures`
     return 0 if valid, -1 if invalid
     """
     ptr_signature = ffi.from_buffer(signature)
     ptr_signatures = ffi.from_buffer(signatures)
-    fun_ret = lib.ecc_sign_eth2_bls_Aggregate(
+    fun_ret = lib.ecc_sign_eth_bls_Aggregate(
         ptr_signature,
         ptr_signatures,
         n
@@ -4478,7 +4478,7 @@ def ecc_sign_eth2_bls_Aggregate(
     return fun_ret
 
 
-def ecc_sign_eth2_bls_FastAggregateVerify(
+def ecc_sign_eth_bls_FastAggregateVerify(
     pks: bytes,
     n: int,
     message: bytes,
@@ -4488,17 +4488,17 @@ def ecc_sign_eth2_bls_FastAggregateVerify(
     """
     
     
-    pks -- size:n*ecc_sign_eth2_bls_PUBLICKEYSIZE
+    pks -- size:n*ecc_sign_eth_bls_PUBLICKEYSIZE
     n -- the number of public keys in `pks`
     message -- size:message_len
     message_len -- the length of `message`
-    signature -- size:ecc_sign_eth2_bls_SIGNATURESIZE
+    signature -- size:ecc_sign_eth_bls_SIGNATURESIZE
     return 0 if valid, -1 if invalid
     """
     ptr_pks = ffi.from_buffer(pks)
     ptr_message = ffi.from_buffer(message)
     ptr_signature = ffi.from_buffer(signature)
-    fun_ret = lib.ecc_sign_eth2_bls_FastAggregateVerify(
+    fun_ret = lib.ecc_sign_eth_bls_FastAggregateVerify(
         ptr_pks,
         n,
         ptr_message,
@@ -4508,7 +4508,7 @@ def ecc_sign_eth2_bls_FastAggregateVerify(
     return fun_ret
 
 
-def ecc_sign_eth2_bls_AggregateVerify(
+def ecc_sign_eth_bls_AggregateVerify(
     n: int,
     pks: bytes,
     messages: bytes,
@@ -4522,16 +4522,16 @@ def ecc_sign_eth2_bls_AggregateVerify(
     In order to keep the API simple, the maximum length of a message is 255.
     
     n -- number of pairs
-    pks -- size:n*ecc_sign_eth2_bls_PUBLICKEYSIZE
+    pks -- size:n*ecc_sign_eth_bls_PUBLICKEYSIZE
     messages -- size:messages_len
     messages_len -- total length of the buffer `messages`
-    signature -- size:ecc_sign_eth2_bls_SIGNATURESIZE
+    signature -- size:ecc_sign_eth_bls_SIGNATURESIZE
     return 0 if valid, -1 if invalid
     """
     ptr_pks = ffi.from_buffer(pks)
     ptr_messages = ffi.from_buffer(messages)
     ptr_signature = ffi.from_buffer(signature)
-    fun_ret = lib.ecc_sign_eth2_bls_AggregateVerify(
+    fun_ret = lib.ecc_sign_eth_bls_AggregateVerify(
         n,
         ptr_pks,
         ptr_messages,

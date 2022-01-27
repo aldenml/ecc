@@ -8,7 +8,7 @@ This is the java binding of the <a href="https://github.com/aldenml/ecc">ecc</a>
 <ul>
     <li><a href="#oprf-oblivious-pseudo-random-functions-using-ristretto255">OPRF</a></li>
     <li><a href="#opaque-the-opaque-asymmetric-pake-protocol">OPAQUE</a></li>
-    <li><a href="#ethereum-2-bls-signature">Ethereum 2 BLS Signature</a></li>
+    <li><a href="#ethereum-bls-signature">Ethereum BLS Signature</a></li>
     <li><a href="#bls12-381-pairing">BLS12-381 Pairing</a></li>
     <li><a href="#proxy-re-encryption-pre">Proxy Re-Encryption (PRE)</a></li>
 </ul>
@@ -116,21 +116,21 @@ opaque_ristretto255_sha512_3DH_ServerInit
 opaque_ristretto255_sha512_3DH_ServerFinish
 </pre>
 
-<h3 id="ethereum-2-bls-signature">Ethereum 2 BLS Signature</h3>
+<h3 id="ethereum-bls-signature">Ethereum BLS Signature</h3>
 
-Ethereum 2 uses BLS signatures as specified in the IETF
+Ethereum uses BLS signatures as specified in the IETF
 draft <a href="https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-bls-signature-04">draft-irtf-cfrg-bls-signature-04</a>
 ciphersuite `BLS_SIG_BLS12381G2_XMD:SHA-256_SSWU_RO_POP_`. This library provides the following API:
 
 <pre>
-ecc_sign_eth2_bls_KeyGen
-ecc_sign_eth2_bls_SkToPk
-ecc_sign_eth2_bls_KeyValidate
-ecc_sign_eth2_bls_Sign
-ecc_sign_eth2_bls_Verify
-ecc_sign_eth2_bls_Aggregate
-ecc_sign_eth2_bls_FastAggregateVerify
-ecc_sign_eth2_bls_AggregateVerify
+ecc_sign_eth_bls_KeyGen
+ecc_sign_eth_bls_SkToPk
+ecc_sign_eth_bls_KeyValidate
+ecc_sign_eth_bls_Sign
+ecc_sign_eth_bls_Verify
+ecc_sign_eth_bls_Aggregate
+ecc_sign_eth_bls_FastAggregateVerify
+ecc_sign_eth_bls_AggregateVerify
 </pre>
 
 BLS is a digital signature scheme with aggregation properties that can be applied to signatures
