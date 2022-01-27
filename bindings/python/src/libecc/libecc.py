@@ -4167,7 +4167,7 @@ def ecc_opaque_ristretto255_sha512_3DH_Response(
 
 # sign
 
-ecc_sign_ed25519_SIZE = 64
+ecc_sign_ed25519_SIGNATURESIZE = 64
 """
 Signature size.
 """
@@ -4202,62 +4202,62 @@ ecc_sign_eth_bls_SIGNATURESIZE = 96
 Signature size (size of a compressed G2 element in BLS12-381).
 """
 
-def ecc_sign_ed25519_sign(
-    sig: bytearray,
-    msg: bytes,
-    msg_len: int,
+def ecc_sign_ed25519_Sign(
+    signature: bytearray,
+    message: bytes,
+    message_len: int,
     sk: bytes
 ) -> None:
     """
-    Signs the message msg whose length is msg_len bytes, using the
-    secret key sk, and puts the signature into sig.
+    Signs the `message` whose length is `message_len` in bytes, using the
+    secret key `sk`, and puts the signature into `signature`.
     
-    sig -- (output) the signature, size:ecc_sign_ed25519_SIZE
-    msg -- input message, size:msg_len
-    msg_len -- the length of `msg`
+    signature -- (output) the signature, size:ecc_sign_ed25519_SIGNATURESIZE
+    message -- input message, size:message_len
+    message_len -- the length of `message`
     sk -- the secret key, size:ecc_sign_ed25519_SECRETKEYSIZE
     """
-    ptr_sig = ffi.from_buffer(sig)
-    ptr_msg = ffi.from_buffer(msg)
+    ptr_signature = ffi.from_buffer(signature)
+    ptr_message = ffi.from_buffer(message)
     ptr_sk = ffi.from_buffer(sk)
-    lib.ecc_sign_ed25519_sign(
-        ptr_sig,
-        ptr_msg,
-        msg_len,
+    lib.ecc_sign_ed25519_Sign(
+        ptr_signature,
+        ptr_message,
+        message_len,
         ptr_sk
     )
     return None
 
 
-def ecc_sign_ed25519_verify(
-    sig: bytes,
-    msg: bytes,
-    msg_len: int,
+def ecc_sign_ed25519_Verify(
+    signature: bytes,
+    message: bytes,
+    message_len: int,
     pk: bytes
 ) -> int:
     """
-    Verifies that sig is a valid signature for the message msg whose length
-    is msg_len bytes, using the signer's public key pk.
+    Verifies that `signature` is a valid signature for the `message` whose length
+    is `message_len` in bytes, using the signer's public key `pk`.
     
-    sig -- the signature, size:ecc_sign_ed25519_SIZE
-    msg -- input message, size:msg_len
-    msg_len -- the length of `msg`
+    signature -- the signature, size:ecc_sign_ed25519_SIGNATURESIZE
+    message -- input message, size:message_len
+    message_len -- the length of `message`
     pk -- the public key, size:ecc_sign_ed25519_PUBLICKEYSIZE
     return -1 if the signature fails verification, or 0 on success
     """
-    ptr_sig = ffi.from_buffer(sig)
-    ptr_msg = ffi.from_buffer(msg)
+    ptr_signature = ffi.from_buffer(signature)
+    ptr_message = ffi.from_buffer(message)
     ptr_pk = ffi.from_buffer(pk)
-    fun_ret = lib.ecc_sign_ed25519_verify(
-        ptr_sig,
-        ptr_msg,
-        msg_len,
+    fun_ret = lib.ecc_sign_ed25519_Verify(
+        ptr_signature,
+        ptr_message,
+        message_len,
         ptr_pk
     )
     return fun_ret
 
 
-def ecc_sign_ed25519_keypair(
+def ecc_sign_ed25519_KeyPair(
     pk: bytearray,
     sk: bytearray
 ) -> None:
@@ -4269,21 +4269,21 @@ def ecc_sign_ed25519_keypair(
     """
     ptr_pk = ffi.from_buffer(pk)
     ptr_sk = ffi.from_buffer(sk)
-    lib.ecc_sign_ed25519_keypair(
+    lib.ecc_sign_ed25519_KeyPair(
         ptr_pk,
         ptr_sk
     )
     return None
 
 
-def ecc_sign_ed25519_seed_keypair(
+def ecc_sign_ed25519_SeedKeyPair(
     pk: bytearray,
     sk: bytearray,
     seed: bytes
 ) -> None:
     """
     Generates a random key pair of public and private keys derived
-    from a seed.
+    from a `seed`.
     
     pk -- (output) public key, size:ecc_sign_ed25519_PUBLICKEYSIZE
     sk -- (output) private key, size:ecc_sign_ed25519_SECRETKEYSIZE
@@ -4292,7 +4292,7 @@ def ecc_sign_ed25519_seed_keypair(
     ptr_pk = ffi.from_buffer(pk)
     ptr_sk = ffi.from_buffer(sk)
     ptr_seed = ffi.from_buffer(seed)
-    lib.ecc_sign_ed25519_seed_keypair(
+    lib.ecc_sign_ed25519_SeedKeyPair(
         ptr_pk,
         ptr_sk,
         ptr_seed
@@ -4300,38 +4300,38 @@ def ecc_sign_ed25519_seed_keypair(
     return None
 
 
-def ecc_sign_ed25519_sk_to_seed(
+def ecc_sign_ed25519_SkToSeed(
     seed: bytearray,
     sk: bytes
 ) -> None:
     """
-    Extracts the seed from the secret key sk and copies it into seed.
+    Extracts the seed from the secret key `sk` and copies it into `seed`.
     
     seed -- (output) the seed used to generate the secret key, size:ecc_sign_ed25519_SEEDSIZE
     sk -- the secret key, size:ecc_sign_ed25519_SECRETKEYSIZE
     """
     ptr_seed = ffi.from_buffer(seed)
     ptr_sk = ffi.from_buffer(sk)
-    lib.ecc_sign_ed25519_sk_to_seed(
+    lib.ecc_sign_ed25519_SkToSeed(
         ptr_seed,
         ptr_sk
     )
     return None
 
 
-def ecc_sign_ed25519_sk_to_pk(
+def ecc_sign_ed25519_SkToPk(
     pk: bytearray,
     sk: bytes
 ) -> None:
     """
-    Extracts the public key from the secret key sk and copies it into pk.
+    Extracts the public key from the secret key `sk` and copies it into `pk`.
     
     pk -- (output) the public key, size:ecc_sign_ed25519_PUBLICKEYSIZE
     sk -- the secret key, size:ecc_sign_ed25519_SECRETKEYSIZE
     """
     ptr_pk = ffi.from_buffer(pk)
     ptr_sk = ffi.from_buffer(sk)
-    lib.ecc_sign_ed25519_sk_to_pk(
+    lib.ecc_sign_ed25519_SkToPk(
         ptr_pk,
         ptr_sk
     )
