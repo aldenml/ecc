@@ -23,6 +23,7 @@
     "oprf.test.js",
     "opaque.test.js",
     "pre.test.js",
+    "sign.test.js",
     "README.md",
     "LICENSE",
     "dist/ecc.dev.js",

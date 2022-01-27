@@ -994,37 +994,37 @@ ffibuilder.cdef(
 
     // sign
 
-    void ecc_sign_ed25519_sign(
-        unsigned char *sig,
-        unsigned char *msg,
-        int msg_len,
+    void ecc_sign_ed25519_Sign(
+        unsigned char *signature,
+        unsigned char *message,
+        int message_len,
         unsigned char *sk
     );
 
-    int ecc_sign_ed25519_verify(
-        unsigned char *sig,
-        unsigned char *msg,
-        int msg_len,
+    int ecc_sign_ed25519_Verify(
+        unsigned char *signature,
+        unsigned char *message,
+        int message_len,
         unsigned char *pk
     );
 
-    void ecc_sign_ed25519_keypair(
+    void ecc_sign_ed25519_KeyPair(
         unsigned char *pk,
         unsigned char *sk
     );
 
-    void ecc_sign_ed25519_seed_keypair(
+    void ecc_sign_ed25519_SeedKeyPair(
         unsigned char *pk,
         unsigned char *sk,
         unsigned char *seed
     );
 
-    void ecc_sign_ed25519_sk_to_seed(
+    void ecc_sign_ed25519_SkToSeed(
         unsigned char *seed,
         unsigned char *sk
     );
 
-    void ecc_sign_ed25519_sk_to_pk(
+    void ecc_sign_ed25519_SkToPk(
         unsigned char *pk,
         unsigned char *sk
     );

@@ -129,7 +129,7 @@ void ecc_pre_schema1_DeriveSigningKey(
         sizeof s
     );
 
-    ecc_sign_ed25519_seed_keypair(spk, ssk, s);
+    ecc_sign_ed25519_SeedKeyPair(spk, ssk, s);
 
     // cleanup stack memory
     ecc_memzero(s, sizeof s);

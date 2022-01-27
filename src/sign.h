@@ -10,11 +10,16 @@
 
 #include "export.h"
 
+// Edwards-Curve Digital Signature Algorithm (EdDSA)
+//
+// https://datatracker.ietf.org/doc/html/rfc8032
+//
+
 // const
 /**
  * Signature size.
  */
-#define ecc_sign_ed25519_SIZE 64
+#define ecc_sign_ed25519_SIGNATURESIZE 64
 
 // const
 /**
@@ -35,35 +40,35 @@
 #define ecc_sign_ed25519_SECRETKEYSIZE 64
 
 /**
- * Signs the message msg whose length is msg_len bytes, using the
- * secret key sk, and puts the signature into sig.
+ * Signs the `message` whose length is `message_len` in bytes, using the
+ * secret key `sk`, and puts the signature into `signature`.
  *
- * @param[out] sig the signature, size:ecc_sign_ed25519_SIZE
- * @param msg input message, size:msg_len
- * @param msg_len the length of `msg`
+ * @param[out] signature the signature, size:ecc_sign_ed25519_SIGNATURESIZE
+ * @param message input message, size:message_len
+ * @param message_len the length of `message`
  * @param sk the secret key, size:ecc_sign_ed25519_SECRETKEYSIZE
  */
 ECC_EXPORT
-void ecc_sign_ed25519_sign(
-    byte_t *sig,
-    const byte_t *msg, int msg_len,
+void ecc_sign_ed25519_Sign(
+    byte_t *signature,
+    const byte_t *message, int message_len,
     const byte_t *sk
 );
 
 /**
- * Verifies that sig is a valid signature for the message msg whose length
- * is msg_len bytes, using the signer's public key pk.
+ * Verifies that `signature` is a valid signature for the `message` whose length
+ * is `message_len` in bytes, using the signer's public key `pk`.
  *
- * @param sig the signature, size:ecc_sign_ed25519_SIZE
- * @param msg input message, size:msg_len
- * @param msg_len the length of `msg`
+ * @param signature the signature, size:ecc_sign_ed25519_SIGNATURESIZE
+ * @param message input message, size:message_len
+ * @param message_len the length of `message`
  * @param pk the public key, size:ecc_sign_ed25519_PUBLICKEYSIZE
  * @return -1 if the signature fails verification, or 0 on success
  */
 ECC_EXPORT
-int ecc_sign_ed25519_verify(
-    const byte_t *sig,
-    const byte_t *msg, int msg_len,
+int ecc_sign_ed25519_Verify(
+    const byte_t *signature,
+    const byte_t *message, int message_len,
     const byte_t *pk
 );
 
@@ -74,36 +79,36 @@ int ecc_sign_ed25519_verify(
  * @param[out] sk private key, size:ecc_sign_ed25519_SECRETKEYSIZE
  */
 ECC_EXPORT
-void ecc_sign_ed25519_keypair(byte_t *pk, byte_t *sk);
+void ecc_sign_ed25519_KeyPair(byte_t *pk, byte_t *sk);
 
 /**
  * Generates a random key pair of public and private keys derived
- * from a seed.
+ * from a `seed`.
  *
  * @param[out] pk public key, size:ecc_sign_ed25519_PUBLICKEYSIZE
  * @param[out] sk private key, size:ecc_sign_ed25519_SECRETKEYSIZE
  * @param seed seed to generate the keys, size:ecc_sign_ed25519_SEEDSIZE
  */
 ECC_EXPORT
-void ecc_sign_ed25519_seed_keypair(byte_t *pk, byte_t *sk, const byte_t *seed);
+void ecc_sign_ed25519_SeedKeyPair(byte_t *pk, byte_t *sk, const byte_t *seed);
 
 /**
- * Extracts the seed from the secret key sk and copies it into seed.
+ * Extracts the seed from the secret key `sk` and copies it into `seed`.
  *
  * @param[out] seed the seed used to generate the secret key, size:ecc_sign_ed25519_SEEDSIZE
  * @param sk the secret key, size:ecc_sign_ed25519_SECRETKEYSIZE
  */
 ECC_EXPORT
-void ecc_sign_ed25519_sk_to_seed(byte_t *seed, const byte_t *sk);
+void ecc_sign_ed25519_SkToSeed(byte_t *seed, const byte_t *sk);
 
 /**
- * Extracts the public key from the secret key sk and copies it into pk.
+ * Extracts the public key from the secret key `sk` and copies it into `pk`.
  *
  * @param[out] pk the public key, size:ecc_sign_ed25519_PUBLICKEYSIZE
  * @param sk the secret key, size:ecc_sign_ed25519_SECRETKEYSIZE
  */
 ECC_EXPORT
-void ecc_sign_ed25519_sk_to_pk(byte_t *pk, const byte_t *sk);
+void ecc_sign_ed25519_SkToPk(byte_t *pk, const byte_t *sk);
 
 // Compliant Ethereum BLS Signature API implementation.
 //

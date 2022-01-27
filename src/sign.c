@@ -15,27 +15,27 @@
 
 static_assert(sizeof(blst_scalar) == ecc_sign_eth_bls_PRIVATEKEYSIZE, "");
 
-void ecc_sign_ed25519_sign(byte_t *sig, const byte_t *msg, int msg_len, const byte_t *sk) {
-    crypto_sign_ed25519_detached(sig, NULL, msg, msg_len, sk);
+void ecc_sign_ed25519_Sign(byte_t *signature, const byte_t *message, int message_len, const byte_t *sk) {
+    crypto_sign_ed25519_detached(signature, NULL, message, message_len, sk);
 }
 
-int ecc_sign_ed25519_verify(const byte_t *sig, const byte_t *msg, int msg_len, const byte_t *pk) {
-    return crypto_sign_ed25519_verify_detached(sig, msg, msg_len, pk);
+int ecc_sign_ed25519_Verify(const byte_t *signature, const byte_t *message, int message_len, const byte_t *pk) {
+    return crypto_sign_ed25519_verify_detached(signature, message, message_len, pk);
 }
 
-void ecc_sign_ed25519_keypair(byte_t *pk, byte_t *sk) {
+void ecc_sign_ed25519_KeyPair(byte_t *pk, byte_t *sk) {
     crypto_sign_ed25519_keypair(pk, sk);
 }
 
-void ecc_sign_ed25519_seed_keypair(byte_t *pk, byte_t *sk, const byte_t *seed) {
+void ecc_sign_ed25519_SeedKeyPair(byte_t *pk, byte_t *sk, const byte_t *seed) {
     crypto_sign_ed25519_seed_keypair(pk, sk, seed);
 }
 
-void ecc_sign_ed25519_sk_to_seed(byte_t *seed, const byte_t *sk) {
+void ecc_sign_ed25519_SkToSeed(byte_t *seed, const byte_t *sk) {
     crypto_sign_ed25519_sk_to_seed(seed, sk);
 }
 
-void ecc_sign_ed25519_sk_to_pk(byte_t *pk, const byte_t *sk) {
+void ecc_sign_ed25519_SkToPk(byte_t *pk, const byte_t *sk) {
     crypto_sign_ed25519_sk_to_pk(pk, sk);
 }
 

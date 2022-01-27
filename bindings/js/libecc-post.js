@@ -4878,13 +4878,13 @@ Module.ecc_opaque_ristretto255_sha512_3DH_Response = (
 
 // sign
 
-const ecc_sign_ed25519_SIZE = 64;
+const ecc_sign_ed25519_SIGNATURESIZE = 64;
 /**
  * Signature size.
  *
  * @type {number}
  */
-Module.ecc_sign_ed25519_SIZE = ecc_sign_ed25519_SIZE;
+Module.ecc_sign_ed25519_SIGNATURESIZE = ecc_sign_ed25519_SIGNATURESIZE;
 
 const ecc_sign_ed25519_SEEDSIZE = 32;
 /**
@@ -4935,62 +4935,62 @@ const ecc_sign_eth_bls_SIGNATURESIZE = 96;
 Module.ecc_sign_eth_bls_SIGNATURESIZE = ecc_sign_eth_bls_SIGNATURESIZE;
 
 /**
- * Signs the message msg whose length is msg_len bytes, using the
- * secret key sk, and puts the signature into sig.
+ * Signs the `message` whose length is `message_len` in bytes, using the
+ * secret key `sk`, and puts the signature into `signature`.
  *
- * @param {Uint8Array} sig (output) the signature, size:ecc_sign_ed25519_SIZE
- * @param {Uint8Array} msg input message, size:msg_len
- * @param {number} msg_len the length of `msg`
+ * @param {Uint8Array} signature (output) the signature, size:ecc_sign_ed25519_SIGNATURESIZE
+ * @param {Uint8Array} message input message, size:message_len
+ * @param {number} message_len the length of `message`
  * @param {Uint8Array} sk the secret key, size:ecc_sign_ed25519_SECRETKEYSIZE
  */
-Module.ecc_sign_ed25519_sign = (
-    sig,
-    msg,
-    msg_len,
+Module.ecc_sign_ed25519_Sign = (
+    signature,
+    message,
+    message_len,
     sk,
 ) => {
-    const ptr_sig = mput(sig, ecc_sign_ed25519_SIZE);
-    const ptr_msg = mput(msg, msg_len);
+    const ptr_signature = mput(signature, ecc_sign_ed25519_SIGNATURESIZE);
+    const ptr_message = mput(message, message_len);
     const ptr_sk = mput(sk, ecc_sign_ed25519_SECRETKEYSIZE);
-    _ecc_sign_ed25519_sign(
-        ptr_sig,
-        ptr_msg,
-        msg_len,
+    _ecc_sign_ed25519_Sign(
+        ptr_signature,
+        ptr_message,
+        message_len,
         ptr_sk,
     );
-    mget(sig, ptr_sig, ecc_sign_ed25519_SIZE);
-    mfree(ptr_sig, ecc_sign_ed25519_SIZE);
-    mfree(ptr_msg, msg_len);
+    mget(signature, ptr_signature, ecc_sign_ed25519_SIGNATURESIZE);
+    mfree(ptr_signature, ecc_sign_ed25519_SIGNATURESIZE);
+    mfree(ptr_message, message_len);
     mfree(ptr_sk, ecc_sign_ed25519_SECRETKEYSIZE);
 }
 
 /**
- * Verifies that sig is a valid signature for the message msg whose length
- * is msg_len bytes, using the signer's public key pk.
+ * Verifies that `signature` is a valid signature for the `message` whose length
+ * is `message_len` in bytes, using the signer's public key `pk`.
  *
- * @param {Uint8Array} sig the signature, size:ecc_sign_ed25519_SIZE
- * @param {Uint8Array} msg input message, size:msg_len
- * @param {number} msg_len the length of `msg`
+ * @param {Uint8Array} signature the signature, size:ecc_sign_ed25519_SIGNATURESIZE
+ * @param {Uint8Array} message input message, size:message_len
+ * @param {number} message_len the length of `message`
  * @param {Uint8Array} pk the public key, size:ecc_sign_ed25519_PUBLICKEYSIZE
  * @return {number} -1 if the signature fails verification, or 0 on success
  */
-Module.ecc_sign_ed25519_verify = (
-    sig,
-    msg,
-    msg_len,
+Module.ecc_sign_ed25519_Verify = (
+    signature,
+    message,
+    message_len,
     pk,
 ) => {
-    const ptr_sig = mput(sig, ecc_sign_ed25519_SIZE);
-    const ptr_msg = mput(msg, msg_len);
+    const ptr_signature = mput(signature, ecc_sign_ed25519_SIGNATURESIZE);
+    const ptr_message = mput(message, message_len);
     const ptr_pk = mput(pk, ecc_sign_ed25519_PUBLICKEYSIZE);
-    const fun_ret = _ecc_sign_ed25519_verify(
-        ptr_sig,
-        ptr_msg,
-        msg_len,
+    const fun_ret = _ecc_sign_ed25519_Verify(
+        ptr_signature,
+        ptr_message,
+        message_len,
         ptr_pk,
     );
-    mfree(ptr_sig, ecc_sign_ed25519_SIZE);
-    mfree(ptr_msg, msg_len);
+    mfree(ptr_signature, ecc_sign_ed25519_SIGNATURESIZE);
+    mfree(ptr_message, message_len);
     mfree(ptr_pk, ecc_sign_ed25519_PUBLICKEYSIZE);
     return fun_ret;
 }
@@ -5001,13 +5001,13 @@ Module.ecc_sign_ed25519_verify = (
  * @param {Uint8Array} pk (output) public key, size:ecc_sign_ed25519_PUBLICKEYSIZE
  * @param {Uint8Array} sk (output) private key, size:ecc_sign_ed25519_SECRETKEYSIZE
  */
-Module.ecc_sign_ed25519_keypair = (
+Module.ecc_sign_ed25519_KeyPair = (
     pk,
     sk,
 ) => {
     const ptr_pk = mput(pk, ecc_sign_ed25519_PUBLICKEYSIZE);
     const ptr_sk = mput(sk, ecc_sign_ed25519_SECRETKEYSIZE);
-    _ecc_sign_ed25519_keypair(
+    _ecc_sign_ed25519_KeyPair(
         ptr_pk,
         ptr_sk,
     );
@@ -5019,13 +5019,13 @@ Module.ecc_sign_ed25519_keypair = (
 
 /**
  * Generates a random key pair of public and private keys derived
- * from a seed.
+ * from a `seed`.
  *
  * @param {Uint8Array} pk (output) public key, size:ecc_sign_ed25519_PUBLICKEYSIZE
  * @param {Uint8Array} sk (output) private key, size:ecc_sign_ed25519_SECRETKEYSIZE
  * @param {Uint8Array} seed seed to generate the keys, size:ecc_sign_ed25519_SEEDSIZE
  */
-Module.ecc_sign_ed25519_seed_keypair = (
+Module.ecc_sign_ed25519_SeedKeyPair = (
     pk,
     sk,
     seed,
@@ -5033,7 +5033,7 @@ Module.ecc_sign_ed25519_seed_keypair = (
     const ptr_pk = mput(pk, ecc_sign_ed25519_PUBLICKEYSIZE);
     const ptr_sk = mput(sk, ecc_sign_ed25519_SECRETKEYSIZE);
     const ptr_seed = mput(seed, ecc_sign_ed25519_SEEDSIZE);
-    _ecc_sign_ed25519_seed_keypair(
+    _ecc_sign_ed25519_SeedKeyPair(
         ptr_pk,
         ptr_sk,
         ptr_seed,
@@ -5046,18 +5046,18 @@ Module.ecc_sign_ed25519_seed_keypair = (
 }
 
 /**
- * Extracts the seed from the secret key sk and copies it into seed.
+ * Extracts the seed from the secret key `sk` and copies it into `seed`.
  *
  * @param {Uint8Array} seed (output) the seed used to generate the secret key, size:ecc_sign_ed25519_SEEDSIZE
  * @param {Uint8Array} sk the secret key, size:ecc_sign_ed25519_SECRETKEYSIZE
  */
-Module.ecc_sign_ed25519_sk_to_seed = (
+Module.ecc_sign_ed25519_SkToSeed = (
     seed,
     sk,
 ) => {
     const ptr_seed = mput(seed, ecc_sign_ed25519_SEEDSIZE);
     const ptr_sk = mput(sk, ecc_sign_ed25519_SECRETKEYSIZE);
-    _ecc_sign_ed25519_sk_to_seed(
+    _ecc_sign_ed25519_SkToSeed(
         ptr_seed,
         ptr_sk,
     );
@@ -5067,18 +5067,18 @@ Module.ecc_sign_ed25519_sk_to_seed = (
 }
 
 /**
- * Extracts the public key from the secret key sk and copies it into pk.
+ * Extracts the public key from the secret key `sk` and copies it into `pk`.
  *
  * @param {Uint8Array} pk (output) the public key, size:ecc_sign_ed25519_PUBLICKEYSIZE
  * @param {Uint8Array} sk the secret key, size:ecc_sign_ed25519_SECRETKEYSIZE
  */
-Module.ecc_sign_ed25519_sk_to_pk = (
+Module.ecc_sign_ed25519_SkToPk = (
     pk,
     sk,
 ) => {
     const ptr_pk = mput(pk, ecc_sign_ed25519_PUBLICKEYSIZE);
     const ptr_sk = mput(sk, ecc_sign_ed25519_SECRETKEYSIZE);
-    _ecc_sign_ed25519_sk_to_pk(
+    _ecc_sign_ed25519_SkToPk(
         ptr_pk,
         ptr_sk,
     );
