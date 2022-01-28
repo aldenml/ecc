@@ -1,6 +1,6 @@
 {
   "name": "@aldenml/ecc",
-  "version": "1.0.8",
+  "version": "1.0.9",
   "description": "elliptic curves crypto functions",
   "main": "index.js",
   "types": "./dist/index.d.ts",
