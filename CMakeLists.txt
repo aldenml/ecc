@@ -21,6 +21,31 @@ project(ecc LANGUAGES C)
 
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake/Modules)
 
+function(SET_EXTRA_COMPILER_FLAGS TARGET_ARG)
+endfunction()
+#function(SET_EXTRA_COMPILER_FLAGS TARGET_ARG)
+#    if(CMAKE_CXX_COMPILER_ID MATCHES Clang)
+#        target_compile_options(${TARGET_ARG} PRIVATE
+#            -Weverything
+#            -Werror
+#        )
+#        target_compile_definitions(${TARGET_ARG} PRIVATE _FORTIFY_SOURCE=2)
+#    elseif(CMAKE_CXX_COMPILER_ID MATCHES GNU)
+#        target_compile_options(${TARGET_ARG} PRIVATE
+#            -Wall
+#            -Wextra
+#            -Wpedantic
+#            -Werror
+#        )
+#        target_compile_definitions(${TARGET_ARG} PRIVATE _FORTIFY_SOURCE=2)
+#    elseif(MSVC)
+#        target_compile_options(${TARGET_ARG} PRIVATE
+#            /W4
+#            /WX
+#        )
+#    endif()
+#endfunction()
+
 include(ExternalProject)
 if(EMSCRIPTEN)
     ExternalProject_Add(
@@ -127,6 +152,7 @@ if(EMSCRIPTEN)
 else()
     add_library(ecc SHARED ${ecc_src_files})
     target_compile_options(ecc PRIVATE -O2)
+    set_extra_compiler_flags(ecc)
 endif()
 
 target_compile_features(ecc PUBLIC c_std_11)
@@ -148,6 +174,7 @@ if(NOT DEFINED EMSCRIPTEN)
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src>
         $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
     )
+    set_extra_compiler_flags(ecc_static)
 
     # jvm
     add_library(ecc-jvm SHARED
@@ -158,6 +185,7 @@ if(NOT DEFINED EMSCRIPTEN)
     target_compile_features(ecc-jvm PUBLIC c_std_11)
     target_compile_options(ecc-jvm PRIVATE -O2)
     target_link_libraries(ecc-jvm PRIVATE ecc_static)
+    set_extra_compiler_flags(ecc-jvm)
 endif()
 
 if(NOT DEFINED EMSCRIPTEN)
@@ -168,26 +196,37 @@ if(NOT DEFINED EMSCRIPTEN)
         test/cJSON.h test/cJSON.c
     )
     target_link_libraries(ecc_test PUBLIC ecc cmocka-static)
+    set_extra_compiler_flags(ecc_test)
 
     # tests executables
     add_executable(test_util test/test_util.c)
-    target_link_libraries(test_util PRIVATE ecc cmocka-static)
+    target_link_libraries(test_util PRIVATE ecc_test)
     add_executable(test_kdf test/test_kdf.c)
-    target_link_libraries(test_kdf PRIVATE ecc cmocka-static)
+    target_link_libraries(test_kdf PRIVATE ecc_test)
     add_executable(test_bls12_381 test/test_bls12_381.c)
-    target_link_libraries(test_bls12_381 PRIVATE ecc cmocka-static)
+    target_link_libraries(test_bls12_381 PRIVATE ecc_test)
     add_executable(test_h2c test/test_h2c.c)
-    target_link_libraries(test_h2c PRIVATE ecc cmocka-static)
+    target_link_libraries(test_h2c PRIVATE ecc_test)
     add_executable(test_oprf test/test_oprf.c)
-    target_link_libraries(test_oprf PRIVATE ecc cmocka-static)
+    target_link_libraries(test_oprf PRIVATE ecc_test)
     add_executable(test_opaque test/test_opaque.c)
-    target_link_libraries(test_opaque PRIVATE ecc cmocka-static)
+    target_link_libraries(test_opaque PRIVATE ecc_test)
     add_executable(test_sign test/test_sign.c)
     target_link_libraries(test_sign PRIVATE ecc_test)
     add_executable(test_pre test/test_pre.c)
-    target_link_libraries(test_pre PRIVATE ecc cmocka-static)
+    target_link_libraries(test_pre PRIVATE ecc_test)
     add_executable(test_json test/test_json.c)
     target_link_libraries(test_json PRIVATE ecc_test)
+
+    set_extra_compiler_flags(test_util)
+    set_extra_compiler_flags(test_kdf)
+    set_extra_compiler_flags(test_bls12_381)
+    set_extra_compiler_flags(test_h2c)
+    set_extra_compiler_flags(test_oprf)
+    set_extra_compiler_flags(test_opaque)
+    set_extra_compiler_flags(test_sign)
+    set_extra_compiler_flags(test_pre)
+    set_extra_compiler_flags(test_json)
 
     # setup coverage
     if(CODE_COVERAGE)

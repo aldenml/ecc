@@ -5,7 +5,7 @@
  * Copy of the license at https://opensource.org/licenses/MIT
  */
 
-#include "ecc.h"
+#include "ecc_test.h"
 #include <stdarg.h>
 #include <setjmp.h>
 #include <string.h>

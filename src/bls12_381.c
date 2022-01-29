@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021, Alden Torres
+ * Copyright (c) 2021-2022, Alden Torres
  *
  * Licensed under the terms of the MIT license.
  * Copy of the license at https://opensource.org/licenses/MIT
@@ -15,31 +15,86 @@ static_assert(sizeof(blst_scalar) == ecc_bls12_381_SCALARSIZE, "");
 static_assert(sizeof(blst_fp) == ecc_bls12_381_FPSIZE, "");
 static_assert(sizeof(blst_fp12) == ecc_bls12_381_FP12SIZE, "");
 
+static void ecc_bls12_381_fp12_from_raw(blst_fp12 *ret, const byte_t *a) {
+    memcpy(ret, a, ecc_bls12_381_FP12SIZE);
+}
+
+static void ecc_bls12_381_fp12_to_raw(byte_t *ret, const blst_fp12 *a) {
+    memcpy(ret, a, ecc_bls12_381_FP12SIZE);
+}
+
 void ecc_bls12_381_fp_random(byte_t *ret) {
     byte_t a[ecc_bls12_381_FPSIZE];
     ecc_randombytes(a, sizeof a);
-    blst_fp_from_lendian((blst_fp *) ret, a);
+
+    blst_fp fp;
+    blst_fp_from_bendian(&fp, a);
+    blst_bendian_from_fp(ret, &fp);
+
+    // cleanup stack memory
     ecc_memzero(a, sizeof a);
+    ecc_memzero((byte *) &fp, sizeof fp);
 }
 
 void ecc_bls12_381_fp12_one(byte_t *ret) {
-    memcpy(ret, blst_fp12_one(), ecc_bls12_381_FP12SIZE);
+    ecc_bls12_381_fp12_to_raw(ret, blst_fp12_one());
 }
 
 int ecc_bls12_381_fp12_is_one(const byte_t *a) {
-    return blst_fp12_is_one((blst_fp12 *) a);
+    blst_fp12 x;
+    ecc_bls12_381_fp12_from_raw(&x, a);
+
+    int ret = blst_fp12_is_one(&x);
+
+    // cleanup stack memory
+    ecc_memzero((byte *) &x, sizeof x);
+
+    return ret;
 }
 
 void ecc_bls12_381_fp12_inverse(byte_t *ret, const byte_t *a) {
-    blst_fp12_inverse((blst_fp12 *) ret, (blst_fp12 *) a);
+    blst_fp12 x;
+    ecc_bls12_381_fp12_from_raw(&x, a);
+
+    blst_fp12 inv;
+    blst_fp12_inverse(&inv, &x);
+
+    ecc_bls12_381_fp12_to_raw(ret, &inv);
+
+    // cleanup stack memory
+    ecc_memzero((byte *) &x, sizeof x);
+    ecc_memzero((byte *) &inv, sizeof inv);
 }
 
 void ecc_bls12_381_fp12_sqr(byte_t *ret, const byte_t *a) {
-    blst_fp12_sqr((blst_fp12 *) ret, (blst_fp12 *) a);
+    blst_fp12 x;
+    ecc_bls12_381_fp12_from_raw(&x, a);
+
+    blst_fp12 sqr;
+    blst_fp12_sqr(&sqr, &x);
+
+    ecc_bls12_381_fp12_to_raw(ret, &sqr);
+
+    // cleanup stack memory
+    ecc_memzero((byte *) &x, sizeof x);
+    ecc_memzero((byte *) &sqr, sizeof sqr);
 }
 
 void ecc_bls12_381_fp12_mul(byte_t *ret, const byte_t *a, const byte_t *b) {
-    blst_fp12_mul((blst_fp12 *) ret, (blst_fp12 *) a, (blst_fp12 *) b);
+    blst_fp12 x1;
+    ecc_bls12_381_fp12_from_raw(&x1, a);
+    blst_fp12 x2;
+    ecc_bls12_381_fp12_from_raw(&x2, b);
+
+    blst_fp12 mul;
+    blst_fp12_mul(&mul, &x1, &x2);
+
+    ecc_bls12_381_fp12_to_raw(ret, &mul);
+
+    // cleanup stack memory
+    ecc_memzero((byte *) &x1, sizeof x1);
+    ecc_memzero((byte *) &x2, sizeof x2);
+    ecc_memzero((byte *) &mul, sizeof mul);
 }
 
 void ecc_bls12_381_fp12_pow(byte_t *ret, const byte_t *a, int n) {
@@ -89,9 +144,16 @@ void ecc_bls12_381_fp12_random(byte_t *ret) {
     ecc_bls12_381_fp_random((byte_t *) &a.fp6[1].fp2[1].fp[1]);
     ecc_bls12_381_fp_random((byte_t *) &a.fp6[1].fp2[2].fp[0]);
     ecc_bls12_381_fp_random((byte_t *) &a.fp6[1].fp2[2].fp[1]);
+
     // force Fp12 arithmetic
-    blst_fp12_inverse((blst_fp12 *) ret, &a);
+    blst_fp12 inv;
+    blst_fp12_inverse(&inv, &a);
+
+    ecc_bls12_381_fp12_to_raw(ret, &inv);
+
+    // cleanup stack memory
     ecc_memzero((byte_t *) &a, sizeof a);
+    ecc_memzero((byte_t *) &inv, sizeof inv);
 }
 
 void ecc_bls12_381_g1_add(byte_t *r, const byte_t *p, const byte_t *q) {

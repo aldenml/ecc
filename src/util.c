@@ -17,11 +17,11 @@ void ecc_randombytes(byte_t *buf, const int n) {
     randombytes_buf(buf, n);
 }
 
-void ecc_bin2hex(char *hex, const byte_t *bin, int bin_len) {
-    sodium_bin2hex(hex, 2 * (bin_len + 1), bin, bin_len);
+void ecc_bin2hex(char *hex, const byte_t *bin, const int bin_len) {
+    sodium_bin2hex(hex, 2 * bin_len + 1, bin, bin_len);
 }
 
-void ecc_hex2bin(byte_t *bin, const char *hex, int hex_len) {
+void ecc_hex2bin(byte_t *bin, const char *hex, const int hex_len) {
     sodium_hex2bin(bin, hex_len / 2, hex, hex_len, NULL, NULL, NULL);
 }
 
@@ -71,11 +71,11 @@ void ecc_I2OSP(byte_t *out, int x, const int xLen) {
     }
 }
 
-int ecc_compare(const byte_t *a, const byte_t *b, int len) {
+int ecc_compare(const byte_t *a, const byte_t *b, const int len) {
     return sodium_compare(a, b, len);
 }
 
-int ecc_is_zero(const byte_t *n, int len) {
+int ecc_is_zero(const byte_t *n, const int len) {
     return sodium_is_zero(n, len);
 }
 
@@ -90,7 +90,7 @@ void ecc_free(byte_t *p, const int size) {
 
 #if ECC_LOG
 void ecc_log(const char *label, const byte_t *data, const int data_len) {
-    char *hex = malloc(2 * (data_len + 1));
+    char *hex = malloc(2 * data_len + 1);
     ecc_bin2hex(hex, data, data_len);
     printf("%s: %s\n", label, hex);
     free(hex);

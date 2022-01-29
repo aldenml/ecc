@@ -5,13 +5,12 @@
  * Copy of the license at https://opensource.org/licenses/MIT
  */
 
-#include "ecc.h"
+#include "ecc_test.h"
 #include <stdarg.h>
 #include <setjmp.h>
 #include <string.h>
 #include <cmocka.h>
 #include <stdio.h>
-#include "ecc_log.h"
 
 // https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-07#appendix-D.1.1
 static void test_opaque_ristretto255_sha512_vector1(void **state) {

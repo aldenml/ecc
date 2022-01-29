@@ -63,7 +63,7 @@ void ecc_kdf_hkdf_sha512_expand(
     );
 }
 
-void ecc_kdf_scrypt(
+int ecc_kdf_scrypt(
     byte_t *out,
     const byte_t *passphrase, const int passphrase_len,
     const byte_t *salt, const int salt_len,
@@ -72,7 +72,7 @@ void ecc_kdf_scrypt(
     const int parallelization,
     const int len
 ) {
-    crypto_pwhash_scryptsalsa208sha256_ll(
+    return crypto_pwhash_scryptsalsa208sha256_ll(
         passphrase, passphrase_len,
         salt, salt_len,
         cost,

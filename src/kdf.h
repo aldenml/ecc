@@ -101,16 +101,16 @@ void ecc_kdf_hkdf_sha512_expand(
  *
  * @param[out] out size:len
  * @param passphrase size:passphrase_len
- * @param passphrase_len
+ * @param passphrase_len the length of `passphrase`
  * @param salt size:salt_len
- * @param salt_len
- * @param cost
- * @param block_size
- * @param parallelization
- * @param len
+ * @param salt_len the length of `salt`
+ * @param cost cpu/memory cost
+ * @param block_size block size
+ * @param parallelization parallelization
+ * @param len intended output length
  */
 ECC_EXPORT
-void ecc_kdf_scrypt(
+int ecc_kdf_scrypt(
     byte_t *out,
     const byte_t *passphrase, int passphrase_len,
     const byte_t *salt, int salt_len,
