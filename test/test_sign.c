@@ -5,15 +5,13 @@
  * Copy of the license at https://opensource.org/licenses/MIT
  */
 
-#include "ecc.h"
+#include "ecc_test.h"
 #include <stdarg.h>
 #include <setjmp.h>
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <cmocka.h>
-#include "ecc_log.h"
-#include "ecc_test.h"
 
 // Test Vectors for BLS Signature taken from:
 // https://github.com/ethereum/bls12-381-tests

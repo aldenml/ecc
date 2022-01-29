@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021, Alden Torres
+ * Copyright (c) 2021-2022, Alden Torres
  *
  * Licensed under the terms of the MIT license.
  * Copy of the license at https://opensource.org/licenses/MIT
@@ -58,8 +58,6 @@ void ecc_hex2bin(byte_t *bin, const char *hex, int hex_len);
  *
  * a || b: denotes the concatenation of byte strings a and b. For
  * example, "ABC" || "DEF" == "ABCDEF".
- *
- * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-hash-to-curve-11#section-4
  *
  * @param[out] out result of the concatenation, size:a1_len+a2_len
  * @param a1 first byte array, size:a1_len
@@ -121,8 +119,6 @@ void ecc_concat4(
  * strings in this example are ASCII literals, but ecc_strxor is defined for
  * arbitrary byte strings).
  *
- * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-hash-to-curve-11#section-4
- *
  * @param[out] out result of the operation, size:len
  * @param a first byte array, size:len
  * @param b second byte array, size:len
@@ -148,7 +144,7 @@ void ecc_I2OSP(byte_t *out, int x, int xLen);
  * Takes two pointers to unsigned numbers encoded in little-endian
  * format and returns:
  *
- * -1 if a is less b
+ * -1 if a is less than b
  * 0 if a is equals to b
  * 1 if a is greater than b
  *

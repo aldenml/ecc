@@ -8,6 +8,12 @@
 #ifndef ECC_TEST_H
 #define ECC_TEST_H
 
+#include "ecc.h"
+
+#if !ECC_LOG
+void ecc_log(const char *label, const byte_t *data, int data_len);
+#endif
+
 typedef struct ecc_json ecc_json_t;
 
 ecc_json_t *ecc_json_load(const char *filename);
