@@ -76,11 +76,11 @@ static void hkdf_sha512_expand_test(void **state) {
 static void test_scrypt_1(void **state) {
     ECC_UNUSED(state);
 
-    byte_t P[0] = "";
-    byte_t S[0] = "";
+    const byte_t *P = NULL;
+    const byte_t *S = NULL;
 
     byte_t out[64];
-    ecc_kdf_scrypt(out, P, sizeof P, S, sizeof S,
+    ecc_kdf_scrypt(out, P, 0, S, 0,
         16, 1, 1,
         64
     );

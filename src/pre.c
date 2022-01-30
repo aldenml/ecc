@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021, Alden Torres
+ * Copyright (c) 2021-2022, Alden Torres
  *
  * Licensed under the terms of the MIT license.
  * Copy of the license at https://opensource.org/licenses/MIT
@@ -73,6 +73,12 @@ static_assert(
 static_assert(sizeof(CiphertextLevel1_t) == ecc_pre_schema1_CIPHERTEXTLEVEL1SIZE, "");
 static_assert(sizeof(CiphertextLevel2_t) == ecc_pre_schema1_CIPHERTEXTLEVEL2SIZE, "");
 static_assert(sizeof(ReKey_t) == ecc_pre_schema1_REKEYSIZE, "");
+
+void pairing_g2(byte_t *e, const byte_t *p, const byte_t *s);
+void pairing_g2_mul(byte_t *r, const byte_t *a, const byte_t *p, const byte_t *s);
+void pairing_g2_mul_neg(byte_t *r, const byte_t *a, const byte_t *p, const byte_t *s);
+void hash2(byte_t *r, const byte_t *a);
+void hash2_neg(byte_t *r, const byte_t *a);
 
 void ecc_pre_schema1_MessageGen(
     byte_t *m
@@ -372,15 +378,15 @@ int ecc_pre_schema1_ReEncrypt(
     const byte_t *ssk
 ) {
     CiphertextLevel2_t *C_j = (CiphertextLevel2_t *) C_j_raw;
-    CiphertextLevel1_t *C_i = (CiphertextLevel1_t *) C_i_raw;
-    ReKey_t *tk_i_j = (ReKey_t *) tk_i_j_raw;
+    const CiphertextLevel1_t *C_i = (const CiphertextLevel1_t *) C_i_raw;
+    const ReKey_t *tk_i_j = (const ReKey_t *) tk_i_j_raw;
 
     // validate signature of encrypted message
     crypto_sign_ed25519ph_state sig_st;
     crypto_sign_ed25519ph_init(&sig_st);
     crypto_sign_ed25519ph_update(
         &sig_st,
-        (byte_t *) C_i,
+        (const byte_t *) C_i,
         sizeof(CiphertextLevel1_t) - ecc_pre_schema1_SIGNATURESIZE
     );
     if (crypto_sign_ed25519ph_final_verify(&sig_st, C_i->sig, spk_i)) {
@@ -394,7 +400,7 @@ int ecc_pre_schema1_ReEncrypt(
     crypto_sign_ed25519ph_init(&sig_st);
     crypto_sign_ed25519ph_update(
         &sig_st,
-        (byte_t *) tk_i_j,
+        (const byte_t *) tk_i_j,
         sizeof(ReKey_t) - ecc_pre_schema1_SIGNATURESIZE - ecc_bls12_381_G2SIZE
     );
     if (crypto_sign_ed25519ph_final_verify(&sig_st, tk_i_j->sig, spk_i)) {
@@ -462,14 +468,14 @@ int ecc_pre_schema1_DecryptLevel1(
     const byte_t *sk_i,
     const byte_t *spk_i
 ) {
-    CiphertextLevel1_t *C_i = (CiphertextLevel1_t *) C_i_raw;
+    const CiphertextLevel1_t *C_i = (const CiphertextLevel1_t *) C_i_raw;
 
     // validate the signature on the ciphertext
     crypto_sign_ed25519ph_state sig_st;
     crypto_sign_ed25519ph_init(&sig_st);
     crypto_sign_ed25519ph_update(
         &sig_st,
-        (byte_t *) C_i,
+        (const byte_t *) C_i,
         sizeof(CiphertextLevel1_t) - ecc_pre_schema1_SIGNATURESIZE
     );
     if (crypto_sign_ed25519ph_final_verify(&sig_st, C_i->sig, spk_i)) {
@@ -494,14 +500,14 @@ int ecc_pre_schema1_DecryptLevel2(
     const byte_t *sk_j,
     const byte_t *spk
 ) {
-    CiphertextLevel2_t *C_j = (CiphertextLevel2_t *) C_j_raw;
+    const CiphertextLevel2_t *C_j = (const CiphertextLevel2_t *) C_j_raw;
 
     // validate the signature on the ciphertext
     crypto_sign_ed25519ph_state sig_st;
     crypto_sign_ed25519ph_init(&sig_st);
     crypto_sign_ed25519ph_update(
         &sig_st,
-        (byte_t *) C_j,
+        (const byte_t *) C_j,
         sizeof(CiphertextLevel2_t) - ecc_pre_schema1_SIGNINGPUBLICKEYSIZE - ecc_pre_schema1_SIGNATURESIZE
     );
     crypto_sign_ed25519ph_update(&sig_st, spk, ecc_pre_schema1_SIGNINGPUBLICKEYSIZE);

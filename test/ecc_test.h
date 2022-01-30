@@ -9,6 +9,42 @@
 #define ECC_TEST_H
 
 #include "ecc.h"
+#include <stdarg.h>
+#include <setjmp.h>
+#include <string.h>
+#include <stdio.h>
+#include <stdlib.h>
+
+#ifdef __GNUC__
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wpadded"
+#pragma GCC diagnostic ignored "-Wreserved-id-macro"
+#endif
+
+#ifdef __clang__
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wpadded"
+#pragma clang diagnostic ignored "-Wreserved-id-macro"
+#endif
+
+#ifdef _MSC_VER
+#pragma warning(push, 1)
+//#pragma warning(disable: ?)
+#endif
+
+#include <cmocka.h>
+
+#ifdef _MSC_VER
+#pragma warning(pop)
+#endif
+
+#ifdef __clang__
+#pragma clang diagnostic pop
+#endif
+
+#ifdef __GNUC__
+#pragma GCC diagnostic pop
+#endif
 
 #if !ECC_LOG
 void ecc_log(const char *label, const byte_t *data, int data_len);

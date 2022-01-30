@@ -179,6 +179,8 @@ static_assert(sizeof(KE3_t) == ecc_opaque_ristretto255_sha512_KE3SIZE, "");
 static_assert(sizeof(ClientState_t) == ecc_opaque_ristretto255_sha512_CLIENTSTATESIZE, "");
 static_assert(sizeof(ServerState_t) == ecc_opaque_ristretto255_sha512_SERVERSTATESIZE, "");
 
+int serializeCleartextCredentials(byte_t *out, const CleartextCredentials_t *credentials);
+
 int serializeCleartextCredentials(byte_t *out, const CleartextCredentials_t *credentials) {
     const int len = Npk + 2 + credentials->server_identity_len + 2 + credentials->client_identity_len;
 
@@ -233,7 +235,32 @@ void ecc_opaque_ristretto255_sha512_CreateCleartextCredentials(
     //    with (server_public_key, server_identity, client_identity)
     // 6. Output cleartext_credentials
 
+#ifdef __GNUC__
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wcast-align"
+#endif
+
+#ifdef __clang__
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wcast-align"
+#endif
+
+#ifdef _MSC_VER
+    #pragma warning(push, 1)
+//#pragma warning(disable: ?)
+#endif
     CleartextCredentials_t *cleartext_credentials = (CleartextCredentials_t *) cleartext_credentials_ptr;
+#ifdef _MSC_VER
+#pragma warning(pop)
+#endif
+
+#ifdef __clang__
+#pragma clang diagnostic pop
+#endif
+
+#ifdef __GNUC__
+#pragma GCC diagnostic pop
+#endif
 
     if (server_identity == NULL || server_identity_len == 0) {
         server_identity = server_public_key;
@@ -398,7 +425,7 @@ int ecc_opaque_ristretto255_sha512_EnvelopeRecover(
     //      raise KeyRecoveryError
     // 8. Output (client_private_key, export_key)
 
-    Envelope_t *envelope = (Envelope_t *) envelope_ptr;
+    const Envelope_t *envelope = (const Envelope_t *) envelope_ptr;
 
     // 1. auth_key = Expand(randomized_pwd, concat(envelope.nonce, "AuthKey"), Nh)
     byte_t auth_key_label[7] = "AuthKey";
@@ -551,6 +578,9 @@ void ecc_opaque_ristretto255_sha512_CreateRegistrationResponseWithOprfKey(
     const byte_t *credential_identifier, int credential_identifier_len,
     const byte_t *oprf_key
 ) {
+    ECC_UNUSED(credential_identifier);
+    ECC_UNUSED(credential_identifier_len);
+
     // Steps:
     // 1. ---
     // 2. ---
@@ -558,7 +588,7 @@ void ecc_opaque_ristretto255_sha512_CreateRegistrationResponseWithOprfKey(
     // 4. Create RegistrationResponse response with (Z, server_public_key)
     // 5. Output (response, oprf_key)
 
-    RegistrationRequest_t *request = (RegistrationRequest_t *) request_ptr;
+    const RegistrationRequest_t *request = (const RegistrationRequest_t *) request_ptr;
     RegistrationResponse_t *response = (RegistrationResponse_t *) response_ptr;
 
     // 3. Z = Evaluate(oprf_key, request.data)
@@ -644,7 +674,7 @@ void ecc_opaque_ristretto255_sha512_FinalizeRequestWithNonce(
     // 4. Create RegistrationUpload record with (client_public_key, masking_key, envelope)
     // 5. Output (record, export_key)
 
-    RegistrationResponse_t *response = (RegistrationResponse_t *) response_ptr;
+    const RegistrationResponse_t *response = (const RegistrationResponse_t *) response_ptr;
     RegistrationUpload_t *record = (RegistrationUpload_t *) record_ptr;
 
     // 1. y = Finalize(password, blind, response.data, nil)
@@ -785,8 +815,8 @@ void ecc_opaque_ristretto255_sha512_CreateCredentialResponseWithMasking(
     // 7. Create CredentialResponse response with (Z, masking_nonce, masked_response)
     // 8. Output response
 
-    CredentialRequest_t *request = (CredentialRequest_t *) request_raw;
-    RegistrationUpload_t *record = (RegistrationUpload_t *) record_raw;
+    const CredentialRequest_t *request = (const CredentialRequest_t *) request_raw;
+    const RegistrationUpload_t *record = (const RegistrationUpload_t *) record_raw;
 
     // 1. seed = Expand(oprf_seed, concat(credential_identifier, "OprfKey"), Nok)
     // - concat(credential_identifier, "OprfKey")
@@ -821,7 +851,7 @@ void ecc_opaque_ristretto255_sha512_CreateCredentialResponseWithMasking(
     // 6. masked_response = xor(credential_response_pad,
     //                          concat(server_public_key, record.envelope))
     byte_t masked_response_xor[Npk + Ne];
-    ecc_concat2(masked_response_xor, server_public_key, Npk, (byte_t *) &record->envelope, Ne);
+    ecc_concat2(masked_response_xor, server_public_key, Npk, (const byte_t *) &record->envelope, Ne);
     byte_t masked_response[Npk + Ne];
     ecc_strxor(masked_response, credential_response_pad, masked_response_xor, Npk + Ne);
 
@@ -894,7 +924,7 @@ int ecc_opaque_ristretto255_sha512_RecoverCredentials(
     // 7. Output (client_private_key, response.server_public_key, export_key)
 
     // 1. y = Finalize(password, blind, response.data)
-    CredentialResponse_t *res = (CredentialResponse_t *) response;
+    const CredentialResponse_t *res = (const CredentialResponse_t *) response;
     byte_t y[64];
     ecc_oprf_ristretto255_sha512_Finalize(
         y,
@@ -1030,6 +1060,7 @@ int ecc_opaque_ristretto255_sha512_3DH_Preamble(
     const byte_t *server_public_key,
     const byte_t *ke2_ptr
 ) {
+    ECC_UNUSED(preamble_len);
     // Steps:
     // 1. preamble = concat("RFCXXXX",
     //                      I2OSP(len(context), 2), context,
@@ -1039,8 +1070,9 @@ int ecc_opaque_ristretto255_sha512_3DH_Preamble(
     //                      inner_ke2)
     // 2. Output preamble
 
-    KE1_t *ke1 = (KE1_t *) ke1_ptr;
-    KE2_t *ke2 = (KE2_t *) ke2_ptr;
+    const KE1_t *ke1 = (const KE1_t *) ke1_ptr;
+    ECC_UNUSED(ke1);
+    const KE2_t *ke2 = (const KE2_t *) ke2_ptr;
 
     byte_t preamble_label[7] = "RFCXXXX"; // TODO: replace X with actual value
 
@@ -1077,7 +1109,7 @@ int ecc_opaque_ristretto255_sha512_3DH_Preamble(
         ecc_concat2(p + n, server_public_key, Npk, NULL, 0);
         n += Npk;
     }
-    ecc_concat2(p + n, (byte_t *) &(ke2->credential_response), ecc_opaque_ristretto255_sha512_CREDENTIALRESPONSESIZE, NULL, 0);
+    ecc_concat2(p + n, (const byte_t *) &(ke2->credential_response), ecc_opaque_ristretto255_sha512_CREDENTIALRESPONSESIZE, NULL, 0);
     n += ecc_opaque_ristretto255_sha512_CREDENTIALRESPONSESIZE;
     ecc_concat2(p + n, ke2->auth_response.server_nonce, Nn, NULL, 0);
     n += Nn;
@@ -1274,7 +1306,7 @@ int ecc_opaque_ristretto255_sha512_3DH_ClientFinish(
     // 3. Output (ke3, session_key)
 
     ClientState_t *state = (ClientState_t *) state_raw;
-    KE2_t *ke2 = (KE2_t *) ke2_raw;
+    const KE2_t *ke2 = (const KE2_t *) ke2_raw;
 
     // 1. (client_private_key, server_public_key, export_key) =
     //     RecoverCredentials(password, state.blind, ke2.CredentialResponse,
@@ -1287,7 +1319,7 @@ int ecc_opaque_ristretto255_sha512_3DH_ClientFinish(
         export_key,
         password, password_len,
         state->blind,
-        (byte_t *) &ke2->credential_response,
+        (const byte_t *) &ke2->credential_response,
         server_identity, server_identity_len,
         client_identity, client_identity_len,
         mhf
@@ -1335,7 +1367,7 @@ void ecc_opaque_ristretto255_sha512_3DH_StartWithSecrets(
     // 5. Output (ke1, client_secret)
 
     ClientState_t *state = (ClientState_t *) state_ptr;
-    CredentialRequest_t *credential_request = (CredentialRequest_t *) credential_request_ptr;
+    const CredentialRequest_t *credential_request = (const CredentialRequest_t *) credential_request_ptr;
 
     // 3. Create KE1 ke1 with (credential_request, client_nonce, client_keyshare)
     KE1_t *ke1 = (KE1_t *) ke1_ptr;
@@ -1415,7 +1447,7 @@ int ecc_opaque_ristretto255_sha512_3DH_ClientFinalize(
     // 8. Output (ke3, session_key)
 
     ClientState_t *state = (ClientState_t *) state_raw;
-    KE2_t *ke2 = (KE2_t *) ke2_raw;
+    const KE2_t *ke2 = (const KE2_t *) ke2_raw;
 
     // 1. ikm = TripleDHIKM(state.client_secret, ke2.server_keyshare,
     //     state.client_secret, server_public_key, client_private_key, ke2.server_keyshare)
@@ -1431,7 +1463,7 @@ int ecc_opaque_ristretto255_sha512_3DH_ClientFinalize(
     ecc_ristretto255_scalarmult_base(client_public_key, client_private_key);
     // 2. preamble = Preamble(client_identity, state.ke1, server_identity, ke2.inner_ke2)
     byte_t preamble[512];
-    int preamble_len = ecc_opaque_ristretto255_sha512_3DH_Preamble(
+    const int preamble_len = ecc_opaque_ristretto255_sha512_3DH_Preamble(
         preamble,
         sizeof preamble,
         context, context_len,
@@ -1440,7 +1472,7 @@ int ecc_opaque_ristretto255_sha512_3DH_ClientFinalize(
         (byte_t *) &state->ke1,
         server_identity, server_identity_len,
         server_public_key,
-        (byte_t *) ke2
+        (const byte_t *) ke2
     );
 
     // 3. Km2, Km3, session_key = DeriveKeys(ikm, preamble)
@@ -1480,7 +1512,7 @@ int ecc_opaque_ristretto255_sha512_3DH_ClientFinalize(
     byte_t client_mac_input[64];
     crypto_hash_sha512_state hst;
     crypto_hash_sha512_init(&hst);
-    crypto_hash_sha512_update(&hst, preamble, preamble_len);
+    crypto_hash_sha512_update(&hst, preamble, (unsigned long long) preamble_len);
     crypto_hash_sha512_update(&hst, expected_server_mac, sizeof expected_server_mac);
     crypto_hash_sha512_final(&hst, client_mac_input);
     byte_t client_mac[64];
@@ -1531,13 +1563,13 @@ void ecc_opaque_ristretto255_sha512_3DH_ServerInitWithSecrets(
     //     client_identity, record.client_public_key, ke1, response)
     // 3. Output ke2
 
-    KE1_t *ke1 = (KE1_t *) ke1_raw;
-    RegistrationUpload_t *record = (RegistrationUpload_t *) record_raw;
+    const KE1_t *ke1 = (const KE1_t *) ke1_raw;
+    const RegistrationUpload_t *record = (const RegistrationUpload_t *) record_raw;
 
     CredentialResponse_t response;
     ecc_opaque_ristretto255_sha512_CreateCredentialResponseWithMasking(
         (byte_t *) &response,
-        (byte_t *) &ke1->credential_request,
+        (const byte_t *) &ke1->credential_request,
         server_public_key,
         record_raw,
         credential_identifier, credential_identifier_len,
@@ -1582,13 +1614,13 @@ void ecc_opaque_ristretto255_sha512_3DH_ServerInit(
     //     client_identity, record.client_public_key, ke1, response)
     // 3. Output ke2
 
-    KE1_t *ke1 = (KE1_t *) ke1_raw;
-    RegistrationUpload_t *record = (RegistrationUpload_t *) record_raw;
+    const KE1_t *ke1 = (const KE1_t *) ke1_raw;
+    const RegistrationUpload_t *record = (const RegistrationUpload_t *) record_raw;
 
     CredentialResponse_t response;
     ecc_opaque_ristretto255_sha512_CreateCredentialResponse(
         (byte_t *) &response,
-        (byte_t *) &ke1->credential_request,
+        (const byte_t *) &ke1->credential_request,
         server_public_key,
         record_raw,
         credential_identifier, credential_identifier_len,
@@ -1620,7 +1652,7 @@ int ecc_opaque_ristretto255_sha512_3DH_ServerFinish(
     // 3. Output state.session_key
 
     ServerState_t *state = (ServerState_t *) state_raw;
-    KE3_t *ke3 = (KE3_t *) ke3_raw;
+    const KE3_t *ke3 = (const KE3_t *) ke3_raw;
 
     if (ecc_compare(ke3->auth_finish.client_mac, state->expected_client_mac, Nh))
         return -1;
@@ -1679,7 +1711,7 @@ void ecc_opaque_ristretto255_sha512_3DH_ResponseWithSecrets(
     );
 
     // 5. ikm = TripleDHIKM(server_secret, ke1.client_keyshare, server_private_key, ke1.client_keyshare, server_secret, client_public_key)
-    KE1_t *ke1 = (KE1_t *) ke1_raw;
+    const KE1_t *ke1 = (const KE1_t *) ke1_raw;
     byte_t ikm[96];
     ecc_opaque_ristretto255_sha512_3DH_TripleDHIKM(
         ikm,
@@ -1716,7 +1748,7 @@ void ecc_opaque_ristretto255_sha512_3DH_ResponseWithSecrets(
     byte_t expected_client_mac_input[64];
     crypto_hash_sha512_state hst;
     crypto_hash_sha512_init(&hst);
-    crypto_hash_sha512_update(&hst, preamble, preamble_len);
+    crypto_hash_sha512_update(&hst, preamble, (unsigned long long) preamble_len);
     crypto_hash_sha512_update(&hst, server_mac, sizeof server_mac);
     crypto_hash_sha512_final(&hst, expected_client_mac_input);
     byte_t expected_client_mac[64];

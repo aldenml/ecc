@@ -15,12 +15,12 @@
 
 static_assert(sizeof(blst_scalar) == ecc_sign_eth_bls_PRIVATEKEYSIZE, "");
 
-void ecc_sign_ed25519_Sign(byte_t *signature, const byte_t *message, int message_len, const byte_t *sk) {
-    crypto_sign_ed25519_detached(signature, NULL, message, message_len, sk);
+void ecc_sign_ed25519_Sign(byte_t *signature, const byte_t *message, const int message_len, const byte_t *sk) {
+    crypto_sign_ed25519_detached(signature, NULL, message, (unsigned long long) message_len, sk);
 }
 
-int ecc_sign_ed25519_Verify(const byte_t *signature, const byte_t *message, int message_len, const byte_t *pk) {
-    return crypto_sign_ed25519_verify_detached(signature, message, message_len, pk);
+int ecc_sign_ed25519_Verify(const byte_t *signature, const byte_t *message, const int message_len, const byte_t *pk) {
+    return crypto_sign_ed25519_verify_detached(signature, message, (unsigned long long) message_len, pk);
 }
 
 void ecc_sign_ed25519_KeyPair(byte_t *pk, byte_t *sk) {
@@ -39,9 +39,9 @@ void ecc_sign_ed25519_SkToPk(byte_t *pk, const byte_t *sk) {
     crypto_sign_ed25519_sk_to_pk(pk, sk);
 }
 
-void ecc_sign_eth_bls_KeyGen(byte_t *sk, const byte_t *ikm, int ikm_len) {
+void ecc_sign_eth_bls_KeyGen(byte_t *sk, const byte_t *ikm, const int ikm_len) {
     blst_scalar bsk;
-    blst_keygen(&bsk, ikm, ikm_len, 0, 0);
+    blst_keygen(&bsk, ikm, (size_t) ikm_len, 0, 0);
     blst_bendian_from_scalar(sk, &bsk);
 
     // cleanup stack memory
@@ -87,14 +87,14 @@ int ecc_sign_eth_bls_KeyValidate(const byte_t *pk) {
 void ecc_sign_eth_bls_Sign(
     byte_t *signature,
     const byte_t *sk,
-    const byte_t *message, int message_len
+    const byte_t *message, const int message_len
 ) {
     blst_scalar bsk;
     blst_scalar_from_bendian(&bsk, sk);
 
     byte_t DST[43] = "BLS_SIG_BLS12381G2_XMD:SHA-256_SSWU_RO_POP_";
     blst_p2 Q;
-    blst_hash_to_g2(&Q, message, message_len, DST, sizeof DST, NULL, 0);
+    blst_hash_to_g2(&Q, message, (size_t) message_len, DST, sizeof DST, NULL, 0);
     blst_p2 sig;
     blst_sign_pk_in_g1(&sig, &Q, &bsk);
 
@@ -108,7 +108,7 @@ void ecc_sign_eth_bls_Sign(
 
 int ecc_sign_eth_bls_Verify(
     const byte_t *pk,
-    const byte_t *message, int message_len,
+    const byte_t *message, const int message_len,
     const byte_t *signature
 ) {
     if (ecc_sign_eth_bls_KeyValidate(pk) != 0)
@@ -125,9 +125,9 @@ int ecc_sign_eth_bls_Verify(
     blst_p1_affine bpk;
     blst_p1_uncompress(&bpk, pk);
 
-    int r = blst_core_verify_pk_in_g1(
+    const BLST_ERROR r = blst_core_verify_pk_in_g1(
         &bpk, &sig, 1,
-        message, message_len,
+        message, (size_t) message_len,
         DST, sizeof DST,
         NULL, 0
     );
@@ -192,9 +192,9 @@ int ecc_sign_eth_bls_FastAggregateVerify(
     blst_p1_affine pk;
     blst_p1_to_affine(&pk, &aggregate);
 
-    const int r = blst_core_verify_pk_in_g1(
+    const BLST_ERROR r = blst_core_verify_pk_in_g1(
         &pk, &sig, 1,
-        message, message_len,
+        message, (size_t) message_len,
         DST, sizeof DST,
         NULL, 0
     );
