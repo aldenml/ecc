@@ -10,19 +10,19 @@
 #include <sodium.h>
 
 void ecc_memzero(byte_t *buf, const int len) {
-    sodium_memzero(buf, len);
+    sodium_memzero(buf, (size_t) len);
 }
 
 void ecc_randombytes(byte_t *buf, const int n) {
-    randombytes_buf(buf, n);
+    randombytes_buf(buf, (size_t) n);
 }
 
 void ecc_bin2hex(char *hex, const byte_t *bin, const int bin_len) {
-    sodium_bin2hex(hex, 2 * bin_len + 1, bin, bin_len);
+    sodium_bin2hex(hex, 2 * bin_len + 1, bin, (size_t) bin_len);
 }
 
 void ecc_hex2bin(byte_t *bin, const char *hex, const int hex_len) {
-    sodium_hex2bin(bin, hex_len / 2, hex, hex_len, NULL, NULL, NULL);
+    sodium_hex2bin(bin, hex_len / 2, hex, (size_t) hex_len, NULL, NULL, NULL);
 }
 
 void ecc_concat2(
@@ -72,15 +72,15 @@ void ecc_I2OSP(byte_t *out, int x, const int xLen) {
 }
 
 int ecc_compare(const byte_t *a, const byte_t *b, const int len) {
-    return sodium_compare(a, b, len);
+    return sodium_compare(a, b, (size_t) len);
 }
 
 int ecc_is_zero(const byte_t *n, const int len) {
-    return sodium_is_zero(n, len);
+    return sodium_is_zero(n, (size_t) len);
 }
 
 byte_t *ecc_malloc(const int size) {
-    return malloc(size);
+    return malloc((size_t) size);
 }
 
 void ecc_free(byte_t *p, const int size) {

@@ -67,7 +67,7 @@ static_assert(
     ecc_pre_schema1_MESSAGESIZE +
     ecc_pre_schema1_SIGNINGPUBLICKEYSIZE +
     ecc_pre_schema1_SIGNATURESIZE +
-    192, // 192 is ecc_bls12_381_G2SIZE
+    ecc_bls12_381_G2SIZE,
     "");
 
 static_assert(sizeof(CiphertextLevel1_t) == ecc_pre_schema1_CIPHERTEXTLEVEL1SIZE, "");
@@ -218,7 +218,7 @@ void hash2(byte_t *r, const byte_t *a) {
         NULL, 0,
         NULL, 0
     );
-    blst_p2_serialize(r, &p);
+    blst_p2_compress(r, &p);
 
     // cleanup stack memory
     ecc_memzero((byte_t *) &p, sizeof p);
@@ -239,7 +239,7 @@ void hash2_neg(byte_t *r, const byte_t *a) {
         NULL, 0
     );
     blst_p2_cneg(&p, 1);
-    blst_p2_serialize(r, &p);
+    blst_p2_compress(r, &p);
 
     // cleanup stack memory
     ecc_memzero((byte_t *) &p, sizeof p);

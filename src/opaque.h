@@ -227,7 +227,6 @@ void ecc_opaque_ristretto255_sha512_DeriveKeyPair(
  * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-07#section-4
  *
  * @param[out] cleartext_credentials a CleartextCredentials structure, size:ecc_opaque_ristretto255_sha512_CLEARTEXTCREDENTIALSSIZE
- * @param cleartext_credentials_len the length of `cleartext_credentials`
  * @param server_public_key the encoded server public key for the AKE protocol, size:ecc_opaque_ristretto255_sha512_Npk
  * @param client_public_key the encoded client public key for the AKE protocol, size:ecc_opaque_ristretto255_sha512_Npk
  * @param server_identity the optional encoded server identity, size:server_identity_len
@@ -257,9 +256,9 @@ void ecc_opaque_ristretto255_sha512_CreateCleartextCredentials(
  * @param randomized_pwd size:64
  * @param server_public_key size:ecc_opaque_ristretto255_sha512_Npk
  * @param server_identity size:server_identity_len
- * @param server_identity_len
+ * @param server_identity_len the length of `server_identity`
  * @param client_identity size:client_identity_len
- * @param client_identity_len
+ * @param client_identity_len the length of `client_identity`
  * @param nonce size:ecc_opaque_ristretto255_sha512_Nn
  */
 ECC_EXPORT
