@@ -8,6 +8,10 @@ on:
     branches:
       - master
 
+concurrency:
+  group: ${{ github.ref }}-${{ github.workflow }}-${{ github.event_name }}
+  cancel-in-progress: true
+
 jobs:
 
   x86_64:
@@ -92,7 +96,7 @@ jobs:
 
       - uses: actions/upload-artifact@v2
         with:
-          name: ecc-windows
+          name: ecc-windows-x86_64
           path: |
             build/libecc.dll
             build/libecc-jvm.dll

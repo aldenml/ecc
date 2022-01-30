@@ -8,6 +8,10 @@ on:
     branches:
       - master
 
+concurrency:
+  group: ${{ github.ref }}-${{ github.workflow }}-${{ github.event_name }}
+  cancel-in-progress: true
+
 jobs:
 
   x86_64:
@@ -64,7 +68,7 @@ jobs:
 
       - uses: actions/upload-artifact@v2
         with:
-          name: ecc-macos
+          name: ecc-macos-x86_64
           path: |
             build/libecc.dylib
             build/libecc-jvm.dylib

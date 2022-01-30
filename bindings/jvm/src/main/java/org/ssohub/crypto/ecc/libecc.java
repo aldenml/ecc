@@ -55,8 +55,6 @@ public final class libecc {
      * 
      * a || b: denotes the concatenation of byte strings a and b. For
      * example, "ABC" || "DEF" == "ABCDEF".
-     * 
-     * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-hash-to-curve-11#section-4
      *
      * @param out (output) result of the concatenation, size:a1_len+a2_len
      * @param a1 first byte array, size:a1_len
@@ -123,8 +121,6 @@ public final class libecc {
      * the two byte strings. For example, ecc_strxor("abc", "XYZ") == "9;9" (the
      * strings in this example are ASCII literals, but ecc_strxor is defined for
      * arbitrary byte strings).
-     * 
-     * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-hash-to-curve-11#section-4
      *
      * @param out (output) result of the operation, size:len
      * @param a first byte array, size:len
@@ -158,7 +154,7 @@ public final class libecc {
      * Takes two pointers to unsigned numbers encoded in little-endian
      * format and returns:
      * 
-     * -1 if a is less b
+     * -1 if a is less than b
      * 0 if a is equals to b
      * 1 if a is greater than b
      * 
@@ -389,15 +385,15 @@ public final class libecc {
      *
      * @param out (output) size:len
      * @param passphrase size:passphrase_len
-     * @param passphrase_len 
+     * @param passphrase_len the length of `passphrase`
      * @param salt size:salt_len
-     * @param salt_len 
-     * @param cost 
-     * @param block_size 
-     * @param parallelization 
-     * @param len 
+     * @param salt_len the length of `salt`
+     * @param cost cpu/memory cost
+     * @param block_size block size
+     * @param parallelization parallelization
+     * @param len intended output length
      */
-    public static native void ecc_kdf_scrypt(
+    public static native int ecc_kdf_scrypt(
         byte[] out,
         byte[] passphrase,
         int passphrase_len,
@@ -863,13 +859,13 @@ public final class libecc {
      * Size of a an element in G1.
      *
      */
-    public static final int ecc_bls12_381_G1SIZE = 96;
+    public static final int ecc_bls12_381_G1SIZE = 48;
 
     /**
      * Size of an element in G2.
      *
      */
-    public static final int ecc_bls12_381_G2SIZE = 192;
+    public static final int ecc_bls12_381_G2SIZE = 96;
 
     /**
      * Size of the scalar used in the curve operations.
@@ -1440,7 +1436,7 @@ public final class libecc {
      * @param input message to blind, size:inputLen
      * @param inputLen length of `input`
      * @param blind scalar to use in the blind operation, size:ecc_oprf_ristretto255_sha512_SCALARSIZE
-     * @param mode 
+     * @param mode oprf mode
      */
     public static native void ecc_oprf_ristretto255_sha512_BlindWithScalar(
         byte[] blindedElement,
@@ -1457,7 +1453,7 @@ public final class libecc {
      * @param blind (output) scalar used in the blind operation, size:ecc_oprf_ristretto255_sha512_SCALARSIZE
      * @param input message to blind, size:inputLen
      * @param inputLen length of `input`
-     * @param mode 
+     * @param mode oprf mode
      */
     public static native void ecc_oprf_ristretto255_sha512_Blind(
         byte[] blindedElement,
@@ -1489,7 +1485,7 @@ public final class libecc {
      * @param blind size:ecc_oprf_ristretto255_sha512_SCALARSIZE
      * @param evaluatedElement size:ecc_oprf_ristretto255_sha512_ELEMENTSIZE
      * @param info size:infoLen
-     * @param infoLen 
+     * @param infoLen the length of `info`
      */
     public static native void ecc_oprf_ristretto255_sha512_Finalize(
         byte[] output,
@@ -1529,7 +1525,7 @@ public final class libecc {
      * @param pkS size:ecc_oprf_ristretto255_sha512_ELEMENTSIZE
      * @param proof size:ecc_oprf_ristretto255_sha512_PROOFSIZE
      * @param info size:infoLen
-     * @param infoLen 
+     * @param infoLen the length of `info`
      * @return on success verification returns 0, else -1.
      */
     public static native int ecc_oprf_ristretto255_sha512_VerifiableUnblind(
@@ -1548,14 +1544,14 @@ public final class libecc {
      *
      * @param output (output) size:ecc_oprf_ristretto255_sha512_Nh
      * @param input size:inputLen
-     * @param inputLen 
+     * @param inputLen the length of `input`
      * @param blind size:ecc_oprf_ristretto255_sha512_SCALARSIZE
      * @param evaluatedElement size:ecc_oprf_ristretto255_sha512_ELEMENTSIZE
      * @param blindedElement size:ecc_oprf_ristretto255_sha512_ELEMENTSIZE
      * @param pkS size:ecc_oprf_ristretto255_sha512_ELEMENTSIZE
      * @param proof size:ecc_oprf_ristretto255_sha512_PROOFSIZE
      * @param info size:infoLen
-     * @param infoLen 
+     * @param infoLen the length of `info`
      * @return on success verification returns 0, else -1.
      */
     public static native int ecc_oprf_ristretto255_sha512_VerifiableFinalize(
@@ -1618,9 +1614,9 @@ public final class libecc {
      *
      * @param out (output) size:ecc_oprf_ristretto255_sha512_SCALARSIZE
      * @param input size:inputLen
-     * @param inputLen 
+     * @param inputLen the length of `input`
      * @param dst size:dstLen
-     * @param dstLen 
+     * @param dstLen the length of `dst`
      */
     public static native void ecc_oprf_ristretto255_sha512_HashToScalarWithDST(
         byte[] out,
@@ -1635,8 +1631,8 @@ public final class libecc {
      *
      * @param out (output) size:ecc_oprf_ristretto255_sha512_SCALARSIZE
      * @param input size:inputLen
-     * @param inputLen 
-     * @param mode 
+     * @param inputLen the length of `input`
+     * @param mode oprf mode
      */
     public static native void ecc_oprf_ristretto255_sha512_HashToScalar(
         byte[] out,
@@ -1839,9 +1835,9 @@ public final class libecc {
      * @param randomized_pwd size:64
      * @param server_public_key size:ecc_opaque_ristretto255_sha512_Npk
      * @param server_identity size:server_identity_len
-     * @param server_identity_len 
+     * @param server_identity_len the length of `server_identity`
      * @param client_identity size:client_identity_len
-     * @param client_identity_len 
+     * @param client_identity_len the length of `client_identity`
      * @param nonce size:ecc_opaque_ristretto255_sha512_Nn
      */
     public static native void ecc_opaque_ristretto255_sha512_EnvelopeStoreWithNonce(
@@ -2970,7 +2966,7 @@ public final class libecc {
      * Size of the PRE-SCHEMA1 public key (size of a G1 element in BLS12-381).
      *
      */
-    public static final int ecc_pre_schema1_PUBLICKEYSIZE = 96;
+    public static final int ecc_pre_schema1_PUBLICKEYSIZE = 48;
 
     /**
      * Size of the PRE-SCHEMA1 private key (size of a scalar in BLS12-381).
@@ -3000,19 +2996,19 @@ public final class libecc {
      * Size of the whole ciphertext structure, that is the result of the simple Encrypt operation.
      *
      */
-    public static final int ecc_pre_schema1_CIPHERTEXTLEVEL1SIZE = 800;
+    public static final int ecc_pre_schema1_CIPHERTEXTLEVEL1SIZE = 752;
 
     /**
      * Size of the whole ciphertext structure, that is the result of the one-hop ReEncrypt operation.
      *
      */
-    public static final int ecc_pre_schema1_CIPHERTEXTLEVEL2SIZE = 2240;
+    public static final int ecc_pre_schema1_CIPHERTEXTLEVEL2SIZE = 2096;
 
     /**
      * Size of the whole re-encryption key structure.
      *
      */
-    public static final int ecc_pre_schema1_REKEYSIZE = 960;
+    public static final int ecc_pre_schema1_REKEYSIZE = 816;
 
     /**
      * Generates a random message suitable to use in the protocol.

@@ -387,7 +387,7 @@ JNIEXPORT void JNICALL Java_org_ssohub_crypto_ecc_libecc_ecc_1kdf_1hkdf_1sha512_
     mfree(ptr_info, info_len);
 }
 
-JNIEXPORT void JNICALL Java_org_ssohub_crypto_ecc_libecc_ecc_1kdf_1scrypt(
+JNIEXPORT int JNICALL Java_org_ssohub_crypto_ecc_libecc_ecc_1kdf_1scrypt(
     JNIEnv *env, jclass cls,
     jbyteArray out,
     jbyteArray passphrase,
@@ -402,7 +402,7 @@ JNIEXPORT void JNICALL Java_org_ssohub_crypto_ecc_libecc_ecc_1kdf_1scrypt(
     byte_t *ptr_out = mput(env, out, len);
     byte_t *ptr_passphrase = mput(env, passphrase, passphrase_len);
     byte_t *ptr_salt = mput(env, salt, salt_len);
-    ecc_kdf_scrypt(
+    const int fun_ret = ecc_kdf_scrypt(
         ptr_out,
         ptr_passphrase,
         passphrase_len,
@@ -417,6 +417,7 @@ JNIEXPORT void JNICALL Java_org_ssohub_crypto_ecc_libecc_ecc_1kdf_1scrypt(
     mfree(ptr_out, len);
     mfree(ptr_passphrase, passphrase_len);
     mfree(ptr_salt, salt_len);
+    return fun_ret;
 }
 
 // ed25519
