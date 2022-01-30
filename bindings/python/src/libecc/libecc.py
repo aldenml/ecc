@@ -41,8 +41,6 @@ def ecc_concat2(
     a || b: denotes the concatenation of byte strings a and b. For
     example, "ABC" || "DEF" == "ABCDEF".
     
-    See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-hash-to-curve-11#section-4
-    
     out -- (output) result of the concatenation, size:a1_len+a2_len
     a1 -- first byte array, size:a1_len
     a1_len -- the length of `a1`
@@ -153,8 +151,6 @@ def ecc_strxor(
     strings in this example are ASCII literals, but ecc_strxor is defined for
     arbitrary byte strings).
     
-    See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-hash-to-curve-11#section-4
-    
     out -- (output) result of the operation, size:len
     a -- first byte array, size:len
     b -- second byte array, size:len
@@ -205,7 +201,7 @@ def ecc_compare(
     Takes two pointers to unsigned numbers encoded in little-endian
     format and returns:
     
-    -1 if a is less b
+    -1 if a is less than b
     0 if a is equals to b
     1 if a is greater than b
     
@@ -532,24 +528,24 @@ def ecc_kdf_scrypt(
     block_size: int,
     parallelization: int,
     len: int
-) -> None:
+) -> int:
     """
     See https://datatracker.ietf.org/doc/html/rfc7914
     
     out -- (output) size:len
     passphrase -- size:passphrase_len
-    passphrase_len -- 
+    passphrase_len -- the length of `passphrase`
     salt -- size:salt_len
-    salt_len -- 
-    cost -- 
-    block_size -- 
-    parallelization -- 
-    len -- 
+    salt_len -- the length of `salt`
+    cost -- cpu/memory cost
+    block_size -- block size
+    parallelization -- parallelization
+    len -- intended output length
     """
     ptr_out = ffi.from_buffer(out)
     ptr_passphrase = ffi.from_buffer(passphrase)
     ptr_salt = ffi.from_buffer(salt)
-    lib.ecc_kdf_scrypt(
+    fun_ret = lib.ecc_kdf_scrypt(
         ptr_out,
         ptr_passphrase,
         passphrase_len,
@@ -560,7 +556,7 @@ def ecc_kdf_scrypt(
         parallelization,
         len
     )
-    return None
+    return fun_ret
 
 
 # ed25519
@@ -1263,12 +1259,12 @@ def ecc_ristretto255_scalarmult_base(
 
 # bls12_381
 
-ecc_bls12_381_G1SIZE = 96
+ecc_bls12_381_G1SIZE = 48
 """
 Size of a an element in G1.
 """
 
-ecc_bls12_381_G2SIZE = 192
+ecc_bls12_381_G2SIZE = 96
 """
 Size of an element in G2.
 """
@@ -2148,7 +2144,7 @@ def ecc_oprf_ristretto255_sha512_BlindWithScalar(
     input -- message to blind, size:inputLen
     inputLen -- length of `input`
     blind -- scalar to use in the blind operation, size:ecc_oprf_ristretto255_sha512_SCALARSIZE
-    mode -- 
+    mode -- oprf mode
     """
     ptr_blindedElement = ffi.from_buffer(blindedElement)
     ptr_input = ffi.from_buffer(input)
@@ -2177,7 +2173,7 @@ def ecc_oprf_ristretto255_sha512_Blind(
     blind -- (output) scalar used in the blind operation, size:ecc_oprf_ristretto255_sha512_SCALARSIZE
     input -- message to blind, size:inputLen
     inputLen -- length of `input`
-    mode -- 
+    mode -- oprf mode
     """
     ptr_blindedElement = ffi.from_buffer(blindedElement)
     ptr_blind = ffi.from_buffer(blind)
@@ -2233,7 +2229,7 @@ def ecc_oprf_ristretto255_sha512_Finalize(
     blind -- size:ecc_oprf_ristretto255_sha512_SCALARSIZE
     evaluatedElement -- size:ecc_oprf_ristretto255_sha512_ELEMENTSIZE
     info -- size:infoLen
-    infoLen -- 
+    infoLen -- the length of `info`
     """
     ptr_output = ffi.from_buffer(output)
     ptr_input = ffi.from_buffer(input)
@@ -2304,7 +2300,7 @@ def ecc_oprf_ristretto255_sha512_VerifiableUnblind(
     pkS -- size:ecc_oprf_ristretto255_sha512_ELEMENTSIZE
     proof -- size:ecc_oprf_ristretto255_sha512_PROOFSIZE
     info -- size:infoLen
-    infoLen -- 
+    infoLen -- the length of `info`
     return on success verification returns 0, else -1.
     """
     ptr_unblindedElement = ffi.from_buffer(unblindedElement)
@@ -2344,14 +2340,14 @@ def ecc_oprf_ristretto255_sha512_VerifiableFinalize(
     
     output -- (output) size:ecc_oprf_ristretto255_sha512_Nh
     input -- size:inputLen
-    inputLen -- 
+    inputLen -- the length of `input`
     blind -- size:ecc_oprf_ristretto255_sha512_SCALARSIZE
     evaluatedElement -- size:ecc_oprf_ristretto255_sha512_ELEMENTSIZE
     blindedElement -- size:ecc_oprf_ristretto255_sha512_ELEMENTSIZE
     pkS -- size:ecc_oprf_ristretto255_sha512_ELEMENTSIZE
     proof -- size:ecc_oprf_ristretto255_sha512_PROOFSIZE
     info -- size:infoLen
-    infoLen -- 
+    infoLen -- the length of `info`
     return on success verification returns 0, else -1.
     """
     ptr_output = ffi.from_buffer(output)
@@ -2453,9 +2449,9 @@ def ecc_oprf_ristretto255_sha512_HashToScalarWithDST(
     
     out -- (output) size:ecc_oprf_ristretto255_sha512_SCALARSIZE
     input -- size:inputLen
-    inputLen -- 
+    inputLen -- the length of `input`
     dst -- size:dstLen
-    dstLen -- 
+    dstLen -- the length of `dst`
     """
     ptr_out = ffi.from_buffer(out)
     ptr_input = ffi.from_buffer(input)
@@ -2481,8 +2477,8 @@ def ecc_oprf_ristretto255_sha512_HashToScalar(
     
     out -- (output) size:ecc_oprf_ristretto255_sha512_SCALARSIZE
     input -- size:inputLen
-    inputLen -- 
-    mode -- 
+    inputLen -- the length of `input`
+    mode -- oprf mode
     """
     ptr_out = ffi.from_buffer(out)
     ptr_input = ffi.from_buffer(input)
@@ -2706,9 +2702,9 @@ def ecc_opaque_ristretto255_sha512_EnvelopeStoreWithNonce(
     randomized_pwd -- size:64
     server_public_key -- size:ecc_opaque_ristretto255_sha512_Npk
     server_identity -- size:server_identity_len
-    server_identity_len -- 
+    server_identity_len -- the length of `server_identity`
     client_identity -- size:client_identity_len
-    client_identity_len -- 
+    client_identity_len -- the length of `client_identity`
     nonce -- size:ecc_opaque_ristretto255_sha512_Nn
     """
     ptr_envelope = ffi.from_buffer(envelope)
@@ -4553,7 +4549,7 @@ ecc_pre_schema1_SEEDSIZE = 32
 Size of the PRE-SCHEMA1 seed used in all operations.
 """
 
-ecc_pre_schema1_PUBLICKEYSIZE = 96
+ecc_pre_schema1_PUBLICKEYSIZE = 48
 """
 Size of the PRE-SCHEMA1 public key (size of a G1 element in BLS12-381).
 """
@@ -4578,17 +4574,17 @@ ecc_pre_schema1_SIGNATURESIZE = 64
 Size of the PRE-SCHEMA1 signature (ed25519 signature size).
 """
 
-ecc_pre_schema1_CIPHERTEXTLEVEL1SIZE = 800
+ecc_pre_schema1_CIPHERTEXTLEVEL1SIZE = 752
 """
 Size of the whole ciphertext structure, that is the result of the simple Encrypt operation.
 """
 
-ecc_pre_schema1_CIPHERTEXTLEVEL2SIZE = 2240
+ecc_pre_schema1_CIPHERTEXTLEVEL2SIZE = 2096
 """
 Size of the whole ciphertext structure, that is the result of the one-hop ReEncrypt operation.
 """
 
-ecc_pre_schema1_REKEYSIZE = 960
+ecc_pre_schema1_REKEYSIZE = 816
 """
 Size of the whole re-encryption key structure.
 """

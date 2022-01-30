@@ -15,38 +15,38 @@ static_assert(ecc_kdf_hkdf_sha512_KEYSIZE == crypto_kdf_hkdf_sha512_KEYBYTES, ""
 
 void ecc_kdf_hkdf_sha256_extract(
     byte_t *prk,
-    const byte_t *salt, int salt_len,
-    const byte_t *ikm, int ikm_len
+    const byte_t *salt, const int salt_len,
+    const byte_t *ikm, const int ikm_len
 ) {
     crypto_kdf_hkdf_sha256_extract(
         prk,
-        salt, salt_len,
-        ikm, ikm_len
+        salt, (size_t) salt_len,
+        ikm, (size_t) ikm_len
     );
 }
 
 void ecc_kdf_hkdf_sha256_expand(
     byte_t *okm,
     const byte_t *prk,
-    const byte_t *info, int info_len,
+    const byte_t *info, const int info_len,
     int len
 ) {
     crypto_kdf_hkdf_sha256_expand(
-        okm, len,
-        (const char *) info, info_len,
+        okm, (size_t) len,
+        (const char *) info, (size_t) info_len,
         prk
     );
 }
 
 void ecc_kdf_hkdf_sha512_extract(
     byte_t *prk,
-    const byte_t *salt, int salt_len,
-    const byte_t *ikm, int ikm_len
+    const byte_t *salt, const int salt_len,
+    const byte_t *ikm, const int ikm_len
 ) {
     crypto_kdf_hkdf_sha512_extract(
         prk,
-        salt, salt_len,
-        ikm, ikm_len
+        salt, (size_t) salt_len,
+        ikm, (size_t) ikm_len
     );
 }
 
@@ -57,8 +57,8 @@ void ecc_kdf_hkdf_sha512_expand(
     const int len
 ) {
     crypto_kdf_hkdf_sha512_expand(
-        okm, len,
-        (const char *) info, info_len,
+        okm, (size_t) len,
+        (const char *) info, (size_t) info_len,
         prk
     );
 }
@@ -73,11 +73,11 @@ int ecc_kdf_scrypt(
     const int len
 ) {
     return crypto_pwhash_scryptsalsa208sha256_ll(
-        passphrase, passphrase_len,
-        salt, salt_len,
-        cost,
-        block_size,
-        parallelization,
-        out, len
+        passphrase, (size_t) passphrase_len,
+        salt, (size_t) salt_len,
+        (uint64_t) cost,
+        (uint32_t) block_size,
+        (uint32_t) parallelization,
+        out, (size_t) len
     );
 }

@@ -226,7 +226,7 @@ void ecc_oprf_ristretto255_sha512_ComputeCompositesFast(
  * @param input message to blind, size:inputLen
  * @param inputLen length of `input`
  * @param blind scalar to use in the blind operation, size:ecc_oprf_ristretto255_sha512_SCALARSIZE
- * @param mode
+ * @param mode oprf mode
  */
 ECC_EXPORT
 void ecc_oprf_ristretto255_sha512_BlindWithScalar(
@@ -243,7 +243,7 @@ void ecc_oprf_ristretto255_sha512_BlindWithScalar(
  * @param[out] blind scalar used in the blind operation, size:ecc_oprf_ristretto255_sha512_SCALARSIZE
  * @param input message to blind, size:inputLen
  * @param inputLen length of `input`
- * @param mode
+ * @param mode oprf mode
  */
 ECC_EXPORT
 void ecc_oprf_ristretto255_sha512_Blind(
@@ -276,7 +276,7 @@ void ecc_oprf_ristretto255_sha512_Unblind(
  * @param blind size:ecc_oprf_ristretto255_sha512_SCALARSIZE
  * @param evaluatedElement size:ecc_oprf_ristretto255_sha512_ELEMENTSIZE
  * @param info size:infoLen
- * @param infoLen
+ * @param infoLen the length of `info`
  */
 ECC_EXPORT
 void ecc_oprf_ristretto255_sha512_Finalize(
@@ -316,7 +316,7 @@ int ecc_oprf_ristretto255_sha512_VerifyProof(
  * @param pkS size:ecc_oprf_ristretto255_sha512_ELEMENTSIZE
  * @param proof size:ecc_oprf_ristretto255_sha512_PROOFSIZE
  * @param info size:infoLen
- * @param infoLen
+ * @param infoLen the length of `info`
  * @return on success verification returns 0, else -1.
  */
 ECC_EXPORT
@@ -335,14 +335,14 @@ int ecc_oprf_ristretto255_sha512_VerifiableUnblind(
  *
  * @param[out] output size:ecc_oprf_ristretto255_sha512_Nh
  * @param input size:inputLen
- * @param inputLen
+ * @param inputLen the length of `input`
  * @param blind size:ecc_oprf_ristretto255_sha512_SCALARSIZE
  * @param evaluatedElement size:ecc_oprf_ristretto255_sha512_ELEMENTSIZE
  * @param blindedElement size:ecc_oprf_ristretto255_sha512_ELEMENTSIZE
  * @param pkS size:ecc_oprf_ristretto255_sha512_ELEMENTSIZE
  * @param proof size:ecc_oprf_ristretto255_sha512_PROOFSIZE
  * @param info size:infoLen
- * @param infoLen
+ * @param infoLen the length of `info`
  * @return on success verification returns 0, else -1.
  */
 ECC_EXPORT
@@ -402,9 +402,9 @@ void ecc_oprf_ristretto255_sha512_HashToGroup(
  *
  * @param[out] out size:ecc_oprf_ristretto255_sha512_SCALARSIZE
  * @param input size:inputLen
- * @param inputLen
+ * @param inputLen the length of `input`
  * @param dst size:dstLen
- * @param dstLen
+ * @param dstLen the length of `dst`
  */
 ECC_EXPORT
 void ecc_oprf_ristretto255_sha512_HashToScalarWithDST(
@@ -417,8 +417,8 @@ void ecc_oprf_ristretto255_sha512_HashToScalarWithDST(
  *
  * @param[out] out size:ecc_oprf_ristretto255_sha512_SCALARSIZE
  * @param input size:inputLen
- * @param inputLen
- * @param mode
+ * @param inputLen the length of `input`
+ * @param mode oprf mode
  */
 ECC_EXPORT
 void ecc_oprf_ristretto255_sha512_HashToScalar(

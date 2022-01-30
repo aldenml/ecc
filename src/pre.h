@@ -49,7 +49,7 @@
 /**
  * Size of the PRE-SCHEMA1 public key (size of a G1 element in BLS12-381).
  */
-#define ecc_pre_schema1_PUBLICKEYSIZE 96
+#define ecc_pre_schema1_PUBLICKEYSIZE 48
 
 // const
 /**
@@ -79,19 +79,19 @@
 /**
  * Size of the whole ciphertext structure, that is the result of the simple Encrypt operation.
  */
-#define ecc_pre_schema1_CIPHERTEXTLEVEL1SIZE 800
+#define ecc_pre_schema1_CIPHERTEXTLEVEL1SIZE 752
 
 // const
 /**
  * Size of the whole ciphertext structure, that is the result of the one-hop ReEncrypt operation.
  */
-#define ecc_pre_schema1_CIPHERTEXTLEVEL2SIZE 2240
+#define ecc_pre_schema1_CIPHERTEXTLEVEL2SIZE 2096
 
 // const
 /**
  * Size of the whole re-encryption key structure.
  */
-#define ecc_pre_schema1_REKEYSIZE 960
+#define ecc_pre_schema1_REKEYSIZE 816
 
 /**
  * Generates a random message suitable to use in the protocol.

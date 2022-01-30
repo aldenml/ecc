@@ -14,13 +14,13 @@
 /**
  * Size of a an element in G1.
  */
-#define ecc_bls12_381_G1SIZE 96
+#define ecc_bls12_381_G1SIZE 48
 
 // const
 /**
  * Size of an element in G2.
  */
-#define ecc_bls12_381_G2SIZE 192
+#define ecc_bls12_381_G2SIZE 96
 
 // const
 /**

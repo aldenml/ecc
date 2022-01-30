@@ -65,8 +65,6 @@ Module.ecc_randombytes = (
  * 
  * a || b: denotes the concatenation of byte strings a and b. For
  * example, "ABC" || "DEF" == "ABCDEF".
- * 
- * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-hash-to-curve-11#section-4
  *
  * @param {Uint8Array} out (output) result of the concatenation, size:a1_len+a2_len
  * @param {Uint8Array} a1 first byte array, size:a1_len
@@ -190,8 +188,6 @@ Module.ecc_concat4 = (
  * the two byte strings. For example, ecc_strxor("abc", "XYZ") == "9;9" (the
  * strings in this example are ASCII literals, but ecc_strxor is defined for
  * arbitrary byte strings).
- * 
- * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-hash-to-curve-11#section-4
  *
  * @param {Uint8Array} out (output) result of the operation, size:len
  * @param {Uint8Array} a first byte array, size:len
@@ -248,7 +244,7 @@ Module.ecc_I2OSP = (
  * Takes two pointers to unsigned numbers encoded in little-endian
  * format and returns:
  * 
- * -1 if a is less b
+ * -1 if a is less than b
  * 0 if a is equals to b
  * 1 if a is greater than b
  * 
@@ -624,13 +620,13 @@ Module.ecc_kdf_hkdf_sha512_expand = (
  *
  * @param {Uint8Array} out (output) size:len
  * @param {Uint8Array} passphrase size:passphrase_len
- * @param {number} passphrase_len 
+ * @param {number} passphrase_len the length of `passphrase`
  * @param {Uint8Array} salt size:salt_len
- * @param {number} salt_len 
- * @param {number} cost 
- * @param {number} block_size 
- * @param {number} parallelization 
- * @param {number} len 
+ * @param {number} salt_len the length of `salt`
+ * @param {number} cost cpu/memory cost
+ * @param {number} block_size block size
+ * @param {number} parallelization parallelization
+ * @param {number} len intended output length
  */
 Module.ecc_kdf_scrypt = (
     out,
@@ -646,7 +642,7 @@ Module.ecc_kdf_scrypt = (
     const ptr_out = mput(out, len);
     const ptr_passphrase = mput(passphrase, passphrase_len);
     const ptr_salt = mput(salt, salt_len);
-    _ecc_kdf_scrypt(
+    const fun_ret = _ecc_kdf_scrypt(
         ptr_out,
         ptr_passphrase,
         passphrase_len,
@@ -661,6 +657,7 @@ Module.ecc_kdf_scrypt = (
     mfree(ptr_out, len);
     mfree(ptr_passphrase, passphrase_len);
     mfree(ptr_salt, salt_len);
+    return fun_ret;
 }
 
 // ed25519
@@ -1464,7 +1461,7 @@ Module.ecc_ristretto255_scalarmult_base = (
 
 // bls12_381
 
-const ecc_bls12_381_G1SIZE = 96;
+const ecc_bls12_381_G1SIZE = 48;
 /**
  * Size of a an element in G1.
  *
@@ -1472,7 +1469,7 @@ const ecc_bls12_381_G1SIZE = 96;
  */
 Module.ecc_bls12_381_G1SIZE = ecc_bls12_381_G1SIZE;
 
-const ecc_bls12_381_G2SIZE = 192;
+const ecc_bls12_381_G2SIZE = 96;
 /**
  * Size of an element in G2.
  *
@@ -2482,7 +2479,7 @@ Module.ecc_oprf_ristretto255_sha512_ComputeCompositesFast = (
  * @param {Uint8Array} input message to blind, size:inputLen
  * @param {number} inputLen length of `input`
  * @param {Uint8Array} blind scalar to use in the blind operation, size:ecc_oprf_ristretto255_sha512_SCALARSIZE
- * @param {number} mode 
+ * @param {number} mode oprf mode
  */
 Module.ecc_oprf_ristretto255_sha512_BlindWithScalar = (
     blindedElement,
@@ -2514,7 +2511,7 @@ Module.ecc_oprf_ristretto255_sha512_BlindWithScalar = (
  * @param {Uint8Array} blind (output) scalar used in the blind operation, size:ecc_oprf_ristretto255_sha512_SCALARSIZE
  * @param {Uint8Array} input message to blind, size:inputLen
  * @param {number} inputLen length of `input`
- * @param {number} mode 
+ * @param {number} mode oprf mode
  */
 Module.ecc_oprf_ristretto255_sha512_Blind = (
     blindedElement,
@@ -2575,7 +2572,7 @@ Module.ecc_oprf_ristretto255_sha512_Unblind = (
  * @param {Uint8Array} blind size:ecc_oprf_ristretto255_sha512_SCALARSIZE
  * @param {Uint8Array} evaluatedElement size:ecc_oprf_ristretto255_sha512_ELEMENTSIZE
  * @param {Uint8Array} info size:infoLen
- * @param {number} infoLen 
+ * @param {number} infoLen the length of `info`
  */
 Module.ecc_oprf_ristretto255_sha512_Finalize = (
     output,
@@ -2655,7 +2652,7 @@ Module.ecc_oprf_ristretto255_sha512_VerifyProof = (
  * @param {Uint8Array} pkS size:ecc_oprf_ristretto255_sha512_ELEMENTSIZE
  * @param {Uint8Array} proof size:ecc_oprf_ristretto255_sha512_PROOFSIZE
  * @param {Uint8Array} info size:infoLen
- * @param {number} infoLen 
+ * @param {number} infoLen the length of `info`
  * @return {number} on success verification returns 0, else -1.
  */
 Module.ecc_oprf_ristretto255_sha512_VerifiableUnblind = (
@@ -2701,14 +2698,14 @@ Module.ecc_oprf_ristretto255_sha512_VerifiableUnblind = (
  *
  * @param {Uint8Array} output (output) size:ecc_oprf_ristretto255_sha512_Nh
  * @param {Uint8Array} input size:inputLen
- * @param {number} inputLen 
+ * @param {number} inputLen the length of `input`
  * @param {Uint8Array} blind size:ecc_oprf_ristretto255_sha512_SCALARSIZE
  * @param {Uint8Array} evaluatedElement size:ecc_oprf_ristretto255_sha512_ELEMENTSIZE
  * @param {Uint8Array} blindedElement size:ecc_oprf_ristretto255_sha512_ELEMENTSIZE
  * @param {Uint8Array} pkS size:ecc_oprf_ristretto255_sha512_ELEMENTSIZE
  * @param {Uint8Array} proof size:ecc_oprf_ristretto255_sha512_PROOFSIZE
  * @param {Uint8Array} info size:infoLen
- * @param {number} infoLen 
+ * @param {number} infoLen the length of `info`
  * @return {number} on success verification returns 0, else -1.
  */
 Module.ecc_oprf_ristretto255_sha512_VerifiableFinalize = (
@@ -2829,9 +2826,9 @@ Module.ecc_oprf_ristretto255_sha512_HashToGroup = (
  *
  * @param {Uint8Array} out (output) size:ecc_oprf_ristretto255_sha512_SCALARSIZE
  * @param {Uint8Array} input size:inputLen
- * @param {number} inputLen 
+ * @param {number} inputLen the length of `input`
  * @param {Uint8Array} dst size:dstLen
- * @param {number} dstLen 
+ * @param {number} dstLen the length of `dst`
  */
 Module.ecc_oprf_ristretto255_sha512_HashToScalarWithDST = (
     out,
@@ -2861,8 +2858,8 @@ Module.ecc_oprf_ristretto255_sha512_HashToScalarWithDST = (
  *
  * @param {Uint8Array} out (output) size:ecc_oprf_ristretto255_sha512_SCALARSIZE
  * @param {Uint8Array} input size:inputLen
- * @param {number} inputLen 
- * @param {number} mode 
+ * @param {number} inputLen the length of `input`
+ * @param {number} mode oprf mode
  */
 Module.ecc_oprf_ristretto255_sha512_HashToScalar = (
     out,
@@ -3159,9 +3156,9 @@ Module.ecc_opaque_ristretto255_sha512_CreateCleartextCredentials = (
  * @param {Uint8Array} randomized_pwd size:64
  * @param {Uint8Array} server_public_key size:ecc_opaque_ristretto255_sha512_Npk
  * @param {Uint8Array} server_identity size:server_identity_len
- * @param {number} server_identity_len 
+ * @param {number} server_identity_len the length of `server_identity`
  * @param {Uint8Array} client_identity size:client_identity_len
- * @param {number} client_identity_len 
+ * @param {number} client_identity_len the length of `client_identity`
  * @param {Uint8Array} nonce size:ecc_opaque_ristretto255_sha512_Nn
  */
 Module.ecc_opaque_ristretto255_sha512_EnvelopeStoreWithNonce = (
@@ -5328,7 +5325,7 @@ const ecc_pre_schema1_SEEDSIZE = 32;
  */
 Module.ecc_pre_schema1_SEEDSIZE = ecc_pre_schema1_SEEDSIZE;
 
-const ecc_pre_schema1_PUBLICKEYSIZE = 96;
+const ecc_pre_schema1_PUBLICKEYSIZE = 48;
 /**
  * Size of the PRE-SCHEMA1 public key (size of a G1 element in BLS12-381).
  *
@@ -5368,7 +5365,7 @@ const ecc_pre_schema1_SIGNATURESIZE = 64;
  */
 Module.ecc_pre_schema1_SIGNATURESIZE = ecc_pre_schema1_SIGNATURESIZE;
 
-const ecc_pre_schema1_CIPHERTEXTLEVEL1SIZE = 800;
+const ecc_pre_schema1_CIPHERTEXTLEVEL1SIZE = 752;
 /**
  * Size of the whole ciphertext structure, that is the result of the simple Encrypt operation.
  *
@@ -5376,7 +5373,7 @@ const ecc_pre_schema1_CIPHERTEXTLEVEL1SIZE = 800;
  */
 Module.ecc_pre_schema1_CIPHERTEXTLEVEL1SIZE = ecc_pre_schema1_CIPHERTEXTLEVEL1SIZE;
 
-const ecc_pre_schema1_CIPHERTEXTLEVEL2SIZE = 2240;
+const ecc_pre_schema1_CIPHERTEXTLEVEL2SIZE = 2096;
 /**
  * Size of the whole ciphertext structure, that is the result of the one-hop ReEncrypt operation.
  *
@@ -5384,7 +5381,7 @@ const ecc_pre_schema1_CIPHERTEXTLEVEL2SIZE = 2240;
  */
 Module.ecc_pre_schema1_CIPHERTEXTLEVEL2SIZE = ecc_pre_schema1_CIPHERTEXTLEVEL2SIZE;
 
-const ecc_pre_schema1_REKEYSIZE = 960;
+const ecc_pre_schema1_REKEYSIZE = 816;
 /**
  * Size of the whole re-encryption key structure.
  *

@@ -136,7 +136,7 @@ ffibuilder.cdef(
         int len
     );
 
-    void ecc_kdf_scrypt(
+    int ecc_kdf_scrypt(
         unsigned char *out,
         unsigned char *passphrase,
         int passphrase_len,
