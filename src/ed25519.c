@@ -6,7 +6,26 @@
  */
 
 #include "ed25519.h"
+
+#ifdef __GNUC__
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wcpp"
+#endif
+
+#ifdef __clang__
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wcpp"
+#endif
+
 #include <sodium.h>
+
+#ifdef __clang__
+#pragma clang diagnostic pop
+#endif
+
+#ifdef __GNUC__
+#pragma GCC diagnostic pop
+#endif
 
 int ecc_ed25519_is_valid_point(const byte_t *p) {
     return crypto_core_ed25519_is_valid_point(p);

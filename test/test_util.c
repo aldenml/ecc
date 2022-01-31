@@ -15,7 +15,7 @@ static void test_ecc_memzero(void **state) {
     ECC_UNUSED(state);
 
     const int len = 100;
-    byte_t buf[len];
+    byte_t buf[100];
     ecc_randombytes(buf, len);
     ecc_memzero(buf, len);
     int count = 0;
@@ -29,7 +29,7 @@ static void test_ecc_randombytes(void **state) {
     ECC_UNUSED(state);
 
     const int len = 10;
-    byte_t buf[len];
+    byte_t buf[10];
     ecc_randombytes(buf, len);
     int count = 0;
     for (int i = 0; i < len; i++) {

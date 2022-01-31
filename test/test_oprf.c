@@ -199,6 +199,8 @@ static void oprf_ristretto255_sha512_verifiable_test2(void **state) {
 }
 
 static void test_oprf_ristretto255_sha512_evaluate(void **state) {
+    ECC_UNUSED(state);
+
     byte_t skSm[ecc_oprf_ristretto255_sha512_SCALARSIZE];
     ecc_hex2bin(skSm, "74db8e13d2c5148a1181d57cc06debd730da4df1978b72ac18bc48992a0d2c0f", 64);
 
@@ -223,6 +225,8 @@ static void test_oprf_ristretto255_sha512_evaluate(void **state) {
 
 // https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-voprf-08#appendix-A.1.2.1
 static void test_oprf_ristretto255_sha512_verifiable_evaluate(void **state) {
+    ECC_UNUSED(state);
+
     byte_t skSm[ecc_oprf_ristretto255_sha512_SCALARSIZE];
     ecc_hex2bin(skSm, "ad08ad9c7107691d792d346d743e8a79b8f6ae0673d58cbf7389d7003598c903", 64);
 

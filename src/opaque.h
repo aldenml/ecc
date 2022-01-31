@@ -290,9 +290,9 @@ void ecc_opaque_ristretto255_sha512_EnvelopeStoreWithNonce(
  * @param randomized_pwd size:64
  * @param server_public_key size:ecc_opaque_ristretto255_sha512_Npk
  * @param server_identity size:server_identity_len
- * @param server_identity_len
+ * @param server_identity_len the length of `server_identity`
  * @param client_identity size:client_identity_len
- * @param client_identity_len
+ * @param client_identity_len the length of `client_identity`
  */
 ECC_EXPORT
 void ecc_opaque_ristretto255_sha512_EnvelopeStore(
@@ -318,9 +318,9 @@ void ecc_opaque_ristretto255_sha512_EnvelopeStore(
  * @param server_public_key size:ecc_opaque_ristretto255_sha512_Npk
  * @param envelope_raw size:ecc_opaque_ristretto255_sha512_Ne
  * @param server_identity size:server_identity_len
- * @param server_identity_len
+ * @param server_identity_len the length of `server_identity`
  * @param client_identity size:client_identity_len
- * @param client_identity_len
+ * @param client_identity_len the length of `client_identity`
  * @return on success returns 0, else -1.
  */
 ECC_EXPORT
@@ -426,7 +426,7 @@ void ecc_opaque_ristretto255_sha512_CreateRegistrationRequest(
  * @param request size:ecc_opaque_ristretto255_sha512_REGISTRATIONREQUESTSIZE
  * @param server_public_key size:ecc_opaque_ristretto255_sha512_Npk
  * @param credential_identifier size:credential_identifier_len
- * @param credential_identifier_len
+ * @param credential_identifier_len the length of `credential_identifier`
  * @param oprf_key size:32
  */
 ECC_EXPORT
@@ -470,8 +470,6 @@ void ecc_opaque_ristretto255_sha512_CreateRegistrationResponse(
  * executes the following function. Since this works in the internal key mode, the
  * "client_private_key" is null.
  *
- * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-07#section-5.1.1.3
- *
  * @param[out] record a RegistrationUpload structure, size:ecc_opaque_ristretto255_sha512_REGISTRATIONUPLOADSIZE
  * @param[out] export_key an additional client key, size:ecc_opaque_ristretto255_sha512_Nh
  * @param password an opaque byte string containing the client's password, size:password_len
@@ -482,7 +480,7 @@ void ecc_opaque_ristretto255_sha512_CreateRegistrationResponse(
  * @param server_identity_len the length of `server_identity`
  * @param client_identity the optional encoded client identity, size:client_identity_len
  * @param client_identity_len the length of `client_identity`
- * @param mhf
+ * @param mhf the memory hard function to use
  * @param nonce size:ecc_opaque_ristretto255_sha512_Nn
  */
 ECC_EXPORT
@@ -503,8 +501,6 @@ void ecc_opaque_ristretto255_sha512_FinalizeRequestWithNonce(
  * executes the following function. Since this works in the internal key mode, the
  * "client_private_key" is null.
  *
- * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-07#section-5.1.1.3
- *
  * @param[out] record a RegistrationUpload structure, size:ecc_opaque_ristretto255_sha512_REGISTRATIONUPLOADSIZE
  * @param[out] export_key an additional client key, size:ecc_opaque_ristretto255_sha512_Nh
  * @param password an opaque byte string containing the client's password, size:password_len
@@ -515,7 +511,7 @@ void ecc_opaque_ristretto255_sha512_FinalizeRequestWithNonce(
  * @param server_identity_len the length of `server_identity`
  * @param client_identity the optional encoded client identity, size:client_identity_len
  * @param client_identity_len the length of `client_identity`
- * @param mhf
+ * @param mhf the memory hard function to use
  */
 ECC_EXPORT
 void ecc_opaque_ristretto255_sha512_FinalizeRequest(
@@ -576,14 +572,12 @@ void ecc_opaque_ristretto255_sha512_CreateCredentialRequest(
  *  - record.envelope is set to the byte string consisting only of
  *    zeros, of length Ne
  *
- * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-07#section-6.1.2.2
- *
  * @param[out] response_raw size:ecc_opaque_ristretto255_sha512_CREDENTIALRESPONSESIZE
  * @param request_raw size:ecc_opaque_ristretto255_sha512_CREDENTIALREQUESTSIZE
  * @param server_public_key size:ecc_opaque_ristretto255_sha512_Npk
  * @param record_raw size:ecc_opaque_ristretto255_sha512_REGISTRATIONUPLOADSIZE
  * @param credential_identifier size:credential_identifier_len
- * @param credential_identifier_len
+ * @param credential_identifier_len the length of `credential_identifier`
  * @param oprf_seed size:ecc_opaque_ristretto255_sha512_Nh
  * @param masking_nonce size:ecc_opaque_ristretto255_sha512_Nn
  */
@@ -615,14 +609,12 @@ void ecc_opaque_ristretto255_sha512_CreateCredentialResponseWithMasking(
  *  - record.envelope is set to the byte string consisting only of
  *    zeros, of length Ne
  *
- * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-07#section-6.1.2.2
- *
  * @param[out] response_raw size:ecc_opaque_ristretto255_sha512_CREDENTIALRESPONSESIZE
  * @param request_raw size:ecc_opaque_ristretto255_sha512_CREDENTIALREQUESTSIZE
  * @param server_public_key size:ecc_opaque_ristretto255_sha512_Npk
  * @param record_raw size:ecc_opaque_ristretto255_sha512_REGISTRATIONUPLOADSIZE
  * @param credential_identifier size:credential_identifier_len
- * @param credential_identifier_len
+ * @param credential_identifier_len the length of `credential_identifier`
  * @param oprf_seed size:ecc_opaque_ristretto255_sha512_Nh
  */
 ECC_EXPORT
@@ -636,20 +628,19 @@ void ecc_opaque_ristretto255_sha512_CreateCredentialResponse(
 );
 
 /**
- * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-07#section-6.1.2.3
  *
  * @param[out] client_private_key size:ecc_opaque_ristretto255_sha512_Nsk
  * @param[out] server_public_key size:ecc_opaque_ristretto255_sha512_Npk
  * @param[out] export_key size:ecc_opaque_ristretto255_sha512_Nh
  * @param password size:password_len
- * @param password_len
+ * @param password_len the length of `password`
  * @param blind size:ecc_opaque_ristretto255_sha512_Noe
  * @param response size:ecc_opaque_ristretto255_sha512_CREDENTIALRESPONSESIZE
  * @param server_identity size:server_identity_len
- * @param server_identity_len
+ * @param server_identity_len the length of `server_identity`
  * @param client_identity size:client_identity_len
- * @param client_identity_len
- * @param mhf
+ * @param client_identity_len the length of `client_identity`
+ * @param mhf the memory hard function to use
  * @return on success returns 0, else -1.
  */
 ECC_EXPORT
@@ -666,15 +657,14 @@ int ecc_opaque_ristretto255_sha512_RecoverCredentials(
 );
 
 /**
- * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-07#section-6.2.2.1
  *
  * @param[out] out size:length
  * @param secret size:64
  * @param label size:label_len
- * @param label_len
+ * @param label_len the length of `label`
  * @param context size:context_len
- * @param context_len
- * @param length
+ * @param context_len the length of `context`
+ * @param length the length of the output
  */
 ECC_EXPORT
 void ecc_opaque_ristretto255_sha512_3DH_Expand_Label(
@@ -686,14 +676,13 @@ void ecc_opaque_ristretto255_sha512_3DH_Expand_Label(
 );
 
 /**
- * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-07#section-6.2.2.1
  *
  * @param[out] out size:ecc_opaque_ristretto255_sha512_Nx
  * @param secret size:64
  * @param label size:label_len
- * @param label_len
+ * @param label_len the length of `label`
  * @param transcript_hash size:transcript_hash_len
- * @param transcript_hash_len
+ * @param transcript_hash_len the length of `transcript_hash`
  */
 ECC_EXPORT
 void ecc_opaque_ristretto255_sha512_3DH_Derive_Secret(
@@ -710,10 +699,8 @@ void ecc_opaque_ristretto255_sha512_3DH_Derive_Secret(
  * transcript, such as configuration parameters or application-specific
  * info, e.g. "appXYZ-v1.2.3".
  *
- * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-07#section-6.2.2.1
- *
  * @param[out] preamble the protocol transcript with identities and messages, size:preamble_len
- * @param preamble_len
+ * @param preamble_len the length of `preamble`
  * @param context optional shared context information, size:context_len
  * @param context_len the length of `context`
  * @param client_identity the optional encoded client identity, size:client_identity_len
@@ -762,15 +749,14 @@ void ecc_opaque_ristretto255_sha512_3DH_TripleDHIKM(
 );
 
 /**
- * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-07#section-6.2.2.2
  *
  * @param[out] km2 size:64
  * @param[out] km3 size:64
  * @param[out] session_key size:64
  * @param ikm size:ikm_len
- * @param ikm_len
+ * @param ikm_len the length of `ikm`
  * @param preamble size:preamble_len
- * @param preamble_len
+ * @param preamble_len the length of `preamble`
  */
 ECC_EXPORT
 void ecc_opaque_ristretto255_sha512_3DH_DeriveKeys(
@@ -820,7 +806,6 @@ void ecc_opaque_ristretto255_sha512_3DH_ClientInit(
 );
 
 /**
- * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-07#section-6.2.3
  *
  * @param[out] ke3_raw a KE3 message structure, size:ecc_opaque_ristretto255_sha512_KE3SIZE
  * @param[out] session_key the session's shared secret, size:64
@@ -835,7 +820,7 @@ void ecc_opaque_ristretto255_sha512_3DH_ClientInit(
  * to server_public_key if not specified, size:server_identity_len
  * @param server_identity_len the length of `server_identity`
  * @param ke2 a KE2 message structure, size:ecc_opaque_ristretto255_sha512_KE2SIZE
- * @param mhf
+ * @param mhf the memory hard function to use
  * @param context the application specific context, size:context_len
  * @param context_len the length of `context`
  * @return 0 if is able to recover credentials and authenticate with the server, else -1
@@ -889,15 +874,15 @@ void ecc_opaque_ristretto255_sha512_3DH_Start(
 );
 
 /**
- * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-07#section-6.2.3.1
+ *
  * @param[out] ke3_raw size:ecc_opaque_ristretto255_sha512_KE3SIZE
  * @param[out] session_key size:64
  * @param[in,out] state_raw size:ecc_opaque_ristretto255_sha512_CLIENTSTATESIZE
  * @param client_identity size:client_identity_len
- * @param client_identity_len
+ * @param client_identity_len the length of `client_identity`
  * @param client_private_key size:ecc_opaque_ristretto255_sha512_Nsk
  * @param server_identity size:server_identity_len
- * @param server_identity_len
+ * @param server_identity_len the lenght of `server_identity`
  * @param server_public_key size:ecc_opaque_ristretto255_sha512_Npk
  * @param ke2_raw size:ecc_opaque_ristretto255_sha512_KE2SIZE
  * @param context the application specific context, size:context_len
@@ -1015,21 +1000,20 @@ int ecc_opaque_ristretto255_sha512_3DH_ServerFinish(
 );
 
 /**
- * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-07#section-6.2.4
  *
  * @param[out] ke2_raw size:ecc_opaque_ristretto255_sha512_KE2SIZE
  * @param[in,out] state_raw size:ecc_opaque_ristretto255_sha512_SERVERSTATESIZE
  * @param server_identity size:server_identity_len
- * @param server_identity_len
+ * @param server_identity_len the length of `server_identity`
  * @param server_private_key size:ecc_opaque_ristretto255_sha512_Nsk
  * @param server_public_key size:ecc_opaque_ristretto255_sha512_Npk
  * @param client_identity size:client_identity_len
- * @param client_identity_len
+ * @param client_identity_len the length of `client_identity`
  * @param client_public_key size:ecc_opaque_ristretto255_sha512_Npk
  * @param ke1_raw size:ecc_opaque_ristretto255_sha512_KE1SIZE
  * @param credential_response_raw size:ecc_opaque_ristretto255_sha512_CREDENTIALRESPONSESIZE
  * @param context size:context_len
- * @param context_len
+ * @param context_len the length of `context`
  * @param server_nonce size:ecc_opaque_ristretto255_sha512_Nn
  * @param server_secret size:ecc_opaque_ristretto255_sha512_Nsk
  * @param server_keyshare size:ecc_opaque_ristretto255_sha512_Npk
@@ -1052,21 +1036,20 @@ void ecc_opaque_ristretto255_sha512_3DH_ResponseWithSecrets(
 );
 
 /**
- * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-07#section-6.2.4
  *
  * @param[out] ke2_raw size:ecc_opaque_ristretto255_sha512_KE2SIZE
  * @param[in,out] state_raw size:ecc_opaque_ristretto255_sha512_SERVERSTATESIZE
  * @param server_identity size:server_identity_len
- * @param server_identity_len
+ * @param server_identity_len the length of `server_identity`
  * @param server_private_key size:ecc_opaque_ristretto255_sha512_Nsk
  * @param server_public_key size:ecc_opaque_ristretto255_sha512_Npk
  * @param client_identity size:client_identity_len
- * @param client_identity_len
+ * @param client_identity_len the length of `client_identity`
  * @param client_public_key size:ecc_opaque_ristretto255_sha512_Npk
  * @param ke1_raw size:ecc_opaque_ristretto255_sha512_KE1SIZE
  * @param credential_response_raw size:ecc_opaque_ristretto255_sha512_CREDENTIALRESPONSESIZE
  * @param context size:context_len
- * @param context_len
+ * @param context_len the length of `context`
  */
 ECC_EXPORT
 void ecc_opaque_ristretto255_sha512_3DH_Response(

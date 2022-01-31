@@ -6,15 +6,15 @@
  */
 
 #include "ecc_test.h"
-#include <stdlib.h>
 #include <stdint.h>
-#include <stdio.h>
-#include <string.h>
 #include "cJSON.h"
+
+char *readfile(const char *filename);
+char *str_split(char **p_str, const char *sep);
 
 #if !ECC_LOG
 void ecc_log(const char *label, const byte_t *data, const int data_len) {
-    char *hex = malloc(2 * data_len + 1);
+    char *hex = malloc(2 * ((size_t) data_len) + 1);
     ecc_bin2hex(hex, data, data_len);
     printf("%s: %s\n", label, hex);
     free(hex);
@@ -35,7 +35,7 @@ char *readfile(const char *filename) {
     const long length = ftell(f);
     rewind(f);
 
-    if (length == -1 || (unsigned long) length >= SIZE_MAX) {
+    if (length == -1 || ((unsigned long long) length) >= SIZE_MAX) {
         fclose(f);
         return NULL;
     }
@@ -79,7 +79,7 @@ char *str_split(char **p_str, const char *sep) {
         if (!start || !end || (start >= end))
             token = NULL;
 
-        token = malloc(end - start + 1);
+        token = malloc((size_t) (end - start + 1));
         if (token) {
             memcpy (token, start, end - start);
             token[end - start] = '\0';
@@ -130,7 +130,25 @@ const char *ecc_json_string(ecc_json_t *json, const char *path) {
 
     cJSON *node = json->handle;
 
+#ifdef __GNUC__
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wcast-qual"
+#endif
+
+#ifdef __clang__
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wcast-qual"
+#endif
+
     char *ptr = (char *) path;
+
+#ifdef __clang__
+#pragma clang diagnostic pop
+#endif
+
+#ifdef __GNUC__
+#pragma GCC diagnostic pop
+#endif
     char *token = NULL;
 
     while ((token = str_split(&ptr, ".")) != NULL) {
@@ -147,7 +165,25 @@ int ecc_json_array_size(ecc_json_t *json, const char *path) {
 
     cJSON *node = json->handle;
 
+#ifdef __GNUC__
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wcast-qual"
+#endif
+
+#ifdef __clang__
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wcast-qual"
+#endif
+
     char *ptr = (char *) path;
+
+#ifdef __clang__
+#pragma clang diagnostic pop
+#endif
+
+#ifdef __GNUC__
+#pragma GCC diagnostic pop
+#endif
     char *token = NULL;
 
     while ((token = str_split(&ptr, ".")) != NULL) {
@@ -167,7 +203,25 @@ const char *ecc_json_array_string(ecc_json_t *json, const char *path, int index)
 
     cJSON *node = json->handle;
 
+#ifdef __GNUC__
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wcast-qual"
+#endif
+
+#ifdef __clang__
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wcast-qual"
+#endif
+
     char *ptr = (char *) path;
+
+#ifdef __clang__
+#pragma clang diagnostic pop
+#endif
+
+#ifdef __GNUC__
+#pragma GCC diagnostic pop
+#endif
     char *token = NULL;
 
     while ((token = str_split(&ptr, ".")) != NULL) {

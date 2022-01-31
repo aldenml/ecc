@@ -7,7 +7,26 @@
 
 #include "util.h"
 #include <string.h>
+
+#ifdef __GNUC__
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wcpp"
+#endif
+
+#ifdef __clang__
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wcpp"
+#endif
+
 #include <sodium.h>
+
+#ifdef __clang__
+#pragma clang diagnostic pop
+#endif
+
+#ifdef __GNUC__
+#pragma GCC diagnostic pop
+#endif
 
 void ecc_memzero(byte_t *buf, const int len) {
     sodium_memzero(buf, (size_t) len);
@@ -18,11 +37,11 @@ void ecc_randombytes(byte_t *buf, const int n) {
 }
 
 void ecc_bin2hex(char *hex, const byte_t *bin, const int bin_len) {
-    sodium_bin2hex(hex, 2 * bin_len + 1, bin, (size_t) bin_len);
+    sodium_bin2hex(hex, 2 * ((size_t) bin_len) + 1, bin, (size_t) bin_len);
 }
 
 void ecc_hex2bin(byte_t *bin, const char *hex, const int hex_len) {
-    sodium_hex2bin(bin, hex_len / 2, hex, (size_t) hex_len, NULL, NULL, NULL);
+    sodium_hex2bin(bin, ((size_t) hex_len) / 2, hex, (size_t) hex_len, NULL, NULL, NULL);
 }
 
 void ecc_concat2(
@@ -90,7 +109,7 @@ void ecc_free(byte_t *p, const int size) {
 
 #if ECC_LOG
 void ecc_log(const char *label, const byte_t *data, const int data_len) {
-    char *hex = malloc(2 * data_len + 1);
+    char *hex = malloc(2 * ((size_t) data_len) + 1);
     ecc_bin2hex(hex, data, data_len);
     printf("%s: %s\n", label, hex);
     free(hex);

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021, Alden Torres
+ * Copyright (c) 2021-2022, Alden Torres
  *
  * Licensed under the terms of the MIT license.
  * Copy of the license at https://opensource.org/licenses/MIT
@@ -8,8 +8,27 @@
 #include "h2c.h"
 #include <math.h>
 #include <string.h>
-#include <sodium.h>
 #include "util.h"
+
+#ifdef __GNUC__
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wcpp"
+#endif
+
+#ifdef __clang__
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wcpp"
+#endif
+
+#include <sodium.h>
+
+#ifdef __clang__
+#pragma clang diagnostic pop
+#endif
+
+#ifdef __GNUC__
+#pragma GCC diagnostic pop
+#endif
 
 void ecc_h2c_expand_message_xmd_sha256(
     byte_t *out,
@@ -53,7 +72,8 @@ void ecc_h2c_expand_message_xmd_sha256(
     // step by step
 
     // 1.  ell = ceil(len_in_bytes / b_in_bytes)
-    const int ell = ceil((double) len_in_bytes / b_in_bytes);
+    const double ellf = ceil((double) len_in_bytes / b_in_bytes);
+    const int ell = (int) ellf;
 
     // 2.  ABORT if ell > 255
     // never happens because len_in_bytes is required to be <= 256
@@ -72,7 +92,7 @@ void ecc_h2c_expand_message_xmd_sha256(
     // Z_pad = I2OSP(0, r_in_bytes)
     crypto_hash_sha256_update(&st, Z_pad, r_in_bytes);
     // msg
-    crypto_hash_sha256_update(&st, msg, msg_len);
+    crypto_hash_sha256_update(&st, msg, (unsigned long long) msg_len);
     // l_i_b_str = I2OSP(len_in_bytes, 2)
     byte_t l_i_b_str[2] = {0};
     ecc_I2OSP(l_i_b_str, len_in_bytes, 2);
@@ -83,7 +103,7 @@ void ecc_h2c_expand_message_xmd_sha256(
     crypto_hash_sha256_update(&st, tmp, 1);
     // DST_prime
     //  - DST
-    crypto_hash_sha256_update(&st, dst, dst_len);
+    crypto_hash_sha256_update(&st, dst, (unsigned long long) dst_len);
     //  - I2OSP(len(DST), 1)
     ecc_I2OSP(tmp, dst_len, 1);
     crypto_hash_sha256_update(&st, tmp, 1);
@@ -100,7 +120,7 @@ void ecc_h2c_expand_message_xmd_sha256(
     crypto_hash_sha256_update(&st, tmp, 1);
     // DST_prime
     //  - DST
-    crypto_hash_sha256_update(&st, dst, dst_len);
+    crypto_hash_sha256_update(&st, dst, (unsigned long long) dst_len);
     //  - I2OSP(len(DST), 1)
     ecc_I2OSP(tmp, dst_len, 1);
     crypto_hash_sha256_update(&st, tmp, 1);
@@ -128,7 +148,7 @@ void ecc_h2c_expand_message_xmd_sha256(
         crypto_hash_sha256_update(&st, tmp, 1);
         // DST_prime
         //  - DST
-        crypto_hash_sha256_update(&st, dst, dst_len);
+        crypto_hash_sha256_update(&st, dst, (unsigned long long) dst_len);
         //  - I2OSP(len(DST), 1)
         ecc_I2OSP(tmp, dst_len, 1);
         crypto_hash_sha256_update(&st, tmp, 1);
@@ -186,7 +206,8 @@ void ecc_h2c_expand_message_xmd_sha512(
     // step by step
 
     // 1.  ell = ceil(len_in_bytes / b_in_bytes)
-    const int ell = ceil((double) len_in_bytes / b_in_bytes);
+    const double ellf = ceil((double) len_in_bytes / b_in_bytes);
+    const int ell = (int) ellf;
 
     // 2.  ABORT if ell > 255
     // never happens because len_in_bytes is required to be <= 256
@@ -205,7 +226,7 @@ void ecc_h2c_expand_message_xmd_sha512(
     // Z_pad = I2OSP(0, r_in_bytes)
     crypto_hash_sha512_update(&st, Z_pad, r_in_bytes);
     // msg
-    crypto_hash_sha512_update(&st, msg, msg_len);
+    crypto_hash_sha512_update(&st, msg, (unsigned long long) msg_len);
     // l_i_b_str = I2OSP(len_in_bytes, 2)
     byte_t l_i_b_str[2] = {0};
     ecc_I2OSP(l_i_b_str, len_in_bytes, 2);
@@ -216,7 +237,7 @@ void ecc_h2c_expand_message_xmd_sha512(
     crypto_hash_sha512_update(&st, tmp, 1);
     // DST_prime
     //  - DST
-    crypto_hash_sha512_update(&st, dst, dst_len);
+    crypto_hash_sha512_update(&st, dst, (unsigned long long) dst_len);
     //  - I2OSP(len(DST), 1)
     ecc_I2OSP(tmp, dst_len, 1);
     crypto_hash_sha512_update(&st, tmp, 1);
@@ -233,7 +254,7 @@ void ecc_h2c_expand_message_xmd_sha512(
     crypto_hash_sha512_update(&st, tmp, 1);
     // DST_prime
     //  - DST
-    crypto_hash_sha512_update(&st, dst, dst_len);
+    crypto_hash_sha512_update(&st, dst, (unsigned long long) dst_len);
     //  - I2OSP(len(DST), 1)
     ecc_I2OSP(tmp, dst_len, 1);
     crypto_hash_sha512_update(&st, tmp, 1);
@@ -261,7 +282,7 @@ void ecc_h2c_expand_message_xmd_sha512(
         crypto_hash_sha512_update(&st, tmp, 1);
         // DST_prime
         //  - DST
-        crypto_hash_sha512_update(&st, dst, dst_len);
+        crypto_hash_sha512_update(&st, dst, (unsigned long long) dst_len);
         //  - I2OSP(len(DST), 1)
         ecc_I2OSP(tmp, dst_len, 1);
         crypto_hash_sha512_update(&st, tmp, 1);

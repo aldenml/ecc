@@ -22,29 +22,24 @@ project(ecc LANGUAGES C)
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake/Modules)
 
 function(SET_EXTRA_COMPILER_FLAGS TARGET_ARG)
+    if(CMAKE_CXX_COMPILER_ID MATCHES Clang)
+        target_compile_options(${TARGET_ARG} PRIVATE
+            -Weverything
+            -Werror
+        )
+        target_compile_definitions(${TARGET_ARG} PRIVATE _FORTIFY_SOURCE=2)
+    elseif(CMAKE_CXX_COMPILER_ID MATCHES GNU)
+        target_compile_options(${TARGET_ARG} PRIVATE
+            -Wall
+            -Wextra
+            -Wpedantic
+            -Werror
+        )
+        if(NOT WIN32)
+            target_compile_definitions(${TARGET_ARG} PRIVATE _FORTIFY_SOURCE=2)
+        endif()
+    endif()
 endfunction()
-#function(SET_EXTRA_COMPILER_FLAGS TARGET_ARG)
-#    if(CMAKE_CXX_COMPILER_ID MATCHES Clang)
-#        target_compile_options(${TARGET_ARG} PRIVATE
-#            -Weverything
-#            -Werror
-#        )
-#        target_compile_definitions(${TARGET_ARG} PRIVATE _FORTIFY_SOURCE=2)
-#    elseif(CMAKE_CXX_COMPILER_ID MATCHES GNU)
-#        target_compile_options(${TARGET_ARG} PRIVATE
-#            -Wall
-#            -Wextra
-#            -Wpedantic
-#            -Werror
-#        )
-#        target_compile_definitions(${TARGET_ARG} PRIVATE _FORTIFY_SOURCE=2)
-#    elseif(MSVC)
-#        target_compile_options(${TARGET_ARG} PRIVATE
-#            /W4
-#            /WX
-#        )
-#    endif()
-#endfunction()
 
 include(ExternalProject)
 if(EMSCRIPTEN)
@@ -52,7 +47,7 @@ if(EMSCRIPTEN)
         libsodium-external
         SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/deps/libsodium
         CONFIGURE_COMMAND emconfigure ${CMAKE_CURRENT_SOURCE_DIR}/deps/libsodium/configure
-            "CFLAGS=-DSODIUM_STATIC=1 -Oz"
+            "CFLAGS=-DSODIUM_STATIC=1 -Oz -Wno-cpp"
             --prefix=${CMAKE_CURRENT_SOURCE_DIR}/build/libsodium
             --disable-ssp
             --disable-asm
@@ -76,7 +71,7 @@ elseif(NOT WIN32)
         libsodium-external
         SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/deps/libsodium
         CONFIGURE_COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/deps/libsodium/configure
-            "CFLAGS=-DSODIUM_STATIC=1 -O2"
+            "CFLAGS=-DSODIUM_STATIC=1 -O2 -Wno-cpp"
             --prefix=${CMAKE_CURRENT_SOURCE_DIR}/build/libsodium
             --disable-ssp
             --disable-shared
@@ -185,7 +180,6 @@ if(NOT DEFINED EMSCRIPTEN)
     target_compile_features(ecc-jvm PUBLIC c_std_11)
     target_compile_options(ecc-jvm PRIVATE -O2)
     target_link_libraries(ecc-jvm PRIVATE ecc_static)
-    set_extra_compiler_flags(ecc-jvm)
 endif()
 
 if(NOT DEFINED EMSCRIPTEN)

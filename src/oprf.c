@@ -8,11 +8,30 @@
 #include "oprf.h"
 #include <string.h>
 #include <assert.h>
-#include <sodium.h>
 #include "util.h"
 #include "hash.h"
 #include "h2c.h"
 #include "ristretto255.h"
+
+#ifdef __GNUC__
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wcpp"
+#endif
+
+#ifdef __clang__
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wcpp"
+#endif
+
+#include <sodium.h>
+
+#ifdef __clang__
+#pragma clang diagnostic pop
+#endif
+
+#ifdef __GNUC__
+#pragma GCC diagnostic pop
+#endif
 
 #define ELEMENTSIZE ecc_oprf_ristretto255_sha512_ELEMENTSIZE
 #define SCALARSIZE ecc_oprf_ristretto255_sha512_SCALARSIZE
@@ -30,6 +49,13 @@ static_assert(ecc_oprf_ristretto255_sha512_PROOFSIZE == 2 * ecc_ristretto255_SCA
 static_assert(ecc_oprf_ristretto255_sha512_Nh == ecc_hash_sha512_SIZE, "");
 
 static_assert(sizeof(Proof_t) == ecc_oprf_ristretto255_sha512_PROOFSIZE, "");
+
+int createContextString(
+    byte_t *contextString,
+    const int mode,
+    byte_t *prefix,
+    const int prefixLen
+);
 
 // https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-voprf-08#section-3.2
 int createContextString(
@@ -698,7 +724,7 @@ void ecc_oprf_ristretto255_sha512_Finalize(
     const byte_t *input, const int inputLen,
     const byte_t *blind,
     const byte_t *evaluatedElement,
-    const byte_t *info, int infoLen
+    const byte_t *info, const int infoLen
 ) {
     // unblindedElement = Unblind(blind, evaluatedElement)
     //
@@ -720,12 +746,12 @@ void ecc_oprf_ristretto255_sha512_Finalize(
     ecc_I2OSP(tmp, inputLen, 2);
     crypto_hash_sha512_update(&st, tmp, 2);
     // input
-    crypto_hash_sha512_update(&st, input, inputLen);
+    crypto_hash_sha512_update(&st, input, (unsigned long long) inputLen);
     // I2OSP(len(info), 2)
     ecc_I2OSP(tmp, infoLen, 2);
     crypto_hash_sha512_update(&st, tmp, 2);
     // info
-    crypto_hash_sha512_update(&st, info, infoLen);
+    crypto_hash_sha512_update(&st, info, (unsigned long long) infoLen);
     // I2OSP(len(unblindedElement), 2)
     ecc_I2OSP(tmp, ELEMENTSIZE, 2);
     crypto_hash_sha512_update(&st, tmp, 2);
@@ -743,7 +769,7 @@ void ecc_oprf_ristretto255_sha512_Finalize(
     ecc_I2OSP(tmp, finalizeDSTLen, 2);
     crypto_hash_sha512_update(&st, tmp, 2);
     // finalizeDST
-    crypto_hash_sha512_update(&st, finalizeDST, finalizeDSTLen);
+    crypto_hash_sha512_update(&st, finalizeDST, (unsigned long long) finalizeDSTLen);
 
     // return Hash(hashInput)
     crypto_hash_sha512_final(&st, output);
@@ -760,7 +786,7 @@ int ecc_oprf_ristretto255_sha512_VerifyProof(
     const byte_t *D,
     const byte_t *proofPtr
 ) {
-    Proof_t *proof = (Proof_t *) proofPtr;
+    const Proof_t *proof = (const Proof_t *) proofPtr;
 
     // Cs = [C]
     // Ds = [D]
@@ -804,8 +830,8 @@ int ecc_oprf_ristretto255_sha512_VerifyProof(
 
     // c = GG.DeserializeScalar(proof.c)
     // s = GG.DeserializeScalar(proof.s)
-    byte_t *c = proof->c;
-    byte_t *s = proof->s;
+    const byte_t *c = proof->c;
+    const byte_t *s = proof->s;
 
     byte_t mul1[ELEMENTSIZE];
     byte_t mul2[ELEMENTSIZE];
@@ -978,13 +1004,13 @@ int ecc_oprf_ristretto255_sha512_VerifiableUnblind(
 
 int ecc_oprf_ristretto255_sha512_VerifiableFinalize(
     byte_t *output,
-    const byte_t *input, int inputLen,
+    const byte_t *input, const int inputLen,
     const byte_t *blind,
     const byte_t *evaluatedElement,
     const byte_t *blindedElement,
     const byte_t *pkS,
     const byte_t *proof,
-    const byte_t *info, int infoLen
+    const byte_t *info, const int infoLen
 ) {
     // unblindedElement = VerifiableUnblind(blind, evaluatedElement, blindedElement, pkS, proof, info)
     //
@@ -1020,12 +1046,12 @@ int ecc_oprf_ristretto255_sha512_VerifiableFinalize(
     ecc_I2OSP(tmp, inputLen, 2);
     crypto_hash_sha512_update(&st, tmp, 2);
     // input
-    crypto_hash_sha512_update(&st, input, inputLen);
+    crypto_hash_sha512_update(&st, input, (unsigned long long) inputLen);
     // I2OSP(len(info), 2)
     ecc_I2OSP(tmp, infoLen, 2);
     crypto_hash_sha512_update(&st, tmp, 2);
     // info
-    crypto_hash_sha512_update(&st, info, infoLen);
+    crypto_hash_sha512_update(&st, info, (unsigned long long) infoLen);
     // I2OSP(len(unblindedElement), 2)
     ecc_I2OSP(tmp, ELEMENTSIZE, 2);
     crypto_hash_sha512_update(&st, tmp, 2);
@@ -1043,7 +1069,7 @@ int ecc_oprf_ristretto255_sha512_VerifiableFinalize(
     ecc_I2OSP(tmp, finalizeDSTLen, 2);
     crypto_hash_sha512_update(&st, tmp, 2);
     // finalizeDST
-    crypto_hash_sha512_update(&st, finalizeDST, finalizeDSTLen);
+    crypto_hash_sha512_update(&st, finalizeDST, (unsigned long long) finalizeDSTLen);
 
     // return Hash(hashInput)
     crypto_hash_sha512_final(&st, output);

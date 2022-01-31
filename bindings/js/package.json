@@ -46,8 +46,7 @@
     "url": "git+https://github.com/aldenml/ecc.git"
   },
   "keywords": [
-    "elliptic",
-    "curves",
+    "elliptic-curves",
     "crypto",
     "hash",
     "sha256",
@@ -61,8 +60,8 @@
     "apake",
     "authentication",
     "bls-signature",
-    "ethereum",
-    "proxy-re-encryption"
+    "proxy-re-encryption",
+    "hkdf"
   ],
   "author": "aldenml",
   "license": "MIT",
