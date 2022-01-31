@@ -18,7 +18,6 @@
 #ifdef __GNUC__
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wpadded"
-#pragma GCC diagnostic ignored "-Wreserved-id-macro"
 #endif
 
 #ifdef __clang__

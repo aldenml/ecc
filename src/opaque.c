@@ -8,13 +8,41 @@
 #include "opaque.h"
 #include <string.h>
 #include <assert.h>
-#include <sodium.h>
 #include "util.h"
 #include "hash.h"
 #include "mac.h"
 #include "kdf.h"
 #include "ristretto255.h"
 #include "oprf.h"
+
+#ifdef __GNUC__
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wcpp"
+#endif
+
+#ifdef __clang__
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wcpp"
+#endif
+
+#ifdef _MSC_VER
+#pragma warning(push, 1)
+//#pragma warning(disable: ?)
+#endif
+
+#include <sodium.h>
+
+#ifdef _MSC_VER
+#pragma warning(pop)
+#endif
+
+#ifdef __clang__
+#pragma clang diagnostic pop
+#endif
+
+#ifdef __GNUC__
+#pragma GCC diagnostic pop
+#endif
 
 #define Nn ecc_opaque_ristretto255_sha512_Nn // 32
 #define Nm ecc_opaque_ristretto255_sha512_Nm // 64
