@@ -25,16 +25,7 @@
 #pragma clang diagnostic ignored "-Wcpp"
 #endif
 
-#ifdef _MSC_VER
-#pragma warning(push, 1)
-//#pragma warning(disable: ?)
-#endif
-
 #include <sodium.h>
-
-#ifdef _MSC_VER
-#pragma warning(pop)
-#endif
 
 #ifdef __clang__
 #pragma clang diagnostic pop
@@ -273,14 +264,7 @@ void ecc_opaque_ristretto255_sha512_CreateCleartextCredentials(
 #pragma clang diagnostic ignored "-Wcast-align"
 #endif
 
-#ifdef _MSC_VER
-    #pragma warning(push, 1)
-//#pragma warning(disable: ?)
-#endif
     CleartextCredentials_t *cleartext_credentials = (CleartextCredentials_t *) cleartext_credentials_ptr;
-#ifdef _MSC_VER
-#pragma warning(pop)
-#endif
 
 #ifdef __clang__
 #pragma clang diagnostic pop

@@ -26,16 +26,7 @@
 #pragma clang diagnostic ignored "-Wreserved-id-macro"
 #endif
 
-#ifdef _MSC_VER
-#pragma warning(push, 1)
-//#pragma warning(disable: ?)
-#endif
-
 #include <cmocka.h>
-
-#ifdef _MSC_VER
-#pragma warning(pop)
-#endif
 
 #ifdef __clang__
 #pragma clang diagnostic pop

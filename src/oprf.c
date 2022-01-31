@@ -23,16 +23,7 @@
 #pragma clang diagnostic ignored "-Wcpp"
 #endif
 
-#ifdef _MSC_VER
-#pragma warning(push, 1)
-//#pragma warning(disable: ?)
-#endif
-
 #include <sodium.h>
-
-#ifdef _MSC_VER
-#pragma warning(pop)
-#endif
 
 #ifdef __clang__
 #pragma clang diagnostic pop

@@ -35,7 +35,7 @@ char *readfile(const char *filename) {
     const long length = ftell(f);
     rewind(f);
 
-    if (length == -1 || (unsigned long) length >= SIZE_MAX) {
+    if (length == -1 || ((unsigned long long) length) >= SIZE_MAX) {
         fclose(f);
         return NULL;
     }
@@ -140,14 +140,7 @@ const char *ecc_json_string(ecc_json_t *json, const char *path) {
 #pragma clang diagnostic ignored "-Wcast-qual"
 #endif
 
-#ifdef _MSC_VER
-    #pragma warning(push, 1)
-//#pragma warning(disable: ?)
-#endif
     char *ptr = (char *) path;
-#ifdef _MSC_VER
-#pragma warning(pop)
-#endif
 
 #ifdef __clang__
 #pragma clang diagnostic pop
@@ -182,14 +175,7 @@ int ecc_json_array_size(ecc_json_t *json, const char *path) {
 #pragma clang diagnostic ignored "-Wcast-qual"
 #endif
 
-#ifdef _MSC_VER
-    #pragma warning(push, 1)
-//#pragma warning(disable: ?)
-#endif
     char *ptr = (char *) path;
-#ifdef _MSC_VER
-#pragma warning(pop)
-#endif
 
 #ifdef __clang__
 #pragma clang diagnostic pop
@@ -227,14 +213,7 @@ const char *ecc_json_array_string(ecc_json_t *json, const char *path, int index)
 #pragma clang diagnostic ignored "-Wcast-qual"
 #endif
 
-#ifdef _MSC_VER
-    #pragma warning(push, 1)
-//#pragma warning(disable: ?)
-#endif
     char *ptr = (char *) path;
-#ifdef _MSC_VER
-#pragma warning(pop)
-#endif
 
 #ifdef __clang__
 #pragma clang diagnostic pop

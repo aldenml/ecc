@@ -36,11 +36,6 @@ function(SET_EXTRA_COMPILER_FLAGS TARGET_ARG)
             -Werror
         )
         target_compile_definitions(${TARGET_ARG} PRIVATE _FORTIFY_SOURCE=2)
-    elseif(MSVC)
-        target_compile_options(${TARGET_ARG} PRIVATE
-            /W4
-            /WX
-        )
     endif()
 endfunction()
 
@@ -50,7 +45,7 @@ if(EMSCRIPTEN)
         libsodium-external
         SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/deps/libsodium
         CONFIGURE_COMMAND emconfigure ${CMAKE_CURRENT_SOURCE_DIR}/deps/libsodium/configure
-            "CFLAGS=-DSODIUM_STATIC=1 -Oz"
+            "CFLAGS=-DSODIUM_STATIC=1 -Oz -Wno-cpp"
             --prefix=${CMAKE_CURRENT_SOURCE_DIR}/build/libsodium
             --disable-ssp
             --disable-asm
@@ -74,7 +69,7 @@ elseif(NOT WIN32)
         libsodium-external
         SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/deps/libsodium
         CONFIGURE_COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/deps/libsodium/configure
-            "CFLAGS=-DSODIUM_STATIC=1 -O2"
+            "CFLAGS=-DSODIUM_STATIC=1 -O2 -Wno-cpp"
             --prefix=${CMAKE_CURRENT_SOURCE_DIR}/build/libsodium
             --disable-ssp
             --disable-shared
