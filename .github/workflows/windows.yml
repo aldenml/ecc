@@ -51,7 +51,7 @@ jobs:
         run: |
           cd deps/libsodium
           ./autogen.sh -s
-          ./configure "CFLAGS=-DSODIUM_STATIC=1 -O2" --disable-dependency-tracking --prefix=/d/a/ecc/ecc/build/libsodium --disable-ssp --disable-shared --without-pthreads
+          ./configure "CFLAGS=-DSODIUM_STATIC=1 -O2 -Wno-cpp" --disable-dependency-tracking --prefix=/d/a/ecc/ecc/build/libsodium --disable-ssp --disable-shared --without-pthreads
           make -j2
           make install
           cd ../..

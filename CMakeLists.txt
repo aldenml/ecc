@@ -35,7 +35,9 @@ function(SET_EXTRA_COMPILER_FLAGS TARGET_ARG)
             -Wpedantic
             -Werror
         )
-        target_compile_definitions(${TARGET_ARG} PRIVATE _FORTIFY_SOURCE=2)
+        if(NOT WIN32)
+            target_compile_definitions(${TARGET_ARG} PRIVATE _FORTIFY_SOURCE=2)
+        endif()
     endif()
 endfunction()
 
