@@ -40,7 +40,7 @@ is the public input, and `output` is the computation output. The client learns `
 and the server learns nothing. In the verifiable mode, the client also receives proof
 that the server used `skS` in computing the function.
 
-The flow is shown below (from the irtf draft):
+The flow is shown below (from the IRTF draft):
 ```
   Client(input, info)                               Server(skS, info)
   ----------------------------------------------------------------------
@@ -58,7 +58,7 @@ The flow is shown below (from the irtf draft):
 ```
 
 In the verifiable mode of the protocol, the server additionally
-computes a proof in Evaluate. The client verifies this proof using
+computes a proof in `Evaluate`. The client verifies this proof using
 the server's expected public key before completing the protocol and
 producing the protocol output.
 
@@ -69,10 +69,12 @@ using `libsodium`.
 
 OPAQUE consists of two stages: registration and authenticated key
 exchange. In the first stage, a client registers its password with
-the server and stores its encrypted credentials on the server, but
-the server never knows what the password it.
+the server and stores its encrypted credentials in the server, but
+the server never knows what the password is.
 
-The registration flow is shown below (from the irtf draft):
+The registration flow is shown below (from the 
+
+):
 ```
        creds                                   parameters
          |                                         |
@@ -95,7 +97,7 @@ In the second stage, the client outputs two values, an "export_key" (matching
 that from registration) and a "session_key". The server outputs a single value
 "session_key" that matches that of the client.
 
-The authenticated key exchange flow is shown below (from the irtf draft):
+The authenticated key exchange flow is shown below (from the IRTF draft):
 ```
        creds                             (parameters, record)
          |                                         |
@@ -135,7 +137,9 @@ opaque_ristretto255_sha512_3DH_ServerFinish
 
 Ethereum uses BLS signatures as specified in the IETF
 draft [draft-irtf-cfrg-bls-signature-04](https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-bls-signature-04)
-ciphersuite `BLS_SIG_BLS12381G2_XMD:SHA-256_SSWU_RO_POP_`. This library provides the following API:
+ciphersuite `BLS_SIG_BLS12381G2_XMD:SHA-256_SSWU_RO_POP_`.
+
+This library provides the following API:
 
 ```
 ecc_sign_eth_bls_KeyGen
@@ -150,7 +154,7 @@ ecc_sign_eth_bls_AggregateVerify
 
 BLS is a digital signature scheme with aggregation properties that can be applied to signatures
 and public keys. For this reason, in the context of blockchains, BLS signatures are used for
-authenticating transactions, votes during the consensus protocol, and to reduce the bandwidth
+authenticating transactions, votes during consensus protocols, and to reduce bandwidth
 and storage requirements.
 
 ### BLS12-381 Pairing
@@ -185,12 +189,13 @@ https://en.wikipedia.org/wiki/Pairing-based_cryptography
 ### Proxy Re-Encryption (PRE)
 
 With a pairing-friendly elliptic curve and a well-defined pairing operation,
-you can implement a proxy re-encryption scheme. This library provides an
-implementation using BLS12-381.
+you can implement a proxy re-encryption scheme.
+
+This library provides an implementation using BLS12-381.
 
 Example of how to use it:
 ```java
-// This is a java code, but for a similar plain C code, look at unit tests
+// This is a java code sample, but for a similar plain C code sample look at the unit tests
 
 // client A setup public/private keys and signing keys
 KeyPair keysA = pre_schema1_KeyGen();
@@ -202,8 +207,8 @@ KeyPair keysB = pre_schema1_KeyGen();
 // proxy server setup signing keys
 SigningKeyPair signingProxy = pre_schema1_SigningKeyGen();
 
-// client A select a plaintext message, this message
-// in itself is random, but can be used as a seed
+// client A selects a plaintext message, this message
+// in itself is random but can be used as a seed
 // for symmetric encryption keys
 byte[] message = pre_schema1_MessageGen();
 
@@ -215,15 +220,15 @@ byte[] ciphertextLevel1 = pre_schema1_Encrypt(message, keysA.pk, signingA);
 // eventually client A allows client B to see the encrypted
 // message, in this case the proxy needs to re-encrypt
 // ciphertextLevel1 (without ever knowing the plaintext).
-// In order to do that, the client A needs to create a re-encryption
+// In order to do that, client A needs to create a re-encryption
 // key that the proxy can use to perform such operation.
 
-// client A creates a re-encryption key that the proxy can use
+// client A creates a re-encryption key the proxy can use
 // to re-encrypt the ciphertext (ciphertextLevel1) in order for
 // client B be able to recover the original message
 byte[] reEncKey = pre_schema1_ReKeyGen(keysA.sk, keysB.pk, signingA);
 
-// the proxy re-encrypt the ciphertext ciphertextLevel1 with such
+// the proxy re-encrypts the ciphertext ciphertextLevel1 with such
 // a key that allows client B to recover the original message
 byte[] ciphertextLevel2 = pre_schema1_ReEncrypt(
     ciphertextLevel1,
