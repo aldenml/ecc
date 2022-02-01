@@ -72,9 +72,8 @@ exchange. In the first stage, a client registers its password with
 the server and stores its encrypted credentials in the server, but
 the server never knows what the password is.
 
-The registration flow is shown below (from the 
+The registration flow is shown below (from the IRTF draft):
 
-):
 ```
        creds                                   parameters
          |                                         |
