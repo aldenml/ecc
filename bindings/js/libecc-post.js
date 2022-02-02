@@ -295,28 +295,28 @@ Module.ecc_is_zero = (
 
 // hash
 
-const ecc_hash_sha256_SIZE = 32;
+const ecc_hash_sha256_HASHSIZE = 32;
 /**
  * The size of a SHA-256 digest.
  *
  * @type {number}
  */
-Module.ecc_hash_sha256_SIZE = ecc_hash_sha256_SIZE;
+Module.ecc_hash_sha256_HASHSIZE = ecc_hash_sha256_HASHSIZE;
 
-const ecc_hash_sha512_SIZE = 64;
+const ecc_hash_sha512_HASHSIZE = 64;
 /**
  * The size of a SHA-512 digest.
  *
  * @type {number}
  */
-Module.ecc_hash_sha512_SIZE = ecc_hash_sha512_SIZE;
+Module.ecc_hash_sha512_HASHSIZE = ecc_hash_sha512_HASHSIZE;
 
 /**
  * Computes the SHA-256 of a given input.
  * 
  * See https://en.wikipedia.org/wiki/SHA-2
  *
- * @param {Uint8Array} digest (output) the SHA-256 of the input, size:ecc_hash_sha256_SIZE
+ * @param {Uint8Array} digest (output) the SHA-256 of the input, size:ecc_hash_sha256_HASHSIZE
  * @param {Uint8Array} input the input message, size:input_len
  * @param {number} input_len the length of `input`
  */
@@ -325,15 +325,15 @@ Module.ecc_hash_sha256 = (
     input,
     input_len,
 ) => {
-    const ptr_digest = mput(digest, ecc_hash_sha256_SIZE);
+    const ptr_digest = mput(digest, ecc_hash_sha256_HASHSIZE);
     const ptr_input = mput(input, input_len);
     _ecc_hash_sha256(
         ptr_digest,
         ptr_input,
         input_len,
     );
-    mget(digest, ptr_digest, ecc_hash_sha256_SIZE);
-    mfree(ptr_digest, ecc_hash_sha256_SIZE);
+    mget(digest, ptr_digest, ecc_hash_sha256_HASHSIZE);
+    mfree(ptr_digest, ecc_hash_sha256_HASHSIZE);
     mfree(ptr_input, input_len);
 }
 
@@ -342,7 +342,7 @@ Module.ecc_hash_sha256 = (
  * 
  * See https://en.wikipedia.org/wiki/SHA-2
  *
- * @param {Uint8Array} digest (output) the SHA-512 of the input, size:ecc_hash_sha512_SIZE
+ * @param {Uint8Array} digest (output) the SHA-512 of the input, size:ecc_hash_sha512_HASHSIZE
  * @param {Uint8Array} input the input message, size:input_len
  * @param {number} input_len the length of `input`
  */
@@ -351,27 +351,27 @@ Module.ecc_hash_sha512 = (
     input,
     input_len,
 ) => {
-    const ptr_digest = mput(digest, ecc_hash_sha512_SIZE);
+    const ptr_digest = mput(digest, ecc_hash_sha512_HASHSIZE);
     const ptr_input = mput(input, input_len);
     _ecc_hash_sha512(
         ptr_digest,
         ptr_input,
         input_len,
     );
-    mget(digest, ptr_digest, ecc_hash_sha512_SIZE);
-    mfree(ptr_digest, ecc_hash_sha512_SIZE);
+    mget(digest, ptr_digest, ecc_hash_sha512_HASHSIZE);
+    mfree(ptr_digest, ecc_hash_sha512_HASHSIZE);
     mfree(ptr_input, input_len);
 }
 
 // mac
 
-const ecc_mac_hmac_sha256_SIZE = 32;
+const ecc_mac_hmac_sha256_HASHSIZE = 32;
 /**
  * Size of the HMAC-SHA-256 digest.
  *
  * @type {number}
  */
-Module.ecc_mac_hmac_sha256_SIZE = ecc_mac_hmac_sha256_SIZE;
+Module.ecc_mac_hmac_sha256_HASHSIZE = ecc_mac_hmac_sha256_HASHSIZE;
 
 const ecc_mac_hmac_sha256_KEYSIZE = 32;
 /**
@@ -381,13 +381,13 @@ const ecc_mac_hmac_sha256_KEYSIZE = 32;
  */
 Module.ecc_mac_hmac_sha256_KEYSIZE = ecc_mac_hmac_sha256_KEYSIZE;
 
-const ecc_mac_hmac_sha512_SIZE = 64;
+const ecc_mac_hmac_sha512_HASHSIZE = 64;
 /**
  * Size of the HMAC-SHA-512 digest.
  *
  * @type {number}
  */
-Module.ecc_mac_hmac_sha512_SIZE = ecc_mac_hmac_sha512_SIZE;
+Module.ecc_mac_hmac_sha512_HASHSIZE = ecc_mac_hmac_sha512_HASHSIZE;
 
 const ecc_mac_hmac_sha512_KEYSIZE = 64;
 /**
@@ -403,7 +403,7 @@ Module.ecc_mac_hmac_sha512_KEYSIZE = ecc_mac_hmac_sha512_KEYSIZE;
  * See https://datatracker.ietf.org/doc/html/rfc2104
  * See https://datatracker.ietf.org/doc/html/rfc4868
  *
- * @param {Uint8Array} digest (output) the HMAC-SHA-256 of the input, size:ecc_mac_hmac_sha256_SIZE
+ * @param {Uint8Array} digest (output) the HMAC-SHA-256 of the input, size:ecc_mac_hmac_sha256_HASHSIZE
  * @param {Uint8Array} text the input message, size:text_len
  * @param {number} text_len the length of `input`
  * @param {Uint8Array} key authentication key, size:ecc_mac_hmac_sha256_KEYSIZE
@@ -414,7 +414,7 @@ Module.ecc_mac_hmac_sha256 = (
     text_len,
     key,
 ) => {
-    const ptr_digest = mput(digest, ecc_mac_hmac_sha256_SIZE);
+    const ptr_digest = mput(digest, ecc_mac_hmac_sha256_HASHSIZE);
     const ptr_text = mput(text, text_len);
     const ptr_key = mput(key, ecc_mac_hmac_sha256_KEYSIZE);
     _ecc_mac_hmac_sha256(
@@ -423,8 +423,8 @@ Module.ecc_mac_hmac_sha256 = (
         text_len,
         ptr_key,
     );
-    mget(digest, ptr_digest, ecc_mac_hmac_sha256_SIZE);
-    mfree(ptr_digest, ecc_mac_hmac_sha256_SIZE);
+    mget(digest, ptr_digest, ecc_mac_hmac_sha256_HASHSIZE);
+    mfree(ptr_digest, ecc_mac_hmac_sha256_HASHSIZE);
     mfree(ptr_text, text_len);
     mfree(ptr_key, ecc_mac_hmac_sha256_KEYSIZE);
 }
@@ -435,7 +435,7 @@ Module.ecc_mac_hmac_sha256 = (
  * See https://datatracker.ietf.org/doc/html/rfc2104
  * See https://datatracker.ietf.org/doc/html/rfc4868
  *
- * @param {Uint8Array} digest (output) the HMAC-SHA-512 of the input, size:ecc_mac_hmac_sha512_SIZE
+ * @param {Uint8Array} digest (output) the HMAC-SHA-512 of the input, size:ecc_mac_hmac_sha512_HASHSIZE
  * @param {Uint8Array} text the input message, size:text_len
  * @param {number} text_len the length of `input`
  * @param {Uint8Array} key authentication key, size:ecc_mac_hmac_sha512_KEYSIZE
@@ -446,7 +446,7 @@ Module.ecc_mac_hmac_sha512 = (
     text_len,
     key,
 ) => {
-    const ptr_digest = mput(digest, ecc_mac_hmac_sha512_SIZE);
+    const ptr_digest = mput(digest, ecc_mac_hmac_sha512_HASHSIZE);
     const ptr_text = mput(text, text_len);
     const ptr_key = mput(key, ecc_mac_hmac_sha512_KEYSIZE);
     _ecc_mac_hmac_sha512(
@@ -455,8 +455,8 @@ Module.ecc_mac_hmac_sha512 = (
         text_len,
         ptr_key,
     );
-    mget(digest, ptr_digest, ecc_mac_hmac_sha512_SIZE);
-    mfree(ptr_digest, ecc_mac_hmac_sha512_SIZE);
+    mget(digest, ptr_digest, ecc_mac_hmac_sha512_HASHSIZE);
+    mfree(ptr_digest, ecc_mac_hmac_sha512_HASHSIZE);
     mfree(ptr_text, text_len);
     mfree(ptr_key, ecc_mac_hmac_sha512_KEYSIZE);
 }
@@ -662,13 +662,13 @@ Module.ecc_kdf_scrypt = (
 
 // ed25519
 
-const ecc_ed25519_SIZE = 32;
+const ecc_ed25519_ELEMENTSIZE = 32;
 /**
  * Size of the serialized group elements.
  *
  * @type {number}
  */
-Module.ecc_ed25519_SIZE = ecc_ed25519_SIZE;
+Module.ecc_ed25519_ELEMENTSIZE = ecc_ed25519_ELEMENTSIZE;
 
 const ecc_ed25519_UNIFORMSIZE = 32;
 /**
@@ -698,26 +698,26 @@ Module.ecc_ed25519_NONREDUCEDSCALARSIZE = ecc_ed25519_NONREDUCEDSCALARSIZE;
  * Checks that p represents a point on the edwards25519 curve, in canonical
  * form, on the main subgroup, and that the point doesn't have a small order.
  *
- * @param {Uint8Array} p potential point to test, size:ecc_ed25519_SIZE
+ * @param {Uint8Array} p potential point to test, size:ecc_ed25519_ELEMENTSIZE
  * @return {number} 1 on success, and 0 if the checks didn't pass
  */
 Module.ecc_ed25519_is_valid_point = (
     p,
 ) => {
-    const ptr_p = mput(p, ecc_ed25519_SIZE);
+    const ptr_p = mput(p, ecc_ed25519_ELEMENTSIZE);
     const fun_ret = _ecc_ed25519_is_valid_point(
         ptr_p,
     );
-    mfree(ptr_p, ecc_ed25519_SIZE);
+    mfree(ptr_p, ecc_ed25519_ELEMENTSIZE);
     return fun_ret;
 }
 
 /**
  * Adds the point p to the point q and stores the resulting point into r.
  *
- * @param {Uint8Array} r (output) the result, size:ecc_ed25519_SIZE
- * @param {Uint8Array} p input point operand, size:ecc_ed25519_SIZE
- * @param {Uint8Array} q input point operand, size:ecc_ed25519_SIZE
+ * @param {Uint8Array} r (output) the result, size:ecc_ed25519_ELEMENTSIZE
+ * @param {Uint8Array} p input point operand, size:ecc_ed25519_ELEMENTSIZE
+ * @param {Uint8Array} q input point operand, size:ecc_ed25519_ELEMENTSIZE
  * @return {number} 0 on success, or -1 if p and/or q are not valid points
  */
 Module.ecc_ed25519_add = (
@@ -725,27 +725,27 @@ Module.ecc_ed25519_add = (
     p,
     q,
 ) => {
-    const ptr_r = mput(r, ecc_ed25519_SIZE);
-    const ptr_p = mput(p, ecc_ed25519_SIZE);
-    const ptr_q = mput(q, ecc_ed25519_SIZE);
+    const ptr_r = mput(r, ecc_ed25519_ELEMENTSIZE);
+    const ptr_p = mput(p, ecc_ed25519_ELEMENTSIZE);
+    const ptr_q = mput(q, ecc_ed25519_ELEMENTSIZE);
     const fun_ret = _ecc_ed25519_add(
         ptr_r,
         ptr_p,
         ptr_q,
     );
-    mget(r, ptr_r, ecc_ed25519_SIZE);
-    mfree(ptr_r, ecc_ed25519_SIZE);
-    mfree(ptr_p, ecc_ed25519_SIZE);
-    mfree(ptr_q, ecc_ed25519_SIZE);
+    mget(r, ptr_r, ecc_ed25519_ELEMENTSIZE);
+    mfree(ptr_r, ecc_ed25519_ELEMENTSIZE);
+    mfree(ptr_p, ecc_ed25519_ELEMENTSIZE);
+    mfree(ptr_q, ecc_ed25519_ELEMENTSIZE);
     return fun_ret;
 }
 
 /**
  * Subtracts the point p to the point q and stores the resulting point into r.
  *
- * @param {Uint8Array} r (output) the result, size:ecc_ed25519_SIZE
- * @param {Uint8Array} p input point operand, size:ecc_ed25519_SIZE
- * @param {Uint8Array} q input point operand, size:ecc_ed25519_SIZE
+ * @param {Uint8Array} r (output) the result, size:ecc_ed25519_ELEMENTSIZE
+ * @param {Uint8Array} p input point operand, size:ecc_ed25519_ELEMENTSIZE
+ * @param {Uint8Array} q input point operand, size:ecc_ed25519_ELEMENTSIZE
  * @return {number} 0 on success, or -1 if p and/or q are not valid points
  */
 Module.ecc_ed25519_sub = (
@@ -753,18 +753,18 @@ Module.ecc_ed25519_sub = (
     p,
     q,
 ) => {
-    const ptr_r = mput(r, ecc_ed25519_SIZE);
-    const ptr_p = mput(p, ecc_ed25519_SIZE);
-    const ptr_q = mput(q, ecc_ed25519_SIZE);
+    const ptr_r = mput(r, ecc_ed25519_ELEMENTSIZE);
+    const ptr_p = mput(p, ecc_ed25519_ELEMENTSIZE);
+    const ptr_q = mput(q, ecc_ed25519_ELEMENTSIZE);
     const fun_ret = _ecc_ed25519_sub(
         ptr_r,
         ptr_p,
         ptr_q,
     );
-    mget(r, ptr_r, ecc_ed25519_SIZE);
-    mfree(ptr_r, ecc_ed25519_SIZE);
-    mfree(ptr_p, ecc_ed25519_SIZE);
-    mfree(ptr_q, ecc_ed25519_SIZE);
+    mget(r, ptr_r, ecc_ed25519_ELEMENTSIZE);
+    mfree(ptr_r, ecc_ed25519_ELEMENTSIZE);
+    mfree(ptr_p, ecc_ed25519_ELEMENTSIZE);
+    mfree(ptr_q, ecc_ed25519_ELEMENTSIZE);
     return fun_ret;
 }
 
@@ -777,38 +777,38 @@ Module.ecc_ed25519_sub = (
  * bit to set the sign of the X coordinate, and the resulting point is
  * multiplied by the cofactor.
  *
- * @param {Uint8Array} p (output) point in the main subgroup, size:ecc_ed25519_SIZE
+ * @param {Uint8Array} p (output) point in the main subgroup, size:ecc_ed25519_ELEMENTSIZE
  * @param {Uint8Array} r input vector, size:ecc_ed25519_UNIFORMSIZE
  */
 Module.ecc_ed25519_from_uniform = (
     p,
     r,
 ) => {
-    const ptr_p = mput(p, ecc_ed25519_SIZE);
+    const ptr_p = mput(p, ecc_ed25519_ELEMENTSIZE);
     const ptr_r = mput(r, ecc_ed25519_UNIFORMSIZE);
     _ecc_ed25519_from_uniform(
         ptr_p,
         ptr_r,
     );
-    mget(p, ptr_p, ecc_ed25519_SIZE);
-    mfree(ptr_p, ecc_ed25519_SIZE);
+    mget(p, ptr_p, ecc_ed25519_ELEMENTSIZE);
+    mfree(ptr_p, ecc_ed25519_ELEMENTSIZE);
     mfree(ptr_r, ecc_ed25519_UNIFORMSIZE);
 }
 
 /**
  * Fills p with the representation of a random group element.
  *
- * @param {Uint8Array} p (output) random group element, size:ecc_ed25519_SIZE
+ * @param {Uint8Array} p (output) random group element, size:ecc_ed25519_ELEMENTSIZE
  */
 Module.ecc_ed25519_random = (
     p,
 ) => {
-    const ptr_p = mput(p, ecc_ed25519_SIZE);
+    const ptr_p = mput(p, ecc_ed25519_ELEMENTSIZE);
     _ecc_ed25519_random(
         ptr_p,
     );
-    mget(p, ptr_p, ecc_ed25519_SIZE);
-    mfree(ptr_p, ecc_ed25519_SIZE);
+    mget(p, ptr_p, ecc_ed25519_ELEMENTSIZE);
+    mfree(ptr_p, ecc_ed25519_ELEMENTSIZE);
 }
 
 /**
@@ -1006,9 +1006,9 @@ Module.ecc_ed25519_scalar_reduce = (
  * on the curve, not on the main subgroup, is a point of small order,
  * or is not provided in canonical form.
  *
- * @param {Uint8Array} q (output) the result, size:ecc_ed25519_SIZE
+ * @param {Uint8Array} q (output) the result, size:ecc_ed25519_ELEMENTSIZE
  * @param {Uint8Array} n the valid input scalar, size:ecc_ed25519_SCALARSIZE
- * @param {Uint8Array} p the point on the curve, size:ecc_ed25519_SIZE
+ * @param {Uint8Array} p the point on the curve, size:ecc_ed25519_ELEMENTSIZE
  * @return {number} 0 on success, or -1 otherwise.
  */
 Module.ecc_ed25519_scalarmult = (
@@ -1016,18 +1016,18 @@ Module.ecc_ed25519_scalarmult = (
     n,
     p,
 ) => {
-    const ptr_q = mput(q, ecc_ed25519_SIZE);
+    const ptr_q = mput(q, ecc_ed25519_ELEMENTSIZE);
     const ptr_n = mput(n, ecc_ed25519_SCALARSIZE);
-    const ptr_p = mput(p, ecc_ed25519_SIZE);
+    const ptr_p = mput(p, ecc_ed25519_ELEMENTSIZE);
     const fun_ret = _ecc_ed25519_scalarmult(
         ptr_q,
         ptr_n,
         ptr_p,
     );
-    mget(q, ptr_q, ecc_ed25519_SIZE);
-    mfree(ptr_q, ecc_ed25519_SIZE);
+    mget(q, ptr_q, ecc_ed25519_ELEMENTSIZE);
+    mfree(ptr_q, ecc_ed25519_ELEMENTSIZE);
     mfree(ptr_n, ecc_ed25519_SCALARSIZE);
-    mfree(ptr_p, ecc_ed25519_SIZE);
+    mfree(ptr_p, ecc_ed25519_ELEMENTSIZE);
     return fun_ret;
 }
 
@@ -1035,7 +1035,7 @@ Module.ecc_ed25519_scalarmult = (
  * Multiplies the base point (x, 4/5) by a scalar n (without clamping) and puts
  * the Y coordinate of the resulting point into q.
  *
- * @param {Uint8Array} q (output) the result, size:ecc_ed25519_SIZE
+ * @param {Uint8Array} q (output) the result, size:ecc_ed25519_ELEMENTSIZE
  * @param {Uint8Array} n the valid input scalar, size:ecc_ed25519_SCALARSIZE
  * @return {number} -1 if n is 0, and 0 otherwise.
  */
@@ -1043,27 +1043,27 @@ Module.ecc_ed25519_scalarmult_base = (
     q,
     n,
 ) => {
-    const ptr_q = mput(q, ecc_ed25519_SIZE);
+    const ptr_q = mput(q, ecc_ed25519_ELEMENTSIZE);
     const ptr_n = mput(n, ecc_ed25519_SCALARSIZE);
     const fun_ret = _ecc_ed25519_scalarmult_base(
         ptr_q,
         ptr_n,
     );
-    mget(q, ptr_q, ecc_ed25519_SIZE);
-    mfree(ptr_q, ecc_ed25519_SIZE);
+    mget(q, ptr_q, ecc_ed25519_ELEMENTSIZE);
+    mfree(ptr_q, ecc_ed25519_ELEMENTSIZE);
     mfree(ptr_n, ecc_ed25519_SCALARSIZE);
     return fun_ret;
 }
 
 // ristretto255
 
-const ecc_ristretto255_SIZE = 32;
+const ecc_ristretto255_ELEMENTSIZE = 32;
 /**
  * Size of the serialized group elements.
  *
  * @type {number}
  */
-Module.ecc_ristretto255_SIZE = ecc_ristretto255_SIZE;
+Module.ecc_ristretto255_ELEMENTSIZE = ecc_ristretto255_ELEMENTSIZE;
 
 const ecc_ristretto255_HASHSIZE = 64;
 /**
@@ -1093,17 +1093,17 @@ Module.ecc_ristretto255_NONREDUCEDSCALARSIZE = ecc_ristretto255_NONREDUCEDSCALAR
  * Checks that p is a valid ristretto255-encoded element. This operation
  * only checks that p is in canonical form.
  *
- * @param {Uint8Array} p potential point to test, size:ecc_ristretto255_SIZE
+ * @param {Uint8Array} p potential point to test, size:ecc_ristretto255_ELEMENTSIZE
  * @return {number} 1 on success, and 0 if the checks didn't pass.
  */
 Module.ecc_ristretto255_is_valid_point = (
     p,
 ) => {
-    const ptr_p = mput(p, ecc_ristretto255_SIZE);
+    const ptr_p = mput(p, ecc_ristretto255_ELEMENTSIZE);
     const fun_ret = _ecc_ristretto255_is_valid_point(
         ptr_p,
     );
-    mfree(ptr_p, ecc_ristretto255_SIZE);
+    mfree(ptr_p, ecc_ristretto255_ELEMENTSIZE);
     return fun_ret;
 }
 
@@ -1111,9 +1111,9 @@ Module.ecc_ristretto255_is_valid_point = (
  * Adds the element represented by p to the element q and stores
  * the resulting element into r.
  *
- * @param {Uint8Array} r (output) the result, size:ecc_ristretto255_SIZE
- * @param {Uint8Array} p input point operand, size:ecc_ristretto255_SIZE
- * @param {Uint8Array} q input point operand, size:ecc_ristretto255_SIZE
+ * @param {Uint8Array} r (output) the result, size:ecc_ristretto255_ELEMENTSIZE
+ * @param {Uint8Array} p input point operand, size:ecc_ristretto255_ELEMENTSIZE
+ * @param {Uint8Array} q input point operand, size:ecc_ristretto255_ELEMENTSIZE
  * @return {number} 0 on success, or -1 if p and/or q are not valid encoded elements
  */
 Module.ecc_ristretto255_add = (
@@ -1121,18 +1121,18 @@ Module.ecc_ristretto255_add = (
     p,
     q,
 ) => {
-    const ptr_r = mput(r, ecc_ristretto255_SIZE);
-    const ptr_p = mput(p, ecc_ristretto255_SIZE);
-    const ptr_q = mput(q, ecc_ristretto255_SIZE);
+    const ptr_r = mput(r, ecc_ristretto255_ELEMENTSIZE);
+    const ptr_p = mput(p, ecc_ristretto255_ELEMENTSIZE);
+    const ptr_q = mput(q, ecc_ristretto255_ELEMENTSIZE);
     const fun_ret = _ecc_ristretto255_add(
         ptr_r,
         ptr_p,
         ptr_q,
     );
-    mget(r, ptr_r, ecc_ristretto255_SIZE);
-    mfree(ptr_r, ecc_ristretto255_SIZE);
-    mfree(ptr_p, ecc_ristretto255_SIZE);
-    mfree(ptr_q, ecc_ristretto255_SIZE);
+    mget(r, ptr_r, ecc_ristretto255_ELEMENTSIZE);
+    mfree(ptr_r, ecc_ristretto255_ELEMENTSIZE);
+    mfree(ptr_p, ecc_ristretto255_ELEMENTSIZE);
+    mfree(ptr_q, ecc_ristretto255_ELEMENTSIZE);
     return fun_ret;
 }
 
@@ -1140,9 +1140,9 @@ Module.ecc_ristretto255_add = (
  * Subtracts the element represented by p to the element q and stores
  * the resulting element into r.
  *
- * @param {Uint8Array} r (output) the result, size:ecc_ristretto255_SIZE
- * @param {Uint8Array} p input point operand, size:ecc_ristretto255_SIZE
- * @param {Uint8Array} q input point operand, size:ecc_ristretto255_SIZE
+ * @param {Uint8Array} r (output) the result, size:ecc_ristretto255_ELEMENTSIZE
+ * @param {Uint8Array} p input point operand, size:ecc_ristretto255_ELEMENTSIZE
+ * @param {Uint8Array} q input point operand, size:ecc_ristretto255_ELEMENTSIZE
  * @return {number} 0 on success, or -1 if p and/or q are not valid encoded elements
  */
 Module.ecc_ristretto255_sub = (
@@ -1150,73 +1150,73 @@ Module.ecc_ristretto255_sub = (
     p,
     q,
 ) => {
-    const ptr_r = mput(r, ecc_ristretto255_SIZE);
-    const ptr_p = mput(p, ecc_ristretto255_SIZE);
-    const ptr_q = mput(q, ecc_ristretto255_SIZE);
+    const ptr_r = mput(r, ecc_ristretto255_ELEMENTSIZE);
+    const ptr_p = mput(p, ecc_ristretto255_ELEMENTSIZE);
+    const ptr_q = mput(q, ecc_ristretto255_ELEMENTSIZE);
     const fun_ret = _ecc_ristretto255_sub(
         ptr_r,
         ptr_p,
         ptr_q,
     );
-    mget(r, ptr_r, ecc_ristretto255_SIZE);
-    mfree(ptr_r, ecc_ristretto255_SIZE);
-    mfree(ptr_p, ecc_ristretto255_SIZE);
-    mfree(ptr_q, ecc_ristretto255_SIZE);
+    mget(r, ptr_r, ecc_ristretto255_ELEMENTSIZE);
+    mfree(ptr_r, ecc_ristretto255_ELEMENTSIZE);
+    mfree(ptr_p, ecc_ristretto255_ELEMENTSIZE);
+    mfree(ptr_q, ecc_ristretto255_ELEMENTSIZE);
     return fun_ret;
 }
 
 /**
  * 
  *
- * @param {Uint8Array} g (output) size:ecc_ristretto255_SIZE
+ * @param {Uint8Array} g (output) size:ecc_ristretto255_ELEMENTSIZE
  */
 Module.ecc_ristretto255_generator = (
     g,
 ) => {
-    const ptr_g = mput(g, ecc_ristretto255_SIZE);
+    const ptr_g = mput(g, ecc_ristretto255_ELEMENTSIZE);
     _ecc_ristretto255_generator(
         ptr_g,
     );
-    mget(g, ptr_g, ecc_ristretto255_SIZE);
-    mfree(ptr_g, ecc_ristretto255_SIZE);
+    mget(g, ptr_g, ecc_ristretto255_ELEMENTSIZE);
+    mfree(ptr_g, ecc_ristretto255_ELEMENTSIZE);
 }
 
 /**
  * Maps a 64 bytes vector r (usually the output of a hash function) to
  * a group element, and stores its representation into p.
  *
- * @param {Uint8Array} p (output) group element, size:ecc_ristretto255_SIZE
+ * @param {Uint8Array} p (output) group element, size:ecc_ristretto255_ELEMENTSIZE
  * @param {Uint8Array} r bytes vector hash, size:ecc_ristretto255_HASHSIZE
  */
 Module.ecc_ristretto255_from_hash = (
     p,
     r,
 ) => {
-    const ptr_p = mput(p, ecc_ristretto255_SIZE);
+    const ptr_p = mput(p, ecc_ristretto255_ELEMENTSIZE);
     const ptr_r = mput(r, ecc_ristretto255_HASHSIZE);
     _ecc_ristretto255_from_hash(
         ptr_p,
         ptr_r,
     );
-    mget(p, ptr_p, ecc_ristretto255_SIZE);
-    mfree(ptr_p, ecc_ristretto255_SIZE);
+    mget(p, ptr_p, ecc_ristretto255_ELEMENTSIZE);
+    mfree(ptr_p, ecc_ristretto255_ELEMENTSIZE);
     mfree(ptr_r, ecc_ristretto255_HASHSIZE);
 }
 
 /**
  * Fills p with the representation of a random group element.
  *
- * @param {Uint8Array} p (output) random group element, size:ecc_ristretto255_SIZE
+ * @param {Uint8Array} p (output) random group element, size:ecc_ristretto255_ELEMENTSIZE
  */
 Module.ecc_ristretto255_random = (
     p,
 ) => {
-    const ptr_p = mput(p, ecc_ristretto255_SIZE);
+    const ptr_p = mput(p, ecc_ristretto255_ELEMENTSIZE);
     _ecc_ristretto255_random(
         ptr_p,
     );
-    mget(p, ptr_p, ecc_ristretto255_SIZE);
-    mfree(ptr_p, ecc_ristretto255_SIZE);
+    mget(p, ptr_p, ecc_ristretto255_ELEMENTSIZE);
+    mfree(ptr_p, ecc_ristretto255_ELEMENTSIZE);
 }
 
 /**
@@ -1410,9 +1410,9 @@ Module.ecc_ristretto255_scalar_reduce = (
  * Multiplies an element represented by p by a valid scalar n
  * and puts the resulting element into q.
  *
- * @param {Uint8Array} q (output) the result, size:ecc_ristretto255_SIZE
+ * @param {Uint8Array} q (output) the result, size:ecc_ristretto255_ELEMENTSIZE
  * @param {Uint8Array} n the valid input scalar, size:ecc_ristretto255_SCALARSIZE
- * @param {Uint8Array} p the point on the curve, size:ecc_ristretto255_SIZE
+ * @param {Uint8Array} p the point on the curve, size:ecc_ristretto255_ELEMENTSIZE
  * @return {number} 0 on success, or -1 if q is the identity element.
  */
 Module.ecc_ristretto255_scalarmult = (
@@ -1420,18 +1420,18 @@ Module.ecc_ristretto255_scalarmult = (
     n,
     p,
 ) => {
-    const ptr_q = mput(q, ecc_ristretto255_SIZE);
+    const ptr_q = mput(q, ecc_ristretto255_ELEMENTSIZE);
     const ptr_n = mput(n, ecc_ristretto255_SCALARSIZE);
-    const ptr_p = mput(p, ecc_ristretto255_SIZE);
+    const ptr_p = mput(p, ecc_ristretto255_ELEMENTSIZE);
     const fun_ret = _ecc_ristretto255_scalarmult(
         ptr_q,
         ptr_n,
         ptr_p,
     );
-    mget(q, ptr_q, ecc_ristretto255_SIZE);
-    mfree(ptr_q, ecc_ristretto255_SIZE);
+    mget(q, ptr_q, ecc_ristretto255_ELEMENTSIZE);
+    mfree(ptr_q, ecc_ristretto255_ELEMENTSIZE);
     mfree(ptr_n, ecc_ristretto255_SCALARSIZE);
-    mfree(ptr_p, ecc_ristretto255_SIZE);
+    mfree(ptr_p, ecc_ristretto255_ELEMENTSIZE);
     return fun_ret;
 }
 
@@ -1439,7 +1439,7 @@ Module.ecc_ristretto255_scalarmult = (
  * Multiplies the generator by a valid scalar n and puts the resulting
  * element into q.
  *
- * @param {Uint8Array} q (output) the result, size:ecc_ristretto255_SIZE
+ * @param {Uint8Array} q (output) the result, size:ecc_ristretto255_ELEMENTSIZE
  * @param {Uint8Array} n the valid input scalar, size:ecc_ristretto255_SCALARSIZE
  * @return {number} -1 if n is 0, and 0 otherwise.
  */
@@ -1447,14 +1447,14 @@ Module.ecc_ristretto255_scalarmult_base = (
     q,
     n,
 ) => {
-    const ptr_q = mput(q, ecc_ristretto255_SIZE);
+    const ptr_q = mput(q, ecc_ristretto255_ELEMENTSIZE);
     const ptr_n = mput(n, ecc_ristretto255_SCALARSIZE);
     const fun_ret = _ecc_ristretto255_scalarmult_base(
         ptr_q,
         ptr_n,
     );
-    mget(q, ptr_q, ecc_ristretto255_SIZE);
-    mfree(ptr_q, ecc_ristretto255_SIZE);
+    mget(q, ptr_q, ecc_ristretto255_ELEMENTSIZE);
+    mfree(ptr_q, ecc_ristretto255_ELEMENTSIZE);
     mfree(ptr_n, ecc_ristretto255_SCALARSIZE);
     return fun_ret;
 }

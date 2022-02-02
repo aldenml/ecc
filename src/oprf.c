@@ -43,10 +43,10 @@ typedef struct {
     byte_t s[SCALARSIZE];
 } Proof_t;
 
-static_assert(ecc_oprf_ristretto255_sha512_ELEMENTSIZE == ecc_ristretto255_SIZE, "");
+static_assert(ecc_oprf_ristretto255_sha512_ELEMENTSIZE == ecc_ristretto255_ELEMENTSIZE, "");
 static_assert(ecc_oprf_ristretto255_sha512_SCALARSIZE == ecc_ristretto255_SCALARSIZE, "");
 static_assert(ecc_oprf_ristretto255_sha512_PROOFSIZE == 2 * ecc_ristretto255_SCALARSIZE, "");
-static_assert(ecc_oprf_ristretto255_sha512_Nh == ecc_hash_sha512_SIZE, "");
+static_assert(ecc_oprf_ristretto255_sha512_Nh == ecc_hash_sha512_HASHSIZE, "");
 
 static_assert(sizeof(Proof_t) == ecc_oprf_ristretto255_sha512_PROOFSIZE, "");
 

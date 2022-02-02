@@ -39,7 +39,7 @@
 typedef struct {
     byte_t epk[ecc_pre_schema1_PUBLICKEYSIZE];
     byte_t em[ecc_pre_schema1_MESSAGESIZE];
-    byte_t ah[ecc_hash_sha256_SIZE];
+    byte_t ah[ecc_hash_sha256_HASHSIZE];
     byte_t spk_i[ecc_pre_schema1_SIGNINGPUBLICKEYSIZE];
     byte_t sig[ecc_pre_schema1_SIGNATURESIZE];
 } CiphertextLevel1_t;
@@ -66,7 +66,7 @@ static_assert(
     ecc_pre_schema1_CIPHERTEXTLEVEL1SIZE ==
     ecc_pre_schema1_PUBLICKEYSIZE +
     ecc_pre_schema1_MESSAGESIZE +
-    32 + // 32 is ecc_hash_sha256_SIZE
+    32 + // 32 is ecc_hash_sha256_HASHSIZE
     ecc_pre_schema1_SIGNINGPUBLICKEYSIZE +
     ecc_pre_schema1_SIGNATURESIZE,
     "");
@@ -557,13 +557,13 @@ int ecc_pre_schema1_DecryptLevel2(
     ecc_bls12_381_fp12_mul(m, C_j->C_i.em, pairing_m);
 
     // verify SHA256(epk||m) = ah
-    byte_t ah[ecc_hash_sha256_SIZE];
+    byte_t ah[ecc_hash_sha256_HASHSIZE];
     crypto_hash_sha256_state ah_st;
     crypto_hash_sha256_init(&ah_st);
     crypto_hash_sha256_update(&ah_st, C_j->C_i.epk, ecc_pre_schema1_PUBLICKEYSIZE);
     crypto_hash_sha256_update(&ah_st, m, ecc_pre_schema1_MESSAGESIZE);
     crypto_hash_sha256_final(&ah_st, ah);
-    int r = ecc_compare(ah, C_j->C_i.ah, ecc_hash_sha256_SIZE);
+    int r = ecc_compare(ah, C_j->C_i.ah, ecc_hash_sha256_HASHSIZE);
 
     // cleanup stack memory
     ecc_memzero((byte_t *) &sig_st, sizeof sig_st);

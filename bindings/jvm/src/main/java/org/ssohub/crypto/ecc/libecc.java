@@ -190,20 +190,20 @@ public final class libecc {
      * The size of a SHA-256 digest.
      *
      */
-    public static final int ecc_hash_sha256_SIZE = 32;
+    public static final int ecc_hash_sha256_HASHSIZE = 32;
 
     /**
      * The size of a SHA-512 digest.
      *
      */
-    public static final int ecc_hash_sha512_SIZE = 64;
+    public static final int ecc_hash_sha512_HASHSIZE = 64;
 
     /**
      * Computes the SHA-256 of a given input.
      * 
      * See https://en.wikipedia.org/wiki/SHA-2
      *
-     * @param digest (output) the SHA-256 of the input, size:ecc_hash_sha256_SIZE
+     * @param digest (output) the SHA-256 of the input, size:ecc_hash_sha256_HASHSIZE
      * @param input the input message, size:input_len
      * @param input_len the length of `input`
      */
@@ -218,7 +218,7 @@ public final class libecc {
      * 
      * See https://en.wikipedia.org/wiki/SHA-2
      *
-     * @param digest (output) the SHA-512 of the input, size:ecc_hash_sha512_SIZE
+     * @param digest (output) the SHA-512 of the input, size:ecc_hash_sha512_HASHSIZE
      * @param input the input message, size:input_len
      * @param input_len the length of `input`
      */
@@ -234,7 +234,7 @@ public final class libecc {
      * Size of the HMAC-SHA-256 digest.
      *
      */
-    public static final int ecc_mac_hmac_sha256_SIZE = 32;
+    public static final int ecc_mac_hmac_sha256_HASHSIZE = 32;
 
     /**
      * Size of a HMAC-SHA-256 key.
@@ -246,7 +246,7 @@ public final class libecc {
      * Size of the HMAC-SHA-512 digest.
      *
      */
-    public static final int ecc_mac_hmac_sha512_SIZE = 64;
+    public static final int ecc_mac_hmac_sha512_HASHSIZE = 64;
 
     /**
      * Size of a HMAC-SHA-512 key.
@@ -260,7 +260,7 @@ public final class libecc {
      * See https://datatracker.ietf.org/doc/html/rfc2104
      * See https://datatracker.ietf.org/doc/html/rfc4868
      *
-     * @param digest (output) the HMAC-SHA-256 of the input, size:ecc_mac_hmac_sha256_SIZE
+     * @param digest (output) the HMAC-SHA-256 of the input, size:ecc_mac_hmac_sha256_HASHSIZE
      * @param text the input message, size:text_len
      * @param text_len the length of `input`
      * @param key authentication key, size:ecc_mac_hmac_sha256_KEYSIZE
@@ -278,7 +278,7 @@ public final class libecc {
      * See https://datatracker.ietf.org/doc/html/rfc2104
      * See https://datatracker.ietf.org/doc/html/rfc4868
      *
-     * @param digest (output) the HMAC-SHA-512 of the input, size:ecc_mac_hmac_sha512_SIZE
+     * @param digest (output) the HMAC-SHA-512 of the input, size:ecc_mac_hmac_sha512_HASHSIZE
      * @param text the input message, size:text_len
      * @param text_len the length of `input`
      * @param key authentication key, size:ecc_mac_hmac_sha512_KEYSIZE
@@ -411,7 +411,7 @@ public final class libecc {
      * Size of the serialized group elements.
      *
      */
-    public static final int ecc_ed25519_SIZE = 32;
+    public static final int ecc_ed25519_ELEMENTSIZE = 32;
 
     /**
      * Size of the input to perform the Elligator 2 map operation.
@@ -435,7 +435,7 @@ public final class libecc {
      * Checks that p represents a point on the edwards25519 curve, in canonical
      * form, on the main subgroup, and that the point doesn't have a small order.
      *
-     * @param p potential point to test, size:ecc_ed25519_SIZE
+     * @param p potential point to test, size:ecc_ed25519_ELEMENTSIZE
      * @return 1 on success, and 0 if the checks didn't pass
      */
     public static native int ecc_ed25519_is_valid_point(
@@ -445,9 +445,9 @@ public final class libecc {
     /**
      * Adds the point p to the point q and stores the resulting point into r.
      *
-     * @param r (output) the result, size:ecc_ed25519_SIZE
-     * @param p input point operand, size:ecc_ed25519_SIZE
-     * @param q input point operand, size:ecc_ed25519_SIZE
+     * @param r (output) the result, size:ecc_ed25519_ELEMENTSIZE
+     * @param p input point operand, size:ecc_ed25519_ELEMENTSIZE
+     * @param q input point operand, size:ecc_ed25519_ELEMENTSIZE
      * @return 0 on success, or -1 if p and/or q are not valid points
      */
     public static native int ecc_ed25519_add(
@@ -459,9 +459,9 @@ public final class libecc {
     /**
      * Subtracts the point p to the point q and stores the resulting point into r.
      *
-     * @param r (output) the result, size:ecc_ed25519_SIZE
-     * @param p input point operand, size:ecc_ed25519_SIZE
-     * @param q input point operand, size:ecc_ed25519_SIZE
+     * @param r (output) the result, size:ecc_ed25519_ELEMENTSIZE
+     * @param p input point operand, size:ecc_ed25519_ELEMENTSIZE
+     * @param q input point operand, size:ecc_ed25519_ELEMENTSIZE
      * @return 0 on success, or -1 if p and/or q are not valid points
      */
     public static native int ecc_ed25519_sub(
@@ -479,7 +479,7 @@ public final class libecc {
      * bit to set the sign of the X coordinate, and the resulting point is
      * multiplied by the cofactor.
      *
-     * @param p (output) point in the main subgroup, size:ecc_ed25519_SIZE
+     * @param p (output) point in the main subgroup, size:ecc_ed25519_ELEMENTSIZE
      * @param r input vector, size:ecc_ed25519_UNIFORMSIZE
      */
     public static native void ecc_ed25519_from_uniform(
@@ -490,7 +490,7 @@ public final class libecc {
     /**
      * Fills p with the representation of a random group element.
      *
-     * @param p (output) random group element, size:ecc_ed25519_SIZE
+     * @param p (output) random group element, size:ecc_ed25519_ELEMENTSIZE
      */
     public static native void ecc_ed25519_random(
         byte[] p
@@ -604,9 +604,9 @@ public final class libecc {
      * on the curve, not on the main subgroup, is a point of small order,
      * or is not provided in canonical form.
      *
-     * @param q (output) the result, size:ecc_ed25519_SIZE
+     * @param q (output) the result, size:ecc_ed25519_ELEMENTSIZE
      * @param n the valid input scalar, size:ecc_ed25519_SCALARSIZE
-     * @param p the point on the curve, size:ecc_ed25519_SIZE
+     * @param p the point on the curve, size:ecc_ed25519_ELEMENTSIZE
      * @return 0 on success, or -1 otherwise.
      */
     public static native int ecc_ed25519_scalarmult(
@@ -619,7 +619,7 @@ public final class libecc {
      * Multiplies the base point (x, 4/5) by a scalar n (without clamping) and puts
      * the Y coordinate of the resulting point into q.
      *
-     * @param q (output) the result, size:ecc_ed25519_SIZE
+     * @param q (output) the result, size:ecc_ed25519_ELEMENTSIZE
      * @param n the valid input scalar, size:ecc_ed25519_SCALARSIZE
      * @return -1 if n is 0, and 0 otherwise.
      */
@@ -634,7 +634,7 @@ public final class libecc {
      * Size of the serialized group elements.
      *
      */
-    public static final int ecc_ristretto255_SIZE = 32;
+    public static final int ecc_ristretto255_ELEMENTSIZE = 32;
 
     /**
      * Size of the hash input to use on the hash to map operation.
@@ -658,7 +658,7 @@ public final class libecc {
      * Checks that p is a valid ristretto255-encoded element. This operation
      * only checks that p is in canonical form.
      *
-     * @param p potential point to test, size:ecc_ristretto255_SIZE
+     * @param p potential point to test, size:ecc_ristretto255_ELEMENTSIZE
      * @return 1 on success, and 0 if the checks didn't pass.
      */
     public static native int ecc_ristretto255_is_valid_point(
@@ -669,9 +669,9 @@ public final class libecc {
      * Adds the element represented by p to the element q and stores
      * the resulting element into r.
      *
-     * @param r (output) the result, size:ecc_ristretto255_SIZE
-     * @param p input point operand, size:ecc_ristretto255_SIZE
-     * @param q input point operand, size:ecc_ristretto255_SIZE
+     * @param r (output) the result, size:ecc_ristretto255_ELEMENTSIZE
+     * @param p input point operand, size:ecc_ristretto255_ELEMENTSIZE
+     * @param q input point operand, size:ecc_ristretto255_ELEMENTSIZE
      * @return 0 on success, or -1 if p and/or q are not valid encoded elements
      */
     public static native int ecc_ristretto255_add(
@@ -684,9 +684,9 @@ public final class libecc {
      * Subtracts the element represented by p to the element q and stores
      * the resulting element into r.
      *
-     * @param r (output) the result, size:ecc_ristretto255_SIZE
-     * @param p input point operand, size:ecc_ristretto255_SIZE
-     * @param q input point operand, size:ecc_ristretto255_SIZE
+     * @param r (output) the result, size:ecc_ristretto255_ELEMENTSIZE
+     * @param p input point operand, size:ecc_ristretto255_ELEMENTSIZE
+     * @param q input point operand, size:ecc_ristretto255_ELEMENTSIZE
      * @return 0 on success, or -1 if p and/or q are not valid encoded elements
      */
     public static native int ecc_ristretto255_sub(
@@ -698,7 +698,7 @@ public final class libecc {
     /**
      * 
      *
-     * @param g (output) size:ecc_ristretto255_SIZE
+     * @param g (output) size:ecc_ristretto255_ELEMENTSIZE
      */
     public static native void ecc_ristretto255_generator(
         byte[] g
@@ -708,7 +708,7 @@ public final class libecc {
      * Maps a 64 bytes vector r (usually the output of a hash function) to
      * a group element, and stores its representation into p.
      *
-     * @param p (output) group element, size:ecc_ristretto255_SIZE
+     * @param p (output) group element, size:ecc_ristretto255_ELEMENTSIZE
      * @param r bytes vector hash, size:ecc_ristretto255_HASHSIZE
      */
     public static native void ecc_ristretto255_from_hash(
@@ -719,7 +719,7 @@ public final class libecc {
     /**
      * Fills p with the representation of a random group element.
      *
-     * @param p (output) random group element, size:ecc_ristretto255_SIZE
+     * @param p (output) random group element, size:ecc_ristretto255_ELEMENTSIZE
      */
     public static native void ecc_ristretto255_random(
         byte[] p
@@ -829,9 +829,9 @@ public final class libecc {
      * Multiplies an element represented by p by a valid scalar n
      * and puts the resulting element into q.
      *
-     * @param q (output) the result, size:ecc_ristretto255_SIZE
+     * @param q (output) the result, size:ecc_ristretto255_ELEMENTSIZE
      * @param n the valid input scalar, size:ecc_ristretto255_SCALARSIZE
-     * @param p the point on the curve, size:ecc_ristretto255_SIZE
+     * @param p the point on the curve, size:ecc_ristretto255_ELEMENTSIZE
      * @return 0 on success, or -1 if q is the identity element.
      */
     public static native int ecc_ristretto255_scalarmult(
@@ -844,7 +844,7 @@ public final class libecc {
      * Multiplies the generator by a valid scalar n and puts the resulting
      * element into q.
      *
-     * @param q (output) the result, size:ecc_ristretto255_SIZE
+     * @param q (output) the result, size:ecc_ristretto255_ELEMENTSIZE
      * @param n the valid input scalar, size:ecc_ristretto255_SCALARSIZE
      * @return -1 if n is 0, and 0 otherwise.
      */
