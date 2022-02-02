@@ -1,16 +1,31 @@
 /*
- * Copyright (c) 2021, Alden Torres
+ * Copyright (c) 2021-2022, Alden Torres
  *
  * Licensed under the terms of the MIT license.
  * Copy of the license at https://opensource.org/licenses/MIT
  */
 
 #include "ecc_test.h"
-#include <stdarg.h>
-#include <setjmp.h>
-#include <string.h>
-#include <cmocka.h>
-#include <stdio.h>
+
+static void test_ecc_bls12_381_fp12_one(void **state) {
+    ECC_UNUSED(state);
+
+    byte_t one[ecc_bls12_381_FP12SIZE];
+    ecc_bls12_381_fp12_one(one);
+
+    int r = ecc_bls12_381_fp12_is_one(one);
+    assert_int_equal(r, 1);
+}
+
+static void test_ecc_bls12_381_fp12_one_rand(void **state) {
+    ECC_UNUSED(state);
+
+    byte_t a[ecc_bls12_381_FP12SIZE];
+    ecc_bls12_381_fp12_random(a);
+
+    int r = ecc_bls12_381_fp12_is_one(a);
+    assert_int_equal(r, 0);
+}
 
 static void ecc_bls12_381_fp12_pow_test(void **state) {
     ECC_UNUSED(state);
@@ -201,6 +216,8 @@ static void ecc_bls12_381_pairing_test_g2_inverse(void **state) {
 
 int main() {
     const struct CMUnitTest tests[] = {
+        cmocka_unit_test(test_ecc_bls12_381_fp12_one),
+        cmocka_unit_test(test_ecc_bls12_381_fp12_one_rand),
         cmocka_unit_test(ecc_bls12_381_fp12_pow_test),
         cmocka_unit_test(ecc_bls12_381_fp12_pow_test_inverse),
         cmocka_unit_test(ecc_bls12_381_pairing_test),

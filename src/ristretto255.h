@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021, Alden Torres
+ * Copyright (c) 2021-2022, Alden Torres
  *
  * Licensed under the terms of the MIT license.
  * Copy of the license at https://opensource.org/licenses/MIT
@@ -14,7 +14,7 @@
 /**
  * Size of the serialized group elements.
  */
-#define ecc_ristretto255_SIZE 32
+#define ecc_ristretto255_ELEMENTSIZE 32
 
 // const
 /**
@@ -38,7 +38,7 @@
  * Checks that p is a valid ristretto255-encoded element. This operation
  * only checks that p is in canonical form.
  *
- * @param p potential point to test, size:ecc_ristretto255_SIZE
+ * @param p potential point to test, size:ecc_ristretto255_ELEMENTSIZE
  * @return 1 on success, and 0 if the checks didn't pass.
  */
 ECC_EXPORT
@@ -48,9 +48,9 @@ int ecc_ristretto255_is_valid_point(const byte_t *p);
  * Adds the element represented by p to the element q and stores
  * the resulting element into r.
  *
- * @param[out] r the result, size:ecc_ristretto255_SIZE
- * @param p input point operand, size:ecc_ristretto255_SIZE
- * @param q input point operand, size:ecc_ristretto255_SIZE
+ * @param[out] r the result, size:ecc_ristretto255_ELEMENTSIZE
+ * @param p input point operand, size:ecc_ristretto255_ELEMENTSIZE
+ * @param q input point operand, size:ecc_ristretto255_ELEMENTSIZE
  * @return 0 on success, or -1 if p and/or q are not valid encoded elements
  */
 ECC_EXPORT
@@ -60,9 +60,9 @@ int ecc_ristretto255_add(byte_t *r, const byte_t *p, const byte_t *q);
  * Subtracts the element represented by p to the element q and stores
  * the resulting element into r.
  *
- * @param[out] r the result, size:ecc_ristretto255_SIZE
- * @param p input point operand, size:ecc_ristretto255_SIZE
- * @param q input point operand, size:ecc_ristretto255_SIZE
+ * @param[out] r the result, size:ecc_ristretto255_ELEMENTSIZE
+ * @param p input point operand, size:ecc_ristretto255_ELEMENTSIZE
+ * @param q input point operand, size:ecc_ristretto255_ELEMENTSIZE
  * @return 0 on success, or -1 if p and/or q are not valid encoded elements
  */
 ECC_EXPORT
@@ -70,7 +70,7 @@ int ecc_ristretto255_sub(byte_t *r, const byte_t *p, const byte_t *q);
 
 /**
  *
- * @param[out] g size:ecc_ristretto255_SIZE
+ * @param[out] g size:ecc_ristretto255_ELEMENTSIZE
  */
 ECC_EXPORT
 void ecc_ristretto255_generator(byte_t *g);
@@ -79,7 +79,7 @@ void ecc_ristretto255_generator(byte_t *g);
  * Maps a 64 bytes vector r (usually the output of a hash function) to
  * a group element, and stores its representation into p.
  *
- * @param[out] p group element, size:ecc_ristretto255_SIZE
+ * @param[out] p group element, size:ecc_ristretto255_ELEMENTSIZE
  * @param r bytes vector hash, size:ecc_ristretto255_HASHSIZE
  */
 ECC_EXPORT
@@ -88,7 +88,7 @@ void ecc_ristretto255_from_hash(byte_t *p, const byte_t *r);
 /**
  * Fills p with the representation of a random group element.
  *
- * @param[out] p random group element, size:ecc_ristretto255_SIZE
+ * @param[out] p random group element, size:ecc_ristretto255_ELEMENTSIZE
  */
 ECC_EXPORT
 void ecc_ristretto255_random(byte_t *p);
@@ -179,9 +179,9 @@ void ecc_ristretto255_scalar_reduce(byte_t *r, const byte_t *s);
  * Multiplies an element represented by p by a valid scalar n
  * and puts the resulting element into q.
  *
- * @param[out] q the result, size:ecc_ristretto255_SIZE
+ * @param[out] q the result, size:ecc_ristretto255_ELEMENTSIZE
  * @param n the valid input scalar, size:ecc_ristretto255_SCALARSIZE
- * @param p the point on the curve, size:ecc_ristretto255_SIZE
+ * @param p the point on the curve, size:ecc_ristretto255_ELEMENTSIZE
  * @return 0 on success, or -1 if q is the identity element.
  */
 ECC_EXPORT
@@ -191,7 +191,7 @@ int ecc_ristretto255_scalarmult(byte_t *q, const byte_t *n, const byte_t *p);
  * Multiplies the generator by a valid scalar n and puts the resulting
  * element into q.
  *
- * @param[out] q the result, size:ecc_ristretto255_SIZE
+ * @param[out] q the result, size:ecc_ristretto255_ELEMENTSIZE
  * @param n the valid input scalar, size:ecc_ristretto255_SCALARSIZE
  * @return -1 if n is 0, and 0 otherwise.
  */

@@ -244,12 +244,12 @@ def ecc_is_zero(
 
 # hash
 
-ecc_hash_sha256_SIZE = 32
+ecc_hash_sha256_HASHSIZE = 32
 """
 The size of a SHA-256 digest.
 """
 
-ecc_hash_sha512_SIZE = 64
+ecc_hash_sha512_HASHSIZE = 64
 """
 The size of a SHA-512 digest.
 """
@@ -264,7 +264,7 @@ def ecc_hash_sha256(
     
     See https://en.wikipedia.org/wiki/SHA-2
     
-    digest -- (output) the SHA-256 of the input, size:ecc_hash_sha256_SIZE
+    digest -- (output) the SHA-256 of the input, size:ecc_hash_sha256_HASHSIZE
     input -- the input message, size:input_len
     input_len -- the length of `input`
     """
@@ -288,7 +288,7 @@ def ecc_hash_sha512(
     
     See https://en.wikipedia.org/wiki/SHA-2
     
-    digest -- (output) the SHA-512 of the input, size:ecc_hash_sha512_SIZE
+    digest -- (output) the SHA-512 of the input, size:ecc_hash_sha512_HASHSIZE
     input -- the input message, size:input_len
     input_len -- the length of `input`
     """
@@ -304,7 +304,7 @@ def ecc_hash_sha512(
 
 # mac
 
-ecc_mac_hmac_sha256_SIZE = 32
+ecc_mac_hmac_sha256_HASHSIZE = 32
 """
 Size of the HMAC-SHA-256 digest.
 """
@@ -314,7 +314,7 @@ ecc_mac_hmac_sha256_KEYSIZE = 32
 Size of a HMAC-SHA-256 key.
 """
 
-ecc_mac_hmac_sha512_SIZE = 64
+ecc_mac_hmac_sha512_HASHSIZE = 64
 """
 Size of the HMAC-SHA-512 digest.
 """
@@ -336,7 +336,7 @@ def ecc_mac_hmac_sha256(
     See https://datatracker.ietf.org/doc/html/rfc2104
     See https://datatracker.ietf.org/doc/html/rfc4868
     
-    digest -- (output) the HMAC-SHA-256 of the input, size:ecc_mac_hmac_sha256_SIZE
+    digest -- (output) the HMAC-SHA-256 of the input, size:ecc_mac_hmac_sha256_HASHSIZE
     text -- the input message, size:text_len
     text_len -- the length of `input`
     key -- authentication key, size:ecc_mac_hmac_sha256_KEYSIZE
@@ -365,7 +365,7 @@ def ecc_mac_hmac_sha512(
     See https://datatracker.ietf.org/doc/html/rfc2104
     See https://datatracker.ietf.org/doc/html/rfc4868
     
-    digest -- (output) the HMAC-SHA-512 of the input, size:ecc_mac_hmac_sha512_SIZE
+    digest -- (output) the HMAC-SHA-512 of the input, size:ecc_mac_hmac_sha512_HASHSIZE
     text -- the input message, size:text_len
     text_len -- the length of `input`
     key -- authentication key, size:ecc_mac_hmac_sha512_KEYSIZE
@@ -561,7 +561,7 @@ def ecc_kdf_scrypt(
 
 # ed25519
 
-ecc_ed25519_SIZE = 32
+ecc_ed25519_ELEMENTSIZE = 32
 """
 Size of the serialized group elements.
 """
@@ -588,7 +588,7 @@ def ecc_ed25519_is_valid_point(
     Checks that p represents a point on the edwards25519 curve, in canonical
     form, on the main subgroup, and that the point doesn't have a small order.
     
-    p -- potential point to test, size:ecc_ed25519_SIZE
+    p -- potential point to test, size:ecc_ed25519_ELEMENTSIZE
     return 1 on success, and 0 if the checks didn't pass
     """
     ptr_p = ffi.from_buffer(p)
@@ -606,9 +606,9 @@ def ecc_ed25519_add(
     """
     Adds the point p to the point q and stores the resulting point into r.
     
-    r -- (output) the result, size:ecc_ed25519_SIZE
-    p -- input point operand, size:ecc_ed25519_SIZE
-    q -- input point operand, size:ecc_ed25519_SIZE
+    r -- (output) the result, size:ecc_ed25519_ELEMENTSIZE
+    p -- input point operand, size:ecc_ed25519_ELEMENTSIZE
+    q -- input point operand, size:ecc_ed25519_ELEMENTSIZE
     return 0 on success, or -1 if p and/or q are not valid points
     """
     ptr_r = ffi.from_buffer(r)
@@ -630,9 +630,9 @@ def ecc_ed25519_sub(
     """
     Subtracts the point p to the point q and stores the resulting point into r.
     
-    r -- (output) the result, size:ecc_ed25519_SIZE
-    p -- input point operand, size:ecc_ed25519_SIZE
-    q -- input point operand, size:ecc_ed25519_SIZE
+    r -- (output) the result, size:ecc_ed25519_ELEMENTSIZE
+    p -- input point operand, size:ecc_ed25519_ELEMENTSIZE
+    q -- input point operand, size:ecc_ed25519_ELEMENTSIZE
     return 0 on success, or -1 if p and/or q are not valid points
     """
     ptr_r = ffi.from_buffer(r)
@@ -659,7 +659,7 @@ def ecc_ed25519_from_uniform(
     bit to set the sign of the X coordinate, and the resulting point is
     multiplied by the cofactor.
     
-    p -- (output) point in the main subgroup, size:ecc_ed25519_SIZE
+    p -- (output) point in the main subgroup, size:ecc_ed25519_ELEMENTSIZE
     r -- input vector, size:ecc_ed25519_UNIFORMSIZE
     """
     ptr_p = ffi.from_buffer(p)
@@ -677,7 +677,7 @@ def ecc_ed25519_random(
     """
     Fills p with the representation of a random group element.
     
-    p -- (output) random group element, size:ecc_ed25519_SIZE
+    p -- (output) random group element, size:ecc_ed25519_ELEMENTSIZE
     """
     ptr_p = ffi.from_buffer(p)
     lib.ecc_ed25519_random(
@@ -867,9 +867,9 @@ def ecc_ed25519_scalarmult(
     on the curve, not on the main subgroup, is a point of small order,
     or is not provided in canonical form.
     
-    q -- (output) the result, size:ecc_ed25519_SIZE
+    q -- (output) the result, size:ecc_ed25519_ELEMENTSIZE
     n -- the valid input scalar, size:ecc_ed25519_SCALARSIZE
-    p -- the point on the curve, size:ecc_ed25519_SIZE
+    p -- the point on the curve, size:ecc_ed25519_ELEMENTSIZE
     return 0 on success, or -1 otherwise.
     """
     ptr_q = ffi.from_buffer(q)
@@ -891,7 +891,7 @@ def ecc_ed25519_scalarmult_base(
     Multiplies the base point (x, 4/5) by a scalar n (without clamping) and puts
     the Y coordinate of the resulting point into q.
     
-    q -- (output) the result, size:ecc_ed25519_SIZE
+    q -- (output) the result, size:ecc_ed25519_ELEMENTSIZE
     n -- the valid input scalar, size:ecc_ed25519_SCALARSIZE
     return -1 if n is 0, and 0 otherwise.
     """
@@ -906,7 +906,7 @@ def ecc_ed25519_scalarmult_base(
 
 # ristretto255
 
-ecc_ristretto255_SIZE = 32
+ecc_ristretto255_ELEMENTSIZE = 32
 """
 Size of the serialized group elements.
 """
@@ -933,7 +933,7 @@ def ecc_ristretto255_is_valid_point(
     Checks that p is a valid ristretto255-encoded element. This operation
     only checks that p is in canonical form.
     
-    p -- potential point to test, size:ecc_ristretto255_SIZE
+    p -- potential point to test, size:ecc_ristretto255_ELEMENTSIZE
     return 1 on success, and 0 if the checks didn't pass.
     """
     ptr_p = ffi.from_buffer(p)
@@ -952,9 +952,9 @@ def ecc_ristretto255_add(
     Adds the element represented by p to the element q and stores
     the resulting element into r.
     
-    r -- (output) the result, size:ecc_ristretto255_SIZE
-    p -- input point operand, size:ecc_ristretto255_SIZE
-    q -- input point operand, size:ecc_ristretto255_SIZE
+    r -- (output) the result, size:ecc_ristretto255_ELEMENTSIZE
+    p -- input point operand, size:ecc_ristretto255_ELEMENTSIZE
+    q -- input point operand, size:ecc_ristretto255_ELEMENTSIZE
     return 0 on success, or -1 if p and/or q are not valid encoded elements
     """
     ptr_r = ffi.from_buffer(r)
@@ -977,9 +977,9 @@ def ecc_ristretto255_sub(
     Subtracts the element represented by p to the element q and stores
     the resulting element into r.
     
-    r -- (output) the result, size:ecc_ristretto255_SIZE
-    p -- input point operand, size:ecc_ristretto255_SIZE
-    q -- input point operand, size:ecc_ristretto255_SIZE
+    r -- (output) the result, size:ecc_ristretto255_ELEMENTSIZE
+    p -- input point operand, size:ecc_ristretto255_ELEMENTSIZE
+    q -- input point operand, size:ecc_ristretto255_ELEMENTSIZE
     return 0 on success, or -1 if p and/or q are not valid encoded elements
     """
     ptr_r = ffi.from_buffer(r)
@@ -999,7 +999,7 @@ def ecc_ristretto255_generator(
     """
     
     
-    g -- (output) size:ecc_ristretto255_SIZE
+    g -- (output) size:ecc_ristretto255_ELEMENTSIZE
     """
     ptr_g = ffi.from_buffer(g)
     lib.ecc_ristretto255_generator(
@@ -1016,7 +1016,7 @@ def ecc_ristretto255_from_hash(
     Maps a 64 bytes vector r (usually the output of a hash function) to
     a group element, and stores its representation into p.
     
-    p -- (output) group element, size:ecc_ristretto255_SIZE
+    p -- (output) group element, size:ecc_ristretto255_ELEMENTSIZE
     r -- bytes vector hash, size:ecc_ristretto255_HASHSIZE
     """
     ptr_p = ffi.from_buffer(p)
@@ -1034,7 +1034,7 @@ def ecc_ristretto255_random(
     """
     Fills p with the representation of a random group element.
     
-    p -- (output) random group element, size:ecc_ristretto255_SIZE
+    p -- (output) random group element, size:ecc_ristretto255_ELEMENTSIZE
     """
     ptr_p = ffi.from_buffer(p)
     lib.ecc_ristretto255_random(
@@ -1220,9 +1220,9 @@ def ecc_ristretto255_scalarmult(
     Multiplies an element represented by p by a valid scalar n
     and puts the resulting element into q.
     
-    q -- (output) the result, size:ecc_ristretto255_SIZE
+    q -- (output) the result, size:ecc_ristretto255_ELEMENTSIZE
     n -- the valid input scalar, size:ecc_ristretto255_SCALARSIZE
-    p -- the point on the curve, size:ecc_ristretto255_SIZE
+    p -- the point on the curve, size:ecc_ristretto255_ELEMENTSIZE
     return 0 on success, or -1 if q is the identity element.
     """
     ptr_q = ffi.from_buffer(q)
@@ -1244,7 +1244,7 @@ def ecc_ristretto255_scalarmult_base(
     Multiplies the generator by a valid scalar n and puts the resulting
     element into q.
     
-    q -- (output) the result, size:ecc_ristretto255_SIZE
+    q -- (output) the result, size:ecc_ristretto255_ELEMENTSIZE
     n -- the valid input scalar, size:ecc_ristretto255_SCALARSIZE
     return -1 if n is 0, and 0 otherwise.
     """

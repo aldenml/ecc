@@ -1,15 +1,11 @@
 /*
- * Copyright (c) 2021, Alden Torres
+ * Copyright (c) 2021-2022, Alden Torres
  *
  * Licensed under the terms of the MIT license.
  * Copy of the license at https://opensource.org/licenses/MIT
  */
 
 #include "ecc_test.h"
-#include <stdarg.h>
-#include <setjmp.h>
-#include <string.h>
-#include <cmocka.h>
 
 static void test_ecc_memzero(void **state) {
     ECC_UNUSED(state);

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021, Alden Torres
+ * Copyright (c) 2021-2022, Alden Torres
  *
  * Licensed under the terms of the MIT license.
  * Copy of the license at https://opensource.org/licenses/MIT
@@ -14,7 +14,7 @@
 /**
  * Size of the serialized group elements.
  */
-#define ecc_ed25519_SIZE 32
+#define ecc_ed25519_ELEMENTSIZE 32
 
 // const
 /**
@@ -38,7 +38,7 @@
  * Checks that p represents a point on the edwards25519 curve, in canonical
  * form, on the main subgroup, and that the point doesn't have a small order.
  *
- * @param p potential point to test, size:ecc_ed25519_SIZE
+ * @param p potential point to test, size:ecc_ed25519_ELEMENTSIZE
  * @return 1 on success, and 0 if the checks didn't pass
  */
 ECC_EXPORT
@@ -47,9 +47,9 @@ int ecc_ed25519_is_valid_point(const byte_t *p);
 /**
  * Adds the point p to the point q and stores the resulting point into r.
  *
- * @param[out] r the result, size:ecc_ed25519_SIZE
- * @param p input point operand, size:ecc_ed25519_SIZE
- * @param q input point operand, size:ecc_ed25519_SIZE
+ * @param[out] r the result, size:ecc_ed25519_ELEMENTSIZE
+ * @param p input point operand, size:ecc_ed25519_ELEMENTSIZE
+ * @param q input point operand, size:ecc_ed25519_ELEMENTSIZE
  * @return 0 on success, or -1 if p and/or q are not valid points
  */
 ECC_EXPORT
@@ -58,9 +58,9 @@ int ecc_ed25519_add(byte_t *r, const byte_t *p, const byte_t *q);
 /**
  * Subtracts the point p to the point q and stores the resulting point into r.
  *
- * @param[out] r the result, size:ecc_ed25519_SIZE
- * @param p input point operand, size:ecc_ed25519_SIZE
- * @param q input point operand, size:ecc_ed25519_SIZE
+ * @param[out] r the result, size:ecc_ed25519_ELEMENTSIZE
+ * @param p input point operand, size:ecc_ed25519_ELEMENTSIZE
+ * @param q input point operand, size:ecc_ed25519_ELEMENTSIZE
  * @return 0 on success, or -1 if p and/or q are not valid points
  */
 ECC_EXPORT
@@ -75,7 +75,7 @@ int ecc_ed25519_sub(byte_t *r, const byte_t *p, const byte_t *q);
  * bit to set the sign of the X coordinate, and the resulting point is
  * multiplied by the cofactor.
  *
- * @param[out] p point in the main subgroup, size:ecc_ed25519_SIZE
+ * @param[out] p point in the main subgroup, size:ecc_ed25519_ELEMENTSIZE
  * @param r input vector, size:ecc_ed25519_UNIFORMSIZE
  */
 ECC_EXPORT
@@ -84,7 +84,7 @@ void ecc_ed25519_from_uniform(byte_t *p, const byte_t *r);
 /**
  * Fills p with the representation of a random group element.
  *
- * @param[out] p random group element, size:ecc_ed25519_SIZE
+ * @param[out] p random group element, size:ecc_ed25519_ELEMENTSIZE
  */
 ECC_EXPORT
 void ecc_ed25519_random(byte_t *p);
@@ -179,9 +179,9 @@ void ecc_ed25519_scalar_reduce(byte_t *r, const byte_t *s);
  * on the curve, not on the main subgroup, is a point of small order,
  * or is not provided in canonical form.
  *
- * @param[out] q the result, size:ecc_ed25519_SIZE
+ * @param[out] q the result, size:ecc_ed25519_ELEMENTSIZE
  * @param n the valid input scalar, size:ecc_ed25519_SCALARSIZE
- * @param p the point on the curve, size:ecc_ed25519_SIZE
+ * @param p the point on the curve, size:ecc_ed25519_ELEMENTSIZE
  * @return 0 on success, or -1 otherwise.
  */
 ECC_EXPORT
@@ -191,7 +191,7 @@ int ecc_ed25519_scalarmult(byte_t *q, const byte_t *n, const byte_t *p);
  * Multiplies the base point (x, 4/5) by a scalar n (without clamping) and puts
  * the Y coordinate of the resulting point into q.
  *
- * @param[out] q the result, size:ecc_ed25519_SIZE
+ * @param[out] q the result, size:ecc_ed25519_ELEMENTSIZE
  * @param n the valid input scalar, size:ecc_ed25519_SCALARSIZE
  * @return -1 if n is 0, and 0 otherwise.
  */

@@ -64,7 +64,7 @@ void ecc_bls12_381_fp12_one(byte_t *ret);
  * Determine if an element is the identity in BLS12-381 Fp12.
  *
  * @param a the input, size:ecc_bls12_381_FP12SIZE
- * @return 0 if the element a is the identity in BLS12-381 Fp12.
+ * @return 1 if the element a is the identity in BLS12-381 Fp12.
  */
 ECC_EXPORT
 int ecc_bls12_381_fp12_is_one(const byte_t *a);
