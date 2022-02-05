@@ -16,7 +16,7 @@ else()
     set(BUILD_SHARED_LIBS ON)
 endif()
 
-project(ecc VERSION 1.0.9)
+project(ecc VERSION 1.0.10)
 project(ecc LANGUAGES C)
 
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake/Modules)
