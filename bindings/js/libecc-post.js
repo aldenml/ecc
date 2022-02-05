@@ -1537,7 +1537,7 @@ Module.ecc_bls12_381_fp12_one = (
  * Determine if an element is the identity in BLS12-381 Fp12.
  *
  * @param {Uint8Array} a the input, size:ecc_bls12_381_FP12SIZE
- * @return {number} 0 if the element a is the identity in BLS12-381 Fp12.
+ * @return {number} 1 if the element a is the identity in BLS12-381 Fp12.
  */
 Module.ecc_bls12_381_fp12_is_one = (
     a,
@@ -3227,9 +3227,9 @@ Module.ecc_opaque_ristretto255_sha512_EnvelopeStoreWithNonce = (
  * @param {Uint8Array} randomized_pwd size:64
  * @param {Uint8Array} server_public_key size:ecc_opaque_ristretto255_sha512_Npk
  * @param {Uint8Array} server_identity size:server_identity_len
- * @param {number} server_identity_len 
+ * @param {number} server_identity_len the length of `server_identity`
  * @param {Uint8Array} client_identity size:client_identity_len
- * @param {number} client_identity_len 
+ * @param {number} client_identity_len the length of `client_identity`
  */
 Module.ecc_opaque_ristretto255_sha512_EnvelopeStore = (
     envelope,
@@ -3289,9 +3289,9 @@ Module.ecc_opaque_ristretto255_sha512_EnvelopeStore = (
  * @param {Uint8Array} server_public_key size:ecc_opaque_ristretto255_sha512_Npk
  * @param {Uint8Array} envelope_raw size:ecc_opaque_ristretto255_sha512_Ne
  * @param {Uint8Array} server_identity size:server_identity_len
- * @param {number} server_identity_len 
+ * @param {number} server_identity_len the length of `server_identity`
  * @param {Uint8Array} client_identity size:client_identity_len
- * @param {number} client_identity_len 
+ * @param {number} client_identity_len the length of `client_identity`
  * @return {number} on success returns 0, else -1.
  */
 Module.ecc_opaque_ristretto255_sha512_EnvelopeRecover = (
@@ -3494,7 +3494,7 @@ Module.ecc_opaque_ristretto255_sha512_CreateRegistrationRequest = (
  * @param {Uint8Array} request size:ecc_opaque_ristretto255_sha512_REGISTRATIONREQUESTSIZE
  * @param {Uint8Array} server_public_key size:ecc_opaque_ristretto255_sha512_Npk
  * @param {Uint8Array} credential_identifier size:credential_identifier_len
- * @param {number} credential_identifier_len 
+ * @param {number} credential_identifier_len the length of `credential_identifier`
  * @param {Uint8Array} oprf_key size:32
  */
 Module.ecc_opaque_ristretto255_sha512_CreateRegistrationResponseWithOprfKey = (
@@ -3583,8 +3583,6 @@ Module.ecc_opaque_ristretto255_sha512_CreateRegistrationResponse = (
  * To create the user record used for further authentication, the client
  * executes the following function. Since this works in the internal key mode, the
  * "client_private_key" is null.
- * 
- * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-07#section-5.1.1.3
  *
  * @param {Uint8Array} record (output) a RegistrationUpload structure, size:ecc_opaque_ristretto255_sha512_REGISTRATIONUPLOADSIZE
  * @param {Uint8Array} export_key (output) an additional client key, size:ecc_opaque_ristretto255_sha512_Nh
@@ -3596,7 +3594,7 @@ Module.ecc_opaque_ristretto255_sha512_CreateRegistrationResponse = (
  * @param {number} server_identity_len the length of `server_identity`
  * @param {Uint8Array} client_identity the optional encoded client identity, size:client_identity_len
  * @param {number} client_identity_len the length of `client_identity`
- * @param {number} mhf 
+ * @param {number} mhf the memory hard function to use
  * @param {Uint8Array} nonce size:ecc_opaque_ristretto255_sha512_Nn
  */
 Module.ecc_opaque_ristretto255_sha512_FinalizeRequestWithNonce = (
@@ -3651,8 +3649,6 @@ Module.ecc_opaque_ristretto255_sha512_FinalizeRequestWithNonce = (
  * To create the user record used for further authentication, the client
  * executes the following function. Since this works in the internal key mode, the
  * "client_private_key" is null.
- * 
- * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-07#section-5.1.1.3
  *
  * @param {Uint8Array} record (output) a RegistrationUpload structure, size:ecc_opaque_ristretto255_sha512_REGISTRATIONUPLOADSIZE
  * @param {Uint8Array} export_key (output) an additional client key, size:ecc_opaque_ristretto255_sha512_Nh
@@ -3664,7 +3660,7 @@ Module.ecc_opaque_ristretto255_sha512_FinalizeRequestWithNonce = (
  * @param {number} server_identity_len the length of `server_identity`
  * @param {Uint8Array} client_identity the optional encoded client identity, size:client_identity_len
  * @param {number} client_identity_len the length of `client_identity`
- * @param {number} mhf 
+ * @param {number} mhf the memory hard function to use
  */
 Module.ecc_opaque_ristretto255_sha512_FinalizeRequest = (
     record,
@@ -3787,15 +3783,13 @@ Module.ecc_opaque_ristretto255_sha512_CreateCredentialRequest = (
  * - record.masking_key is set to a random byte string of length Nh, and
  * - record.envelope is set to the byte string consisting only of
  * zeros, of length Ne
- * 
- * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-07#section-6.1.2.2
  *
  * @param {Uint8Array} response_raw (output) size:ecc_opaque_ristretto255_sha512_CREDENTIALRESPONSESIZE
  * @param {Uint8Array} request_raw size:ecc_opaque_ristretto255_sha512_CREDENTIALREQUESTSIZE
  * @param {Uint8Array} server_public_key size:ecc_opaque_ristretto255_sha512_Npk
  * @param {Uint8Array} record_raw size:ecc_opaque_ristretto255_sha512_REGISTRATIONUPLOADSIZE
  * @param {Uint8Array} credential_identifier size:credential_identifier_len
- * @param {number} credential_identifier_len 
+ * @param {number} credential_identifier_len the length of `credential_identifier`
  * @param {Uint8Array} oprf_seed size:ecc_opaque_ristretto255_sha512_Nh
  * @param {Uint8Array} masking_nonce size:ecc_opaque_ristretto255_sha512_Nn
  */
@@ -3854,15 +3848,13 @@ Module.ecc_opaque_ristretto255_sha512_CreateCredentialResponseWithMasking = (
  * - record.masking_key is set to a random byte string of length Nh, and
  * - record.envelope is set to the byte string consisting only of
  * zeros, of length Ne
- * 
- * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-07#section-6.1.2.2
  *
  * @param {Uint8Array} response_raw (output) size:ecc_opaque_ristretto255_sha512_CREDENTIALRESPONSESIZE
  * @param {Uint8Array} request_raw size:ecc_opaque_ristretto255_sha512_CREDENTIALREQUESTSIZE
  * @param {Uint8Array} server_public_key size:ecc_opaque_ristretto255_sha512_Npk
  * @param {Uint8Array} record_raw size:ecc_opaque_ristretto255_sha512_REGISTRATIONUPLOADSIZE
  * @param {Uint8Array} credential_identifier size:credential_identifier_len
- * @param {number} credential_identifier_len 
+ * @param {number} credential_identifier_len the length of `credential_identifier`
  * @param {Uint8Array} oprf_seed size:ecc_opaque_ristretto255_sha512_Nh
  */
 Module.ecc_opaque_ristretto255_sha512_CreateCredentialResponse = (
@@ -3899,20 +3891,20 @@ Module.ecc_opaque_ristretto255_sha512_CreateCredentialResponse = (
 }
 
 /**
- * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-07#section-6.1.2.3
+ * 
  *
  * @param {Uint8Array} client_private_key (output) size:ecc_opaque_ristretto255_sha512_Nsk
  * @param {Uint8Array} server_public_key (output) size:ecc_opaque_ristretto255_sha512_Npk
  * @param {Uint8Array} export_key (output) size:ecc_opaque_ristretto255_sha512_Nh
  * @param {Uint8Array} password size:password_len
- * @param {number} password_len 
+ * @param {number} password_len the length of `password`
  * @param {Uint8Array} blind size:ecc_opaque_ristretto255_sha512_Noe
  * @param {Uint8Array} response size:ecc_opaque_ristretto255_sha512_CREDENTIALRESPONSESIZE
  * @param {Uint8Array} server_identity size:server_identity_len
- * @param {number} server_identity_len 
+ * @param {number} server_identity_len the length of `server_identity`
  * @param {Uint8Array} client_identity size:client_identity_len
- * @param {number} client_identity_len 
- * @param {number} mhf 
+ * @param {number} client_identity_len the length of `client_identity`
+ * @param {number} mhf the memory hard function to use
  * @return {number} on success returns 0, else -1.
  */
 Module.ecc_opaque_ristretto255_sha512_RecoverCredentials = (
@@ -3966,15 +3958,15 @@ Module.ecc_opaque_ristretto255_sha512_RecoverCredentials = (
 }
 
 /**
- * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-07#section-6.2.2.1
+ * 
  *
  * @param {Uint8Array} out (output) size:length
  * @param {Uint8Array} secret size:64
  * @param {Uint8Array} label size:label_len
- * @param {number} label_len 
+ * @param {number} label_len the length of `label`
  * @param {Uint8Array} context size:context_len
- * @param {number} context_len 
- * @param {number} length 
+ * @param {number} context_len the length of `context`
+ * @param {number} length the length of the output
  */
 Module.ecc_opaque_ristretto255_sha512_3DH_Expand_Label = (
     out,
@@ -4006,14 +3998,14 @@ Module.ecc_opaque_ristretto255_sha512_3DH_Expand_Label = (
 }
 
 /**
- * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-07#section-6.2.2.1
+ * 
  *
  * @param {Uint8Array} out (output) size:ecc_opaque_ristretto255_sha512_Nx
  * @param {Uint8Array} secret size:64
  * @param {Uint8Array} label size:label_len
- * @param {number} label_len 
+ * @param {number} label_len the length of `label`
  * @param {Uint8Array} transcript_hash size:transcript_hash_len
- * @param {number} transcript_hash_len 
+ * @param {number} transcript_hash_len the length of `transcript_hash`
  */
 Module.ecc_opaque_ristretto255_sha512_3DH_Derive_Secret = (
     out,
@@ -4048,11 +4040,9 @@ Module.ecc_opaque_ristretto255_sha512_3DH_Derive_Secret = (
  * OPAQUE-3DH can optionally include shared "context" information in the
  * transcript, such as configuration parameters or application-specific
  * info, e.g. "appXYZ-v1.2.3".
- * 
- * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-07#section-6.2.2.1
  *
  * @param {Uint8Array} preamble (output) the protocol transcript with identities and messages, size:preamble_len
- * @param {number} preamble_len 
+ * @param {number} preamble_len the length of `preamble`
  * @param {Uint8Array} context optional shared context information, size:context_len
  * @param {number} context_len the length of `context`
  * @param {Uint8Array} client_identity the optional encoded client identity, size:client_identity_len
@@ -4163,15 +4153,15 @@ Module.ecc_opaque_ristretto255_sha512_3DH_TripleDHIKM = (
 }
 
 /**
- * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-07#section-6.2.2.2
+ * 
  *
  * @param {Uint8Array} km2 (output) size:64
  * @param {Uint8Array} km3 (output) size:64
  * @param {Uint8Array} session_key (output) size:64
  * @param {Uint8Array} ikm size:ikm_len
- * @param {number} ikm_len 
+ * @param {number} ikm_len the length of `ikm`
  * @param {Uint8Array} preamble size:preamble_len
- * @param {number} preamble_len 
+ * @param {number} preamble_len the length of `preamble`
  */
 Module.ecc_opaque_ristretto255_sha512_3DH_DeriveKeys = (
     km2,
@@ -4287,7 +4277,7 @@ Module.ecc_opaque_ristretto255_sha512_3DH_ClientInit = (
 }
 
 /**
- * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-07#section-6.2.3
+ * 
  *
  * @param {Uint8Array} ke3_raw (output) a KE3 message structure, size:ecc_opaque_ristretto255_sha512_KE3SIZE
  * @param {Uint8Array} session_key (output) the session's shared secret, size:64
@@ -4302,7 +4292,7 @@ Module.ecc_opaque_ristretto255_sha512_3DH_ClientInit = (
  * to server_public_key if not specified, size:server_identity_len
  * @param {number} server_identity_len the length of `server_identity`
  * @param {Uint8Array} ke2 a KE2 message structure, size:ecc_opaque_ristretto255_sha512_KE2SIZE
- * @param {number} mhf 
+ * @param {number} mhf the memory hard function to use
  * @param {Uint8Array} context the application specific context, size:context_len
  * @param {number} context_len the length of `context`
  * @return {number} 0 if is able to recover credentials and authenticate with the server, else -1
@@ -4434,17 +4424,16 @@ Module.ecc_opaque_ristretto255_sha512_3DH_Start = (
 }
 
 /**
- * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-07#section-6.2.3.1
-
+ * 
  *
  * @param {Uint8Array} ke3_raw (output) size:ecc_opaque_ristretto255_sha512_KE3SIZE
  * @param {Uint8Array} session_key (output) size:64
  * @param {Uint8Array} state_raw (input, output) size:ecc_opaque_ristretto255_sha512_CLIENTSTATESIZE
  * @param {Uint8Array} client_identity size:client_identity_len
- * @param {number} client_identity_len 
+ * @param {number} client_identity_len the length of `client_identity`
  * @param {Uint8Array} client_private_key size:ecc_opaque_ristretto255_sha512_Nsk
  * @param {Uint8Array} server_identity size:server_identity_len
- * @param {number} server_identity_len 
+ * @param {number} server_identity_len the lenght of `server_identity`
  * @param {Uint8Array} server_public_key size:ecc_opaque_ristretto255_sha512_Npk
  * @param {Uint8Array} ke2_raw size:ecc_opaque_ristretto255_sha512_KE2SIZE
  * @param {Uint8Array} context the application specific context, size:context_len
@@ -4717,21 +4706,21 @@ Module.ecc_opaque_ristretto255_sha512_3DH_ServerFinish = (
 }
 
 /**
- * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-07#section-6.2.4
+ * 
  *
  * @param {Uint8Array} ke2_raw (output) size:ecc_opaque_ristretto255_sha512_KE2SIZE
  * @param {Uint8Array} state_raw (input, output) size:ecc_opaque_ristretto255_sha512_SERVERSTATESIZE
  * @param {Uint8Array} server_identity size:server_identity_len
- * @param {number} server_identity_len 
+ * @param {number} server_identity_len the length of `server_identity`
  * @param {Uint8Array} server_private_key size:ecc_opaque_ristretto255_sha512_Nsk
  * @param {Uint8Array} server_public_key size:ecc_opaque_ristretto255_sha512_Npk
  * @param {Uint8Array} client_identity size:client_identity_len
- * @param {number} client_identity_len 
+ * @param {number} client_identity_len the length of `client_identity`
  * @param {Uint8Array} client_public_key size:ecc_opaque_ristretto255_sha512_Npk
  * @param {Uint8Array} ke1_raw size:ecc_opaque_ristretto255_sha512_KE1SIZE
  * @param {Uint8Array} credential_response_raw size:ecc_opaque_ristretto255_sha512_CREDENTIALRESPONSESIZE
  * @param {Uint8Array} context size:context_len
- * @param {number} context_len 
+ * @param {number} context_len the length of `context`
  * @param {Uint8Array} server_nonce size:ecc_opaque_ristretto255_sha512_Nn
  * @param {Uint8Array} server_secret size:ecc_opaque_ristretto255_sha512_Nsk
  * @param {Uint8Array} server_keyshare size:ecc_opaque_ristretto255_sha512_Npk
@@ -4803,21 +4792,21 @@ Module.ecc_opaque_ristretto255_sha512_3DH_ResponseWithSecrets = (
 }
 
 /**
- * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-07#section-6.2.4
+ * 
  *
  * @param {Uint8Array} ke2_raw (output) size:ecc_opaque_ristretto255_sha512_KE2SIZE
  * @param {Uint8Array} state_raw (input, output) size:ecc_opaque_ristretto255_sha512_SERVERSTATESIZE
  * @param {Uint8Array} server_identity size:server_identity_len
- * @param {number} server_identity_len 
+ * @param {number} server_identity_len the length of `server_identity`
  * @param {Uint8Array} server_private_key size:ecc_opaque_ristretto255_sha512_Nsk
  * @param {Uint8Array} server_public_key size:ecc_opaque_ristretto255_sha512_Npk
  * @param {Uint8Array} client_identity size:client_identity_len
- * @param {number} client_identity_len 
+ * @param {number} client_identity_len the length of `client_identity`
  * @param {Uint8Array} client_public_key size:ecc_opaque_ristretto255_sha512_Npk
  * @param {Uint8Array} ke1_raw size:ecc_opaque_ristretto255_sha512_KE1SIZE
  * @param {Uint8Array} credential_response_raw size:ecc_opaque_ristretto255_sha512_CREDENTIALRESPONSESIZE
  * @param {Uint8Array} context size:context_len
- * @param {number} context_len 
+ * @param {number} context_len the length of `context`
  */
 Module.ecc_opaque_ristretto255_sha512_3DH_Response = (
     ke2_raw,
