@@ -13,6 +13,8 @@ static void test_ecc_bls12_381_fp12_one(void **state) {
     byte_t one[ecc_bls12_381_FP12SIZE];
     ecc_bls12_381_fp12_one(one);
 
+    ecc_log("bls12_381_fp12_one", one, sizeof one);
+
     int r = ecc_bls12_381_fp12_is_one(one);
     assert_int_equal(r, 1);
 }
@@ -27,7 +29,7 @@ static void test_ecc_bls12_381_fp12_one_rand(void **state) {
     assert_int_equal(r, 0);
 }
 
-static void ecc_bls12_381_fp12_pow_test(void **state) {
+static void test_ecc_bls12_381_fp12_pow(void **state) {
     ECC_UNUSED(state);
 
     byte_t n;
@@ -51,7 +53,7 @@ static void ecc_bls12_381_fp12_pow_test(void **state) {
     assert_memory_equal(r, anm, ecc_bls12_381_FP12SIZE);
 }
 
-static void ecc_bls12_381_fp12_pow_test_inverse(void **state) {
+static void test_ecc_bls12_381_fp12_pow_inverse(void **state) {
     ECC_UNUSED(state);
 
     byte_t n;
@@ -72,7 +74,7 @@ static void ecc_bls12_381_fp12_pow_test_inverse(void **state) {
     assert_int_equal(r, 1);
 }
 
-static void ecc_bls12_381_pairing_test(void **state) {
+static void test_ecc_bls12_381_pairing(void **state) {
     ECC_UNUSED(state);
 
     byte_t a[ecc_bls12_381_SCALARSIZE] = {0};
@@ -106,7 +108,7 @@ static void ecc_bls12_381_pairing_test(void **state) {
     assert_memory_equal(pairing1, r, ecc_bls12_381_FP12SIZE);
 }
 
-static void ecc_bls12_381_pairing_test_reverse_scalars(void **state) {
+static void test_ecc_bls12_381_pairing_reverse_scalars(void **state) {
     ECC_UNUSED(state);
 
     byte_t a[ecc_bls12_381_SCALARSIZE] = {0};
@@ -136,7 +138,7 @@ static void ecc_bls12_381_pairing_test_reverse_scalars(void **state) {
     assert_memory_equal(pairing1, pairing2, ecc_bls12_381_FP12SIZE);
 }
 
-static void ecc_bls12_381_pairing_test_perform(void **state) {
+static void test_ecc_bls12_381_pairing_perform(void **state) {
     ECC_UNUSED(state);
 
     byte_t a[ecc_bls12_381_SCALARSIZE];
@@ -154,7 +156,7 @@ static void ecc_bls12_381_pairing_test_perform(void **state) {
     ecc_bls12_381_pairing(pairing, aP, bQ); // e(a * P, b * Q)
 }
 
-static void ecc_bls12_381_pairing_miller_loop_test(void **state) {
+static void test_ecc_bls12_381_pairing_miller_loop(void **state) {
     ECC_UNUSED(state);
 
     byte_t a[ecc_bls12_381_SCALARSIZE] = {2, 0};
@@ -188,7 +190,7 @@ static void ecc_bls12_381_pairing_miller_loop_test(void **state) {
     assert_int_equal(v, 1);
 }
 
-static void ecc_bls12_381_pairing_test_g2_inverse(void **state) {
+static void test_ecc_bls12_381_pairing_g2_inverse(void **state) {
     ECC_UNUSED(state);
 
     byte_t a[ecc_bls12_381_SCALARSIZE];
@@ -218,13 +220,13 @@ int main() {
     const struct CMUnitTest tests[] = {
         cmocka_unit_test(test_ecc_bls12_381_fp12_one),
         cmocka_unit_test(test_ecc_bls12_381_fp12_one_rand),
-        cmocka_unit_test(ecc_bls12_381_fp12_pow_test),
-        cmocka_unit_test(ecc_bls12_381_fp12_pow_test_inverse),
-        cmocka_unit_test(ecc_bls12_381_pairing_test),
-        cmocka_unit_test(ecc_bls12_381_pairing_test_reverse_scalars),
-        cmocka_unit_test(ecc_bls12_381_pairing_test_perform),
-        cmocka_unit_test(ecc_bls12_381_pairing_miller_loop_test),
-        cmocka_unit_test(ecc_bls12_381_pairing_test_g2_inverse),
+        cmocka_unit_test(test_ecc_bls12_381_fp12_pow),
+        cmocka_unit_test(test_ecc_bls12_381_fp12_pow_inverse),
+        cmocka_unit_test(test_ecc_bls12_381_pairing),
+        cmocka_unit_test(test_ecc_bls12_381_pairing_reverse_scalars),
+        cmocka_unit_test(test_ecc_bls12_381_pairing_perform),
+        cmocka_unit_test(test_ecc_bls12_381_pairing_miller_loop),
+        cmocka_unit_test(test_ecc_bls12_381_pairing_g2_inverse),
     };
 
     return cmocka_run_group_tests(tests, NULL, NULL);

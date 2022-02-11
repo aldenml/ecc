@@ -136,6 +136,7 @@ set(ecc_src_files
     src/oprf.h src/oprf.c
     src/opaque.h src/opaque.c
     src/sign.h src/sign.c
+    src/frost.h src/frost.c
     src/pre.h src/pre.c
     src/ecc.h
 )
@@ -211,6 +212,10 @@ if(NOT DEFINED EMSCRIPTEN)
     target_link_libraries(test_pre PRIVATE ecc_test)
     add_executable(test_json test/test_json.c)
     target_link_libraries(test_json PRIVATE ecc_test)
+    add_executable(test_frost test/test_frost.c)
+    target_link_libraries(test_frost PRIVATE ecc_test)
+    add_executable(test_ristretto255 test/test_ristretto255.c)
+    target_link_libraries(test_ristretto255 PRIVATE ecc_test)
 
     set_extra_compiler_flags(test_util)
     set_extra_compiler_flags(test_kdf)
@@ -221,6 +226,8 @@ if(NOT DEFINED EMSCRIPTEN)
     set_extra_compiler_flags(test_sign)
     set_extra_compiler_flags(test_pre)
     set_extra_compiler_flags(test_json)
+    set_extra_compiler_flags(test_frost)
+    set_extra_compiler_flags(test_ristretto255)
 
     # setup coverage
     if(CODE_COVERAGE)
@@ -236,6 +243,8 @@ if(NOT DEFINED EMSCRIPTEN)
         target_code_coverage(test_sign AUTO ALL EXTERNAL)
         target_code_coverage(test_pre AUTO ALL EXTERNAL)
         target_code_coverage(test_json AUTO ALL EXTERNAL)
+        target_code_coverage(test_frost AUTO ALL EXTERNAL)
+        target_code_coverage(test_ristretto255 AUTO ALL EXTERNAL)
     endif()
 
     enable_testing()
@@ -248,4 +257,6 @@ if(NOT DEFINED EMSCRIPTEN)
     add_test(NAME test_sign COMMAND test_sign)
     add_test(NAME test_pre COMMAND test_pre)
     add_test(NAME test_json COMMAND test_json)
+    add_test(NAME test_frost COMMAND test_frost)
+    add_test(NAME test_ristretto255 COMMAND test_ristretto255)
 endif()

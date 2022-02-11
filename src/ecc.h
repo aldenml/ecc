@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021, Alden Torres
+ * Copyright (c) 2021-2022, Alden Torres
  *
  * Licensed under the terms of the MIT license.
  * Copy of the license at https://opensource.org/licenses/MIT
@@ -20,6 +20,7 @@
 #include "oprf.h"
 #include "opaque.h"
 #include "sign.h"
+#include "frost.h"
 #include "pre.h"
 
 #endif // ECC_ECC_H
