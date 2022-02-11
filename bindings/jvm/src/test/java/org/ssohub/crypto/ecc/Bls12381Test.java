@@ -32,7 +32,7 @@ import static org.ssohub.crypto.ecc.libecc.ecc_randombytes;
 public class Bls12381Test {
 
     @Test
-    public void ecc_bls12_381_fp12_pow_test() {
+    public void test_ecc_bls12_381_fp12_pow() {
         byte[] a = new byte[ecc_bls12_381_FP12SIZE];
         ecc_bls12_381_fp12_random(a);
 
@@ -49,7 +49,7 @@ public class Bls12381Test {
     }
 
     @Test
-    public void ecc_bls12_381_pairing_test() {
+    public void test_ecc_bls12_381_pairing() {
         byte[] a = new byte[ecc_bls12_381_SCALARSIZE];
         byte[] b = new byte[ecc_bls12_381_SCALARSIZE];
         ecc_randombytes(a, 1);
@@ -85,7 +85,7 @@ public class Bls12381Test {
     }
 
     @Test
-    public void ecc_bls12_381_pairing_test_reverse_scalars() {
+    public void test_ecc_bls12_381_pairing_reverse_scalars() {
         byte[] a = new byte[ecc_bls12_381_SCALARSIZE];
         byte[] b = new byte[ecc_bls12_381_SCALARSIZE];
         ecc_randombytes(a, 1);
@@ -118,7 +118,7 @@ public class Bls12381Test {
     }
 
     @Test
-    public void ecc_bls12_381_pairing_test_perform() {
+    public void test_ecc_bls12_381_pairing_perform() {
         byte[] a = new byte[ecc_bls12_381_SCALARSIZE];
         byte[] b = new byte[ecc_bls12_381_SCALARSIZE];
         ecc_bls12_381_scalar_random(a);
