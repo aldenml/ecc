@@ -42,6 +42,23 @@
  */
 #define ecc_frost_ristretto255_sha512_POINTSIZE 64
 
+// const
+/**
+ * Size of a nonce tuple.
+ */
+#define ecc_frost_ristretto255_sha512_NONCEPAIRSIZE 64
+
+// const
+/**
+ * Size of a nonce commitment tuple.
+ */
+#define ecc_frost_ristretto255_sha512_NONCECOMMITMENTPAIRSIZE 64
+
+// const
+/**
+ * Size of a signing commitment structure.
+ */
+#define ecc_frost_ristretto255_sha512_SIGNINGCOMMITMENTPAIRSIZE 72
 
 /**
  * Evaluate a polynomial f at a particular input x, i.e., y = f(x)
@@ -104,6 +121,30 @@ ECC_EXPORT
 void ecc_frost_ristretto255_sha512_polynomial_interpolation(
     byte_t *constant_term,
     const byte_t *points, int points_len
+);
+
+/**
+ * Generate a pair of public commitments corresponding to the nonce pair.
+ *
+ * @param[out] comm a nonce commitment pair, size:ecc_frost_ristretto255_sha512_NONCECOMMITMENTPAIRSIZE
+ * @param nonce a nonce pair, size:ecc_frost_ristretto255_sha512_NONCEPAIRSIZE
+ */
+ECC_EXPORT
+void ecc_frost_ristretto255_sha512_commit_with_nonce(
+    byte_t *comm,
+    const byte_t *nonce
+);
+
+/**
+ * Generate a pair of nonces and their corresponding public commitments.
+ *
+ * @param[out] nonce a nonce pair, size:ecc_frost_ristretto255_sha512_NONCEPAIRSIZE
+ * @param[out] comm a nonce commitment pair, size:ecc_frost_ristretto255_sha512_NONCECOMMITMENTPAIRSIZE
+ */
+ECC_EXPORT
+void ecc_frost_ristretto255_sha512_commit(
+    byte_t *nonce,
+    byte_t *comm
 );
 
 #endif // ECC_FROST_H

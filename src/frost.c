@@ -7,20 +7,49 @@
 
 #include "frost.h"
 #include <assert.h>
+#include <stdint.h>
 #include "util.h"
 #include "ristretto255.h"
+
+#define Ne ecc_ristretto255_ELEMENTSIZE
 
 typedef struct {
     byte_t x[ecc_frost_ristretto255_sha512_SCALARSIZE];
     byte_t y[ecc_frost_ristretto255_sha512_SCALARSIZE];
 } Point_t;
 
+typedef struct {
+    byte_t hiding_nonce[ecc_ristretto255_SCALARSIZE];
+    byte_t binding_nonce[ecc_ristretto255_SCALARSIZE];
+} NoncePair_t;
+
+typedef struct {
+    byte_t hiding_nonce_commitment[ecc_ristretto255_ELEMENTSIZE];
+    byte_t binding_nonce_commitment[ecc_ristretto255_ELEMENTSIZE];
+} NonceCommitmentPair_t;
+
+typedef uint64_t SignerID;
+
+typedef struct {
+    SignerID id;
+    byte_t D[Ne];
+    byte_t E[Ne];
+} SigningCommitment_t;
+
 static_assert(ecc_frost_ristretto255_sha512_SCALARSIZE == ecc_ristretto255_SCALARSIZE, "");
 static_assert(ecc_frost_ristretto255_sha512_SECRETKEYSIZE == ecc_ristretto255_SCALARSIZE, "");
 static_assert(ecc_frost_ristretto255_sha512_PUBLICKEYSIZE == ecc_ristretto255_ELEMENTSIZE, "");
 static_assert(ecc_frost_ristretto255_sha512_POINTSIZE == 2 * ecc_ristretto255_SCALARSIZE, "");
+static_assert(ecc_frost_ristretto255_sha512_NONCEPAIRSIZE == 2 * ecc_ristretto255_SCALARSIZE, "");
+static_assert(ecc_frost_ristretto255_sha512_NONCECOMMITMENTPAIRSIZE == 2 * ecc_ristretto255_ELEMENTSIZE, "");
+static_assert(ecc_frost_ristretto255_sha512_SIGNINGCOMMITMENTPAIRSIZE == 8 + 2 * ecc_ristretto255_ELEMENTSIZE, "");
 
 static_assert(sizeof(Point_t) == ecc_frost_ristretto255_sha512_POINTSIZE, "");
+static_assert(sizeof(NoncePair_t) == ecc_frost_ristretto255_sha512_NONCEPAIRSIZE, "");
+static_assert(sizeof(NonceCommitmentPair_t) == ecc_frost_ristretto255_sha512_NONCECOMMITMENTPAIRSIZE, "");
+static_assert(sizeof(NonceCommitmentPair_t) == ecc_frost_ristretto255_sha512_NONCECOMMITMENTPAIRSIZE, "");
+static_assert(sizeof(SignerID) == 8, "");
+static_assert(sizeof(SigningCommitment_t) == ecc_frost_ristretto255_sha512_SIGNINGCOMMITMENTPAIRSIZE, "");
 
 void ecc_frost_ristretto255_sha512_polynomial_evaluate(
     byte_t *value,
@@ -120,4 +149,41 @@ void ecc_frost_ristretto255_sha512_polynomial_interpolation(
 
         ecc_ristretto255_scalar_add(constant_term, constant_term, delta);
     }
+}
+
+void ecc_frost_ristretto255_sha512_commit_with_nonce(
+    byte_t *comm_ptr,
+    const byte_t *nonce_ptr
+) {
+    // hiding_nonce_commitment = G.ScalarBaseMult(hiding_nonce)
+    // binding_nonce_commitment = G.ScalarBaseMult(binding_nonce)
+    // nonce = (hiding_nonce, binding_nonce)
+    // comm = (hiding_nonce_commitment, binding_nonce_commitment)
+    // return (nonce, comm)
+
+    NonceCommitmentPair_t *comm = (NonceCommitmentPair_t *) comm_ptr;
+    const NoncePair_t *nonce = (const NoncePair_t *) nonce_ptr;
+
+    ecc_ristretto255_scalarmult_base(comm->hiding_nonce_commitment, nonce->hiding_nonce);
+    ecc_ristretto255_scalarmult_base(comm->binding_nonce_commitment, nonce->binding_nonce);
+}
+
+void ecc_frost_ristretto255_sha512_commit(
+    byte_t *nonce_ptr,
+    byte_t *comm
+) {
+    // hiding_nonce = G.RandomScalar()
+    // binding_nonce = G.RandomScalar()
+    // hiding_nonce_commitment = G.ScalarBaseMult(hiding_nonce)
+    // binding_nonce_commitment = G.ScalarBaseMult(binding_nonce)
+    // nonce = (hiding_nonce, binding_nonce)
+    // comm = (hiding_nonce_commitment, binding_nonce_commitment)
+    // return (nonce, comm)
+
+    NoncePair_t *nonce = (NoncePair_t *) nonce_ptr;
+
+    ecc_ristretto255_scalar_random(nonce->hiding_nonce);
+    ecc_ristretto255_scalar_random(nonce->binding_nonce);
+
+    ecc_frost_ristretto255_sha512_commit_with_nonce(comm, nonce_ptr);
 }

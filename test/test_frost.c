@@ -192,6 +192,22 @@ static void test_ecc_frost_ristretto255_sha512_polynomial_interpolation_small_nu
     assert_memory_equal(constant_term, a0, ecc_frost_ristretto255_sha512_SCALARSIZE);
 }
 
+static void test_ecc_frost_ristretto255_sha512_commit_with_nonce(void **state) {
+    ECC_UNUSED(state);
+
+    byte_t nonce[64];
+    ecc_hex2bin(&nonce[0], "0100000000000000000000000000000000000000000000000000000000000000", 64);
+    ecc_hex2bin(&nonce[32], "0200000000000000000000000000000000000000000000000000000000000000", 64);
+
+    byte_t comm[64];
+    ecc_frost_ristretto255_sha512_commit_with_nonce(comm, nonce);
+    ecc_log("comm", comm, sizeof comm);
+
+    char comm_hex[129];
+    ecc_bin2hex(comm_hex, comm, sizeof comm);
+    assert_string_equal(comm_hex, "e2f2ae0a6abc4e71a884a961c500515f58e30b6aa582dd8db6a65945e08d2d766a493210f7499cd17fecb510ae0cea23a110e8d5b901f8acadd3095c73a3b919");
+}
+
 int main() {
     const struct CMUnitTest tests[] = {
         cmocka_unit_test(test_ecc_frost_ristretto255_sha512_polynomial_evaluate_small_numbers),
@@ -199,6 +215,7 @@ int main() {
         cmocka_unit_test(test_ecc_frost_ristretto255_sha512_derive_lagrange_coefficient_with_points_1),
         cmocka_unit_test(test_ecc_frost_ristretto255_sha512_polynomial_interpolation_small_numbers_1),
         cmocka_unit_test(test_ecc_frost_ristretto255_sha512_polynomial_interpolation_small_numbers_2),
+        cmocka_unit_test(test_ecc_frost_ristretto255_sha512_commit_with_nonce),
     };
 
     return cmocka_run_group_tests(tests, NULL, NULL);
