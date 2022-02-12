@@ -36,6 +36,13 @@
  */
 #define ecc_frost_ristretto255_sha512_PUBLICKEYSIZE 32
 
+// const
+/**
+ * Size of a scalar point for polynomial evaluation (x, y).
+ */
+#define ecc_frost_ristretto255_sha512_POINTSIZE 64
+
+
 /**
  * Evaluate a polynomial f at a particular input x, i.e., y = f(x)
  * using Horner's method.
@@ -59,13 +66,44 @@ void ecc_frost_ristretto255_sha512_polynomial_evaluate(
  * @param[out] L_i the i-th Lagrange coefficient, size:ecc_frost_ristretto255_sha512_SCALARSIZE
  * @param x_i an x-coordinate contained in L, a scalar, size:ecc_frost_ristretto255_sha512_SCALARSIZE
  * @param L the set of x-coordinates, each a scalar, size:L_len*ecc_frost_ristretto255_sha512_SCALARSIZE
- * @param L_len the number of x-coordinates in `L`, it should be less than 256
+ * @param L_len the number of x-coordinates in `L`
  */
 ECC_EXPORT
 void ecc_frost_ristretto255_sha512_derive_lagrange_coefficient(
     byte_t *L_i,
     const byte_t *x_i,
     const byte_t *L, int L_len
+);
+
+/**
+ * This is an optimization that works like `ecc_frost_ristretto255_sha512_derive_lagrange_coefficient`
+ * but with a set of points (x, y).
+ *
+ * @param[out] L_i the i-th Lagrange coefficient, size:ecc_frost_ristretto255_sha512_SCALARSIZE
+ * @param x_i an x-coordinate contained in L, a scalar, size:ecc_frost_ristretto255_sha512_SCALARSIZE
+ * @param L the set of (x, y)-points, size:L_len*ecc_frost_ristretto255_sha512_POINTSIZE
+ * @param L_len the number of (x, y)-points in `L`
+ */
+ECC_EXPORT
+void ecc_frost_ristretto255_sha512_derive_lagrange_coefficient_with_points(
+    byte_t *L_i,
+    const byte_t *x_i,
+    const byte_t *L, int L_len
+);
+
+/**
+ * Secret sharing requires "splitting" a secret, which is represented
+ * as a constant term of some polynomial f of degree t. Recovering the
+ * constant term occurs with a set of t points using polynomial interpolation.
+ *
+ * @param[out] constant_term the constant term of f, i.e., f(0), size:ecc_frost_ristretto255_sha512_SCALARSIZE
+ * @param points a set of `t` points on a polynomial f, each a tuple of two scalar values representing the x and y coordinates, size:points_len*ecc_frost_ristretto255_sha512_POINTSIZE
+ * @param points_len the number of points in `points`
+ */
+ECC_EXPORT
+void ecc_frost_ristretto255_sha512_polynomial_interpolation(
+    byte_t *constant_term,
+    const byte_t *points, int points_len
 );
 
 #endif // ECC_FROST_H

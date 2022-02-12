@@ -78,10 +78,127 @@ static void test_ecc_frost_ristretto255_sha512_derive_lagrange_coefficient_1(voi
     assert_string_equal(L_1_hex, "e7d3f55c1a631258d69cf7a2def9de1400000000000000000000000000000010");
 }
 
+static void test_ecc_frost_ristretto255_sha512_derive_lagrange_coefficient_with_points_1(void **state) {
+    ECC_UNUSED(state);
+
+    byte_t p0[ecc_frost_ristretto255_sha512_POINTSIZE] = {1, 0};
+    byte_t p1[ecc_frost_ristretto255_sha512_POINTSIZE] = {2, 0};
+    byte_t p2[ecc_frost_ristretto255_sha512_POINTSIZE] = {3, 0};
+    byte_t p3[ecc_frost_ristretto255_sha512_POINTSIZE] = {4, 0};
+
+    byte_t L[4 * ecc_frost_ristretto255_sha512_POINTSIZE];
+    ecc_concat4(
+        L,
+        p0, sizeof p0,
+        p1, sizeof p1,
+        p2, sizeof p2,
+        p3, sizeof p3
+    );
+
+    byte_t L_0[ecc_frost_ristretto255_sha512_SCALARSIZE];
+    ecc_frost_ristretto255_sha512_derive_lagrange_coefficient_with_points(L_0, p0, L, 4); // x is first in p
+    ecc_log("L_0", L_0, sizeof L_0);
+    char L_0_hex[2 * ecc_frost_ristretto255_sha512_SCALARSIZE + 1];
+    ecc_bin2hex(L_0_hex, L_0, sizeof L_0);
+    assert_string_equal(L_0_hex, "0400000000000000000000000000000000000000000000000000000000000000");
+
+    byte_t L_1[ecc_frost_ristretto255_sha512_SCALARSIZE];
+    ecc_frost_ristretto255_sha512_derive_lagrange_coefficient_with_points(L_1, p1, L, 4); // x is first in p
+    ecc_log("L_1", L_1, sizeof L_1);
+    char L_1_hex[2 * ecc_frost_ristretto255_sha512_SCALARSIZE + 1];
+    ecc_bin2hex(L_1_hex, L_1, sizeof L_1);
+    assert_string_equal(L_1_hex, "e7d3f55c1a631258d69cf7a2def9de1400000000000000000000000000000010");
+}
+
+static void test_ecc_frost_ristretto255_sha512_polynomial_interpolation_small_numbers_1(void **state) {
+    ECC_UNUSED(state);
+
+    byte_t a0[ecc_frost_ristretto255_sha512_SCALARSIZE] = {1, 0};
+    byte_t a1[ecc_frost_ristretto255_sha512_SCALARSIZE] = {2, 0};
+    byte_t a2[ecc_frost_ristretto255_sha512_SCALARSIZE] = {3, 0};
+    byte_t a3[ecc_frost_ristretto255_sha512_SCALARSIZE] = {4, 0};
+
+    byte_t coeffs[4 * ecc_frost_ristretto255_sha512_SCALARSIZE];
+    ecc_concat4(
+        coeffs,
+        a0, sizeof a0,
+        a1, sizeof a1,
+        a2, sizeof a2,
+        a3, sizeof a3
+    );
+
+    byte_t p0[ecc_frost_ristretto255_sha512_POINTSIZE] = {1, 0};
+    byte_t p1[ecc_frost_ristretto255_sha512_POINTSIZE] = {2, 0};
+    byte_t p2[ecc_frost_ristretto255_sha512_POINTSIZE] = {3, 0};
+    byte_t p3[ecc_frost_ristretto255_sha512_POINTSIZE] = {4, 0};
+
+    ecc_frost_ristretto255_sha512_polynomial_evaluate(&p0[ecc_frost_ristretto255_sha512_SCALARSIZE], p0, coeffs, 4);
+    ecc_frost_ristretto255_sha512_polynomial_evaluate(&p1[ecc_frost_ristretto255_sha512_SCALARSIZE], p1, coeffs, 4);
+    ecc_frost_ristretto255_sha512_polynomial_evaluate(&p2[ecc_frost_ristretto255_sha512_SCALARSIZE], p2, coeffs, 4);
+    ecc_frost_ristretto255_sha512_polynomial_evaluate(&p3[ecc_frost_ristretto255_sha512_SCALARSIZE], p3, coeffs, 4);
+
+    byte_t points[4 * ecc_frost_ristretto255_sha512_POINTSIZE];
+    ecc_concat4(
+        points,
+        p0, sizeof p0,
+        p1, sizeof p1,
+        p2, sizeof p2,
+        p3, sizeof p3
+    );
+
+    byte_t constant_term[ecc_frost_ristretto255_sha512_SCALARSIZE];
+    ecc_frost_ristretto255_sha512_polynomial_interpolation(constant_term, points, 4);
+    assert_memory_equal(constant_term, a0, ecc_frost_ristretto255_sha512_SCALARSIZE);
+}
+
+static void test_ecc_frost_ristretto255_sha512_polynomial_interpolation_small_numbers_2(void **state) {
+    ECC_UNUSED(state);
+
+    byte_t a0[ecc_frost_ristretto255_sha512_SCALARSIZE] = {4, 0};
+    byte_t a1[ecc_frost_ristretto255_sha512_SCALARSIZE] = {1, 0};
+    byte_t a2[ecc_frost_ristretto255_sha512_SCALARSIZE] = {2, 0};
+    byte_t a3[ecc_frost_ristretto255_sha512_SCALARSIZE] = {3, 0};
+
+    byte_t coeffs[4 * ecc_frost_ristretto255_sha512_SCALARSIZE];
+    ecc_concat4(
+        coeffs,
+        a0, sizeof a0,
+        a1, sizeof a1,
+        a2, sizeof a2,
+        a3, sizeof a3
+    );
+
+    byte_t p0[ecc_frost_ristretto255_sha512_POINTSIZE] = {4, 0};
+    byte_t p1[ecc_frost_ristretto255_sha512_POINTSIZE] = {1, 0};
+    byte_t p2[ecc_frost_ristretto255_sha512_POINTSIZE] = {2, 0};
+    byte_t p3[ecc_frost_ristretto255_sha512_POINTSIZE] = {3, 0};
+
+    ecc_frost_ristretto255_sha512_polynomial_evaluate(&p0[ecc_frost_ristretto255_sha512_SCALARSIZE], p0, coeffs, 4);
+    ecc_frost_ristretto255_sha512_polynomial_evaluate(&p1[ecc_frost_ristretto255_sha512_SCALARSIZE], p1, coeffs, 4);
+    ecc_frost_ristretto255_sha512_polynomial_evaluate(&p2[ecc_frost_ristretto255_sha512_SCALARSIZE], p2, coeffs, 4);
+    ecc_frost_ristretto255_sha512_polynomial_evaluate(&p3[ecc_frost_ristretto255_sha512_SCALARSIZE], p3, coeffs, 4);
+
+    byte_t points[4 * ecc_frost_ristretto255_sha512_POINTSIZE];
+    ecc_concat4(
+        points,
+        p0, sizeof p0,
+        p1, sizeof p1,
+        p2, sizeof p2,
+        p3, sizeof p3
+    );
+
+    byte_t constant_term[ecc_frost_ristretto255_sha512_SCALARSIZE];
+    ecc_frost_ristretto255_sha512_polynomial_interpolation(constant_term, points, 4);
+    assert_memory_equal(constant_term, a0, ecc_frost_ristretto255_sha512_SCALARSIZE);
+}
+
 int main() {
     const struct CMUnitTest tests[] = {
         cmocka_unit_test(test_ecc_frost_ristretto255_sha512_polynomial_evaluate_small_numbers),
         cmocka_unit_test(test_ecc_frost_ristretto255_sha512_derive_lagrange_coefficient_1),
+        cmocka_unit_test(test_ecc_frost_ristretto255_sha512_derive_lagrange_coefficient_with_points_1),
+        cmocka_unit_test(test_ecc_frost_ristretto255_sha512_polynomial_interpolation_small_numbers_1),
+        cmocka_unit_test(test_ecc_frost_ristretto255_sha512_polynomial_interpolation_small_numbers_2),
     };
 
     return cmocka_run_group_tests(tests, NULL, NULL);
