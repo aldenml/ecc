@@ -38,6 +38,12 @@
 
 // const
 /**
+ * Size of a schnorr signature, a pair of scalars.
+ */
+#define ecc_frost_ristretto255_sha512_SIGNATURESIZE 64
+
+// const
+/**
  * Size of a scalar point for polynomial evaluation (x, y).
  */
 #define ecc_frost_ristretto255_sha512_POINTSIZE 64
@@ -59,6 +65,73 @@
  * Size of a signing commitment structure.
  */
 #define ecc_frost_ristretto255_sha512_SIGNINGCOMMITMENTPAIRSIZE 72
+
+/**
+ *
+ * @param[out] h1 size:32
+ * @param m size:m_len
+ * @param m_len the length of `m`, it should be less than 512
+ */
+ECC_EXPORT
+void ecc_frost_ristretto255_sha512_H1(
+    byte_t *h1,
+    const byte_t *m, int m_len
+);
+
+/**
+ *
+ * @param[out] h2 size:32
+ * @param m size:m_len
+ * @param m_len the length of `m`, it should be less than 512
+ */
+ECC_EXPORT
+void ecc_frost_ristretto255_sha512_H2(
+    byte_t *h2,
+    const byte_t *m, int m_len
+);
+
+/**
+ *
+ * @param[out] h3 size:64
+ * @param m size:m_len
+ * @param m_len the length of `m`, it should be less than 512
+ */
+ECC_EXPORT
+void ecc_frost_ristretto255_sha512_H3(
+    byte_t *h3,
+    const byte_t *m, int m_len
+);
+
+/**
+ * Generate a single-party setting Schnorr signature.
+ *
+ * @param[out] signature signature, size:ecc_frost_ristretto255_sha512_SIGNATURESIZE
+ * @param msg message to be signed, size:msg_len
+ * @param msg_len the length of `msg`
+ * @param SK private key, a scalar, size:ecc_frost_ristretto255_sha512_SECRETKEYSIZE
+ */
+ECC_EXPORT
+void ecc_frost_ristretto255_sha512_schnorr_signature_generate(
+    byte_t *signature,
+    const byte_t *msg, int msg_len,
+    const byte_t *SK
+);
+
+/**
+ * Verify a Schnorr signature.
+ *
+ * @param msg signed message, size:msg_len
+ * @param msg_len the length of `msg`
+ * @param signature signature, size:ecc_frost_ristretto255_sha512_SIGNATURESIZE
+ * @param PK public key, a group element, size:ecc_frost_ristretto255_sha512_PUBLICKEYSIZE
+ * @return 1 if signature is valid, and 0 otherwise
+ */
+ECC_EXPORT
+int ecc_frost_ristretto255_sha512_schnorr_signature_verify(
+    const byte_t *msg, int msg_len,
+    const byte_t *signature,
+    const byte_t *PK
+);
 
 /**
  * Evaluate a polynomial f at a particular input x, i.e., y = f(x)
