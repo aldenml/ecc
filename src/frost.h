@@ -17,10 +17,17 @@
 
 // const
 /**
- * Size of an scalar, since this is using the ristretto255
+ * Size of a scalar, since this is using the ristretto255
  * curve the size is 32 bytes.
  */
 #define ecc_frost_ristretto255_sha512_SCALARSIZE 32
+
+// const
+/**
+ * Size of an element, since this is using the ristretto255
+ * curve the size is 32 bytes.
+ */
+#define ecc_frost_ristretto255_sha512_ELEMENTSIZE 32
 
 // const
 /**
@@ -64,7 +71,7 @@
 /**
  * Size of a signing commitment structure.
  */
-#define ecc_frost_ristretto255_sha512_SIGNINGCOMMITMENTPAIRSIZE 72
+#define ecc_frost_ristretto255_sha512_SIGNINGCOMMITMENTSIZE 66
 
 /**
  *
@@ -218,6 +225,72 @@ ECC_EXPORT
 void ecc_frost_ristretto255_sha512_commit(
     byte_t *nonce,
     byte_t *comm
+);
+
+/**
+ * To produce a signature share.
+ *
+ * @param[out] sig_share signature share, size:ecc_frost_ristretto255_sha512_SCALARSIZE
+ * @param[out] comm_share commitment share, size:ecc_frost_ristretto255_sha512_ELEMENTSIZE
+ * @param index index `i` of the signer. Note index will never equal `0` and must be less thant 256
+ * @param sk_i signer secret key share, size:ecc_frost_ristretto255_sha512_SECRETKEYSIZE
+ * @param group_public_key public key corresponding to the signer secret key share, size:ecc_frost_ristretto255_sha512_PUBLICKEYSIZE
+ * @param nonce_i pair of scalar values generated in round one, size:ecc_frost_ristretto255_sha512_NONCEPAIRSIZE
+ * @param comm_i pair of element values generated in round one, size:ecc_frost_ristretto255_sha512_NONCECOMMITMENTPAIRSIZE
+ * @param msg the message to be signed (sent by the Coordinator), size:msg_len
+ * @param msg_len the length of `msg`
+ * @param commitment_list a list of commitments issued by each signer, MUST be sorted in ascending order by signer index, size:commitment_list_len*ecc_frost_ristretto255_sha512_SIGNINGCOMMITMENTSIZE
+ * @param commitment_list_len the number of elements in `commitment_list`, should be less than 28
+ * @param participant_list a set containing identifiers for each signer, size:participant_list_len
+ * @param participant_list_len the number of elements in `participant_list`
+ */
+ECC_EXPORT
+void ecc_frost_ristretto255_sha512_sign(
+    byte_t *sig_share,
+    byte_t *comm_share,
+    int index,
+    const byte_t *sk_i,
+    const byte_t *group_public_key,
+    const byte_t *nonce_i,
+    const byte_t *comm_i,
+    const byte_t *msg, int msg_len,
+    const byte_t *commitment_list, int commitment_list_len,
+    const byte_t *participant_list, int participant_list_len
+);
+
+ECC_EXPORT
+void ecc_frost_ristretto255_sha512_trusted_dealer_keygen_with_secret_and_coefficients(
+    byte_t *public_key,
+    byte_t *secret_key_shares,
+    int n,
+    int t,
+    const byte_t *secret_key,
+    const byte_t *coefficients
+);
+
+ECC_EXPORT
+void ecc_frost_ristretto255_sha512_trusted_dealer_keygen(
+    byte_t *secret_key,
+    byte_t *public_key,
+    byte_t *secret_key_shares,
+    int n,
+    int t
+);
+
+ECC_EXPORT
+void ecc_frost_ristretto255_sha512_secret_share_split_with_coefficients(
+    byte_t *points,
+    int n,
+    int t,
+    const byte_t *coefficients
+);
+
+ECC_EXPORT
+void ecc_frost_ristretto255_sha512_secret_share_split(
+    byte_t *points,
+    const byte_t *s,
+    int n,
+    int t
 );
 
 #endif // ECC_FROST_H

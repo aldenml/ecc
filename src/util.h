@@ -197,7 +197,7 @@ void ecc_free(byte_t *p, int size);
 // the following is a private log facility, used mostly to
 // verify partial state values in protocols implementations
 #ifndef ECC_LOG
-#define ECC_LOG 0
+#define ECC_LOG 1
 #endif
 #if ECC_LOG
 ECC_EXPORT
