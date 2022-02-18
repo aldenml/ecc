@@ -271,8 +271,8 @@ static void test_ecc_frost_ristretto255_sha512_poc(void **state) {
 
     byte_t nonce_1[ecc_frost_ristretto255_sha512_NONCEPAIRSIZE];
     byte_t nonce_2[ecc_frost_ristretto255_sha512_NONCEPAIRSIZE];
-    byte_t comm_1[ecc_frost_ristretto255_sha512_NONCEPAIRSIZE];
-    byte_t comm_2[ecc_frost_ristretto255_sha512_NONCEPAIRSIZE];
+    byte_t comm_1[ecc_frost_ristretto255_sha512_NONCECOMMITMENTPAIRSIZE];
+    byte_t comm_2[ecc_frost_ristretto255_sha512_NONCECOMMITMENTPAIRSIZE];
     ecc_hex2bin(&nonce_1[0], "349b3bb8464a1d87f7d6b56f4559a3f9a6335261a3266089a9b12d9d6f6ce209", 64);
     ecc_hex2bin(&nonce_1[32], "ce7406016a854be4291f03e7d24fe30e77994c3465de031515a4c116f22ca901", 64);
     ecc_hex2bin(&nonce_2[0], "4d66d319f20a728ec3d491cbf260cc6be687bd87cc2b5fdb4d5f528f65fd650d", 64);
@@ -285,7 +285,26 @@ static void test_ecc_frost_ristretto255_sha512_poc(void **state) {
 //    rho_input = bytes(group_comm_list + msg_hash)
 //    binding_factor = signers[1].H.H1(rho_input)
 //    group_comm = signers[1].group_commitment(commitment_list, binding_factor)
-    //byte_t commitment_list[2 * ecc_frost_ristretto255_sha512_SIGNINGCOMMITMENTSIZE];
+    byte_t commitment_list[2 * ecc_frost_ristretto255_sha512_SIGNINGCOMMITMENTSIZE];
+    ecc_I2OSP(&commitment_list[0], 1, 2);
+    memcpy(&commitment_list[2], comm_1, ecc_frost_ristretto255_sha512_NONCECOMMITMENTPAIRSIZE);
+    ecc_I2OSP(&commitment_list[ecc_frost_ristretto255_sha512_SIGNINGCOMMITMENTSIZE], 2, 2);
+    memcpy(&commitment_list[2 + ecc_frost_ristretto255_sha512_SIGNINGCOMMITMENTSIZE], comm_2, ecc_frost_ristretto255_sha512_NONCECOMMITMENTPAIRSIZE);
+
+    byte_t msg_hash[64];
+    ecc_frost_ristretto255_sha512_H3(msg_hash, message, sizeof message);
+    byte_t rho_input[2 * ecc_frost_ristretto255_sha512_SIGNINGCOMMITMENTSIZE + 64];
+    ecc_concat2(
+        rho_input,
+        commitment_list, sizeof commitment_list,
+        msg_hash, sizeof msg_hash
+    );
+    ecc_log("group_binding_factor_input", rho_input, sizeof rho_input);
+
+    // binding_factor = signers[1].H.H1(rho_input)
+    byte_t binding_factor[32];
+    ecc_frost_ristretto255_sha512_H1(binding_factor, rho_input, sizeof rho_input);
+    ecc_log("binding_factor", binding_factor, sizeof binding_factor);
 }
 
 int main() {
