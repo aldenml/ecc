@@ -236,7 +236,7 @@ static void test_ecc_frost_ristretto255_sha512_poc(void **state) {
     byte_t message[4] = "test";
     ecc_log("message", message, sizeof message);
 
-    //byte_t participant_list[2] = {1, 2};
+    byte_t participant_list[2] = {1, 2};
 
     byte_t group_secret_key[ecc_frost_ristretto255_sha512_SECRETKEYSIZE];
     ecc_hex2bin(group_secret_key, "b120be204b5e758960458ca9c4675b56b12a8faff2be9c94891d5e1cd75c880e", 64);
@@ -268,6 +268,8 @@ static void test_ecc_frost_ristretto255_sha512_poc(void **state) {
     ecc_log("S1 signer_share", &signer_keys[ecc_frost_ristretto255_sha512_SCALARSIZE], ecc_frost_ristretto255_sha512_SCALARSIZE);
     ecc_log("S2 signer_share", &signer_keys[ecc_frost_ristretto255_sha512_POINTSIZE + ecc_frost_ristretto255_sha512_SCALARSIZE], ecc_frost_ristretto255_sha512_SCALARSIZE);
     ecc_log("S3 signer_share", &signer_keys[2 * ecc_frost_ristretto255_sha512_POINTSIZE + ecc_frost_ristretto255_sha512_SCALARSIZE], ecc_frost_ristretto255_sha512_SCALARSIZE);
+
+    // Round one: commitment
 
     byte_t nonce_1[ecc_frost_ristretto255_sha512_NONCEPAIRSIZE];
     byte_t nonce_2[ecc_frost_ristretto255_sha512_NONCEPAIRSIZE];
@@ -305,6 +307,28 @@ static void test_ecc_frost_ristretto255_sha512_poc(void **state) {
     byte_t binding_factor[32];
     ecc_frost_ristretto255_sha512_H1(binding_factor, rho_input, sizeof rho_input);
     ecc_log("binding_factor", binding_factor, sizeof binding_factor);
+
+    // group_comm = signers[1].group_commitment(commitment_list, binding_factor)
+    byte_t group_comm[ecc_frost_ristretto255_sha512_ELEMENTSIZE];
+    ecc_frost_ristretto255_sha512_group_commitment(group_comm, commitment_list, 2, binding_factor);
+    ecc_log("group_comm", group_comm, sizeof group_comm);
+
+    // Round two: sign
+    byte_t sig_shares[2 * ecc_frost_ristretto255_sha512_SCALARSIZE];
+    byte_t comm_shares[2 * ecc_frost_ristretto255_sha512_ELEMENTSIZE];
+    ecc_frost_ristretto255_sha512_sign(
+        &sig_shares[0],
+        &comm_shares[0],
+        1,
+        &signer_keys[ecc_frost_ristretto255_sha512_SCALARSIZE],
+        group_public_key,
+        nonce_1,
+        comm_1,
+        message, sizeof message,
+        commitment_list, 2,
+        participant_list, 2
+    );
+    ecc_log("S1 sig_share", &sig_shares[0], ecc_frost_ristretto255_sha512_SCALARSIZE);
 }
 
 int main() {

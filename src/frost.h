@@ -228,6 +228,20 @@ void ecc_frost_ristretto255_sha512_commit(
 );
 
 /**
+ *
+ * @param[out] group_comm size:ecc_frost_ristretto255_sha512_ELEMENTSIZE
+ * @param commitment_list a list of commitments issued by each signer, MUST be sorted in ascending order by signer index, size:commitment_list_len*ecc_frost_ristretto255_sha512_SIGNINGCOMMITMENTSIZE
+ * @param commitment_list_len the number of elements in `commitment_list`, should be less than 28
+ * @param binding_factor size:ecc_frost_ristretto255_sha512_SCALARSIZE
+ */
+ECC_EXPORT
+void ecc_frost_ristretto255_sha512_group_commitment(
+    byte_t *group_comm,
+    const byte_t *commitment_list, int commitment_list_len,
+    const byte_t *binding_factor
+);
+
+/**
  * To produce a signature share.
  *
  * @param[out] sig_share signature share, size:ecc_frost_ristretto255_sha512_SCALARSIZE
@@ -278,7 +292,7 @@ void ecc_frost_ristretto255_sha512_trusted_dealer_keygen(
 );
 
 ECC_EXPORT
-void ecc_frost_ristretto255_sha512_secret_share_split_with_coefficients(
+void ecc_frost_ristretto255_sha512_secret_share_shard_with_coefficients(
     byte_t *points,
     int n,
     int t,
@@ -286,7 +300,7 @@ void ecc_frost_ristretto255_sha512_secret_share_split_with_coefficients(
 );
 
 ECC_EXPORT
-void ecc_frost_ristretto255_sha512_secret_share_split(
+void ecc_frost_ristretto255_sha512_secret_share_shard(
     byte_t *points,
     const byte_t *s,
     int n,

@@ -393,6 +393,27 @@ void ecc_frost_ristretto255_sha512_commit(
     ecc_frost_ristretto255_sha512_commit_with_nonce(comm, nonce_ptr);
 }
 
+void ecc_frost_ristretto255_sha512_group_commitment(
+    byte_t *group_comm,
+    const byte_t *commitment_list, const int commitment_list_len,
+    const byte_t *binding_factor
+) {
+    ecc_memzero(group_comm, ecc_frost_ristretto255_sha512_ELEMENTSIZE);
+
+    byte_t T[ecc_ristretto255_ELEMENTSIZE];
+
+    for (int i = 0; i < commitment_list_len; i++) {
+        const int pos = i * ecc_frost_ristretto255_sha512_SIGNINGCOMMITMENTSIZE;
+        const SigningCommitment_t *comm = (const SigningCommitment_t *) &commitment_list[pos];
+
+        // for (_, D_i, E_i) in commitment_list:
+        //   group_comm = group_comm + (D_i + (E_i * binding_factor))
+        ecc_ristretto255_scalarmult(T, binding_factor, comm->binding_nonce_commitment);
+        ecc_ristretto255_add(T, comm->hiding_nonce_commitment, T);
+        ecc_ristretto255_add(group_comm, group_comm, T);
+    }
+}
+
 void ecc_frost_ristretto255_sha512_sign(
     byte_t *sig_share,
     byte_t *comm_share,
@@ -441,6 +462,9 @@ void ecc_frost_ristretto255_sha512_sign(
     // msg_hash = H3(msg)
     byte_t msg_hash[64];
     ecc_frost_ristretto255_sha512_H3(msg_hash, msg, msg_len);
+#if ECC_LOG
+    ecc_log("sign, msg_hash", msg_hash, sizeof msg_hash);
+#endif
     // binding_factor = H1(encoded_commitments || msg_hash)
     byte_t binding_factor_input[2048];
     ecc_concat2(
@@ -451,6 +475,9 @@ void ecc_frost_ristretto255_sha512_sign(
     const int binding_factor_input_len = commitment_list_len * ecc_frost_ristretto255_sha512_SIGNINGCOMMITMENTSIZE + (int)(sizeof msg_hash);
     byte_t binding_factor[32];
     ecc_frost_ristretto255_sha512_H1(binding_factor, binding_factor_input, binding_factor_input_len);
+#if ECC_LOG
+    ecc_log("sign, binding_factor", binding_factor, sizeof binding_factor);
+#endif
 
     // Compute the group commitment
     byte_t R[ecc_ristretto255_ELEMENTSIZE] = {0};
@@ -464,6 +491,9 @@ void ecc_frost_ristretto255_sha512_sign(
         ecc_ristretto255_add(T, comm->hiding_nonce_commitment, T);
         ecc_ristretto255_add(R, R, T);
     }
+#if ECC_LOG
+    ecc_log("sign, R", R, sizeof R);
+#endif
 
     // lambda_i = derive_lagrange_coefficient(index, participant_list)
     byte_t lambda_i[ecc_ristretto255_SCALARSIZE];
@@ -486,8 +516,14 @@ void ecc_frost_ristretto255_sha512_sign(
         group_public_key, ecc_ristretto255_ELEMENTSIZE,
         msg_hash, sizeof msg_hash
     );
+#if ECC_LOG
+    ecc_log("sign, challenge_input", challenge_input, sizeof challenge_input);
+#endif
     byte_t c[32];
     ecc_frost_ristretto255_sha512_H2(c, challenge_input, sizeof challenge_input);
+#if ECC_LOG
+    ecc_log("sign, c", c, sizeof c);
+#endif
 
 //    # Compute the signature share
 //    (hiding_nonce, binding_nonce) = nonce_i
@@ -517,7 +553,7 @@ void ecc_frost_ristretto255_sha512_trusted_dealer_keygen_with_secret_and_coeffic
     const byte_t *secret_key,
     const byte_t *coefficients
 ) {
-    ecc_frost_ristretto255_sha512_secret_share_split_with_coefficients(
+    ecc_frost_ristretto255_sha512_secret_share_shard_with_coefficients(
         secret_key_shares,
         n,
         t,
@@ -552,7 +588,7 @@ void ecc_frost_ristretto255_sha512_trusted_dealer_keygen(
     );
 }
 
-void ecc_frost_ristretto255_sha512_secret_share_split_with_coefficients(
+void ecc_frost_ristretto255_sha512_secret_share_shard_with_coefficients(
     byte_t *points,
     int n,
     int t,
@@ -572,11 +608,11 @@ void ecc_frost_ristretto255_sha512_secret_share_split_with_coefficients(
     }
 }
 
-void ecc_frost_ristretto255_sha512_secret_share_split(
+void ecc_frost_ristretto255_sha512_secret_share_shard(
     byte_t *points,
     const byte_t *s,
-    const int n,
-    const int t
+    int n,
+    int t
 ) {
     byte_t coefficients[1024];
     memcpy(coefficients, s, ecc_ristretto255_SCALARSIZE);
@@ -585,7 +621,7 @@ void ecc_frost_ristretto255_sha512_secret_share_split(
         ecc_ristretto255_scalar_random(&coefficients[pos]);
     }
 
-    ecc_frost_ristretto255_sha512_secret_share_split_with_coefficients(
+    ecc_frost_ristretto255_sha512_secret_share_shard_with_coefficients(
         points,
         n,
         t,
