@@ -307,4 +307,11 @@ void ecc_frost_ristretto255_sha512_secret_share_shard(
     int t
 );
 
+ECC_EXPORT
+void ecc_frost_ristretto255_sha512_frost_aggregate(
+    byte_t *signature,
+    const byte_t *R,
+    const byte_t *sig_shares, int sig_shares_len
+);
+
 #endif // ECC_FROST_H

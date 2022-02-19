@@ -236,7 +236,9 @@ static void test_ecc_frost_ristretto255_sha512_poc(void **state) {
     byte_t message[4] = "test";
     ecc_log("message", message, sizeof message);
 
-    byte_t participant_list[2] = {1, 2};
+    byte_t participant_list[2 * ecc_frost_ristretto255_sha512_SCALARSIZE] = {0};
+    participant_list[0] = 1;
+    participant_list[ecc_frost_ristretto255_sha512_SCALARSIZE] = 2;
 
     byte_t group_secret_key[ecc_frost_ristretto255_sha512_SECRETKEYSIZE];
     ecc_hex2bin(group_secret_key, "b120be204b5e758960458ca9c4675b56b12a8faff2be9c94891d5e1cd75c880e", 64);
@@ -328,7 +330,30 @@ static void test_ecc_frost_ristretto255_sha512_poc(void **state) {
         commitment_list, 2,
         participant_list, 2
     );
+    ecc_frost_ristretto255_sha512_sign(
+        &sig_shares[ecc_frost_ristretto255_sha512_SCALARSIZE],
+        &comm_shares[ecc_frost_ristretto255_sha512_ELEMENTSIZE],
+        2,
+        &signer_keys[ecc_frost_ristretto255_sha512_POINTSIZE + ecc_frost_ristretto255_sha512_SCALARSIZE],
+        group_public_key,
+        nonce_2,
+        comm_2,
+        message, sizeof message,
+        commitment_list, 2,
+        participant_list, 2
+    );
     ecc_log("S1 sig_share", &sig_shares[0], ecc_frost_ristretto255_sha512_SCALARSIZE);
+    ecc_log("S2 sig_share", &sig_shares[ecc_frost_ristretto255_sha512_SCALARSIZE], ecc_frost_ristretto255_sha512_SCALARSIZE);
+
+    byte_t signature[ecc_frost_ristretto255_sha512_SIGNATURESIZE];
+    ecc_frost_ristretto255_sha512_frost_aggregate(signature, group_comm, sig_shares, 2);
+
+    int r = ecc_frost_ristretto255_sha512_schnorr_signature_verify(
+        message, sizeof message,
+        signature,
+        group_public_key
+    );
+    assert_int_equal(r, 1);
 }
 
 int main() {

@@ -503,6 +503,9 @@ void ecc_frost_ristretto255_sha512_sign(
         x_i,
         participant_list, participant_list_len
     );
+#if ECC_LOG
+    ecc_log("sign, lambda_i", lambda_i, sizeof lambda_i);
+#endif
 
     // Compute the per-message challenge
 //    group_comm_enc = G.SerializeElement(R)
@@ -586,6 +589,8 @@ void ecc_frost_ristretto255_sha512_trusted_dealer_keygen(
         secret_key,
         coefficients
     );
+
+    // TODO: cleanup stack
 }
 
 void ecc_frost_ristretto255_sha512_secret_share_shard_with_coefficients(
@@ -606,13 +611,15 @@ void ecc_frost_ristretto255_sha512_secret_share_shard_with_coefficients(
         memcpy(point_i->x, x_i, ecc_ristretto255_SCALARSIZE);
         memcpy(point_i->y, y_i, ecc_ristretto255_SCALARSIZE);
     }
+
+    // TODO: cleanup stack
 }
 
 void ecc_frost_ristretto255_sha512_secret_share_shard(
     byte_t *points,
     const byte_t *s,
-    int n,
-    int t
+    const int n,
+    const int t
 ) {
     byte_t coefficients[1024];
     memcpy(coefficients, s, ecc_ristretto255_SCALARSIZE);
@@ -627,4 +634,33 @@ void ecc_frost_ristretto255_sha512_secret_share_shard(
         t,
         coefficients
     );
+
+    // TODO: cleanup stack
+}
+
+void ecc_frost_ristretto255_sha512_frost_aggregate(
+    byte_t *signature_ptr,
+    const byte_t *R,
+    const byte_t *sig_shares, const int sig_shares_len
+) {
+    // TODO: implement assert verify_signature_share
+
+//    z = 0
+//    for z_i in sig_shares:
+//      z = z + z_i
+//    return (R, z)
+
+    Signature_t *signature = (Signature_t *) signature_ptr;
+
+    byte_t z[ecc_ristretto255_SCALARSIZE] = {0};
+    for (int i = 0; i < sig_shares_len; i++) {
+        const int pos = i * ecc_frost_ristretto255_sha512_SCALARSIZE;
+        const byte_t *z_i = &sig_shares[pos];
+        ecc_ristretto255_scalar_add(z, z, z_i);
+    }
+
+    memcpy(signature->R, R, ecc_frost_ristretto255_sha512_ELEMENTSIZE);
+    memcpy(signature->z, z, sizeof z);
+
+    // TODO: cleanup stack
 }
