@@ -348,6 +348,30 @@ static void test_ecc_frost_ristretto255_sha512_poc(void **state) {
     byte_t signature[ecc_frost_ristretto255_sha512_SIGNATURESIZE];
     ecc_frost_ristretto255_sha512_frost_aggregate(signature, group_comm, sig_shares, 2);
 
+    int v1 = ecc_frost_ristretto255_sha512_verify_signature_share(
+        1,
+        group_public_key,
+        &signer_public_keys[0],
+        &sig_shares[0],
+        &comm_shares[0],
+        group_comm,
+        message, sizeof message,
+        participant_list, 2
+    );
+    assert_int_equal(v1, 1);
+
+    int v2 = ecc_frost_ristretto255_sha512_verify_signature_share(
+        2,
+        group_public_key,
+        &signer_public_keys[ecc_frost_ristretto255_sha512_PUBLICKEYSIZE],
+        &sig_shares[ecc_frost_ristretto255_sha512_SCALARSIZE],
+        &comm_shares[ecc_frost_ristretto255_sha512_ELEMENTSIZE],
+        group_comm,
+        message, sizeof message,
+        participant_list, 2
+    );
+    assert_int_equal(v2, 1);
+
     int r = ecc_frost_ristretto255_sha512_schnorr_signature_verify(
         message, sizeof message,
         signature,

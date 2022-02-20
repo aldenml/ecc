@@ -273,6 +273,18 @@ void ecc_frost_ristretto255_sha512_sign(
 );
 
 ECC_EXPORT
+int ecc_frost_ristretto255_sha512_verify_signature_share(
+    int index,
+    const byte_t *group_public_key,
+    const byte_t *PK_i,
+    const byte_t *sig_share,
+    const byte_t *comm_share,
+    const byte_t *R,
+    const byte_t *msg, int msg_len,
+    const byte_t *participant_list, int participant_list_len
+);
+
+ECC_EXPORT
 void ecc_frost_ristretto255_sha512_trusted_dealer_keygen_with_secret_and_coefficients(
     byte_t *public_key,
     byte_t *secret_key_shares,

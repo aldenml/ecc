@@ -548,6 +548,79 @@ void ecc_frost_ristretto255_sha512_sign(
     // TODO: cleanup stack
 }
 
+int ecc_frost_ristretto255_sha512_verify_signature_share(
+    const int index,
+    const byte_t *group_public_key,
+    const byte_t *PK_i,
+    const byte_t *sig_share,
+    const byte_t *comm_share,
+    const byte_t *R,
+    const byte_t *msg, const int msg_len,
+    const byte_t *participant_list, const int participant_list_len
+) {
+//    msg_hash = H3(msg)
+//    group_comm_enc = G.SerializeElement(R)
+//    group_public_key_enc = G.SerializeElement(group_public_key)
+//    challenge_input = group_comm_enc || group_public_key_enc || msg_hash
+//    c = H2(challenge_input)
+//
+//    l = G.ScalarBaseMult(sig_share)
+//
+//    lambda_i = derive_lagrange_coefficient(index, participant_list)
+//    r = comm_share + (sig_share * c * lambda_i)
+//
+//    return l == r
+
+    byte_t msg_hash[64];
+    ecc_frost_ristretto255_sha512_H3(msg_hash, msg, msg_len);
+#if ECC_LOG
+    ecc_log("verify_signature_share, msg_hash", msg_hash, sizeof msg_hash);
+#endif
+
+    byte_t challenge_input[2 * ecc_ristretto255_ELEMENTSIZE + 64];
+    ecc_concat3(
+        challenge_input,
+        R, ecc_ristretto255_ELEMENTSIZE,
+        group_public_key, ecc_ristretto255_ELEMENTSIZE,
+        msg_hash, sizeof msg_hash
+    );
+#if ECC_LOG
+    ecc_log("verify_signature_share, challenge_input", challenge_input, sizeof challenge_input);
+#endif
+
+    byte_t c[32];
+    ecc_frost_ristretto255_sha512_H2(c, challenge_input, sizeof challenge_input);
+#if ECC_LOG
+    ecc_log("verify_signature_share, c", c, sizeof c);
+#endif
+
+    // l = G.ScalarBaseMult(sig_share)
+    byte_t l[ecc_ristretto255_ELEMENTSIZE];
+    ecc_ristretto255_scalarmult_base(l, sig_share);
+
+    // lambda_i = derive_lagrange_coefficient(index, participant_list)
+    byte_t lambda_i[ecc_ristretto255_SCALARSIZE];
+    byte_t x_i[ecc_ristretto255_SCALARSIZE] = {(byte_t) index, 0};
+    ecc_frost_ristretto255_sha512_derive_lagrange_coefficient(
+        lambda_i,
+        x_i,
+        participant_list, participant_list_len
+    );
+
+    // r = comm_share + (PK_i * c * lambda_i)
+    byte_t t[ecc_ristretto255_SCALARSIZE];
+    byte_t r[ecc_ristretto255_ELEMENTSIZE];
+    ecc_ristretto255_scalar_mul(t, c, lambda_i);
+    ecc_ristretto255_scalarmult(r, t, PK_i);
+    ecc_ristretto255_add(r, comm_share, r);
+
+    // return l == r
+    // 1 if the signature share is valid, and 0 otherwise.
+    return ecc_compare(l, r, ecc_ristretto255_ELEMENTSIZE) == 0;
+
+    // TODO: cleanup stack
+}
+
 void ecc_frost_ristretto255_sha512_trusted_dealer_keygen_with_secret_and_coefficients(
     byte_t *public_key,
     byte_t *secret_key_shares,
