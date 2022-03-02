@@ -1547,6 +1547,7 @@ int ecc_opaque_ristretto255_sha512_3DH_ClientFinalize(
     ecc_memzero(expected_server_mac, sizeof expected_server_mac);
     ecc_memzero(client_mac_input, sizeof client_mac_input);
     ecc_memzero(client_mac, sizeof client_mac);
+    ecc_memzero((byte_t *) &hst, sizeof hst);
 
     return 0;
 }
@@ -1789,6 +1790,7 @@ void ecc_opaque_ristretto255_sha512_3DH_ResponseWithSecrets(
     ecc_memzero(server_mac, sizeof server_mac);
     ecc_memzero(expected_client_mac_input, sizeof expected_client_mac_input);
     ecc_memzero(expected_client_mac, sizeof expected_client_mac);
+    ecc_memzero((byte_t *) &hst, sizeof hst);
 }
 
 void ecc_opaque_ristretto255_sha512_3DH_Response(
