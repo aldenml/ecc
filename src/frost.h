@@ -74,10 +74,11 @@
 #define ecc_frost_ristretto255_sha512_SIGNINGCOMMITMENTSIZE 66
 
 /**
+ * Map arbitrary inputs to non-zero Scalar elements of the prime-order group scalar field.
  *
- * @param[out] h1 size:32
+ * @param[out] h1 size:ecc_frost_ristretto255_sha512_SCALARSIZE
  * @param m size:m_len
- * @param m_len the length of `m`, it should be less than 512
+ * @param m_len the length of `m`
  */
 ECC_EXPORT
 void ecc_frost_ristretto255_sha512_H1(
@@ -86,10 +87,11 @@ void ecc_frost_ristretto255_sha512_H1(
 );
 
 /**
+ * Map arbitrary inputs to non-zero Scalar elements of the prime-order group scalar field.
  *
- * @param[out] h2 size:32
+ * @param[out] h2 size:ecc_frost_ristretto255_sha512_SCALARSIZE
  * @param m size:m_len
- * @param m_len the length of `m`, it should be less than 512
+ * @param m_len the length of `m`
  */
 ECC_EXPORT
 void ecc_frost_ristretto255_sha512_H2(

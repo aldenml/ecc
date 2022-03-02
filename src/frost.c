@@ -13,6 +13,26 @@
 #include "hash.h"
 #include "ristretto255.h"
 
+#ifdef __GNUC__
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wcpp"
+#endif
+
+#ifdef __clang__
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wcpp"
+#endif
+
+#include <sodium.h>
+
+#ifdef __clang__
+#pragma clang diagnostic pop
+#endif
+
+#ifdef __GNUC__
+#pragma GCC diagnostic pop
+#endif
+
 typedef struct {
     byte_t R[ecc_ristretto255_ELEMENTSIZE];
     byte_t z[ecc_ristretto255_SCALARSIZE];
@@ -60,22 +80,19 @@ void ecc_frost_ristretto255_sha512_H1(
     const byte_t *m, const int m_len
 ) {
     byte_t contextString[28] = "FROST-RISTRETTO255-SHA512rho";
-    byte_t hash_input[600];
-    ecc_concat2(
-        hash_input,
-        contextString, sizeof contextString,
-        m, m_len
-    );
-    const int hash_input_len = (int) (sizeof contextString) + m_len;
 
     byte_t digest[ecc_hash_sha512_HASHSIZE];
-    ecc_hash_sha512(digest, hash_input, hash_input_len);
+    crypto_hash_sha512_state st;
+    crypto_hash_sha512_init(&st);
+    crypto_hash_sha512_update(&st, contextString, sizeof contextString);
+    crypto_hash_sha512_update(&st, m, (unsigned long long) m_len);
+    crypto_hash_sha512_final(&st, digest);
 
     ecc_ristretto255_scalar_reduce(h1, digest);
 
     // cleanup stack memory
-    ecc_memzero(hash_input, sizeof hash_input);
     ecc_memzero(digest, sizeof digest);
+    ecc_memzero((byte_t *) &st, sizeof st);
 }
 
 void ecc_frost_ristretto255_sha512_H2(
@@ -83,22 +100,19 @@ void ecc_frost_ristretto255_sha512_H2(
     const byte_t *m, const int m_len
 ) {
     byte_t contextString[29] = "FROST-RISTRETTO255-SHA512chal";
-    byte_t hash_input[600];
-    ecc_concat2(
-        hash_input,
-        contextString, sizeof contextString,
-        m, m_len
-    );
-    const int hash_input_len = (int) (sizeof contextString) + m_len;
 
     byte_t digest[ecc_hash_sha512_HASHSIZE];
-    ecc_hash_sha512(digest, hash_input, hash_input_len);
+    crypto_hash_sha512_state st;
+    crypto_hash_sha512_init(&st);
+    crypto_hash_sha512_update(&st, contextString, sizeof contextString);
+    crypto_hash_sha512_update(&st, m, (unsigned long long) m_len);
+    crypto_hash_sha512_final(&st, digest);
 
     ecc_ristretto255_scalar_reduce(h2, digest);
 
     // cleanup stack memory
-    ecc_memzero(hash_input, sizeof hash_input);
     ecc_memzero(digest, sizeof digest);
+    ecc_memzero((byte_t *) &st, sizeof st);
 }
 
 void ecc_frost_ristretto255_sha512_H3(
