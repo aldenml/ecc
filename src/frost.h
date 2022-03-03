@@ -89,6 +89,25 @@ void ecc_frost_ristretto255_sha512_H1(
 /**
  * Map arbitrary inputs to non-zero Scalar elements of the prime-order group scalar field.
  *
+ * This is a variant of H2 that folds internally all inputs in the same
+ * hash calculation.
+ *
+ * @param[out] h1 size:ecc_frost_ristretto255_sha512_SCALARSIZE
+ * @param m1 size:m1_len
+ * @param m1_len the length of `m1`
+ * @param m2 size:m2_len
+ * @param m2_len the length of `m2`
+ */
+ECC_EXPORT
+void ecc_frost_ristretto255_sha512_H1_2(
+    byte_t *h1,
+    const byte_t *m1, int m1_len,
+    const byte_t *m2, int m2_len
+);
+
+/**
+ * Map arbitrary inputs to non-zero Scalar elements of the prime-order group scalar field.
+ *
  * @param[out] h2 size:ecc_frost_ristretto255_sha512_SCALARSIZE
  * @param m size:m_len
  * @param m_len the length of `m`
@@ -100,10 +119,34 @@ void ecc_frost_ristretto255_sha512_H2(
 );
 
 /**
+ * Map arbitrary inputs to non-zero Scalar elements of the prime-order group scalar field.
+ *
+ * This is a variant of H2 that folds internally all inputs in the same
+ * hash calculation.
+ *
+ * @param[out] h2 size:ecc_frost_ristretto255_sha512_SCALARSIZE
+ * @param m1 size:m1_len
+ * @param m1_len the length of `m1`
+ * @param m2 size:m2_len
+ * @param m2_len the length of `m2`
+ * @param m3 size:m_len
+ * @param m3_len the length of `m3`
+ */
+ECC_EXPORT
+void ecc_frost_ristretto255_sha512_H2_3(
+    byte_t *h2,
+    const byte_t *m1, int m1_len,
+    const byte_t *m2, int m2_len,
+    const byte_t *m3, int m3_len
+);
+
+/**
+ * This is an alias for the ciphersuite hash function with
+ * domain separation applied.
  *
  * @param[out] h3 size:64
  * @param m size:m_len
- * @param m_len the length of `m`, it should be less than 512
+ * @param m_len the length of `m`
  */
 ECC_EXPORT
 void ecc_frost_ristretto255_sha512_H3(
@@ -206,6 +249,39 @@ void ecc_frost_ristretto255_sha512_polynomial_interpolation(
 );
 
 /**
+ * Compute the binding factor based on the signer commitment list and a message to be signed.
+ *
+ * @param[out] binding_factor a Scalar representing the binding factor, size:ecc_frost_ristretto255_sha512_SCALARSIZE
+ * @param encoded_commitment_list an encoded commitment list, size:commitment_list_len*ecc_frost_ristretto255_sha512_SIGNINGCOMMITMENTSIZE
+ * @param encoded_commitment_list_len the number of elements in `encoded_commitment_list`
+ * @param msg the message to be signed (sent by the Coordinator), size:msg_len
+ * @param msg_len the length of `msg`
+ */
+ECC_EXPORT
+void ecc_frost_ristretto255_sha512_compute_binding_factor(
+    byte_t *binding_factor,
+    const byte_t *encoded_commitment_list, int encoded_commitment_list_len,
+    const byte_t *msg, int msg_len
+);
+
+/**
+ * Create the per-message challenge.
+ *
+ * @param[out] challenge a challenge Scalar value, size:ecc_frost_ristretto255_sha512_SCALARSIZE
+ * @param group_commitment an Element representing the group commitment, size:ecc_frost_ristretto255_sha512_ELEMENTSIZE
+ * @param group_public_key public key corresponding to the signer secret key share, size:ecc_frost_ristretto255_sha512_PUBLICKEYSIZE
+ * @param msg the message to be signed (sent by the Coordinator), size:msg_len
+ * @param msg_len the length of `msg`
+ */
+ECC_EXPORT
+void ecc_frost_ristretto255_sha512_compute_challenge(
+    byte_t *challenge,
+    const byte_t *group_commitment,
+    const byte_t *group_public_key,
+    const byte_t *msg, int msg_len
+);
+
+/**
  * Generate a pair of public commitments corresponding to the nonce pair.
  *
  * @param[out] comm a nonce commitment pair, size:ecc_frost_ristretto255_sha512_NONCECOMMITMENTPAIRSIZE
@@ -230,10 +306,11 @@ void ecc_frost_ristretto255_sha512_commit(
 );
 
 /**
+ * Create the group commitment from a commitment list.
  *
  * @param[out] group_comm size:ecc_frost_ristretto255_sha512_ELEMENTSIZE
  * @param commitment_list a list of commitments issued by each signer, MUST be sorted in ascending order by signer index, size:commitment_list_len*ecc_frost_ristretto255_sha512_SIGNINGCOMMITMENTSIZE
- * @param commitment_list_len the number of elements in `commitment_list`, should be less than 28
+ * @param commitment_list_len the number of elements in `commitment_list`
  * @param binding_factor size:ecc_frost_ristretto255_sha512_SCALARSIZE
  */
 ECC_EXPORT
@@ -256,7 +333,7 @@ void ecc_frost_ristretto255_sha512_group_commitment(
  * @param msg the message to be signed (sent by the Coordinator), size:msg_len
  * @param msg_len the length of `msg`
  * @param commitment_list a list of commitments issued by each signer, MUST be sorted in ascending order by signer index, size:commitment_list_len*ecc_frost_ristretto255_sha512_SIGNINGCOMMITMENTSIZE
- * @param commitment_list_len the number of elements in `commitment_list`, should be less than 28
+ * @param commitment_list_len the number of elements in `commitment_list`
  * @param participant_list a set containing identifiers for each signer, size:participant_list_len
  * @param participant_list_len the number of elements in `participant_list`
  */
@@ -277,13 +354,13 @@ void ecc_frost_ristretto255_sha512_sign(
 ECC_EXPORT
 int ecc_frost_ristretto255_sha512_verify_signature_share(
     int index,
+    const byte_t *public_key_share_i,
+    const byte_t *comm_i,
+    const byte_t *sig_share_i,
+    const byte_t *commitment_list, int commitment_list_len,
+    const byte_t *participant_list, int participant_list_len,
     const byte_t *group_public_key,
-    const byte_t *PK_i,
-    const byte_t *sig_share,
-    const byte_t *comm_share,
-    const byte_t *R,
-    const byte_t *msg, int msg_len,
-    const byte_t *participant_list, int participant_list_len
+    const byte_t *msg, int msg_len
 );
 
 ECC_EXPORT

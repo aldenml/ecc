@@ -95,6 +95,28 @@ void ecc_frost_ristretto255_sha512_H1(
     ecc_memzero((byte_t *) &st, sizeof st);
 }
 
+void ecc_frost_ristretto255_sha512_H1_2(
+    byte_t *h1,
+    const byte_t *m1, const int m1_len,
+    const byte_t *m2, const int m2_len
+) {
+    byte_t contextString[28] = "FROST-RISTRETTO255-SHA512rho";
+
+    byte_t digest[ecc_hash_sha512_HASHSIZE];
+    crypto_hash_sha512_state st;
+    crypto_hash_sha512_init(&st);
+    crypto_hash_sha512_update(&st, contextString, sizeof contextString);
+    crypto_hash_sha512_update(&st, m1, (unsigned long long) m1_len);
+    crypto_hash_sha512_update(&st, m2, (unsigned long long) m2_len);
+    crypto_hash_sha512_final(&st, digest);
+
+    ecc_ristretto255_scalar_reduce(h1, digest);
+
+    // cleanup stack memory
+    ecc_memzero(digest, sizeof digest);
+    ecc_memzero((byte_t *) &st, sizeof st);
+}
+
 void ecc_frost_ristretto255_sha512_H2(
     byte_t *h2,
     const byte_t *m, const int m_len
@@ -115,23 +137,44 @@ void ecc_frost_ristretto255_sha512_H2(
     ecc_memzero((byte_t *) &st, sizeof st);
 }
 
+void ecc_frost_ristretto255_sha512_H2_3(
+    byte_t *h2,
+    const byte_t *m1, const int m1_len,
+    const byte_t *m2, const int m2_len,
+    const byte_t *m3, const int m3_len
+) {
+    byte_t contextString[29] = "FROST-RISTRETTO255-SHA512chal";
+
+    byte_t digest[ecc_hash_sha512_HASHSIZE];
+    crypto_hash_sha512_state st;
+    crypto_hash_sha512_init(&st);
+    crypto_hash_sha512_update(&st, contextString, sizeof contextString);
+    crypto_hash_sha512_update(&st, m1, (unsigned long long) m1_len);
+    crypto_hash_sha512_update(&st, m2, (unsigned long long) m2_len);
+    crypto_hash_sha512_update(&st, m3, (unsigned long long) m3_len);
+    crypto_hash_sha512_final(&st, digest);
+
+    ecc_ristretto255_scalar_reduce(h2, digest);
+
+    // cleanup stack memory
+    ecc_memzero(digest, sizeof digest);
+    ecc_memzero((byte_t *) &st, sizeof st);
+}
+
 void ecc_frost_ristretto255_sha512_H3(
     byte_t *h3,
     const byte_t *m, const int m_len
 ) {
     byte_t contextString[31] = "FROST-RISTRETTO255-SHA512digest";
-    byte_t hash_input[600];
-    ecc_concat2(
-        hash_input,
-        contextString, sizeof contextString,
-        m, m_len
-    );
-    const int hash_input_len = (int) (sizeof contextString) + m_len;
 
-    ecc_hash_sha512(h3, hash_input, hash_input_len);
+    crypto_hash_sha512_state st;
+    crypto_hash_sha512_init(&st);
+    crypto_hash_sha512_update(&st, contextString, sizeof contextString);
+    crypto_hash_sha512_update(&st, m, (unsigned long long) m_len);
+    crypto_hash_sha512_final(&st, h3);
 
     // cleanup stack memory
-    ecc_memzero(hash_input, sizeof hash_input);
+    ecc_memzero((byte_t *) &st, sizeof st);
 }
 
 void ecc_frost_ristretto255_sha512_schnorr_signature_generate(
@@ -143,10 +186,9 @@ void ecc_frost_ristretto255_sha512_schnorr_signature_generate(
 //    k = G.RandomScalar()
 //    R = G.ScalarBaseMult(k)
 //
-//    msg_hash = H3(msg)
 //    comm_enc = G.SerializeElement(R)
 //    pk_enc = G.SerializeElement(PK)
-//    challenge_input = comm_enc || pk_enc || msg_hash
+//    challenge_input = comm_enc || pk_enc || msg
 //    c = H2(challenge_input)
 //
 //    z = k + (c * SK)
@@ -161,29 +203,22 @@ void ecc_frost_ristretto255_sha512_schnorr_signature_generate(
     byte_t R[ecc_ristretto255_ELEMENTSIZE];
     ecc_ristretto255_scalarmult_base(R, k);
 
-    byte_t msg_hash[64];
-    ecc_frost_ristretto255_sha512_H3(msg_hash, msg, msg_len);
-
-    byte_t challenge_input[2 * ecc_ristretto255_ELEMENTSIZE + 64];
-    ecc_concat3(
-        challenge_input,
+    byte_t c[ecc_ristretto255_SCALARSIZE];
+    ecc_frost_ristretto255_sha512_H2_3(
+        c,
         R, sizeof R,
         PK, sizeof PK,
-        msg_hash, sizeof msg_hash
+        msg, sizeof msg_len
     );
-
-    byte_t c[32];
-    ecc_frost_ristretto255_sha512_H2(c, challenge_input, sizeof challenge_input);
 
     // z = k + (c * SK)
     byte_t t[ecc_ristretto255_SCALARSIZE];
-    ecc_ristretto255_scalar_mul(t, c, SK);
+    ecc_ristretto255_scalar_mul(t, c, SK); // c * SK
     byte_t z[ecc_ristretto255_SCALARSIZE];
-    ecc_ristretto255_scalar_add(z, k, t);
+    ecc_ristretto255_scalar_add(z, k, t); // k + (c * SK)
 
 #if ECC_LOG
     ecc_log("schnorr_signature_generate:PK", PK, sizeof PK);
-    ecc_log("schnorr_signature_generate:challenge_input", challenge_input, sizeof challenge_input);
     ecc_log("schnorr_signature_generate:c", c, sizeof c);
     ecc_log("schnorr_signature_generate:R", R, sizeof R);
     ecc_log("schnorr_signature_generate:z", z, sizeof z);
@@ -196,8 +231,6 @@ void ecc_frost_ristretto255_sha512_schnorr_signature_generate(
     ecc_memzero(PK, sizeof PK);
     ecc_memzero(k, sizeof k);
     ecc_memzero(R, sizeof R);
-    ecc_memzero(msg_hash, sizeof msg_hash);
-    ecc_memzero(challenge_input, sizeof challenge_input);
     ecc_memzero(c, sizeof c);
     ecc_memzero(t, sizeof t);
     ecc_memzero(z, sizeof z);
@@ -208,13 +241,12 @@ int ecc_frost_ristretto255_sha512_schnorr_signature_verify(
     const byte_t *signature_ptr,
     const byte_t *PK
 ) {
-//    msg_hash = H3(msg)
 //    comm_enc = G.SerializeElement(R)
 //    pk_enc = G.SerializeElement(PK)
-//    challenge_input = comm_enc || pk_enc || msg_hash
+//    challenge_input = comm_enc || pk_enc || msg
 //    c = H2(challenge_input)
 //
-//    l = ScalarBaseMult(z)
+//    l = G.ScalarBaseMult(z)
 //    r = R + (c * PK)
 //    if l == r:
 //      return 1
@@ -222,22 +254,16 @@ int ecc_frost_ristretto255_sha512_schnorr_signature_verify(
 
     const Signature_t *signature = (const Signature_t *) signature_ptr;
 
-    byte_t msg_hash[64];
-    ecc_frost_ristretto255_sha512_H3(msg_hash, msg, msg_len);
-
-    byte_t challenge_input[2 * ecc_ristretto255_ELEMENTSIZE + 64];
-    ecc_concat3(
-        challenge_input,
+    byte_t c[ecc_ristretto255_SCALARSIZE];
+    ecc_frost_ristretto255_sha512_H2_3(
+        c,
         signature->R, sizeof signature->R,
         PK, ecc_frost_ristretto255_sha512_PUBLICKEYSIZE,
-        msg_hash, sizeof msg_hash
+        msg, sizeof msg_len
     );
 
-    byte_t c[32];
-    ecc_frost_ristretto255_sha512_H2(c, challenge_input, sizeof challenge_input);
 #if ECC_LOG
     ecc_log("schnorr_signature_generate:PK", PK, ecc_frost_ristretto255_sha512_PUBLICKEYSIZE);
-    ecc_log("schnorr_signature_verify:challenge_input", challenge_input, sizeof challenge_input);
     ecc_log("schnorr_signature_verify:c", c, sizeof c);
     ecc_log("schnorr_signature_generate:R", signature->R, sizeof signature->R);
     ecc_log("schnorr_signature_generate:z", signature->z, sizeof signature->z);
@@ -248,25 +274,20 @@ int ecc_frost_ristretto255_sha512_schnorr_signature_verify(
 
     // r = R + (c * PK)
     byte_t t[ecc_ristretto255_ELEMENTSIZE];
-    ecc_ristretto255_scalarmult(t, c, PK);
+    ecc_ristretto255_scalarmult(t, c, PK); // c * PK
     byte_t r[ecc_ristretto255_ELEMENTSIZE];
-    ecc_ristretto255_add(r, signature->R, t);
+    ecc_ristretto255_add(r, signature->R, t); // R + (c * PK)
+
+    int cmp = ecc_compare(l, r, ecc_ristretto255_ELEMENTSIZE);
 
     // cleanup stack memory
-    ecc_memzero(msg_hash, sizeof msg_hash);
-    ecc_memzero(challenge_input, sizeof challenge_input);
     ecc_memzero(c, sizeof c);
-    ecc_memzero(t, sizeof t);
-
-    if (ecc_compare(l, r, ecc_ristretto255_ELEMENTSIZE) == 0) {
-        ecc_memzero(l, sizeof l);
-        ecc_memzero(r, sizeof r);
-        return 1;
-    }
-
     ecc_memzero(l, sizeof l);
+    ecc_memzero(t, sizeof t);
     ecc_memzero(r, sizeof r);
 
+    if (cmp == 0)
+        return 1;
     return 0;
 }
 
@@ -314,6 +335,12 @@ void ecc_frost_ristretto255_sha512_derive_lagrange_coefficient(
     byte_t denominator_inv[ecc_frost_ristretto255_sha512_SCALARSIZE];
     ecc_ristretto255_scalar_invert(denominator_inv, denominator);
     ecc_ristretto255_scalar_mul(L_i, numerator, denominator_inv);
+
+    // cleanup stack memory
+    ecc_memzero(numerator, sizeof numerator);
+    ecc_memzero(denominator, sizeof denominator);
+    ecc_memzero(t, sizeof t);
+    ecc_memzero(denominator_inv, sizeof denominator_inv);
 }
 
 void ecc_frost_ristretto255_sha512_derive_lagrange_coefficient_with_points(
@@ -344,6 +371,12 @@ void ecc_frost_ristretto255_sha512_derive_lagrange_coefficient_with_points(
     byte_t denominator_inv[ecc_frost_ristretto255_sha512_SCALARSIZE];
     ecc_ristretto255_scalar_invert(denominator_inv, denominator);
     ecc_ristretto255_scalar_mul(L_i, numerator, denominator_inv);
+
+    // cleanup stack memory
+    ecc_memzero(numerator, sizeof numerator);
+    ecc_memzero(denominator, sizeof denominator);
+    ecc_memzero(t, sizeof t);
+    ecc_memzero(denominator_inv, sizeof denominator_inv);
 }
 
 void ecc_frost_ristretto255_sha512_polynomial_interpolation(
@@ -368,6 +401,42 @@ void ecc_frost_ristretto255_sha512_polynomial_interpolation(
 
         ecc_ristretto255_scalar_add(constant_term, constant_term, delta);
     }
+
+    // cleanup stack memory
+    ecc_memzero(L_i, sizeof L_i);
+    ecc_memzero(delta, sizeof delta);
+}
+
+void ecc_frost_ristretto255_sha512_compute_binding_factor(
+    byte_t *binding_factor,
+    const byte_t *encoded_commitment_list, const int encoded_commitment_list_len,
+    const byte_t *msg, const int msg_len
+) {
+    byte_t msg_hash[64];
+    ecc_frost_ristretto255_sha512_H3(msg_hash, msg, msg_len);
+
+    ecc_frost_ristretto255_sha512_H1_2(
+        binding_factor,
+        encoded_commitment_list, encoded_commitment_list_len * ecc_frost_ristretto255_sha512_SIGNINGCOMMITMENTSIZE,
+        msg_hash, sizeof msg_hash
+    );
+
+    // cleanup stack memory
+    ecc_memzero(msg_hash, sizeof msg_hash);
+}
+
+void ecc_frost_ristretto255_sha512_compute_challenge(
+    byte_t *challenge,
+    const byte_t *group_commitment,
+    const byte_t *group_public_key,
+    const byte_t *msg, const int msg_len
+) {
+    ecc_frost_ristretto255_sha512_H2_3(
+        challenge,
+        group_commitment, ecc_frost_ristretto255_sha512_ELEMENTSIZE,
+        group_public_key, ecc_ristretto255_ELEMENTSIZE,
+        msg, msg_len
+    );
 }
 
 void ecc_frost_ristretto255_sha512_commit_with_nonce(
@@ -426,6 +495,9 @@ void ecc_frost_ristretto255_sha512_group_commitment(
         ecc_ristretto255_add(T, comm->hiding_nonce_commitment, T);
         ecc_ristretto255_add(group_comm, group_comm, T);
     }
+
+    // cleanup stack memory
+    ecc_memzero(T, sizeof T);
 }
 
 void ecc_frost_ristretto255_sha512_sign(
@@ -440,73 +512,29 @@ void ecc_frost_ristretto255_sha512_sign(
     const byte_t *commitment_list, const int commitment_list_len,
     const byte_t *participant_list, const int participant_list_len
 ) {
-//    # Compute the binding factor
-//    encoded_commitments = encode_group_commitment_list(commitment_list)
-//    msg_hash = H3(msg)
-//    binding_factor = H1(encoded_commitments || msg_hash)
-//
-//   # Compute the group commitment
-//    R = G.Identity()
-//    for (_, hiding_nonce_commitment, binding_nonce_commitment) in commitment_list:
-//      R = R + (hiding_nonce_commitment + (binding_nonce_commitment * binding_factor))
-//
-//    lambda_i = derive_lagrange_coefficient(index, participant_list)
-//
-//    # Compute the per-message challenge
-//    group_comm_enc = G.SerializeElement(R)
-//    group_public_key_enc = G.SerializeElement(group_public_key)
-//    challenge_input = group_comm_enc || group_public_key_enc || msg_hash
-//    c = H2(challenge_input)
-//
-//    # Compute the signature share
-//    (hiding_nonce, binding_nonce) = nonce_i
-//    sig_share = hiding_nonce + (binding_nonce * binding_factor) + (lambda_i * sk_i * c)
-//
-//    # Compute the commitment share
-//    (hiding_nonce_commitment, binding_nonce_commitment) = comm_i
-//    comm_share = hiding_nonce_commitment + (binding_nonce_commitment * binding_factor)
-//
-//    return sig_share, comm_share
 
     const NoncePair_t *nonce_i = (const NoncePair_t *) nonce_i_ptr;
     const NonceCommitmentPair_t *comm_i = (const NonceCommitmentPair_t *) comm_i_ptr;
 
-    // Compute the binding factor
-    // encoded_commitments = encode_group_commitment_list(commitment_list)
-    // msg_hash = H3(msg)
-    byte_t msg_hash[64];
-    ecc_frost_ristretto255_sha512_H3(msg_hash, msg, msg_len);
-#if ECC_LOG
-    ecc_log("sign, msg_hash", msg_hash, sizeof msg_hash);
-#endif
-    // binding_factor = H1(encoded_commitments || msg_hash)
-    byte_t binding_factor_input[2048];
-    ecc_concat2(
-        binding_factor_input,
-        commitment_list, commitment_list_len * ecc_frost_ristretto255_sha512_SIGNINGCOMMITMENTSIZE,
-        msg_hash, sizeof msg_hash
-    );
-    const int binding_factor_input_len = commitment_list_len * ecc_frost_ristretto255_sha512_SIGNINGCOMMITMENTSIZE + (int)(sizeof msg_hash);
     byte_t binding_factor[32];
-    ecc_frost_ristretto255_sha512_H1(binding_factor, binding_factor_input, binding_factor_input_len);
+    ecc_frost_ristretto255_sha512_compute_binding_factor(
+        binding_factor,
+        commitment_list, commitment_list_len,
+        msg, msg_len
+    );
 #if ECC_LOG
     ecc_log("sign, binding_factor", binding_factor, sizeof binding_factor);
 #endif
 
     // Compute the group commitment
-    byte_t R[ecc_ristretto255_ELEMENTSIZE] = {0};
-    byte_t T[ecc_ristretto255_ELEMENTSIZE];
-    for (int i = 0; i < commitment_list_len; i++) {
-        const int pos = i * ecc_frost_ristretto255_sha512_SIGNINGCOMMITMENTSIZE;
-        const SigningCommitment_t *comm = (const SigningCommitment_t *) &commitment_list[pos];
-        // R = R + (hiding_nonce_commitment + (binding_nonce_commitment * binding_factor))
-
-        ecc_ristretto255_scalarmult(T, binding_factor, comm->binding_nonce_commitment);
-        ecc_ristretto255_add(T, comm->hiding_nonce_commitment, T);
-        ecc_ristretto255_add(R, R, T);
-    }
+    byte_t group_commitment[ecc_ristretto255_ELEMENTSIZE];
+    ecc_frost_ristretto255_sha512_group_commitment(
+        group_commitment,
+        commitment_list, commitment_list_len,
+        binding_factor
+    );
 #if ECC_LOG
-    ecc_log("sign, R", R, sizeof R);
+    ecc_log("sign, group_commitment", group_commitment, sizeof group_commitment);
 #endif
 
     // lambda_i = derive_lagrange_coefficient(index, participant_list)
@@ -522,24 +550,15 @@ void ecc_frost_ristretto255_sha512_sign(
 #endif
 
     // Compute the per-message challenge
-//    group_comm_enc = G.SerializeElement(R)
-//    group_public_key_enc = G.SerializeElement(group_public_key)
-//    challenge_input = group_comm_enc || group_public_key_enc || msg_hash
-//    c = H2(challenge_input)
-    byte_t challenge_input[2 * ecc_ristretto255_ELEMENTSIZE + 64];
-    ecc_concat3(
-        challenge_input,
-        R, sizeof R,
-        group_public_key, ecc_ristretto255_ELEMENTSIZE,
-        msg_hash, sizeof msg_hash
+    byte_t challenge[32];
+    ecc_frost_ristretto255_sha512_compute_challenge(
+        challenge,
+        group_commitment,
+        group_public_key,
+        msg, msg_len
     );
 #if ECC_LOG
-    ecc_log("sign, challenge_input", challenge_input, sizeof challenge_input);
-#endif
-    byte_t c[32];
-    ecc_frost_ristretto255_sha512_H2(c, challenge_input, sizeof challenge_input);
-#if ECC_LOG
-    ecc_log("sign, c", c, sizeof c);
+    ecc_log("sign, challenge", challenge, sizeof challenge);
 #endif
 
 //    # Compute the signature share
@@ -548,7 +567,7 @@ void ecc_frost_ristretto255_sha512_sign(
     byte_t t1[ecc_ristretto255_SCALARSIZE];
     byte_t t2[ecc_ristretto255_SCALARSIZE];
     ecc_ristretto255_scalar_mul(t1, lambda_i, sk_i);
-    ecc_ristretto255_scalar_mul(t1, t1, c);
+    ecc_ristretto255_scalar_mul(t1, t1, challenge);
     ecc_ristretto255_scalar_mul(t2, nonce_i->binding_nonce, binding_factor);
     ecc_ristretto255_scalar_add(sig_share, nonce_i->hiding_nonce, t1);
     ecc_ristretto255_scalar_add(sig_share, sig_share, t2);
@@ -556,61 +575,81 @@ void ecc_frost_ristretto255_sha512_sign(
     // Compute the commitment share
 //    (hiding_nonce_commitment, binding_nonce_commitment) = comm_i
 //    comm_share = hiding_nonce_commitment + (binding_nonce_commitment * binding_factor)
+    byte_t T[ecc_ristretto255_ELEMENTSIZE];
     ecc_ristretto255_scalarmult(T, binding_factor, comm_i->binding_nonce_commitment);
     ecc_ristretto255_add(comm_share, comm_i->hiding_nonce_commitment, T);
 
-    // TODO: cleanup stack
+    // cleanup stack memory
+    ecc_memzero(binding_factor, sizeof binding_factor);
+    ecc_memzero(group_commitment, sizeof group_commitment);
+    ecc_memzero(lambda_i, sizeof lambda_i);
+    ecc_memzero(x_i, sizeof x_i);
+    ecc_memzero(challenge, sizeof challenge);
+    ecc_memzero(t1, sizeof t1);
+    ecc_memzero(t2, sizeof t2);
+    ecc_memzero(T, sizeof T);
 }
 
 int ecc_frost_ristretto255_sha512_verify_signature_share(
     const int index,
+    const byte_t *public_key_share_i,
+    const byte_t *comm_i_ptr,
+    const byte_t *sig_share_i,
+    const byte_t *commitment_list, const int commitment_list_len,
+    const byte_t *participant_list, const int participant_list_len,
     const byte_t *group_public_key,
-    const byte_t *PK_i,
-    const byte_t *sig_share,
-    const byte_t *comm_share,
-    const byte_t *R,
-    const byte_t *msg, const int msg_len,
-    const byte_t *participant_list, const int participant_list_len
+    const byte_t *msg, const int msg_len
 ) {
-//    msg_hash = H3(msg)
-//    group_comm_enc = G.SerializeElement(R)
-//    group_public_key_enc = G.SerializeElement(group_public_key)
-//    challenge_input = group_comm_enc || group_public_key_enc || msg_hash
-//    c = H2(challenge_input)
-//
-//    l = G.ScalarBaseMult(sig_share)
-//
-//    lambda_i = derive_lagrange_coefficient(index, participant_list)
-//    r = comm_share + (sig_share * c * lambda_i)
-//
-//    return l == r
+    const NonceCommitmentPair_t *comm_i = (const NonceCommitmentPair_t *) comm_i_ptr;
 
-    byte_t msg_hash[64];
-    ecc_frost_ristretto255_sha512_H3(msg_hash, msg, msg_len);
-#if ECC_LOG
-    ecc_log("verify_signature_share, msg_hash", msg_hash, sizeof msg_hash);
-#endif
-
-    byte_t challenge_input[2 * ecc_ristretto255_ELEMENTSIZE + 64];
-    ecc_concat3(
-        challenge_input,
-        R, ecc_ristretto255_ELEMENTSIZE,
-        group_public_key, ecc_ristretto255_ELEMENTSIZE,
-        msg_hash, sizeof msg_hash
+    byte_t binding_factor[32];
+    ecc_frost_ristretto255_sha512_compute_binding_factor(
+        binding_factor,
+        commitment_list, commitment_list_len,
+        msg, msg_len
     );
 #if ECC_LOG
-    ecc_log("verify_signature_share, challenge_input", challenge_input, sizeof challenge_input);
+    ecc_log("verify_signature_share, binding_factor", binding_factor, sizeof binding_factor);
 #endif
 
-    byte_t c[32];
-    ecc_frost_ristretto255_sha512_H2(c, challenge_input, sizeof challenge_input);
+    // Compute the group commitment
+    byte_t group_commitment[ecc_ristretto255_ELEMENTSIZE];
+    ecc_frost_ristretto255_sha512_group_commitment(
+        group_commitment,
+        commitment_list, commitment_list_len,
+        binding_factor
+    );
 #if ECC_LOG
-    ecc_log("verify_signature_share, c", c, sizeof c);
+    ecc_log("verify_signature_share, group_commitment", group_commitment, sizeof group_commitment);
+#endif
+
+    // # Compute the commitment share
+    // (hiding_nonce_commitment, binding_nonce_commitment) = comm_i
+    // comm_share = hiding_nonce_commitment + (binding_nonce_commitment * binding_factor)
+    byte_t T[ecc_ristretto255_ELEMENTSIZE];
+    byte_t comm_share[ecc_ristretto255_ELEMENTSIZE];
+    ecc_ristretto255_scalarmult(T, binding_factor, comm_i->binding_nonce_commitment);
+    ecc_ristretto255_add(comm_share, comm_i->hiding_nonce_commitment, T);
+#if ECC_LOG
+    ecc_log("verify_signature_share, binding_nonce_commitment", comm_i->binding_nonce_commitment, sizeof comm_i->binding_nonce_commitment);
+    ecc_log("verify_signature_share, comm_share", comm_share, sizeof comm_share);
+#endif
+
+    // Compute the per-message challenge
+    byte_t challenge[32];
+    ecc_frost_ristretto255_sha512_compute_challenge(
+        challenge,
+        group_commitment,
+        group_public_key,
+        msg, msg_len
+    );
+#if ECC_LOG
+    ecc_log("verify_signature_share, challenge", challenge, sizeof challenge);
 #endif
 
     // l = G.ScalarBaseMult(sig_share)
     byte_t l[ecc_ristretto255_ELEMENTSIZE];
-    ecc_ristretto255_scalarmult_base(l, sig_share);
+    ecc_ristretto255_scalarmult_base(l, sig_share_i);
 
     // lambda_i = derive_lagrange_coefficient(index, participant_list)
     byte_t lambda_i[ecc_ristretto255_SCALARSIZE];
@@ -624,15 +663,27 @@ int ecc_frost_ristretto255_sha512_verify_signature_share(
     // r = comm_share + (PK_i * c * lambda_i)
     byte_t t[ecc_ristretto255_SCALARSIZE];
     byte_t r[ecc_ristretto255_ELEMENTSIZE];
-    ecc_ristretto255_scalar_mul(t, c, lambda_i);
-    ecc_ristretto255_scalarmult(r, t, PK_i);
+    ecc_ristretto255_scalar_mul(t, challenge, lambda_i);
+    ecc_ristretto255_scalarmult(r, t, public_key_share_i);
     ecc_ristretto255_add(r, comm_share, r);
 
     // return l == r
     // 1 if the signature share is valid, and 0 otherwise.
-    return ecc_compare(l, r, ecc_ristretto255_ELEMENTSIZE) == 0;
+    int cmp = ecc_compare(l, r, ecc_ristretto255_ELEMENTSIZE);
 
-    // TODO: cleanup stack
+    // cleanup stack memory
+    ecc_memzero(binding_factor, sizeof binding_factor);
+    ecc_memzero(group_commitment, sizeof group_commitment);
+    ecc_memzero(T, sizeof T);
+    ecc_memzero(comm_share, sizeof comm_share);
+    ecc_memzero(challenge, sizeof challenge);
+    ecc_memzero(l, sizeof l);
+    ecc_memzero(lambda_i, sizeof lambda_i);
+    ecc_memzero(x_i, sizeof x_i);
+    ecc_memzero(t, sizeof t);
+    ecc_memzero(r, sizeof r);
+
+    return cmp == 0;
 }
 
 void ecc_frost_ristretto255_sha512_trusted_dealer_keygen_with_secret_and_coefficients(
@@ -677,7 +728,8 @@ void ecc_frost_ristretto255_sha512_trusted_dealer_keygen(
         coefficients
     );
 
-    // TODO: cleanup stack
+    // cleanup stack memory
+    ecc_memzero(coefficients, sizeof coefficients);
 }
 
 void ecc_frost_ristretto255_sha512_secret_share_shard_with_coefficients(
