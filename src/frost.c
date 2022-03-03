@@ -683,7 +683,7 @@ int ecc_frost_ristretto255_sha512_verify_signature_share(
     ecc_memzero(t, sizeof t);
     ecc_memzero(r, sizeof r);
 
-    return cmp == 0;
+    return cmp == 0 ? 1 : 0;
 }
 
 void ecc_frost_ristretto255_sha512_trusted_dealer_keygen_with_secret_and_coefficients(
@@ -734,13 +734,15 @@ void ecc_frost_ristretto255_sha512_trusted_dealer_keygen(
 
 void ecc_frost_ristretto255_sha512_secret_share_shard_with_coefficients(
     byte_t *points,
-    int n,
-    int t,
+    const int n,
+    const int t,
     const byte_t *coefficients
 ) {
+    byte_t y_i[ecc_ristretto255_SCALARSIZE];
+
     for (int i = 1; i <= n; i++) {
         byte_t x_i[ecc_ristretto255_SCALARSIZE] = {(byte_t) i, 0};
-        byte_t y_i[ecc_ristretto255_SCALARSIZE];
+
         ecc_frost_ristretto255_sha512_polynomial_evaluate(y_i, x_i, coefficients, t);
         const int pos = (i - 1) * ecc_frost_ristretto255_sha512_POINTSIZE;
         Point_t *point_i = (Point_t *) &points[pos];
@@ -751,7 +753,8 @@ void ecc_frost_ristretto255_sha512_secret_share_shard_with_coefficients(
         memcpy(point_i->y, y_i, ecc_ristretto255_SCALARSIZE);
     }
 
-    // TODO: cleanup stack
+    // cleanup stack memory
+    ecc_memzero(y_i, sizeof y_i);
 }
 
 void ecc_frost_ristretto255_sha512_secret_share_shard(
@@ -774,16 +777,15 @@ void ecc_frost_ristretto255_sha512_secret_share_shard(
         coefficients
     );
 
-    // TODO: cleanup stack
+    // cleanup stack memory
+    ecc_memzero(coefficients, sizeof coefficients);
 }
 
 void ecc_frost_ristretto255_sha512_frost_aggregate(
     byte_t *signature_ptr,
-    const byte_t *R,
+    const byte_t *group_commitment,
     const byte_t *sig_shares, const int sig_shares_len
 ) {
-    // TODO: implement assert verify_signature_share
-
 //    z = 0
 //    for z_i in sig_shares:
 //      z = z + z_i
@@ -798,8 +800,9 @@ void ecc_frost_ristretto255_sha512_frost_aggregate(
         ecc_ristretto255_scalar_add(z, z, z_i);
     }
 
-    memcpy(signature->R, R, ecc_frost_ristretto255_sha512_ELEMENTSIZE);
+    memcpy(signature->R, group_commitment, ecc_frost_ristretto255_sha512_ELEMENTSIZE);
     memcpy(signature->z, z, sizeof z);
 
-    // TODO: cleanup stack
+    // cleanup stack memory
+    ecc_memzero(z, sizeof z);
 }

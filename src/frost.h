@@ -45,7 +45,7 @@
 
 // const
 /**
- * Size of a schnorr signature, a pair of scalars.
+ * Size of a schnorr signature, a pair of a scalar and an element.
  */
 #define ecc_frost_ristretto255_sha512_SIGNATURESIZE 64
 
@@ -351,6 +351,22 @@ void ecc_frost_ristretto255_sha512_sign(
     const byte_t *participant_list, int participant_list_len
 );
 
+/**
+ * Check that the signature share is valid.
+ *
+ * @param index Index `i` of the signer. Note index will never equal `0`.
+ * @param public_key_share_i the public key for the ith signer, size:ecc_frost_ristretto255_sha512_PUBLICKEYSIZE
+ * @param comm_i pair of Element values (hiding_nonce_commitment, binding_nonce_commitment) generated in round one from the ith signer, size:ecc_frost_ristretto255_sha512_NONCECOMMITMENTPAIRSIZE
+ * @param sig_share_i a Scalar value indicating the signature share as produced in round two from the ith signer, size:ecc_frost_ristretto255_sha512_SCALARSIZE
+ * @param commitment_list a list of commitments issued by each signer, MUST be sorted in ascending order by signer index, size:commitment_list_len*ecc_frost_ristretto255_sha512_SIGNINGCOMMITMENTSIZE
+ * @param commitment_list_len the number of elements in `commitment_list`
+ * @param participant_list a set containing identifiers for each signer, size:participant_list_len
+ * @param participant_list_len the number of elements in `participant_list`
+ * @param group_public_key the public key for the group, size:ecc_frost_ristretto255_sha512_PUBLICKEYSIZE
+ * @param msg the message to be signed (sent by the Coordinator), size:msg_len
+ * @param msg_len the length of `msg`
+ * @return 1 if the signature share is valid, and 0 otherwise.
+ */
 ECC_EXPORT
 int ecc_frost_ristretto255_sha512_verify_signature_share(
     int index,
@@ -363,6 +379,18 @@ int ecc_frost_ristretto255_sha512_verify_signature_share(
     const byte_t *msg, int msg_len
 );
 
+/**
+ * Generates a group secret s uniformly at random and uses
+ * Shamir and Verifiable Secret Sharing to create secret shares
+ * of s to be sent to all other participants.
+ *
+ * @param[out] public_key public key Element, size:ecc_frost_ristretto255_sha512_PUBLICKEYSIZE
+ * @param secret_key_shares shares of the secret key, each a Scalar value, size:n*ecc_frost_ristretto255_sha512_SCALARSIZE
+ * @param n the number of shares to generate
+ * @param t the threshold of the secret sharing scheme
+ * @param secret_key a secret key Scalar, size:ecc_frost_ristretto255_sha512_SCALARSIZE
+ * @param coefficients size:t*ecc_frost_ristretto255_sha512_SCALARSIZE
+ */
 ECC_EXPORT
 void ecc_frost_ristretto255_sha512_trusted_dealer_keygen_with_secret_and_coefficients(
     byte_t *public_key,
@@ -373,6 +401,17 @@ void ecc_frost_ristretto255_sha512_trusted_dealer_keygen_with_secret_and_coeffic
     const byte_t *coefficients
 );
 
+/**
+ * Generates a group secret s uniformly at random and uses
+ * Shamir and Verifiable Secret Sharing to create secret shares
+ * of s to be sent to all other participants.
+ *
+ * @param[out] secret_key a secret key Scalar, size:ecc_frost_ristretto255_sha512_SCALARSIZE
+ * @param[out] public_key public key Element, size:ecc_frost_ristretto255_sha512_PUBLICKEYSIZE
+ * @param[out] secret_key_shares shares of the secret key, each a Scalar value, size:n*ecc_frost_ristretto255_sha512_SCALARSIZE
+ * @param n the number of shares to generate
+ * @param t the threshold of the secret sharing scheme
+ */
 ECC_EXPORT
 void ecc_frost_ristretto255_sha512_trusted_dealer_keygen(
     byte_t *secret_key,
@@ -382,6 +421,14 @@ void ecc_frost_ristretto255_sha512_trusted_dealer_keygen(
     int t
 );
 
+/**
+ * Split a secret into shares.
+ *
+ * @param points A list of n secret shares, each of which is an element of F, size:n*ecc_frost_ristretto255_sha512_SCALARSIZE
+ * @param n the number of shares to generate
+ * @param t the threshold of the secret sharing scheme
+ * @param coefficients size:t*ecc_frost_ristretto255_sha512_SCALARSIZE
+ */
 ECC_EXPORT
 void ecc_frost_ristretto255_sha512_secret_share_shard_with_coefficients(
     byte_t *points,
@@ -390,6 +437,14 @@ void ecc_frost_ristretto255_sha512_secret_share_shard_with_coefficients(
     const byte_t *coefficients
 );
 
+/**
+ * Split a secret into shares.
+ *
+ * @param[out] points A list of n secret shares, each of which is an element of F, size:n*ecc_frost_ristretto255_sha512_SCALARSIZE
+ * @param s secret to be shared, an element of F, size:ecc_frost_ristretto255_sha512_SCALARSIZE
+ * @param n the number of shares to generate
+ * @param t the threshold of the secret sharing scheme
+ */
 ECC_EXPORT
 void ecc_frost_ristretto255_sha512_secret_share_shard(
     byte_t *points,
@@ -398,10 +453,18 @@ void ecc_frost_ristretto255_sha512_secret_share_shard(
     int t
 );
 
+/**
+ * Performs the aggregate operation to obtain the resulting signature.
+ *
+ * @param[out] signature a Schnorr signature consisting of an Element and Scalar value, size:ecc_frost_ristretto255_sha512_SIGNATURESIZE
+ * @param group_commitment the group commitment returned by compute_group_commitment, size:ecc_frost_ristretto255_sha512_PUBLICKEYSIZE
+ * @param sig_shares a set of signature shares z_i for each signer, size:sig_shares_len*ecc_frost_ristretto255_sha512_SCALARSIZE
+ * @param sig_shares_len the number of elements in `sig_shares`, must satisfy THRESHOLD_LIMIT <= sig_shares_len <= MAX_SIGNERS
+ */
 ECC_EXPORT
 void ecc_frost_ristretto255_sha512_frost_aggregate(
     byte_t *signature,
-    const byte_t *R,
+    const byte_t *group_commitment,
     const byte_t *sig_shares, int sig_shares_len
 );
 
