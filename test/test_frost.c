@@ -7,6 +7,167 @@
 
 #include "ecc_test.h"
 
+static void test_ecc_frost_ristretto255_sha512_poc_test_vectors(void **state) {
+    ECC_UNUSED(state);
+
+    const int MAX_SIGNERS = 3;
+    const int THRESHOLD_LIMIT = 2;
+    //const int NUM_SIGNERS = THRESHOLD_LIMIT;
+
+    byte_t message[4] = "test";
+    ecc_log("message", message, sizeof message);
+
+    byte_t participant_list[2 * ecc_frost_ristretto255_sha512_SCALARSIZE] = {0};
+    participant_list[0] = 1;
+    participant_list[ecc_frost_ristretto255_sha512_SCALARSIZE] = 2;
+
+    byte_t group_secret_key[ecc_frost_ristretto255_sha512_SECRETKEYSIZE];
+    ecc_hex2bin(group_secret_key, "b120be204b5e758960458ca9c4675b56b12a8faff2be9c94891d5e1cd75c880e", 64);
+
+    byte_t coefficients[2 * ecc_frost_ristretto255_sha512_SCALARSIZE];
+    ecc_hex2bin(&coefficients[0], "b120be204b5e758960458ca9c4675b56b12a8faff2be9c94891d5e1cd75c880e", 64);
+    ecc_hex2bin(&coefficients[ecc_frost_ristretto255_sha512_SCALARSIZE], "d0619df75f08a757c6d60b09199b62acd3f169e7eb9b6fc2c501e876066fdf06", 64);
+
+    byte_t group_public_key[ecc_frost_ristretto255_sha512_PUBLICKEYSIZE];
+    byte_t signer_keys[3 * ecc_frost_ristretto255_sha512_POINTSIZE];
+    ecc_frost_ristretto255_sha512_trusted_dealer_keygen_with_secret_and_coefficients(
+        group_public_key,
+        signer_keys,
+        MAX_SIGNERS,
+        THRESHOLD_LIMIT,
+        group_secret_key,
+        coefficients
+    );
+
+    ecc_log("group_public_key", group_public_key, sizeof group_public_key);
+
+    byte_t signer_public_keys[3 * ecc_frost_ristretto255_sha512_PUBLICKEYSIZE];
+    for (int i = 1; i <= MAX_SIGNERS; i++) {
+        ecc_ristretto255_scalarmult_base(
+            &signer_public_keys[(i - 1) * ecc_frost_ristretto255_sha512_PUBLICKEYSIZE],
+            &signer_keys[(i - 1) * ecc_frost_ristretto255_sha512_POINTSIZE + ecc_frost_ristretto255_sha512_SCALARSIZE]
+        );
+    }
+    ecc_log("S1 signer_share", &signer_keys[ecc_frost_ristretto255_sha512_SCALARSIZE], ecc_frost_ristretto255_sha512_SCALARSIZE);
+    ecc_log("S2 signer_share", &signer_keys[ecc_frost_ristretto255_sha512_POINTSIZE + ecc_frost_ristretto255_sha512_SCALARSIZE], ecc_frost_ristretto255_sha512_SCALARSIZE);
+    ecc_log("S3 signer_share", &signer_keys[2 * ecc_frost_ristretto255_sha512_POINTSIZE + ecc_frost_ristretto255_sha512_SCALARSIZE], ecc_frost_ristretto255_sha512_SCALARSIZE);
+
+    // Round one: commitment
+
+    byte_t nonce_1[ecc_frost_ristretto255_sha512_NONCEPAIRSIZE];
+    byte_t nonce_2[ecc_frost_ristretto255_sha512_NONCEPAIRSIZE];
+    byte_t comm_1[ecc_frost_ristretto255_sha512_NONCECOMMITMENTPAIRSIZE];
+    byte_t comm_2[ecc_frost_ristretto255_sha512_NONCECOMMITMENTPAIRSIZE];
+    ecc_hex2bin(&nonce_1[0], "349b3bb8464a1d87f7d6b56f4559a3f9a6335261a3266089a9b12d9d6f6ce209", 64);
+    ecc_hex2bin(&nonce_1[32], "ce7406016a854be4291f03e7d24fe30e77994c3465de031515a4c116f22ca901", 64);
+    ecc_hex2bin(&nonce_2[0], "4d66d319f20a728ec3d491cbf260cc6be687bd87cc2b5fdb4d5f528f65fd650d", 64);
+    ecc_hex2bin(&nonce_2[32], "278b9b1e04632e6af3f1a3c144d07922ffcf5efd3a341b47abc19c43f48ce306", 64);
+    ecc_frost_ristretto255_sha512_commit_with_nonce(comm_1, nonce_1);
+    ecc_frost_ristretto255_sha512_commit_with_nonce(comm_2, nonce_2);
+
+//    group_comm_list = signers[1].encode_group_commitment_list(commitment_list)
+//    msg_hash = signers[1].H.H3(message)
+//    rho_input = bytes(group_comm_list + msg_hash)
+//    binding_factor = signers[1].H.H1(rho_input)
+//    group_comm = signers[1].group_commitment(commitment_list, binding_factor)
+    byte_t commitment_list[2 * ecc_frost_ristretto255_sha512_SIGNINGCOMMITMENTSIZE];
+    ecc_I2OSP(&commitment_list[0], 1, 2);
+    memcpy(&commitment_list[2], comm_1, ecc_frost_ristretto255_sha512_NONCECOMMITMENTPAIRSIZE);
+    ecc_I2OSP(&commitment_list[ecc_frost_ristretto255_sha512_SIGNINGCOMMITMENTSIZE], 2, 2);
+    memcpy(&commitment_list[2 + ecc_frost_ristretto255_sha512_SIGNINGCOMMITMENTSIZE], comm_2, ecc_frost_ristretto255_sha512_NONCECOMMITMENTPAIRSIZE);
+
+    byte_t msg_hash[64];
+    ecc_frost_ristretto255_sha512_H3(msg_hash, message, sizeof message);
+    byte_t rho_input[2 * ecc_frost_ristretto255_sha512_SIGNINGCOMMITMENTSIZE + 64];
+    ecc_concat2(
+        rho_input,
+        commitment_list, sizeof commitment_list,
+        msg_hash, sizeof msg_hash
+    );
+    ecc_log("group_binding_factor_input", rho_input, sizeof rho_input);
+
+    // binding_factor = signers[1].H.H1(rho_input)
+    byte_t binding_factor[32];
+    ecc_frost_ristretto255_sha512_H1(binding_factor, rho_input, sizeof rho_input);
+    ecc_log("binding_factor", binding_factor, sizeof binding_factor);
+
+    // group_comm = signers[1].group_commitment(commitment_list, binding_factor)
+    byte_t group_comm[ecc_frost_ristretto255_sha512_ELEMENTSIZE];
+    ecc_frost_ristretto255_sha512_group_commitment(group_comm, commitment_list, 2, binding_factor);
+    ecc_log("group_comm", group_comm, sizeof group_comm);
+
+    // Round two: sign
+    byte_t sig_shares[2 * ecc_frost_ristretto255_sha512_SCALARSIZE];
+    byte_t comm_shares[2 * ecc_frost_ristretto255_sha512_ELEMENTSIZE];
+    ecc_frost_ristretto255_sha512_sign(
+        &sig_shares[0],
+        &comm_shares[0],
+        1,
+        &signer_keys[ecc_frost_ristretto255_sha512_SCALARSIZE],
+        group_public_key,
+        nonce_1,
+        comm_1,
+        message, sizeof message,
+        commitment_list, 2,
+        participant_list, 2
+    );
+    ecc_frost_ristretto255_sha512_sign(
+        &sig_shares[ecc_frost_ristretto255_sha512_SCALARSIZE],
+        &comm_shares[ecc_frost_ristretto255_sha512_ELEMENTSIZE],
+        2,
+        &signer_keys[ecc_frost_ristretto255_sha512_POINTSIZE + ecc_frost_ristretto255_sha512_SCALARSIZE],
+        group_public_key,
+        nonce_2,
+        comm_2,
+        message, sizeof message,
+        commitment_list, 2,
+        participant_list, 2
+    );
+    ecc_log("S1 sig_share", &sig_shares[0], ecc_frost_ristretto255_sha512_SCALARSIZE);
+    ecc_log("S1 group_commitment_share", &comm_shares[0], ecc_frost_ristretto255_sha512_ELEMENTSIZE);
+    ecc_log("S2 sig_share", &sig_shares[ecc_frost_ristretto255_sha512_SCALARSIZE], ecc_frost_ristretto255_sha512_SCALARSIZE);
+    ecc_log("S2 group_commitment_share", &comm_shares[ecc_frost_ristretto255_sha512_ELEMENTSIZE], ecc_frost_ristretto255_sha512_ELEMENTSIZE);
+
+    byte_t signature[ecc_frost_ristretto255_sha512_SIGNATURESIZE];
+    ecc_frost_ristretto255_sha512_frost_aggregate(signature, group_comm, sig_shares, 2);
+
+    char signature_hex[2 * ecc_frost_ristretto255_sha512_SIGNATURESIZE + 1];
+    ecc_bin2hex(signature_hex, signature, sizeof signature);
+    assert_string_equal(signature_hex, "7e92309bf40993141acd5f2c7680a302cc5aa5dd291a833906da8e35bc39b03e733ad4238fcb01b83703b1b0e83872d8ec0d164164a4eaea06242f3c8acc2405");
+    ecc_log("sig", signature, sizeof signature);
+
+    int v1 = ecc_frost_ristretto255_sha512_verify_signature_share(
+        1,
+        &signer_public_keys[0],
+        comm_1,
+        &sig_shares[0],
+        commitment_list, 2,
+        participant_list, 2,
+        group_public_key,
+        message, sizeof message
+    );
+    assert_int_equal(v1, 1);
+
+    int v2 = ecc_frost_ristretto255_sha512_verify_signature_share(
+        2,
+        &signer_public_keys[ecc_frost_ristretto255_sha512_PUBLICKEYSIZE],
+        comm_2,
+        &sig_shares[ecc_frost_ristretto255_sha512_SCALARSIZE],
+        commitment_list, 2,
+        participant_list, 2,
+        group_public_key,
+        message, sizeof message
+    );
+    assert_int_equal(v2, 1);
+
+    int r = ecc_frost_ristretto255_sha512_schnorr_signature_verify(
+        message, sizeof message,
+        signature,
+        group_public_key
+    );
+    assert_int_equal(r, 1);
+}
+
 static void test_ecc_frost_ristretto255_sha512_schnorr_signature(void **state) {
     ECC_UNUSED(state);
 
@@ -226,162 +387,9 @@ static void test_ecc_frost_ristretto255_sha512_commit_with_nonce(void **state) {
         "e2f2ae0a6abc4e71a884a961c500515f58e30b6aa582dd8db6a65945e08d2d766a493210f7499cd17fecb510ae0cea23a110e8d5b901f8acadd3095c73a3b919");
 }
 
-static void test_ecc_frost_ristretto255_sha512_poc(void **state) {
-    ECC_UNUSED(state);
-
-    const int MAX_SIGNERS = 3;
-    const int THRESHOLD_LIMIT = 2;
-    //const int NUM_SIGNERS = THRESHOLD_LIMIT;
-
-    byte_t message[4] = "test";
-    ecc_log("message", message, sizeof message);
-
-    byte_t participant_list[2 * ecc_frost_ristretto255_sha512_SCALARSIZE] = {0};
-    participant_list[0] = 1;
-    participant_list[ecc_frost_ristretto255_sha512_SCALARSIZE] = 2;
-
-    byte_t group_secret_key[ecc_frost_ristretto255_sha512_SECRETKEYSIZE];
-    ecc_hex2bin(group_secret_key, "b120be204b5e758960458ca9c4675b56b12a8faff2be9c94891d5e1cd75c880e", 64);
-
-    byte_t coefficients[2 * ecc_frost_ristretto255_sha512_SCALARSIZE];
-    ecc_hex2bin(&coefficients[0], "b120be204b5e758960458ca9c4675b56b12a8faff2be9c94891d5e1cd75c880e", 64);
-    ecc_hex2bin(&coefficients[ecc_frost_ristretto255_sha512_SCALARSIZE], "d0619df75f08a757c6d60b09199b62acd3f169e7eb9b6fc2c501e876066fdf06", 64);
-
-    byte_t group_public_key[ecc_frost_ristretto255_sha512_PUBLICKEYSIZE];
-    byte_t signer_keys[3 * ecc_frost_ristretto255_sha512_POINTSIZE];
-    ecc_frost_ristretto255_sha512_trusted_dealer_keygen_with_secret_and_coefficients(
-        group_public_key,
-        signer_keys,
-        MAX_SIGNERS,
-        THRESHOLD_LIMIT,
-        group_secret_key,
-        coefficients
-    );
-
-    ecc_log("group_public_key", group_public_key, sizeof group_public_key);
-
-    byte_t signer_public_keys[3 * ecc_frost_ristretto255_sha512_PUBLICKEYSIZE];
-    for (int i = 1; i <= MAX_SIGNERS; i++) {
-        ecc_ristretto255_scalarmult_base(
-            &signer_public_keys[(i - 1) * ecc_frost_ristretto255_sha512_PUBLICKEYSIZE],
-            &signer_keys[(i - 1) * ecc_frost_ristretto255_sha512_POINTSIZE + ecc_frost_ristretto255_sha512_SCALARSIZE]
-        );
-    }
-    ecc_log("S1 signer_share", &signer_keys[ecc_frost_ristretto255_sha512_SCALARSIZE], ecc_frost_ristretto255_sha512_SCALARSIZE);
-    ecc_log("S2 signer_share", &signer_keys[ecc_frost_ristretto255_sha512_POINTSIZE + ecc_frost_ristretto255_sha512_SCALARSIZE], ecc_frost_ristretto255_sha512_SCALARSIZE);
-    ecc_log("S3 signer_share", &signer_keys[2 * ecc_frost_ristretto255_sha512_POINTSIZE + ecc_frost_ristretto255_sha512_SCALARSIZE], ecc_frost_ristretto255_sha512_SCALARSIZE);
-
-    // Round one: commitment
-
-    byte_t nonce_1[ecc_frost_ristretto255_sha512_NONCEPAIRSIZE];
-    byte_t nonce_2[ecc_frost_ristretto255_sha512_NONCEPAIRSIZE];
-    byte_t comm_1[ecc_frost_ristretto255_sha512_NONCECOMMITMENTPAIRSIZE];
-    byte_t comm_2[ecc_frost_ristretto255_sha512_NONCECOMMITMENTPAIRSIZE];
-    ecc_hex2bin(&nonce_1[0], "349b3bb8464a1d87f7d6b56f4559a3f9a6335261a3266089a9b12d9d6f6ce209", 64);
-    ecc_hex2bin(&nonce_1[32], "ce7406016a854be4291f03e7d24fe30e77994c3465de031515a4c116f22ca901", 64);
-    ecc_hex2bin(&nonce_2[0], "4d66d319f20a728ec3d491cbf260cc6be687bd87cc2b5fdb4d5f528f65fd650d", 64);
-    ecc_hex2bin(&nonce_2[32], "278b9b1e04632e6af3f1a3c144d07922ffcf5efd3a341b47abc19c43f48ce306", 64);
-    ecc_frost_ristretto255_sha512_commit_with_nonce(comm_1, nonce_1);
-    ecc_frost_ristretto255_sha512_commit_with_nonce(comm_2, nonce_2);
-
-//    group_comm_list = signers[1].encode_group_commitment_list(commitment_list)
-//    msg_hash = signers[1].H.H3(message)
-//    rho_input = bytes(group_comm_list + msg_hash)
-//    binding_factor = signers[1].H.H1(rho_input)
-//    group_comm = signers[1].group_commitment(commitment_list, binding_factor)
-    byte_t commitment_list[2 * ecc_frost_ristretto255_sha512_SIGNINGCOMMITMENTSIZE];
-    ecc_I2OSP(&commitment_list[0], 1, 2);
-    memcpy(&commitment_list[2], comm_1, ecc_frost_ristretto255_sha512_NONCECOMMITMENTPAIRSIZE);
-    ecc_I2OSP(&commitment_list[ecc_frost_ristretto255_sha512_SIGNINGCOMMITMENTSIZE], 2, 2);
-    memcpy(&commitment_list[2 + ecc_frost_ristretto255_sha512_SIGNINGCOMMITMENTSIZE], comm_2, ecc_frost_ristretto255_sha512_NONCECOMMITMENTPAIRSIZE);
-
-    byte_t msg_hash[64];
-    ecc_frost_ristretto255_sha512_H3(msg_hash, message, sizeof message);
-    byte_t rho_input[2 * ecc_frost_ristretto255_sha512_SIGNINGCOMMITMENTSIZE + 64];
-    ecc_concat2(
-        rho_input,
-        commitment_list, sizeof commitment_list,
-        msg_hash, sizeof msg_hash
-    );
-    ecc_log("group_binding_factor_input", rho_input, sizeof rho_input);
-
-    // binding_factor = signers[1].H.H1(rho_input)
-    byte_t binding_factor[32];
-    ecc_frost_ristretto255_sha512_H1(binding_factor, rho_input, sizeof rho_input);
-    ecc_log("binding_factor", binding_factor, sizeof binding_factor);
-
-    // group_comm = signers[1].group_commitment(commitment_list, binding_factor)
-    byte_t group_comm[ecc_frost_ristretto255_sha512_ELEMENTSIZE];
-    ecc_frost_ristretto255_sha512_group_commitment(group_comm, commitment_list, 2, binding_factor);
-    ecc_log("group_comm", group_comm, sizeof group_comm);
-
-    // Round two: sign
-    byte_t sig_shares[2 * ecc_frost_ristretto255_sha512_SCALARSIZE];
-    byte_t comm_shares[2 * ecc_frost_ristretto255_sha512_ELEMENTSIZE];
-    ecc_frost_ristretto255_sha512_sign(
-        &sig_shares[0],
-        &comm_shares[0],
-        1,
-        &signer_keys[ecc_frost_ristretto255_sha512_SCALARSIZE],
-        group_public_key,
-        nonce_1,
-        comm_1,
-        message, sizeof message,
-        commitment_list, 2,
-        participant_list, 2
-    );
-    ecc_frost_ristretto255_sha512_sign(
-        &sig_shares[ecc_frost_ristretto255_sha512_SCALARSIZE],
-        &comm_shares[ecc_frost_ristretto255_sha512_ELEMENTSIZE],
-        2,
-        &signer_keys[ecc_frost_ristretto255_sha512_POINTSIZE + ecc_frost_ristretto255_sha512_SCALARSIZE],
-        group_public_key,
-        nonce_2,
-        comm_2,
-        message, sizeof message,
-        commitment_list, 2,
-        participant_list, 2
-    );
-    ecc_log("S1 sig_share", &sig_shares[0], ecc_frost_ristretto255_sha512_SCALARSIZE);
-    ecc_log("S2 sig_share", &sig_shares[ecc_frost_ristretto255_sha512_SCALARSIZE], ecc_frost_ristretto255_sha512_SCALARSIZE);
-
-    byte_t signature[ecc_frost_ristretto255_sha512_SIGNATURESIZE];
-    ecc_frost_ristretto255_sha512_frost_aggregate(signature, group_comm, sig_shares, 2);
-
-    int v1 = ecc_frost_ristretto255_sha512_verify_signature_share(
-        1,
-        group_public_key,
-        &signer_public_keys[0],
-        &sig_shares[0],
-        &comm_shares[0],
-        group_comm,
-        message, sizeof message,
-        participant_list, 2
-    );
-    assert_int_equal(v1, 1);
-
-    int v2 = ecc_frost_ristretto255_sha512_verify_signature_share(
-        2,
-        group_public_key,
-        &signer_public_keys[ecc_frost_ristretto255_sha512_PUBLICKEYSIZE],
-        &sig_shares[ecc_frost_ristretto255_sha512_SCALARSIZE],
-        &comm_shares[ecc_frost_ristretto255_sha512_ELEMENTSIZE],
-        group_comm,
-        message, sizeof message,
-        participant_list, 2
-    );
-    assert_int_equal(v2, 1);
-
-    int r = ecc_frost_ristretto255_sha512_schnorr_signature_verify(
-        message, sizeof message,
-        signature,
-        group_public_key
-    );
-    assert_int_equal(r, 1);
-}
-
 int main() {
     const struct CMUnitTest tests[] = {
+        cmocka_unit_test(test_ecc_frost_ristretto255_sha512_poc_test_vectors),
         cmocka_unit_test(test_ecc_frost_ristretto255_sha512_schnorr_signature),
         cmocka_unit_test(test_ecc_frost_ristretto255_sha512_polynomial_evaluate_small_numbers),
         cmocka_unit_test(test_ecc_frost_ristretto255_sha512_derive_lagrange_coefficient_1),
@@ -389,7 +397,6 @@ int main() {
         cmocka_unit_test(test_ecc_frost_ristretto255_sha512_polynomial_interpolation_small_numbers_1),
         cmocka_unit_test(test_ecc_frost_ristretto255_sha512_polynomial_interpolation_small_numbers_2),
         cmocka_unit_test(test_ecc_frost_ristretto255_sha512_commit_with_nonce),
-        cmocka_unit_test(test_ecc_frost_ristretto255_sha512_poc),
     };
 
     return cmocka_run_group_tests(tests, NULL, NULL);
