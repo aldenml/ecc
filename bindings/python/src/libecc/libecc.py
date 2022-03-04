@@ -4906,3 +4906,730 @@ def ecc_pre_schema1_DecryptLevel2(
     )
     return fun_ret
 
+
+# frost
+
+ecc_frost_ristretto255_sha512_SCALARSIZE = 32
+"""
+Size of a scalar, since this is using the ristretto255
+curve the size is 32 bytes.
+"""
+
+ecc_frost_ristretto255_sha512_ELEMENTSIZE = 32
+"""
+Size of an element, since this is using the ristretto255
+curve the size is 32 bytes.
+"""
+
+ecc_frost_ristretto255_sha512_SECRETKEYSIZE = 32
+"""
+Size of a private key, since this is using the ristretto255
+curve the size is 32 bytes, the size of an scalar.
+"""
+
+ecc_frost_ristretto255_sha512_PUBLICKEYSIZE = 32
+"""
+Size of a public key, since this is using the ristretto255
+curve the size is 32 bytes, the size of a group element.
+"""
+
+ecc_frost_ristretto255_sha512_SIGNATURESIZE = 64
+"""
+Size of a schnorr signature, a pair of a scalar and an element.
+"""
+
+ecc_frost_ristretto255_sha512_POINTSIZE = 64
+"""
+Size of a scalar point for polynomial evaluation (x, y).
+"""
+
+ecc_frost_ristretto255_sha512_NONCEPAIRSIZE = 64
+"""
+Size of a nonce tuple.
+"""
+
+ecc_frost_ristretto255_sha512_NONCECOMMITMENTPAIRSIZE = 64
+"""
+Size of a nonce commitment tuple.
+"""
+
+ecc_frost_ristretto255_sha512_SIGNINGCOMMITMENTSIZE = 66
+"""
+Size of a signing commitment structure.
+"""
+
+def ecc_frost_ristretto255_sha512_H1(
+    h1: bytearray,
+    m: bytes,
+    m_len: int
+) -> None:
+    """
+    Map arbitrary inputs to non-zero Scalar elements of the prime-order group scalar field.
+    
+    h1 -- (output) size:ecc_frost_ristretto255_sha512_SCALARSIZE
+    m -- size:m_len
+    m_len -- the length of `m`
+    """
+    ptr_h1 = ffi.from_buffer(h1)
+    ptr_m = ffi.from_buffer(m)
+    lib.ecc_frost_ristretto255_sha512_H1(
+        ptr_h1,
+        ptr_m,
+        m_len
+    )
+    return None
+
+
+def ecc_frost_ristretto255_sha512_H1_2(
+    h1: bytearray,
+    m1: bytes,
+    m1_len: int,
+    m2: bytes,
+    m2_len: int
+) -> None:
+    """
+    Map arbitrary inputs to non-zero Scalar elements of the prime-order group scalar field.
+    
+    This is a variant of H2 that folds internally all inputs in the same
+    hash calculation.
+    
+    h1 -- (output) size:ecc_frost_ristretto255_sha512_SCALARSIZE
+    m1 -- size:m1_len
+    m1_len -- the length of `m1`
+    m2 -- size:m2_len
+    m2_len -- the length of `m2`
+    """
+    ptr_h1 = ffi.from_buffer(h1)
+    ptr_m1 = ffi.from_buffer(m1)
+    ptr_m2 = ffi.from_buffer(m2)
+    lib.ecc_frost_ristretto255_sha512_H1_2(
+        ptr_h1,
+        ptr_m1,
+        m1_len,
+        ptr_m2,
+        m2_len
+    )
+    return None
+
+
+def ecc_frost_ristretto255_sha512_H2(
+    h2: bytearray,
+    m: bytes,
+    m_len: int
+) -> None:
+    """
+    Map arbitrary inputs to non-zero Scalar elements of the prime-order group scalar field.
+    
+    h2 -- (output) size:ecc_frost_ristretto255_sha512_SCALARSIZE
+    m -- size:m_len
+    m_len -- the length of `m`
+    """
+    ptr_h2 = ffi.from_buffer(h2)
+    ptr_m = ffi.from_buffer(m)
+    lib.ecc_frost_ristretto255_sha512_H2(
+        ptr_h2,
+        ptr_m,
+        m_len
+    )
+    return None
+
+
+def ecc_frost_ristretto255_sha512_H2_3(
+    h2: bytearray,
+    m1: bytes,
+    m1_len: int,
+    m2: bytes,
+    m2_len: int,
+    m3: bytes,
+    m3_len: int
+) -> None:
+    """
+    Map arbitrary inputs to non-zero Scalar elements of the prime-order group scalar field.
+    
+    This is a variant of H2 that folds internally all inputs in the same
+    hash calculation.
+    
+    h2 -- (output) size:ecc_frost_ristretto255_sha512_SCALARSIZE
+    m1 -- size:m1_len
+    m1_len -- the length of `m1`
+    m2 -- size:m2_len
+    m2_len -- the length of `m2`
+    m3 -- size:m3_len
+    m3_len -- the length of `m3`
+    """
+    ptr_h2 = ffi.from_buffer(h2)
+    ptr_m1 = ffi.from_buffer(m1)
+    ptr_m2 = ffi.from_buffer(m2)
+    ptr_m3 = ffi.from_buffer(m3)
+    lib.ecc_frost_ristretto255_sha512_H2_3(
+        ptr_h2,
+        ptr_m1,
+        m1_len,
+        ptr_m2,
+        m2_len,
+        ptr_m3,
+        m3_len
+    )
+    return None
+
+
+def ecc_frost_ristretto255_sha512_H3(
+    h3: bytearray,
+    m: bytes,
+    m_len: int
+) -> None:
+    """
+    This is an alias for the ciphersuite hash function with
+    domain separation applied.
+    
+    h3 -- (output) size:64
+    m -- size:m_len
+    m_len -- the length of `m`
+    """
+    ptr_h3 = ffi.from_buffer(h3)
+    ptr_m = ffi.from_buffer(m)
+    lib.ecc_frost_ristretto255_sha512_H3(
+        ptr_h3,
+        ptr_m,
+        m_len
+    )
+    return None
+
+
+def ecc_frost_ristretto255_sha512_schnorr_signature_generate(
+    signature: bytearray,
+    msg: bytes,
+    msg_len: int,
+    SK: bytes
+) -> None:
+    """
+    Generate a single-party setting Schnorr signature.
+    
+    signature -- (output) signature, size:ecc_frost_ristretto255_sha512_SIGNATURESIZE
+    msg -- message to be signed, size:msg_len
+    msg_len -- the length of `msg`
+    SK -- private key, a scalar, size:ecc_frost_ristretto255_sha512_SECRETKEYSIZE
+    """
+    ptr_signature = ffi.from_buffer(signature)
+    ptr_msg = ffi.from_buffer(msg)
+    ptr_SK = ffi.from_buffer(SK)
+    lib.ecc_frost_ristretto255_sha512_schnorr_signature_generate(
+        ptr_signature,
+        ptr_msg,
+        msg_len,
+        ptr_SK
+    )
+    return None
+
+
+def ecc_frost_ristretto255_sha512_schnorr_signature_verify(
+    msg: bytes,
+    msg_len: int,
+    signature: bytes,
+    PK: bytes
+) -> int:
+    """
+    Verify a Schnorr signature.
+    
+    msg -- signed message, size:msg_len
+    msg_len -- the length of `msg`
+    signature -- signature, size:ecc_frost_ristretto255_sha512_SIGNATURESIZE
+    PK -- public key, a group element, size:ecc_frost_ristretto255_sha512_PUBLICKEYSIZE
+    return 1 if signature is valid, and 0 otherwise
+    """
+    ptr_msg = ffi.from_buffer(msg)
+    ptr_signature = ffi.from_buffer(signature)
+    ptr_PK = ffi.from_buffer(PK)
+    fun_ret = lib.ecc_frost_ristretto255_sha512_schnorr_signature_verify(
+        ptr_msg,
+        msg_len,
+        ptr_signature,
+        ptr_PK
+    )
+    return fun_ret
+
+
+def ecc_frost_ristretto255_sha512_polynomial_evaluate(
+    value: bytearray,
+    x: bytes,
+    coeffs: bytes,
+    coeffs_len: int
+) -> None:
+    """
+    Evaluate a polynomial f at a particular input x, i.e., y = f(x)
+    using Horner's method.
+    
+    value -- (output) scalar result of the polynomial evaluated at input x, size:ecc_frost_ristretto255_sha512_SCALARSIZE
+    x -- input at which to evaluate the polynomial, a scalar, size:ecc_frost_ristretto255_sha512_SCALARSIZE
+    coeffs -- the polynomial coefficients, a list of scalars, size:coeffs_len*ecc_frost_ristretto255_sha512_SCALARSIZE
+    coeffs_len -- the number of coefficients in `coeffs`
+    """
+    ptr_value = ffi.from_buffer(value)
+    ptr_x = ffi.from_buffer(x)
+    ptr_coeffs = ffi.from_buffer(coeffs)
+    lib.ecc_frost_ristretto255_sha512_polynomial_evaluate(
+        ptr_value,
+        ptr_x,
+        ptr_coeffs,
+        coeffs_len
+    )
+    return None
+
+
+def ecc_frost_ristretto255_sha512_derive_lagrange_coefficient(
+    L_i: bytearray,
+    x_i: bytes,
+    L: bytes,
+    L_len: int
+) -> None:
+    """
+    Lagrange coefficients are used in FROST to evaluate a polynomial f at f(0),
+    given a set of t other points, where f is represented as a set of coefficients.
+    
+    L_i -- (output) the i-th Lagrange coefficient, size:ecc_frost_ristretto255_sha512_SCALARSIZE
+    x_i -- an x-coordinate contained in L, a scalar, size:ecc_frost_ristretto255_sha512_SCALARSIZE
+    L -- the set of x-coordinates, each a scalar, size:L_len*ecc_frost_ristretto255_sha512_SCALARSIZE
+    L_len -- the number of x-coordinates in `L`
+    """
+    ptr_L_i = ffi.from_buffer(L_i)
+    ptr_x_i = ffi.from_buffer(x_i)
+    ptr_L = ffi.from_buffer(L)
+    lib.ecc_frost_ristretto255_sha512_derive_lagrange_coefficient(
+        ptr_L_i,
+        ptr_x_i,
+        ptr_L,
+        L_len
+    )
+    return None
+
+
+def ecc_frost_ristretto255_sha512_derive_lagrange_coefficient_with_points(
+    L_i: bytearray,
+    x_i: bytes,
+    L: bytes,
+    L_len: int
+) -> None:
+    """
+    This is an optimization that works like `ecc_frost_ristretto255_sha512_derive_lagrange_coefficient`
+    but with a set of points (x, y).
+    
+    L_i -- (output) the i-th Lagrange coefficient, size:ecc_frost_ristretto255_sha512_SCALARSIZE
+    x_i -- an x-coordinate contained in L, a scalar, size:ecc_frost_ristretto255_sha512_SCALARSIZE
+    L -- the set of (x, y)-points, size:L_len*ecc_frost_ristretto255_sha512_POINTSIZE
+    L_len -- the number of (x, y)-points in `L`
+    """
+    ptr_L_i = ffi.from_buffer(L_i)
+    ptr_x_i = ffi.from_buffer(x_i)
+    ptr_L = ffi.from_buffer(L)
+    lib.ecc_frost_ristretto255_sha512_derive_lagrange_coefficient_with_points(
+        ptr_L_i,
+        ptr_x_i,
+        ptr_L,
+        L_len
+    )
+    return None
+
+
+def ecc_frost_ristretto255_sha512_polynomial_interpolation(
+    constant_term: bytearray,
+    points: bytes,
+    points_len: int
+) -> None:
+    """
+    Secret sharing requires "splitting" a secret, which is represented
+    as a constant term of some polynomial f of degree t. Recovering the
+    constant term occurs with a set of t points using polynomial interpolation.
+    
+    constant_term -- (output) the constant term of f, i.e., f(0), size:ecc_frost_ristretto255_sha512_SCALARSIZE
+    points -- a set of `t` points on a polynomial f, each a tuple of two scalar values representing the x and y coordinates, size:points_len*ecc_frost_ristretto255_sha512_POINTSIZE
+    points_len -- the number of points in `points`
+    """
+    ptr_constant_term = ffi.from_buffer(constant_term)
+    ptr_points = ffi.from_buffer(points)
+    lib.ecc_frost_ristretto255_sha512_polynomial_interpolation(
+        ptr_constant_term,
+        ptr_points,
+        points_len
+    )
+    return None
+
+
+def ecc_frost_ristretto255_sha512_compute_binding_factor(
+    binding_factor: bytearray,
+    encoded_commitment_list: bytes,
+    encoded_commitment_list_len: int,
+    msg: bytes,
+    msg_len: int
+) -> None:
+    """
+    Compute the binding factor based on the signer commitment list and a message to be signed.
+    
+    binding_factor -- (output) a Scalar representing the binding factor, size:ecc_frost_ristretto255_sha512_SCALARSIZE
+    encoded_commitment_list -- an encoded commitment list, size:encoded_commitment_list_len*ecc_frost_ristretto255_sha512_SIGNINGCOMMITMENTSIZE
+    encoded_commitment_list_len -- the number of elements in `encoded_commitment_list`
+    msg -- the message to be signed (sent by the Coordinator), size:msg_len
+    msg_len -- the length of `msg`
+    """
+    ptr_binding_factor = ffi.from_buffer(binding_factor)
+    ptr_encoded_commitment_list = ffi.from_buffer(encoded_commitment_list)
+    ptr_msg = ffi.from_buffer(msg)
+    lib.ecc_frost_ristretto255_sha512_compute_binding_factor(
+        ptr_binding_factor,
+        ptr_encoded_commitment_list,
+        encoded_commitment_list_len,
+        ptr_msg,
+        msg_len
+    )
+    return None
+
+
+def ecc_frost_ristretto255_sha512_compute_challenge(
+    challenge: bytearray,
+    group_commitment: bytes,
+    group_public_key: bytes,
+    msg: bytes,
+    msg_len: int
+) -> None:
+    """
+    Create the per-message challenge.
+    
+    challenge -- (output) a challenge Scalar value, size:ecc_frost_ristretto255_sha512_SCALARSIZE
+    group_commitment -- an Element representing the group commitment, size:ecc_frost_ristretto255_sha512_ELEMENTSIZE
+    group_public_key -- public key corresponding to the signer secret key share, size:ecc_frost_ristretto255_sha512_PUBLICKEYSIZE
+    msg -- the message to be signed (sent by the Coordinator), size:msg_len
+    msg_len -- the length of `msg`
+    """
+    ptr_challenge = ffi.from_buffer(challenge)
+    ptr_group_commitment = ffi.from_buffer(group_commitment)
+    ptr_group_public_key = ffi.from_buffer(group_public_key)
+    ptr_msg = ffi.from_buffer(msg)
+    lib.ecc_frost_ristretto255_sha512_compute_challenge(
+        ptr_challenge,
+        ptr_group_commitment,
+        ptr_group_public_key,
+        ptr_msg,
+        msg_len
+    )
+    return None
+
+
+def ecc_frost_ristretto255_sha512_commit_with_nonce(
+    comm: bytearray,
+    nonce: bytes
+) -> None:
+    """
+    Generate a pair of public commitments corresponding to the nonce pair.
+    
+    comm -- (output) a nonce commitment pair, size:ecc_frost_ristretto255_sha512_NONCECOMMITMENTPAIRSIZE
+    nonce -- a nonce pair, size:ecc_frost_ristretto255_sha512_NONCEPAIRSIZE
+    """
+    ptr_comm = ffi.from_buffer(comm)
+    ptr_nonce = ffi.from_buffer(nonce)
+    lib.ecc_frost_ristretto255_sha512_commit_with_nonce(
+        ptr_comm,
+        ptr_nonce
+    )
+    return None
+
+
+def ecc_frost_ristretto255_sha512_commit(
+    nonce: bytearray,
+    comm: bytearray
+) -> None:
+    """
+    Generate a pair of nonces and their corresponding public commitments.
+    
+    nonce -- (output) a nonce pair, size:ecc_frost_ristretto255_sha512_NONCEPAIRSIZE
+    comm -- (output) a nonce commitment pair, size:ecc_frost_ristretto255_sha512_NONCECOMMITMENTPAIRSIZE
+    """
+    ptr_nonce = ffi.from_buffer(nonce)
+    ptr_comm = ffi.from_buffer(comm)
+    lib.ecc_frost_ristretto255_sha512_commit(
+        ptr_nonce,
+        ptr_comm
+    )
+    return None
+
+
+def ecc_frost_ristretto255_sha512_group_commitment(
+    group_comm: bytearray,
+    commitment_list: bytes,
+    commitment_list_len: int,
+    binding_factor: bytes
+) -> None:
+    """
+    Create the group commitment from a commitment list.
+    
+    group_comm -- (output) size:ecc_frost_ristretto255_sha512_ELEMENTSIZE
+    commitment_list -- a list of commitments issued by each signer, MUST be sorted in ascending order by signer index, size:commitment_list_len*ecc_frost_ristretto255_sha512_SIGNINGCOMMITMENTSIZE
+    commitment_list_len -- the number of elements in `commitment_list`
+    binding_factor -- size:ecc_frost_ristretto255_sha512_SCALARSIZE
+    """
+    ptr_group_comm = ffi.from_buffer(group_comm)
+    ptr_commitment_list = ffi.from_buffer(commitment_list)
+    ptr_binding_factor = ffi.from_buffer(binding_factor)
+    lib.ecc_frost_ristretto255_sha512_group_commitment(
+        ptr_group_comm,
+        ptr_commitment_list,
+        commitment_list_len,
+        ptr_binding_factor
+    )
+    return None
+
+
+def ecc_frost_ristretto255_sha512_sign(
+    sig_share: bytearray,
+    comm_share: bytearray,
+    index: int,
+    sk_i: bytes,
+    group_public_key: bytes,
+    nonce_i: bytes,
+    comm_i: bytes,
+    msg: bytes,
+    msg_len: int,
+    commitment_list: bytes,
+    commitment_list_len: int,
+    participant_list: bytes,
+    participant_list_len: int
+) -> None:
+    """
+    To produce a signature share.
+    
+    sig_share -- (output) signature share, size:ecc_frost_ristretto255_sha512_SCALARSIZE
+    comm_share -- (output) commitment share, size:ecc_frost_ristretto255_sha512_ELEMENTSIZE
+    index -- index `i` of the signer. Note index will never equal `0` and must be less thant 256
+    sk_i -- signer secret key share, size:ecc_frost_ristretto255_sha512_SECRETKEYSIZE
+    group_public_key -- public key corresponding to the signer secret key share, size:ecc_frost_ristretto255_sha512_PUBLICKEYSIZE
+    nonce_i -- pair of scalar values generated in round one, size:ecc_frost_ristretto255_sha512_NONCEPAIRSIZE
+    comm_i -- pair of element values generated in round one, size:ecc_frost_ristretto255_sha512_NONCECOMMITMENTPAIRSIZE
+    msg -- the message to be signed (sent by the Coordinator), size:msg_len
+    msg_len -- the length of `msg`
+    commitment_list -- a list of commitments issued by each signer, MUST be sorted in ascending order by signer index, size:commitment_list_len*ecc_frost_ristretto255_sha512_SIGNINGCOMMITMENTSIZE
+    commitment_list_len -- the number of elements in `commitment_list`
+    participant_list -- a set containing identifiers for each signer, size:participant_list_len
+    participant_list_len -- the number of elements in `participant_list`
+    """
+    ptr_sig_share = ffi.from_buffer(sig_share)
+    ptr_comm_share = ffi.from_buffer(comm_share)
+    ptr_sk_i = ffi.from_buffer(sk_i)
+    ptr_group_public_key = ffi.from_buffer(group_public_key)
+    ptr_nonce_i = ffi.from_buffer(nonce_i)
+    ptr_comm_i = ffi.from_buffer(comm_i)
+    ptr_msg = ffi.from_buffer(msg)
+    ptr_commitment_list = ffi.from_buffer(commitment_list)
+    ptr_participant_list = ffi.from_buffer(participant_list)
+    lib.ecc_frost_ristretto255_sha512_sign(
+        ptr_sig_share,
+        ptr_comm_share,
+        index,
+        ptr_sk_i,
+        ptr_group_public_key,
+        ptr_nonce_i,
+        ptr_comm_i,
+        ptr_msg,
+        msg_len,
+        ptr_commitment_list,
+        commitment_list_len,
+        ptr_participant_list,
+        participant_list_len
+    )
+    return None
+
+
+def ecc_frost_ristretto255_sha512_verify_signature_share(
+    index: int,
+    public_key_share_i: bytes,
+    comm_i: bytes,
+    sig_share_i: bytes,
+    commitment_list: bytes,
+    commitment_list_len: int,
+    participant_list: bytes,
+    participant_list_len: int,
+    group_public_key: bytes,
+    msg: bytes,
+    msg_len: int
+) -> int:
+    """
+    Check that the signature share is valid.
+    
+    index -- Index `i` of the signer. Note index will never equal `0`.
+    public_key_share_i -- the public key for the ith signer, size:ecc_frost_ristretto255_sha512_PUBLICKEYSIZE
+    comm_i -- pair of Element values (hiding_nonce_commitment, binding_nonce_commitment) generated in round one from the ith signer, size:ecc_frost_ristretto255_sha512_NONCECOMMITMENTPAIRSIZE
+    sig_share_i -- a Scalar value indicating the signature share as produced in round two from the ith signer, size:ecc_frost_ristretto255_sha512_SCALARSIZE
+    commitment_list -- a list of commitments issued by each signer, MUST be sorted in ascending order by signer index, size:commitment_list_len*ecc_frost_ristretto255_sha512_SIGNINGCOMMITMENTSIZE
+    commitment_list_len -- the number of elements in `commitment_list`
+    participant_list -- a set containing identifiers for each signer, size:participant_list_len
+    participant_list_len -- the number of elements in `participant_list`
+    group_public_key -- the public key for the group, size:ecc_frost_ristretto255_sha512_PUBLICKEYSIZE
+    msg -- the message to be signed (sent by the Coordinator), size:msg_len
+    msg_len -- the length of `msg`
+    return 1 if the signature share is valid, and 0 otherwise.
+    """
+    ptr_public_key_share_i = ffi.from_buffer(public_key_share_i)
+    ptr_comm_i = ffi.from_buffer(comm_i)
+    ptr_sig_share_i = ffi.from_buffer(sig_share_i)
+    ptr_commitment_list = ffi.from_buffer(commitment_list)
+    ptr_participant_list = ffi.from_buffer(participant_list)
+    ptr_group_public_key = ffi.from_buffer(group_public_key)
+    ptr_msg = ffi.from_buffer(msg)
+    fun_ret = lib.ecc_frost_ristretto255_sha512_verify_signature_share(
+        index,
+        ptr_public_key_share_i,
+        ptr_comm_i,
+        ptr_sig_share_i,
+        ptr_commitment_list,
+        commitment_list_len,
+        ptr_participant_list,
+        participant_list_len,
+        ptr_group_public_key,
+        ptr_msg,
+        msg_len
+    )
+    return fun_ret
+
+
+def ecc_frost_ristretto255_sha512_trusted_dealer_keygen_with_secret_and_coefficients(
+    public_key: bytearray,
+    secret_key_shares: bytes,
+    n: int,
+    t: int,
+    secret_key: bytes,
+    coefficients: bytes
+) -> None:
+    """
+    Generates a group secret s uniformly at random and uses
+    Shamir and Verifiable Secret Sharing to create secret shares
+    of s to be sent to all other participants.
+    
+    public_key -- (output) public key Element, size:ecc_frost_ristretto255_sha512_PUBLICKEYSIZE
+    secret_key_shares -- shares of the secret key, each a Scalar value, size:n*ecc_frost_ristretto255_sha512_SCALARSIZE
+    n -- the number of shares to generate
+    t -- the threshold of the secret sharing scheme
+    secret_key -- a secret key Scalar, size:ecc_frost_ristretto255_sha512_SCALARSIZE
+    coefficients -- size:t*ecc_frost_ristretto255_sha512_SCALARSIZE
+    """
+    ptr_public_key = ffi.from_buffer(public_key)
+    ptr_secret_key_shares = ffi.from_buffer(secret_key_shares)
+    ptr_secret_key = ffi.from_buffer(secret_key)
+    ptr_coefficients = ffi.from_buffer(coefficients)
+    lib.ecc_frost_ristretto255_sha512_trusted_dealer_keygen_with_secret_and_coefficients(
+        ptr_public_key,
+        ptr_secret_key_shares,
+        n,
+        t,
+        ptr_secret_key,
+        ptr_coefficients
+    )
+    return None
+
+
+def ecc_frost_ristretto255_sha512_trusted_dealer_keygen(
+    secret_key: bytearray,
+    public_key: bytearray,
+    secret_key_shares: bytearray,
+    n: int,
+    t: int
+) -> None:
+    """
+    Generates a group secret s uniformly at random and uses
+    Shamir and Verifiable Secret Sharing to create secret shares
+    of s to be sent to all other participants.
+    
+    secret_key -- (output) a secret key Scalar, size:ecc_frost_ristretto255_sha512_SCALARSIZE
+    public_key -- (output) public key Element, size:ecc_frost_ristretto255_sha512_PUBLICKEYSIZE
+    secret_key_shares -- (output) shares of the secret key, each a Scalar value, size:n*ecc_frost_ristretto255_sha512_SCALARSIZE
+    n -- the number of shares to generate
+    t -- the threshold of the secret sharing scheme
+    """
+    ptr_secret_key = ffi.from_buffer(secret_key)
+    ptr_public_key = ffi.from_buffer(public_key)
+    ptr_secret_key_shares = ffi.from_buffer(secret_key_shares)
+    lib.ecc_frost_ristretto255_sha512_trusted_dealer_keygen(
+        ptr_secret_key,
+        ptr_public_key,
+        ptr_secret_key_shares,
+        n,
+        t
+    )
+    return None
+
+
+def ecc_frost_ristretto255_sha512_secret_share_shard_with_coefficients(
+    points: bytes,
+    n: int,
+    t: int,
+    coefficients: bytes
+) -> None:
+    """
+    Split a secret into shares.
+    
+    points -- A list of n secret shares, each of which is an element of F, size:n*ecc_frost_ristretto255_sha512_SCALARSIZE
+    n -- the number of shares to generate
+    t -- the threshold of the secret sharing scheme
+    coefficients -- size:t*ecc_frost_ristretto255_sha512_SCALARSIZE
+    """
+    ptr_points = ffi.from_buffer(points)
+    ptr_coefficients = ffi.from_buffer(coefficients)
+    lib.ecc_frost_ristretto255_sha512_secret_share_shard_with_coefficients(
+        ptr_points,
+        n,
+        t,
+        ptr_coefficients
+    )
+    return None
+
+
+def ecc_frost_ristretto255_sha512_secret_share_shard(
+    points: bytearray,
+    s: bytes,
+    n: int,
+    t: int
+) -> None:
+    """
+    Split a secret into shares.
+    
+    points -- (output) A list of n secret shares, each of which is an element of F, size:n*ecc_frost_ristretto255_sha512_SCALARSIZE
+    s -- secret to be shared, an element of F, size:ecc_frost_ristretto255_sha512_SCALARSIZE
+    n -- the number of shares to generate
+    t -- the threshold of the secret sharing scheme
+    """
+    ptr_points = ffi.from_buffer(points)
+    ptr_s = ffi.from_buffer(s)
+    lib.ecc_frost_ristretto255_sha512_secret_share_shard(
+        ptr_points,
+        ptr_s,
+        n,
+        t
+    )
+    return None
+
+
+def ecc_frost_ristretto255_sha512_frost_aggregate(
+    signature: bytearray,
+    group_commitment: bytes,
+    sig_shares: bytes,
+    sig_shares_len: int
+) -> None:
+    """
+    Performs the aggregate operation to obtain the resulting signature.
+    
+    signature -- (output) a Schnorr signature consisting of an Element and Scalar value, size:ecc_frost_ristretto255_sha512_SIGNATURESIZE
+    group_commitment -- the group commitment returned by compute_group_commitment, size:ecc_frost_ristretto255_sha512_PUBLICKEYSIZE
+    sig_shares -- a set of signature shares z_i for each signer, size:sig_shares_len*ecc_frost_ristretto255_sha512_SCALARSIZE
+    sig_shares_len -- the number of elements in `sig_shares`, must satisfy THRESHOLD_LIMIT
+    <
+    = sig_shares_len
+    <
+    = MAX_SIGNERS
+    """
+    ptr_signature = ffi.from_buffer(signature)
+    ptr_group_commitment = ffi.from_buffer(group_commitment)
+    ptr_sig_shares = ffi.from_buffer(sig_shares)
+    lib.ecc_frost_ristretto255_sha512_frost_aggregate(
+        ptr_signature,
+        ptr_group_commitment,
+        ptr_sig_shares,
+        sig_shares_len
+    )
+    return None
+

@@ -129,7 +129,7 @@ void ecc_frost_ristretto255_sha512_H2(
  * @param m1_len the length of `m1`
  * @param m2 size:m2_len
  * @param m2_len the length of `m2`
- * @param m3 size:m_len
+ * @param m3 size:m3_len
  * @param m3_len the length of `m3`
  */
 ECC_EXPORT
@@ -252,7 +252,7 @@ void ecc_frost_ristretto255_sha512_polynomial_interpolation(
  * Compute the binding factor based on the signer commitment list and a message to be signed.
  *
  * @param[out] binding_factor a Scalar representing the binding factor, size:ecc_frost_ristretto255_sha512_SCALARSIZE
- * @param encoded_commitment_list an encoded commitment list, size:commitment_list_len*ecc_frost_ristretto255_sha512_SIGNINGCOMMITMENTSIZE
+ * @param encoded_commitment_list an encoded commitment list, size:encoded_commitment_list_len*ecc_frost_ristretto255_sha512_SIGNINGCOMMITMENTSIZE
  * @param encoded_commitment_list_len the number of elements in `encoded_commitment_list`
  * @param msg the message to be signed (sent by the Coordinator), size:msg_len
  * @param msg_len the length of `msg`

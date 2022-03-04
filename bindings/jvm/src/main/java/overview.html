@@ -8,6 +8,7 @@ This is the java binding of the <a href="https://github.com/aldenml/ecc">ecc</a>
 <ul>
     <li><a href="#oprf-oblivious-pseudo-random-functions-using-ristretto255">OPRF</a></li>
     <li><a href="#opaque-the-opaque-asymmetric-pake-protocol">OPAQUE</a></li>
+    <li><a href="#two-round-threshold-schnorr-signatures-with-frost">Two-Round Threshold Schnorr Signatures with FROST</a></li>
     <li><a href="#ethereum-bls-signature">Ethereum BLS Signature</a></li>
     <li><a href="#bls12-381-pairing">BLS12-381 Pairing</a></li>
     <li><a href="#proxy-re-encryption-pre">Proxy Re-Encryption (PRE)</a></li>
@@ -115,6 +116,22 @@ opaque_ristretto255_sha512_CreateRegistrationResponse
 opaque_ristretto255_sha512_3DH_ServerInit
 opaque_ristretto255_sha512_3DH_ServerFinish
 </pre>
+
+<h3 id="two-round-threshold-schnorr-signatures-with-frost">Two-Round Threshold Schnorr Signatures with FROST</h3>
+
+This is an implementation of <a href="https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-frost-02">draft-irtf-cfrg-frost-02</a>
+using `libsodium`.
+<p>
+The draft presents a two-round signing variant of FROST, a Flexible Round-Optimized Schnorr Threshold signature
+scheme. FROST signatures can be issued after a threshold number of entities cooperate to issue a signature,
+allowing for improved distribution of trust and redundancy with respect to a secret key.
+<p>
+Unlike signatures in a single-party setting, threshold signatures require cooperation among a threshold number
+of signers each holding a share of a common private key. The security of threshold schemes in general assume
+that an adversary can corrupt strictly fewer than a threshold number of participants.
+<p>
+This implementation follows the trusted dealer key generation documented in the Appendix B of the draft
+using Shamir and Verifiable Secret Sharing.
 
 <h3 id="ethereum-bls-signature">Ethereum BLS Signature</h3>
 

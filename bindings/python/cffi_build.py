@@ -1157,6 +1157,186 @@ ffibuilder.cdef(
         unsigned char *spk
     );
 
+    // frost
+
+    void ecc_frost_ristretto255_sha512_H1(
+        unsigned char *h1,
+        unsigned char *m,
+        int m_len
+    );
+
+    void ecc_frost_ristretto255_sha512_H1_2(
+        unsigned char *h1,
+        unsigned char *m1,
+        int m1_len,
+        unsigned char *m2,
+        int m2_len
+    );
+
+    void ecc_frost_ristretto255_sha512_H2(
+        unsigned char *h2,
+        unsigned char *m,
+        int m_len
+    );
+
+    void ecc_frost_ristretto255_sha512_H2_3(
+        unsigned char *h2,
+        unsigned char *m1,
+        int m1_len,
+        unsigned char *m2,
+        int m2_len,
+        unsigned char *m3,
+        int m3_len
+    );
+
+    void ecc_frost_ristretto255_sha512_H3(
+        unsigned char *h3,
+        unsigned char *m,
+        int m_len
+    );
+
+    void ecc_frost_ristretto255_sha512_schnorr_signature_generate(
+        unsigned char *signature,
+        unsigned char *msg,
+        int msg_len,
+        unsigned char *SK
+    );
+
+    int ecc_frost_ristretto255_sha512_schnorr_signature_verify(
+        unsigned char *msg,
+        int msg_len,
+        unsigned char *signature,
+        unsigned char *PK
+    );
+
+    void ecc_frost_ristretto255_sha512_polynomial_evaluate(
+        unsigned char *value,
+        unsigned char *x,
+        unsigned char *coeffs,
+        int coeffs_len
+    );
+
+    void ecc_frost_ristretto255_sha512_derive_lagrange_coefficient(
+        unsigned char *L_i,
+        unsigned char *x_i,
+        unsigned char *L,
+        int L_len
+    );
+
+    void ecc_frost_ristretto255_sha512_derive_lagrange_coefficient_with_points(
+        unsigned char *L_i,
+        unsigned char *x_i,
+        unsigned char *L,
+        int L_len
+    );
+
+    void ecc_frost_ristretto255_sha512_polynomial_interpolation(
+        unsigned char *constant_term,
+        unsigned char *points,
+        int points_len
+    );
+
+    void ecc_frost_ristretto255_sha512_compute_binding_factor(
+        unsigned char *binding_factor,
+        unsigned char *encoded_commitment_list,
+        int encoded_commitment_list_len,
+        unsigned char *msg,
+        int msg_len
+    );
+
+    void ecc_frost_ristretto255_sha512_compute_challenge(
+        unsigned char *challenge,
+        unsigned char *group_commitment,
+        unsigned char *group_public_key,
+        unsigned char *msg,
+        int msg_len
+    );
+
+    void ecc_frost_ristretto255_sha512_commit_with_nonce(
+        unsigned char *comm,
+        unsigned char *nonce
+    );
+
+    void ecc_frost_ristretto255_sha512_commit(
+        unsigned char *nonce,
+        unsigned char *comm
+    );
+
+    void ecc_frost_ristretto255_sha512_group_commitment(
+        unsigned char *group_comm,
+        unsigned char *commitment_list,
+        int commitment_list_len,
+        unsigned char *binding_factor
+    );
+
+    void ecc_frost_ristretto255_sha512_sign(
+        unsigned char *sig_share,
+        unsigned char *comm_share,
+        int index,
+        unsigned char *sk_i,
+        unsigned char *group_public_key,
+        unsigned char *nonce_i,
+        unsigned char *comm_i,
+        unsigned char *msg,
+        int msg_len,
+        unsigned char *commitment_list,
+        int commitment_list_len,
+        unsigned char *participant_list,
+        int participant_list_len
+    );
+
+    int ecc_frost_ristretto255_sha512_verify_signature_share(
+        int index,
+        unsigned char *public_key_share_i,
+        unsigned char *comm_i,
+        unsigned char *sig_share_i,
+        unsigned char *commitment_list,
+        int commitment_list_len,
+        unsigned char *participant_list,
+        int participant_list_len,
+        unsigned char *group_public_key,
+        unsigned char *msg,
+        int msg_len
+    );
+
+    void ecc_frost_ristretto255_sha512_trusted_dealer_keygen_with_secret_and_coefficients(
+        unsigned char *public_key,
+        unsigned char *secret_key_shares,
+        int n,
+        int t,
+        unsigned char *secret_key,
+        unsigned char *coefficients
+    );
+
+    void ecc_frost_ristretto255_sha512_trusted_dealer_keygen(
+        unsigned char *secret_key,
+        unsigned char *public_key,
+        unsigned char *secret_key_shares,
+        int n,
+        int t
+    );
+
+    void ecc_frost_ristretto255_sha512_secret_share_shard_with_coefficients(
+        unsigned char *points,
+        int n,
+        int t,
+        unsigned char *coefficients
+    );
+
+    void ecc_frost_ristretto255_sha512_secret_share_shard(
+        unsigned char *points,
+        unsigned char *s,
+        int n,
+        int t
+    );
+
+    void ecc_frost_ristretto255_sha512_frost_aggregate(
+        unsigned char *signature,
+        unsigned char *group_commitment,
+        unsigned char *sig_shares,
+        int sig_shares_len
+    );
+
     """
 )
 
