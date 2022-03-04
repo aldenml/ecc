@@ -3200,4 +3200,465 @@ public final class libecc {
         byte[] spk
     );
 
+    // frost
+
+    /**
+     * Size of a scalar, since this is using the ristretto255
+     * curve the size is 32 bytes.
+     *
+     */
+    public static final int ecc_frost_ristretto255_sha512_SCALARSIZE = 32;
+
+    /**
+     * Size of an element, since this is using the ristretto255
+     * curve the size is 32 bytes.
+     *
+     */
+    public static final int ecc_frost_ristretto255_sha512_ELEMENTSIZE = 32;
+
+    /**
+     * Size of a private key, since this is using the ristretto255
+     * curve the size is 32 bytes, the size of an scalar.
+     *
+     */
+    public static final int ecc_frost_ristretto255_sha512_SECRETKEYSIZE = 32;
+
+    /**
+     * Size of a public key, since this is using the ristretto255
+     * curve the size is 32 bytes, the size of a group element.
+     *
+     */
+    public static final int ecc_frost_ristretto255_sha512_PUBLICKEYSIZE = 32;
+
+    /**
+     * Size of a schnorr signature, a pair of a scalar and an element.
+     *
+     */
+    public static final int ecc_frost_ristretto255_sha512_SIGNATURESIZE = 64;
+
+    /**
+     * Size of a scalar point for polynomial evaluation (x, y).
+     *
+     */
+    public static final int ecc_frost_ristretto255_sha512_POINTSIZE = 64;
+
+    /**
+     * Size of a nonce tuple.
+     *
+     */
+    public static final int ecc_frost_ristretto255_sha512_NONCEPAIRSIZE = 64;
+
+    /**
+     * Size of a nonce commitment tuple.
+     *
+     */
+    public static final int ecc_frost_ristretto255_sha512_NONCECOMMITMENTPAIRSIZE = 64;
+
+    /**
+     * Size of a signing commitment structure.
+     *
+     */
+    public static final int ecc_frost_ristretto255_sha512_SIGNINGCOMMITMENTSIZE = 66;
+
+    /**
+     * Map arbitrary inputs to non-zero Scalar elements of the prime-order group scalar field.
+     *
+     * @param h1 (output) size:ecc_frost_ristretto255_sha512_SCALARSIZE
+     * @param m size:m_len
+     * @param m_len the length of `m`
+     */
+    public static native void ecc_frost_ristretto255_sha512_H1(
+        byte[] h1,
+        byte[] m,
+        int m_len
+    );
+
+    /**
+     * Map arbitrary inputs to non-zero Scalar elements of the prime-order group scalar field.
+     * 
+     * This is a variant of H2 that folds internally all inputs in the same
+     * hash calculation.
+     *
+     * @param h1 (output) size:ecc_frost_ristretto255_sha512_SCALARSIZE
+     * @param m1 size:m1_len
+     * @param m1_len the length of `m1`
+     * @param m2 size:m2_len
+     * @param m2_len the length of `m2`
+     */
+    public static native void ecc_frost_ristretto255_sha512_H1_2(
+        byte[] h1,
+        byte[] m1,
+        int m1_len,
+        byte[] m2,
+        int m2_len
+    );
+
+    /**
+     * Map arbitrary inputs to non-zero Scalar elements of the prime-order group scalar field.
+     *
+     * @param h2 (output) size:ecc_frost_ristretto255_sha512_SCALARSIZE
+     * @param m size:m_len
+     * @param m_len the length of `m`
+     */
+    public static native void ecc_frost_ristretto255_sha512_H2(
+        byte[] h2,
+        byte[] m,
+        int m_len
+    );
+
+    /**
+     * Map arbitrary inputs to non-zero Scalar elements of the prime-order group scalar field.
+     * 
+     * This is a variant of H2 that folds internally all inputs in the same
+     * hash calculation.
+     *
+     * @param h2 (output) size:ecc_frost_ristretto255_sha512_SCALARSIZE
+     * @param m1 size:m1_len
+     * @param m1_len the length of `m1`
+     * @param m2 size:m2_len
+     * @param m2_len the length of `m2`
+     * @param m3 size:m3_len
+     * @param m3_len the length of `m3`
+     */
+    public static native void ecc_frost_ristretto255_sha512_H2_3(
+        byte[] h2,
+        byte[] m1,
+        int m1_len,
+        byte[] m2,
+        int m2_len,
+        byte[] m3,
+        int m3_len
+    );
+
+    /**
+     * This is an alias for the ciphersuite hash function with
+     * domain separation applied.
+     *
+     * @param h3 (output) size:64
+     * @param m size:m_len
+     * @param m_len the length of `m`
+     */
+    public static native void ecc_frost_ristretto255_sha512_H3(
+        byte[] h3,
+        byte[] m,
+        int m_len
+    );
+
+    /**
+     * Generate a single-party setting Schnorr signature.
+     *
+     * @param signature (output) signature, size:ecc_frost_ristretto255_sha512_SIGNATURESIZE
+     * @param msg message to be signed, size:msg_len
+     * @param msg_len the length of `msg`
+     * @param SK private key, a scalar, size:ecc_frost_ristretto255_sha512_SECRETKEYSIZE
+     */
+    public static native void ecc_frost_ristretto255_sha512_schnorr_signature_generate(
+        byte[] signature,
+        byte[] msg,
+        int msg_len,
+        byte[] SK
+    );
+
+    /**
+     * Verify a Schnorr signature.
+     *
+     * @param msg signed message, size:msg_len
+     * @param msg_len the length of `msg`
+     * @param signature signature, size:ecc_frost_ristretto255_sha512_SIGNATURESIZE
+     * @param PK public key, a group element, size:ecc_frost_ristretto255_sha512_PUBLICKEYSIZE
+     * @return 1 if signature is valid, and 0 otherwise
+     */
+    public static native int ecc_frost_ristretto255_sha512_schnorr_signature_verify(
+        byte[] msg,
+        int msg_len,
+        byte[] signature,
+        byte[] PK
+    );
+
+    /**
+     * Evaluate a polynomial f at a particular input x, i.e., y = f(x)
+     * using Horner's method.
+     *
+     * @param value (output) scalar result of the polynomial evaluated at input x, size:ecc_frost_ristretto255_sha512_SCALARSIZE
+     * @param x input at which to evaluate the polynomial, a scalar, size:ecc_frost_ristretto255_sha512_SCALARSIZE
+     * @param coeffs the polynomial coefficients, a list of scalars, size:coeffs_len*ecc_frost_ristretto255_sha512_SCALARSIZE
+     * @param coeffs_len the number of coefficients in `coeffs`
+     */
+    public static native void ecc_frost_ristretto255_sha512_polynomial_evaluate(
+        byte[] value,
+        byte[] x,
+        byte[] coeffs,
+        int coeffs_len
+    );
+
+    /**
+     * Lagrange coefficients are used in FROST to evaluate a polynomial f at f(0),
+     * given a set of t other points, where f is represented as a set of coefficients.
+     *
+     * @param L_i (output) the i-th Lagrange coefficient, size:ecc_frost_ristretto255_sha512_SCALARSIZE
+     * @param x_i an x-coordinate contained in L, a scalar, size:ecc_frost_ristretto255_sha512_SCALARSIZE
+     * @param L the set of x-coordinates, each a scalar, size:L_len*ecc_frost_ristretto255_sha512_SCALARSIZE
+     * @param L_len the number of x-coordinates in `L`
+     */
+    public static native void ecc_frost_ristretto255_sha512_derive_lagrange_coefficient(
+        byte[] L_i,
+        byte[] x_i,
+        byte[] L,
+        int L_len
+    );
+
+    /**
+     * This is an optimization that works like `ecc_frost_ristretto255_sha512_derive_lagrange_coefficient`
+     * but with a set of points (x, y).
+     *
+     * @param L_i (output) the i-th Lagrange coefficient, size:ecc_frost_ristretto255_sha512_SCALARSIZE
+     * @param x_i an x-coordinate contained in L, a scalar, size:ecc_frost_ristretto255_sha512_SCALARSIZE
+     * @param L the set of (x, y)-points, size:L_len*ecc_frost_ristretto255_sha512_POINTSIZE
+     * @param L_len the number of (x, y)-points in `L`
+     */
+    public static native void ecc_frost_ristretto255_sha512_derive_lagrange_coefficient_with_points(
+        byte[] L_i,
+        byte[] x_i,
+        byte[] L,
+        int L_len
+    );
+
+    /**
+     * Secret sharing requires "splitting" a secret, which is represented
+     * as a constant term of some polynomial f of degree t. Recovering the
+     * constant term occurs with a set of t points using polynomial interpolation.
+     *
+     * @param constant_term (output) the constant term of f, i.e., f(0), size:ecc_frost_ristretto255_sha512_SCALARSIZE
+     * @param points a set of `t` points on a polynomial f, each a tuple of two scalar values representing the x and y coordinates, size:points_len*ecc_frost_ristretto255_sha512_POINTSIZE
+     * @param points_len the number of points in `points`
+     */
+    public static native void ecc_frost_ristretto255_sha512_polynomial_interpolation(
+        byte[] constant_term,
+        byte[] points,
+        int points_len
+    );
+
+    /**
+     * Compute the binding factor based on the signer commitment list and a message to be signed.
+     *
+     * @param binding_factor (output) a Scalar representing the binding factor, size:ecc_frost_ristretto255_sha512_SCALARSIZE
+     * @param encoded_commitment_list an encoded commitment list, size:encoded_commitment_list_len*ecc_frost_ristretto255_sha512_SIGNINGCOMMITMENTSIZE
+     * @param encoded_commitment_list_len the number of elements in `encoded_commitment_list`
+     * @param msg the message to be signed (sent by the Coordinator), size:msg_len
+     * @param msg_len the length of `msg`
+     */
+    public static native void ecc_frost_ristretto255_sha512_compute_binding_factor(
+        byte[] binding_factor,
+        byte[] encoded_commitment_list,
+        int encoded_commitment_list_len,
+        byte[] msg,
+        int msg_len
+    );
+
+    /**
+     * Create the per-message challenge.
+     *
+     * @param challenge (output) a challenge Scalar value, size:ecc_frost_ristretto255_sha512_SCALARSIZE
+     * @param group_commitment an Element representing the group commitment, size:ecc_frost_ristretto255_sha512_ELEMENTSIZE
+     * @param group_public_key public key corresponding to the signer secret key share, size:ecc_frost_ristretto255_sha512_PUBLICKEYSIZE
+     * @param msg the message to be signed (sent by the Coordinator), size:msg_len
+     * @param msg_len the length of `msg`
+     */
+    public static native void ecc_frost_ristretto255_sha512_compute_challenge(
+        byte[] challenge,
+        byte[] group_commitment,
+        byte[] group_public_key,
+        byte[] msg,
+        int msg_len
+    );
+
+    /**
+     * Generate a pair of public commitments corresponding to the nonce pair.
+     *
+     * @param comm (output) a nonce commitment pair, size:ecc_frost_ristretto255_sha512_NONCECOMMITMENTPAIRSIZE
+     * @param nonce a nonce pair, size:ecc_frost_ristretto255_sha512_NONCEPAIRSIZE
+     */
+    public static native void ecc_frost_ristretto255_sha512_commit_with_nonce(
+        byte[] comm,
+        byte[] nonce
+    );
+
+    /**
+     * Generate a pair of nonces and their corresponding public commitments.
+     *
+     * @param nonce (output) a nonce pair, size:ecc_frost_ristretto255_sha512_NONCEPAIRSIZE
+     * @param comm (output) a nonce commitment pair, size:ecc_frost_ristretto255_sha512_NONCECOMMITMENTPAIRSIZE
+     */
+    public static native void ecc_frost_ristretto255_sha512_commit(
+        byte[] nonce,
+        byte[] comm
+    );
+
+    /**
+     * Create the group commitment from a commitment list.
+     *
+     * @param group_comm (output) size:ecc_frost_ristretto255_sha512_ELEMENTSIZE
+     * @param commitment_list a list of commitments issued by each signer, MUST be sorted in ascending order by signer index, size:commitment_list_len*ecc_frost_ristretto255_sha512_SIGNINGCOMMITMENTSIZE
+     * @param commitment_list_len the number of elements in `commitment_list`
+     * @param binding_factor size:ecc_frost_ristretto255_sha512_SCALARSIZE
+     */
+    public static native void ecc_frost_ristretto255_sha512_group_commitment(
+        byte[] group_comm,
+        byte[] commitment_list,
+        int commitment_list_len,
+        byte[] binding_factor
+    );
+
+    /**
+     * To produce a signature share.
+     *
+     * @param sig_share (output) signature share, size:ecc_frost_ristretto255_sha512_SCALARSIZE
+     * @param comm_share (output) commitment share, size:ecc_frost_ristretto255_sha512_ELEMENTSIZE
+     * @param index index `i` of the signer. Note index will never equal `0` and must be less thant 256
+     * @param sk_i signer secret key share, size:ecc_frost_ristretto255_sha512_SECRETKEYSIZE
+     * @param group_public_key public key corresponding to the signer secret key share, size:ecc_frost_ristretto255_sha512_PUBLICKEYSIZE
+     * @param nonce_i pair of scalar values generated in round one, size:ecc_frost_ristretto255_sha512_NONCEPAIRSIZE
+     * @param comm_i pair of element values generated in round one, size:ecc_frost_ristretto255_sha512_NONCECOMMITMENTPAIRSIZE
+     * @param msg the message to be signed (sent by the Coordinator), size:msg_len
+     * @param msg_len the length of `msg`
+     * @param commitment_list a list of commitments issued by each signer, MUST be sorted in ascending order by signer index, size:commitment_list_len*ecc_frost_ristretto255_sha512_SIGNINGCOMMITMENTSIZE
+     * @param commitment_list_len the number of elements in `commitment_list`
+     * @param participant_list a set containing identifiers for each signer, size:participant_list_len
+     * @param participant_list_len the number of elements in `participant_list`
+     */
+    public static native void ecc_frost_ristretto255_sha512_sign(
+        byte[] sig_share,
+        byte[] comm_share,
+        int index,
+        byte[] sk_i,
+        byte[] group_public_key,
+        byte[] nonce_i,
+        byte[] comm_i,
+        byte[] msg,
+        int msg_len,
+        byte[] commitment_list,
+        int commitment_list_len,
+        byte[] participant_list,
+        int participant_list_len
+    );
+
+    /**
+     * Check that the signature share is valid.
+     *
+     * @param index Index `i` of the signer. Note index will never equal `0`.
+     * @param public_key_share_i the public key for the ith signer, size:ecc_frost_ristretto255_sha512_PUBLICKEYSIZE
+     * @param comm_i pair of Element values (hiding_nonce_commitment, binding_nonce_commitment) generated in round one from the ith signer, size:ecc_frost_ristretto255_sha512_NONCECOMMITMENTPAIRSIZE
+     * @param sig_share_i a Scalar value indicating the signature share as produced in round two from the ith signer, size:ecc_frost_ristretto255_sha512_SCALARSIZE
+     * @param commitment_list a list of commitments issued by each signer, MUST be sorted in ascending order by signer index, size:commitment_list_len*ecc_frost_ristretto255_sha512_SIGNINGCOMMITMENTSIZE
+     * @param commitment_list_len the number of elements in `commitment_list`
+     * @param participant_list a set containing identifiers for each signer, size:participant_list_len
+     * @param participant_list_len the number of elements in `participant_list`
+     * @param group_public_key the public key for the group, size:ecc_frost_ristretto255_sha512_PUBLICKEYSIZE
+     * @param msg the message to be signed (sent by the Coordinator), size:msg_len
+     * @param msg_len the length of `msg`
+     * @return 1 if the signature share is valid, and 0 otherwise.
+     */
+    public static native int ecc_frost_ristretto255_sha512_verify_signature_share(
+        int index,
+        byte[] public_key_share_i,
+        byte[] comm_i,
+        byte[] sig_share_i,
+        byte[] commitment_list,
+        int commitment_list_len,
+        byte[] participant_list,
+        int participant_list_len,
+        byte[] group_public_key,
+        byte[] msg,
+        int msg_len
+    );
+
+    /**
+     * Generates a group secret s uniformly at random and uses
+     * Shamir and Verifiable Secret Sharing to create secret shares
+     * of s to be sent to all other participants.
+     *
+     * @param public_key (output) public key Element, size:ecc_frost_ristretto255_sha512_PUBLICKEYSIZE
+     * @param secret_key_shares shares of the secret key, each a Scalar value, size:n*ecc_frost_ristretto255_sha512_SCALARSIZE
+     * @param n the number of shares to generate
+     * @param t the threshold of the secret sharing scheme
+     * @param secret_key a secret key Scalar, size:ecc_frost_ristretto255_sha512_SCALARSIZE
+     * @param coefficients size:t*ecc_frost_ristretto255_sha512_SCALARSIZE
+     */
+    public static native void ecc_frost_ristretto255_sha512_trusted_dealer_keygen_with_secret_and_coefficients(
+        byte[] public_key,
+        byte[] secret_key_shares,
+        int n,
+        int t,
+        byte[] secret_key,
+        byte[] coefficients
+    );
+
+    /**
+     * Generates a group secret s uniformly at random and uses
+     * Shamir and Verifiable Secret Sharing to create secret shares
+     * of s to be sent to all other participants.
+     *
+     * @param secret_key (output) a secret key Scalar, size:ecc_frost_ristretto255_sha512_SCALARSIZE
+     * @param public_key (output) public key Element, size:ecc_frost_ristretto255_sha512_PUBLICKEYSIZE
+     * @param secret_key_shares (output) shares of the secret key, each a Scalar value, size:n*ecc_frost_ristretto255_sha512_SCALARSIZE
+     * @param n the number of shares to generate
+     * @param t the threshold of the secret sharing scheme
+     */
+    public static native void ecc_frost_ristretto255_sha512_trusted_dealer_keygen(
+        byte[] secret_key,
+        byte[] public_key,
+        byte[] secret_key_shares,
+        int n,
+        int t
+    );
+
+    /**
+     * Split a secret into shares.
+     *
+     * @param points A list of n secret shares, each of which is an element of F, size:n*ecc_frost_ristretto255_sha512_SCALARSIZE
+     * @param n the number of shares to generate
+     * @param t the threshold of the secret sharing scheme
+     * @param coefficients size:t*ecc_frost_ristretto255_sha512_SCALARSIZE
+     */
+    public static native void ecc_frost_ristretto255_sha512_secret_share_shard_with_coefficients(
+        byte[] points,
+        int n,
+        int t,
+        byte[] coefficients
+    );
+
+    /**
+     * Split a secret into shares.
+     *
+     * @param points (output) A list of n secret shares, each of which is an element of F, size:n*ecc_frost_ristretto255_sha512_SCALARSIZE
+     * @param s secret to be shared, an element of F, size:ecc_frost_ristretto255_sha512_SCALARSIZE
+     * @param n the number of shares to generate
+     * @param t the threshold of the secret sharing scheme
+     */
+    public static native void ecc_frost_ristretto255_sha512_secret_share_shard(
+        byte[] points,
+        byte[] s,
+        int n,
+        int t
+    );
+
+    /**
+     * Performs the aggregate operation to obtain the resulting signature.
+     *
+     * @param signature (output) a Schnorr signature consisting of an Element and Scalar value, size:ecc_frost_ristretto255_sha512_SIGNATURESIZE
+     * @param group_commitment the group commitment returned by compute_group_commitment, size:ecc_frost_ristretto255_sha512_PUBLICKEYSIZE
+     * @param sig_shares a set of signature shares z_i for each signer, size:sig_shares_len*ecc_frost_ristretto255_sha512_SCALARSIZE
+     * @param sig_shares_len the number of elements in `sig_shares`, must satisfy THRESHOLD_LIMIT
+     * <
+     * = sig_shares_len
+     * <
+     * = MAX_SIGNERS
+     */
+    public static native void ecc_frost_ristretto255_sha512_frost_aggregate(
+        byte[] signature,
+        byte[] group_commitment,
+        byte[] sig_shares,
+        int sig_shares_len
+    );
+
 }

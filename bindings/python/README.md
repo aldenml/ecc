@@ -14,6 +14,7 @@ top to expose the cryptographic primitives.
 
 - [OPRF](#oprf-oblivious-pseudo-random-functions-using-ristretto255)
 - [OPAQUE](#opaque-the-opaque-asymmetric-pake-protocol)
+- [Two-Round Threshold Schnorr Signatures with FROST](#two-round-threshold-schnorr-signatures-with-frost)
 - [Ethereum BLS Signature](#ethereum-bls-signature)
 - [BLS12-381 Pairing](#bls12-381-pairing)
 - [Proxy Re-Encryption (PRE)](#proxy-re-encryption-pre)
@@ -120,6 +121,22 @@ opaque_ristretto255_sha512_CreateRegistrationResponse
 opaque_ristretto255_sha512_3DH_ServerInit
 opaque_ristretto255_sha512_3DH_ServerFinish
 ```
+
+### Two-Round Threshold Schnorr Signatures with FROST
+
+This is an implementation of [draft-irtf-cfrg-frost-02](https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-frost-02)
+using `libsodium`.
+
+The draft presents a two-round signing variant of FROST, a Flexible Round-Optimized Schnorr Threshold signature
+scheme. FROST signatures can be issued after a threshold number of entities cooperate to issue a signature,
+allowing for improved distribution of trust and redundancy with respect to a secret key.
+
+Unlike signatures in a single-party setting, threshold signatures require cooperation among a threshold number
+of signers each holding a share of a common private key. The security of threshold schemes in general assume
+that an adversary can corrupt strictly fewer than a threshold number of participants.
+
+This implementation follows the trusted dealer key generation documented in the Appendix B of the draft
+using Shamir and Verifiable Secret Sharing.
 
 ### Ethereum BLS Signature
 

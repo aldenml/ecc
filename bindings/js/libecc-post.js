@@ -5755,3 +5755,834 @@ Module.ecc_pre_schema1_DecryptLevel2 = (
     mfree(ptr_spk, ecc_pre_schema1_SIGNINGPUBLICKEYSIZE);
     return fun_ret;
 }
+
+// frost
+
+const ecc_frost_ristretto255_sha512_SCALARSIZE = 32;
+/**
+ * Size of a scalar, since this is using the ristretto255
+ * curve the size is 32 bytes.
+ *
+ * @type {number}
+ */
+Module.ecc_frost_ristretto255_sha512_SCALARSIZE = ecc_frost_ristretto255_sha512_SCALARSIZE;
+
+const ecc_frost_ristretto255_sha512_ELEMENTSIZE = 32;
+/**
+ * Size of an element, since this is using the ristretto255
+ * curve the size is 32 bytes.
+ *
+ * @type {number}
+ */
+Module.ecc_frost_ristretto255_sha512_ELEMENTSIZE = ecc_frost_ristretto255_sha512_ELEMENTSIZE;
+
+const ecc_frost_ristretto255_sha512_SECRETKEYSIZE = 32;
+/**
+ * Size of a private key, since this is using the ristretto255
+ * curve the size is 32 bytes, the size of an scalar.
+ *
+ * @type {number}
+ */
+Module.ecc_frost_ristretto255_sha512_SECRETKEYSIZE = ecc_frost_ristretto255_sha512_SECRETKEYSIZE;
+
+const ecc_frost_ristretto255_sha512_PUBLICKEYSIZE = 32;
+/**
+ * Size of a public key, since this is using the ristretto255
+ * curve the size is 32 bytes, the size of a group element.
+ *
+ * @type {number}
+ */
+Module.ecc_frost_ristretto255_sha512_PUBLICKEYSIZE = ecc_frost_ristretto255_sha512_PUBLICKEYSIZE;
+
+const ecc_frost_ristretto255_sha512_SIGNATURESIZE = 64;
+/**
+ * Size of a schnorr signature, a pair of a scalar and an element.
+ *
+ * @type {number}
+ */
+Module.ecc_frost_ristretto255_sha512_SIGNATURESIZE = ecc_frost_ristretto255_sha512_SIGNATURESIZE;
+
+const ecc_frost_ristretto255_sha512_POINTSIZE = 64;
+/**
+ * Size of a scalar point for polynomial evaluation (x, y).
+ *
+ * @type {number}
+ */
+Module.ecc_frost_ristretto255_sha512_POINTSIZE = ecc_frost_ristretto255_sha512_POINTSIZE;
+
+const ecc_frost_ristretto255_sha512_NONCEPAIRSIZE = 64;
+/**
+ * Size of a nonce tuple.
+ *
+ * @type {number}
+ */
+Module.ecc_frost_ristretto255_sha512_NONCEPAIRSIZE = ecc_frost_ristretto255_sha512_NONCEPAIRSIZE;
+
+const ecc_frost_ristretto255_sha512_NONCECOMMITMENTPAIRSIZE = 64;
+/**
+ * Size of a nonce commitment tuple.
+ *
+ * @type {number}
+ */
+Module.ecc_frost_ristretto255_sha512_NONCECOMMITMENTPAIRSIZE = ecc_frost_ristretto255_sha512_NONCECOMMITMENTPAIRSIZE;
+
+const ecc_frost_ristretto255_sha512_SIGNINGCOMMITMENTSIZE = 66;
+/**
+ * Size of a signing commitment structure.
+ *
+ * @type {number}
+ */
+Module.ecc_frost_ristretto255_sha512_SIGNINGCOMMITMENTSIZE = ecc_frost_ristretto255_sha512_SIGNINGCOMMITMENTSIZE;
+
+/**
+ * Map arbitrary inputs to non-zero Scalar elements of the prime-order group scalar field.
+ *
+ * @param {Uint8Array} h1 (output) size:ecc_frost_ristretto255_sha512_SCALARSIZE
+ * @param {Uint8Array} m size:m_len
+ * @param {number} m_len the length of `m`
+ */
+Module.ecc_frost_ristretto255_sha512_H1 = (
+    h1,
+    m,
+    m_len,
+) => {
+    const ptr_h1 = mput(h1, ecc_frost_ristretto255_sha512_SCALARSIZE);
+    const ptr_m = mput(m, m_len);
+    _ecc_frost_ristretto255_sha512_H1(
+        ptr_h1,
+        ptr_m,
+        m_len,
+    );
+    mget(h1, ptr_h1, ecc_frost_ristretto255_sha512_SCALARSIZE);
+    mfree(ptr_h1, ecc_frost_ristretto255_sha512_SCALARSIZE);
+    mfree(ptr_m, m_len);
+}
+
+/**
+ * Map arbitrary inputs to non-zero Scalar elements of the prime-order group scalar field.
+ * 
+ * This is a variant of H2 that folds internally all inputs in the same
+ * hash calculation.
+ *
+ * @param {Uint8Array} h1 (output) size:ecc_frost_ristretto255_sha512_SCALARSIZE
+ * @param {Uint8Array} m1 size:m1_len
+ * @param {number} m1_len the length of `m1`
+ * @param {Uint8Array} m2 size:m2_len
+ * @param {number} m2_len the length of `m2`
+ */
+Module.ecc_frost_ristretto255_sha512_H1_2 = (
+    h1,
+    m1,
+    m1_len,
+    m2,
+    m2_len,
+) => {
+    const ptr_h1 = mput(h1, ecc_frost_ristretto255_sha512_SCALARSIZE);
+    const ptr_m1 = mput(m1, m1_len);
+    const ptr_m2 = mput(m2, m2_len);
+    _ecc_frost_ristretto255_sha512_H1_2(
+        ptr_h1,
+        ptr_m1,
+        m1_len,
+        ptr_m2,
+        m2_len,
+    );
+    mget(h1, ptr_h1, ecc_frost_ristretto255_sha512_SCALARSIZE);
+    mfree(ptr_h1, ecc_frost_ristretto255_sha512_SCALARSIZE);
+    mfree(ptr_m1, m1_len);
+    mfree(ptr_m2, m2_len);
+}
+
+/**
+ * Map arbitrary inputs to non-zero Scalar elements of the prime-order group scalar field.
+ *
+ * @param {Uint8Array} h2 (output) size:ecc_frost_ristretto255_sha512_SCALARSIZE
+ * @param {Uint8Array} m size:m_len
+ * @param {number} m_len the length of `m`
+ */
+Module.ecc_frost_ristretto255_sha512_H2 = (
+    h2,
+    m,
+    m_len,
+) => {
+    const ptr_h2 = mput(h2, ecc_frost_ristretto255_sha512_SCALARSIZE);
+    const ptr_m = mput(m, m_len);
+    _ecc_frost_ristretto255_sha512_H2(
+        ptr_h2,
+        ptr_m,
+        m_len,
+    );
+    mget(h2, ptr_h2, ecc_frost_ristretto255_sha512_SCALARSIZE);
+    mfree(ptr_h2, ecc_frost_ristretto255_sha512_SCALARSIZE);
+    mfree(ptr_m, m_len);
+}
+
+/**
+ * Map arbitrary inputs to non-zero Scalar elements of the prime-order group scalar field.
+ * 
+ * This is a variant of H2 that folds internally all inputs in the same
+ * hash calculation.
+ *
+ * @param {Uint8Array} h2 (output) size:ecc_frost_ristretto255_sha512_SCALARSIZE
+ * @param {Uint8Array} m1 size:m1_len
+ * @param {number} m1_len the length of `m1`
+ * @param {Uint8Array} m2 size:m2_len
+ * @param {number} m2_len the length of `m2`
+ * @param {Uint8Array} m3 size:m3_len
+ * @param {number} m3_len the length of `m3`
+ */
+Module.ecc_frost_ristretto255_sha512_H2_3 = (
+    h2,
+    m1,
+    m1_len,
+    m2,
+    m2_len,
+    m3,
+    m3_len,
+) => {
+    const ptr_h2 = mput(h2, ecc_frost_ristretto255_sha512_SCALARSIZE);
+    const ptr_m1 = mput(m1, m1_len);
+    const ptr_m2 = mput(m2, m2_len);
+    const ptr_m3 = mput(m3, m3_len);
+    _ecc_frost_ristretto255_sha512_H2_3(
+        ptr_h2,
+        ptr_m1,
+        m1_len,
+        ptr_m2,
+        m2_len,
+        ptr_m3,
+        m3_len,
+    );
+    mget(h2, ptr_h2, ecc_frost_ristretto255_sha512_SCALARSIZE);
+    mfree(ptr_h2, ecc_frost_ristretto255_sha512_SCALARSIZE);
+    mfree(ptr_m1, m1_len);
+    mfree(ptr_m2, m2_len);
+    mfree(ptr_m3, m3_len);
+}
+
+/**
+ * This is an alias for the ciphersuite hash function with
+ * domain separation applied.
+ *
+ * @param {Uint8Array} h3 (output) size:64
+ * @param {Uint8Array} m size:m_len
+ * @param {number} m_len the length of `m`
+ */
+Module.ecc_frost_ristretto255_sha512_H3 = (
+    h3,
+    m,
+    m_len,
+) => {
+    const ptr_h3 = mput(h3, 64);
+    const ptr_m = mput(m, m_len);
+    _ecc_frost_ristretto255_sha512_H3(
+        ptr_h3,
+        ptr_m,
+        m_len,
+    );
+    mget(h3, ptr_h3, 64);
+    mfree(ptr_h3, 64);
+    mfree(ptr_m, m_len);
+}
+
+/**
+ * Generate a single-party setting Schnorr signature.
+ *
+ * @param {Uint8Array} signature (output) signature, size:ecc_frost_ristretto255_sha512_SIGNATURESIZE
+ * @param {Uint8Array} msg message to be signed, size:msg_len
+ * @param {number} msg_len the length of `msg`
+ * @param {Uint8Array} SK private key, a scalar, size:ecc_frost_ristretto255_sha512_SECRETKEYSIZE
+ */
+Module.ecc_frost_ristretto255_sha512_schnorr_signature_generate = (
+    signature,
+    msg,
+    msg_len,
+    SK,
+) => {
+    const ptr_signature = mput(signature, ecc_frost_ristretto255_sha512_SIGNATURESIZE);
+    const ptr_msg = mput(msg, msg_len);
+    const ptr_SK = mput(SK, ecc_frost_ristretto255_sha512_SECRETKEYSIZE);
+    _ecc_frost_ristretto255_sha512_schnorr_signature_generate(
+        ptr_signature,
+        ptr_msg,
+        msg_len,
+        ptr_SK,
+    );
+    mget(signature, ptr_signature, ecc_frost_ristretto255_sha512_SIGNATURESIZE);
+    mfree(ptr_signature, ecc_frost_ristretto255_sha512_SIGNATURESIZE);
+    mfree(ptr_msg, msg_len);
+    mfree(ptr_SK, ecc_frost_ristretto255_sha512_SECRETKEYSIZE);
+}
+
+/**
+ * Verify a Schnorr signature.
+ *
+ * @param {Uint8Array} msg signed message, size:msg_len
+ * @param {number} msg_len the length of `msg`
+ * @param {Uint8Array} signature signature, size:ecc_frost_ristretto255_sha512_SIGNATURESIZE
+ * @param {Uint8Array} PK public key, a group element, size:ecc_frost_ristretto255_sha512_PUBLICKEYSIZE
+ * @return {number} 1 if signature is valid, and 0 otherwise
+ */
+Module.ecc_frost_ristretto255_sha512_schnorr_signature_verify = (
+    msg,
+    msg_len,
+    signature,
+    PK,
+) => {
+    const ptr_msg = mput(msg, msg_len);
+    const ptr_signature = mput(signature, ecc_frost_ristretto255_sha512_SIGNATURESIZE);
+    const ptr_PK = mput(PK, ecc_frost_ristretto255_sha512_PUBLICKEYSIZE);
+    const fun_ret = _ecc_frost_ristretto255_sha512_schnorr_signature_verify(
+        ptr_msg,
+        msg_len,
+        ptr_signature,
+        ptr_PK,
+    );
+    mfree(ptr_msg, msg_len);
+    mfree(ptr_signature, ecc_frost_ristretto255_sha512_SIGNATURESIZE);
+    mfree(ptr_PK, ecc_frost_ristretto255_sha512_PUBLICKEYSIZE);
+    return fun_ret;
+}
+
+/**
+ * Evaluate a polynomial f at a particular input x, i.e., y = f(x)
+ * using Horner's method.
+ *
+ * @param {Uint8Array} value (output) scalar result of the polynomial evaluated at input x, size:ecc_frost_ristretto255_sha512_SCALARSIZE
+ * @param {Uint8Array} x input at which to evaluate the polynomial, a scalar, size:ecc_frost_ristretto255_sha512_SCALARSIZE
+ * @param {Uint8Array} coeffs the polynomial coefficients, a list of scalars, size:coeffs_len*ecc_frost_ristretto255_sha512_SCALARSIZE
+ * @param {number} coeffs_len the number of coefficients in `coeffs`
+ */
+Module.ecc_frost_ristretto255_sha512_polynomial_evaluate = (
+    value,
+    x,
+    coeffs,
+    coeffs_len,
+) => {
+    const ptr_value = mput(value, ecc_frost_ristretto255_sha512_SCALARSIZE);
+    const ptr_x = mput(x, ecc_frost_ristretto255_sha512_SCALARSIZE);
+    const ptr_coeffs = mput(coeffs, coeffs_len*ecc_frost_ristretto255_sha512_SCALARSIZE);
+    _ecc_frost_ristretto255_sha512_polynomial_evaluate(
+        ptr_value,
+        ptr_x,
+        ptr_coeffs,
+        coeffs_len,
+    );
+    mget(value, ptr_value, ecc_frost_ristretto255_sha512_SCALARSIZE);
+    mfree(ptr_value, ecc_frost_ristretto255_sha512_SCALARSIZE);
+    mfree(ptr_x, ecc_frost_ristretto255_sha512_SCALARSIZE);
+    mfree(ptr_coeffs, coeffs_len*ecc_frost_ristretto255_sha512_SCALARSIZE);
+}
+
+/**
+ * Lagrange coefficients are used in FROST to evaluate a polynomial f at f(0),
+ * given a set of t other points, where f is represented as a set of coefficients.
+ *
+ * @param {Uint8Array} L_i (output) the i-th Lagrange coefficient, size:ecc_frost_ristretto255_sha512_SCALARSIZE
+ * @param {Uint8Array} x_i an x-coordinate contained in L, a scalar, size:ecc_frost_ristretto255_sha512_SCALARSIZE
+ * @param {Uint8Array} L the set of x-coordinates, each a scalar, size:L_len*ecc_frost_ristretto255_sha512_SCALARSIZE
+ * @param {number} L_len the number of x-coordinates in `L`
+ */
+Module.ecc_frost_ristretto255_sha512_derive_lagrange_coefficient = (
+    L_i,
+    x_i,
+    L,
+    L_len,
+) => {
+    const ptr_L_i = mput(L_i, ecc_frost_ristretto255_sha512_SCALARSIZE);
+    const ptr_x_i = mput(x_i, ecc_frost_ristretto255_sha512_SCALARSIZE);
+    const ptr_L = mput(L, L_len*ecc_frost_ristretto255_sha512_SCALARSIZE);
+    _ecc_frost_ristretto255_sha512_derive_lagrange_coefficient(
+        ptr_L_i,
+        ptr_x_i,
+        ptr_L,
+        L_len,
+    );
+    mget(L_i, ptr_L_i, ecc_frost_ristretto255_sha512_SCALARSIZE);
+    mfree(ptr_L_i, ecc_frost_ristretto255_sha512_SCALARSIZE);
+    mfree(ptr_x_i, ecc_frost_ristretto255_sha512_SCALARSIZE);
+    mfree(ptr_L, L_len*ecc_frost_ristretto255_sha512_SCALARSIZE);
+}
+
+/**
+ * This is an optimization that works like `ecc_frost_ristretto255_sha512_derive_lagrange_coefficient`
+ * but with a set of points (x, y).
+ *
+ * @param {Uint8Array} L_i (output) the i-th Lagrange coefficient, size:ecc_frost_ristretto255_sha512_SCALARSIZE
+ * @param {Uint8Array} x_i an x-coordinate contained in L, a scalar, size:ecc_frost_ristretto255_sha512_SCALARSIZE
+ * @param {Uint8Array} L the set of (x, y)-points, size:L_len*ecc_frost_ristretto255_sha512_POINTSIZE
+ * @param {number} L_len the number of (x, y)-points in `L`
+ */
+Module.ecc_frost_ristretto255_sha512_derive_lagrange_coefficient_with_points = (
+    L_i,
+    x_i,
+    L,
+    L_len,
+) => {
+    const ptr_L_i = mput(L_i, ecc_frost_ristretto255_sha512_SCALARSIZE);
+    const ptr_x_i = mput(x_i, ecc_frost_ristretto255_sha512_SCALARSIZE);
+    const ptr_L = mput(L, L_len*ecc_frost_ristretto255_sha512_POINTSIZE);
+    _ecc_frost_ristretto255_sha512_derive_lagrange_coefficient_with_points(
+        ptr_L_i,
+        ptr_x_i,
+        ptr_L,
+        L_len,
+    );
+    mget(L_i, ptr_L_i, ecc_frost_ristretto255_sha512_SCALARSIZE);
+    mfree(ptr_L_i, ecc_frost_ristretto255_sha512_SCALARSIZE);
+    mfree(ptr_x_i, ecc_frost_ristretto255_sha512_SCALARSIZE);
+    mfree(ptr_L, L_len*ecc_frost_ristretto255_sha512_POINTSIZE);
+}
+
+/**
+ * Secret sharing requires "splitting" a secret, which is represented
+ * as a constant term of some polynomial f of degree t. Recovering the
+ * constant term occurs with a set of t points using polynomial interpolation.
+ *
+ * @param {Uint8Array} constant_term (output) the constant term of f, i.e., f(0), size:ecc_frost_ristretto255_sha512_SCALARSIZE
+ * @param {Uint8Array} points a set of `t` points on a polynomial f, each a tuple of two scalar values representing the x and y coordinates, size:points_len*ecc_frost_ristretto255_sha512_POINTSIZE
+ * @param {number} points_len the number of points in `points`
+ */
+Module.ecc_frost_ristretto255_sha512_polynomial_interpolation = (
+    constant_term,
+    points,
+    points_len,
+) => {
+    const ptr_constant_term = mput(constant_term, ecc_frost_ristretto255_sha512_SCALARSIZE);
+    const ptr_points = mput(points, points_len*ecc_frost_ristretto255_sha512_POINTSIZE);
+    _ecc_frost_ristretto255_sha512_polynomial_interpolation(
+        ptr_constant_term,
+        ptr_points,
+        points_len,
+    );
+    mget(constant_term, ptr_constant_term, ecc_frost_ristretto255_sha512_SCALARSIZE);
+    mfree(ptr_constant_term, ecc_frost_ristretto255_sha512_SCALARSIZE);
+    mfree(ptr_points, points_len*ecc_frost_ristretto255_sha512_POINTSIZE);
+}
+
+/**
+ * Compute the binding factor based on the signer commitment list and a message to be signed.
+ *
+ * @param {Uint8Array} binding_factor (output) a Scalar representing the binding factor, size:ecc_frost_ristretto255_sha512_SCALARSIZE
+ * @param {Uint8Array} encoded_commitment_list an encoded commitment list, size:encoded_commitment_list_len*ecc_frost_ristretto255_sha512_SIGNINGCOMMITMENTSIZE
+ * @param {number} encoded_commitment_list_len the number of elements in `encoded_commitment_list`
+ * @param {Uint8Array} msg the message to be signed (sent by the Coordinator), size:msg_len
+ * @param {number} msg_len the length of `msg`
+ */
+Module.ecc_frost_ristretto255_sha512_compute_binding_factor = (
+    binding_factor,
+    encoded_commitment_list,
+    encoded_commitment_list_len,
+    msg,
+    msg_len,
+) => {
+    const ptr_binding_factor = mput(binding_factor, ecc_frost_ristretto255_sha512_SCALARSIZE);
+    const ptr_encoded_commitment_list = mput(encoded_commitment_list, encoded_commitment_list_len*ecc_frost_ristretto255_sha512_SIGNINGCOMMITMENTSIZE);
+    const ptr_msg = mput(msg, msg_len);
+    _ecc_frost_ristretto255_sha512_compute_binding_factor(
+        ptr_binding_factor,
+        ptr_encoded_commitment_list,
+        encoded_commitment_list_len,
+        ptr_msg,
+        msg_len,
+    );
+    mget(binding_factor, ptr_binding_factor, ecc_frost_ristretto255_sha512_SCALARSIZE);
+    mfree(ptr_binding_factor, ecc_frost_ristretto255_sha512_SCALARSIZE);
+    mfree(ptr_encoded_commitment_list, encoded_commitment_list_len*ecc_frost_ristretto255_sha512_SIGNINGCOMMITMENTSIZE);
+    mfree(ptr_msg, msg_len);
+}
+
+/**
+ * Create the per-message challenge.
+ *
+ * @param {Uint8Array} challenge (output) a challenge Scalar value, size:ecc_frost_ristretto255_sha512_SCALARSIZE
+ * @param {Uint8Array} group_commitment an Element representing the group commitment, size:ecc_frost_ristretto255_sha512_ELEMENTSIZE
+ * @param {Uint8Array} group_public_key public key corresponding to the signer secret key share, size:ecc_frost_ristretto255_sha512_PUBLICKEYSIZE
+ * @param {Uint8Array} msg the message to be signed (sent by the Coordinator), size:msg_len
+ * @param {number} msg_len the length of `msg`
+ */
+Module.ecc_frost_ristretto255_sha512_compute_challenge = (
+    challenge,
+    group_commitment,
+    group_public_key,
+    msg,
+    msg_len,
+) => {
+    const ptr_challenge = mput(challenge, ecc_frost_ristretto255_sha512_SCALARSIZE);
+    const ptr_group_commitment = mput(group_commitment, ecc_frost_ristretto255_sha512_ELEMENTSIZE);
+    const ptr_group_public_key = mput(group_public_key, ecc_frost_ristretto255_sha512_PUBLICKEYSIZE);
+    const ptr_msg = mput(msg, msg_len);
+    _ecc_frost_ristretto255_sha512_compute_challenge(
+        ptr_challenge,
+        ptr_group_commitment,
+        ptr_group_public_key,
+        ptr_msg,
+        msg_len,
+    );
+    mget(challenge, ptr_challenge, ecc_frost_ristretto255_sha512_SCALARSIZE);
+    mfree(ptr_challenge, ecc_frost_ristretto255_sha512_SCALARSIZE);
+    mfree(ptr_group_commitment, ecc_frost_ristretto255_sha512_ELEMENTSIZE);
+    mfree(ptr_group_public_key, ecc_frost_ristretto255_sha512_PUBLICKEYSIZE);
+    mfree(ptr_msg, msg_len);
+}
+
+/**
+ * Generate a pair of public commitments corresponding to the nonce pair.
+ *
+ * @param {Uint8Array} comm (output) a nonce commitment pair, size:ecc_frost_ristretto255_sha512_NONCECOMMITMENTPAIRSIZE
+ * @param {Uint8Array} nonce a nonce pair, size:ecc_frost_ristretto255_sha512_NONCEPAIRSIZE
+ */
+Module.ecc_frost_ristretto255_sha512_commit_with_nonce = (
+    comm,
+    nonce,
+) => {
+    const ptr_comm = mput(comm, ecc_frost_ristretto255_sha512_NONCECOMMITMENTPAIRSIZE);
+    const ptr_nonce = mput(nonce, ecc_frost_ristretto255_sha512_NONCEPAIRSIZE);
+    _ecc_frost_ristretto255_sha512_commit_with_nonce(
+        ptr_comm,
+        ptr_nonce,
+    );
+    mget(comm, ptr_comm, ecc_frost_ristretto255_sha512_NONCECOMMITMENTPAIRSIZE);
+    mfree(ptr_comm, ecc_frost_ristretto255_sha512_NONCECOMMITMENTPAIRSIZE);
+    mfree(ptr_nonce, ecc_frost_ristretto255_sha512_NONCEPAIRSIZE);
+}
+
+/**
+ * Generate a pair of nonces and their corresponding public commitments.
+ *
+ * @param {Uint8Array} nonce (output) a nonce pair, size:ecc_frost_ristretto255_sha512_NONCEPAIRSIZE
+ * @param {Uint8Array} comm (output) a nonce commitment pair, size:ecc_frost_ristretto255_sha512_NONCECOMMITMENTPAIRSIZE
+ */
+Module.ecc_frost_ristretto255_sha512_commit = (
+    nonce,
+    comm,
+) => {
+    const ptr_nonce = mput(nonce, ecc_frost_ristretto255_sha512_NONCEPAIRSIZE);
+    const ptr_comm = mput(comm, ecc_frost_ristretto255_sha512_NONCECOMMITMENTPAIRSIZE);
+    _ecc_frost_ristretto255_sha512_commit(
+        ptr_nonce,
+        ptr_comm,
+    );
+    mget(nonce, ptr_nonce, ecc_frost_ristretto255_sha512_NONCEPAIRSIZE);
+    mget(comm, ptr_comm, ecc_frost_ristretto255_sha512_NONCECOMMITMENTPAIRSIZE);
+    mfree(ptr_nonce, ecc_frost_ristretto255_sha512_NONCEPAIRSIZE);
+    mfree(ptr_comm, ecc_frost_ristretto255_sha512_NONCECOMMITMENTPAIRSIZE);
+}
+
+/**
+ * Create the group commitment from a commitment list.
+ *
+ * @param {Uint8Array} group_comm (output) size:ecc_frost_ristretto255_sha512_ELEMENTSIZE
+ * @param {Uint8Array} commitment_list a list of commitments issued by each signer, MUST be sorted in ascending order by signer index, size:commitment_list_len*ecc_frost_ristretto255_sha512_SIGNINGCOMMITMENTSIZE
+ * @param {number} commitment_list_len the number of elements in `commitment_list`
+ * @param {Uint8Array} binding_factor size:ecc_frost_ristretto255_sha512_SCALARSIZE
+ */
+Module.ecc_frost_ristretto255_sha512_group_commitment = (
+    group_comm,
+    commitment_list,
+    commitment_list_len,
+    binding_factor,
+) => {
+    const ptr_group_comm = mput(group_comm, ecc_frost_ristretto255_sha512_ELEMENTSIZE);
+    const ptr_commitment_list = mput(commitment_list, commitment_list_len*ecc_frost_ristretto255_sha512_SIGNINGCOMMITMENTSIZE);
+    const ptr_binding_factor = mput(binding_factor, ecc_frost_ristretto255_sha512_SCALARSIZE);
+    _ecc_frost_ristretto255_sha512_group_commitment(
+        ptr_group_comm,
+        ptr_commitment_list,
+        commitment_list_len,
+        ptr_binding_factor,
+    );
+    mget(group_comm, ptr_group_comm, ecc_frost_ristretto255_sha512_ELEMENTSIZE);
+    mfree(ptr_group_comm, ecc_frost_ristretto255_sha512_ELEMENTSIZE);
+    mfree(ptr_commitment_list, commitment_list_len*ecc_frost_ristretto255_sha512_SIGNINGCOMMITMENTSIZE);
+    mfree(ptr_binding_factor, ecc_frost_ristretto255_sha512_SCALARSIZE);
+}
+
+/**
+ * To produce a signature share.
+ *
+ * @param {Uint8Array} sig_share (output) signature share, size:ecc_frost_ristretto255_sha512_SCALARSIZE
+ * @param {Uint8Array} comm_share (output) commitment share, size:ecc_frost_ristretto255_sha512_ELEMENTSIZE
+ * @param {number} index index `i` of the signer. Note index will never equal `0` and must be less thant 256
+ * @param {Uint8Array} sk_i signer secret key share, size:ecc_frost_ristretto255_sha512_SECRETKEYSIZE
+ * @param {Uint8Array} group_public_key public key corresponding to the signer secret key share, size:ecc_frost_ristretto255_sha512_PUBLICKEYSIZE
+ * @param {Uint8Array} nonce_i pair of scalar values generated in round one, size:ecc_frost_ristretto255_sha512_NONCEPAIRSIZE
+ * @param {Uint8Array} comm_i pair of element values generated in round one, size:ecc_frost_ristretto255_sha512_NONCECOMMITMENTPAIRSIZE
+ * @param {Uint8Array} msg the message to be signed (sent by the Coordinator), size:msg_len
+ * @param {number} msg_len the length of `msg`
+ * @param {Uint8Array} commitment_list a list of commitments issued by each signer, MUST be sorted in ascending order by signer index, size:commitment_list_len*ecc_frost_ristretto255_sha512_SIGNINGCOMMITMENTSIZE
+ * @param {number} commitment_list_len the number of elements in `commitment_list`
+ * @param {Uint8Array} participant_list a set containing identifiers for each signer, size:participant_list_len
+ * @param {number} participant_list_len the number of elements in `participant_list`
+ */
+Module.ecc_frost_ristretto255_sha512_sign = (
+    sig_share,
+    comm_share,
+    index,
+    sk_i,
+    group_public_key,
+    nonce_i,
+    comm_i,
+    msg,
+    msg_len,
+    commitment_list,
+    commitment_list_len,
+    participant_list,
+    participant_list_len,
+) => {
+    const ptr_sig_share = mput(sig_share, ecc_frost_ristretto255_sha512_SCALARSIZE);
+    const ptr_comm_share = mput(comm_share, ecc_frost_ristretto255_sha512_ELEMENTSIZE);
+    const ptr_sk_i = mput(sk_i, ecc_frost_ristretto255_sha512_SECRETKEYSIZE);
+    const ptr_group_public_key = mput(group_public_key, ecc_frost_ristretto255_sha512_PUBLICKEYSIZE);
+    const ptr_nonce_i = mput(nonce_i, ecc_frost_ristretto255_sha512_NONCEPAIRSIZE);
+    const ptr_comm_i = mput(comm_i, ecc_frost_ristretto255_sha512_NONCECOMMITMENTPAIRSIZE);
+    const ptr_msg = mput(msg, msg_len);
+    const ptr_commitment_list = mput(commitment_list, commitment_list_len*ecc_frost_ristretto255_sha512_SIGNINGCOMMITMENTSIZE);
+    const ptr_participant_list = mput(participant_list, participant_list_len);
+    _ecc_frost_ristretto255_sha512_sign(
+        ptr_sig_share,
+        ptr_comm_share,
+        index,
+        ptr_sk_i,
+        ptr_group_public_key,
+        ptr_nonce_i,
+        ptr_comm_i,
+        ptr_msg,
+        msg_len,
+        ptr_commitment_list,
+        commitment_list_len,
+        ptr_participant_list,
+        participant_list_len,
+    );
+    mget(sig_share, ptr_sig_share, ecc_frost_ristretto255_sha512_SCALARSIZE);
+    mget(comm_share, ptr_comm_share, ecc_frost_ristretto255_sha512_ELEMENTSIZE);
+    mfree(ptr_sig_share, ecc_frost_ristretto255_sha512_SCALARSIZE);
+    mfree(ptr_comm_share, ecc_frost_ristretto255_sha512_ELEMENTSIZE);
+    mfree(ptr_sk_i, ecc_frost_ristretto255_sha512_SECRETKEYSIZE);
+    mfree(ptr_group_public_key, ecc_frost_ristretto255_sha512_PUBLICKEYSIZE);
+    mfree(ptr_nonce_i, ecc_frost_ristretto255_sha512_NONCEPAIRSIZE);
+    mfree(ptr_comm_i, ecc_frost_ristretto255_sha512_NONCECOMMITMENTPAIRSIZE);
+    mfree(ptr_msg, msg_len);
+    mfree(ptr_commitment_list, commitment_list_len*ecc_frost_ristretto255_sha512_SIGNINGCOMMITMENTSIZE);
+    mfree(ptr_participant_list, participant_list_len);
+}
+
+/**
+ * Check that the signature share is valid.
+ *
+ * @param {number} index Index `i` of the signer. Note index will never equal `0`.
+ * @param {Uint8Array} public_key_share_i the public key for the ith signer, size:ecc_frost_ristretto255_sha512_PUBLICKEYSIZE
+ * @param {Uint8Array} comm_i pair of Element values (hiding_nonce_commitment, binding_nonce_commitment) generated in round one from the ith signer, size:ecc_frost_ristretto255_sha512_NONCECOMMITMENTPAIRSIZE
+ * @param {Uint8Array} sig_share_i a Scalar value indicating the signature share as produced in round two from the ith signer, size:ecc_frost_ristretto255_sha512_SCALARSIZE
+ * @param {Uint8Array} commitment_list a list of commitments issued by each signer, MUST be sorted in ascending order by signer index, size:commitment_list_len*ecc_frost_ristretto255_sha512_SIGNINGCOMMITMENTSIZE
+ * @param {number} commitment_list_len the number of elements in `commitment_list`
+ * @param {Uint8Array} participant_list a set containing identifiers for each signer, size:participant_list_len
+ * @param {number} participant_list_len the number of elements in `participant_list`
+ * @param {Uint8Array} group_public_key the public key for the group, size:ecc_frost_ristretto255_sha512_PUBLICKEYSIZE
+ * @param {Uint8Array} msg the message to be signed (sent by the Coordinator), size:msg_len
+ * @param {number} msg_len the length of `msg`
+ * @return {number} 1 if the signature share is valid, and 0 otherwise.
+ */
+Module.ecc_frost_ristretto255_sha512_verify_signature_share = (
+    index,
+    public_key_share_i,
+    comm_i,
+    sig_share_i,
+    commitment_list,
+    commitment_list_len,
+    participant_list,
+    participant_list_len,
+    group_public_key,
+    msg,
+    msg_len,
+) => {
+    const ptr_public_key_share_i = mput(public_key_share_i, ecc_frost_ristretto255_sha512_PUBLICKEYSIZE);
+    const ptr_comm_i = mput(comm_i, ecc_frost_ristretto255_sha512_NONCECOMMITMENTPAIRSIZE);
+    const ptr_sig_share_i = mput(sig_share_i, ecc_frost_ristretto255_sha512_SCALARSIZE);
+    const ptr_commitment_list = mput(commitment_list, commitment_list_len*ecc_frost_ristretto255_sha512_SIGNINGCOMMITMENTSIZE);
+    const ptr_participant_list = mput(participant_list, participant_list_len);
+    const ptr_group_public_key = mput(group_public_key, ecc_frost_ristretto255_sha512_PUBLICKEYSIZE);
+    const ptr_msg = mput(msg, msg_len);
+    const fun_ret = _ecc_frost_ristretto255_sha512_verify_signature_share(
+        index,
+        ptr_public_key_share_i,
+        ptr_comm_i,
+        ptr_sig_share_i,
+        ptr_commitment_list,
+        commitment_list_len,
+        ptr_participant_list,
+        participant_list_len,
+        ptr_group_public_key,
+        ptr_msg,
+        msg_len,
+    );
+    mfree(ptr_public_key_share_i, ecc_frost_ristretto255_sha512_PUBLICKEYSIZE);
+    mfree(ptr_comm_i, ecc_frost_ristretto255_sha512_NONCECOMMITMENTPAIRSIZE);
+    mfree(ptr_sig_share_i, ecc_frost_ristretto255_sha512_SCALARSIZE);
+    mfree(ptr_commitment_list, commitment_list_len*ecc_frost_ristretto255_sha512_SIGNINGCOMMITMENTSIZE);
+    mfree(ptr_participant_list, participant_list_len);
+    mfree(ptr_group_public_key, ecc_frost_ristretto255_sha512_PUBLICKEYSIZE);
+    mfree(ptr_msg, msg_len);
+    return fun_ret;
+}
+
+/**
+ * Generates a group secret s uniformly at random and uses
+ * Shamir and Verifiable Secret Sharing to create secret shares
+ * of s to be sent to all other participants.
+ *
+ * @param {Uint8Array} public_key (output) public key Element, size:ecc_frost_ristretto255_sha512_PUBLICKEYSIZE
+ * @param {Uint8Array} secret_key_shares shares of the secret key, each a Scalar value, size:n*ecc_frost_ristretto255_sha512_SCALARSIZE
+ * @param {number} n the number of shares to generate
+ * @param {number} t the threshold of the secret sharing scheme
+ * @param {Uint8Array} secret_key a secret key Scalar, size:ecc_frost_ristretto255_sha512_SCALARSIZE
+ * @param {Uint8Array} coefficients size:t*ecc_frost_ristretto255_sha512_SCALARSIZE
+ */
+Module.ecc_frost_ristretto255_sha512_trusted_dealer_keygen_with_secret_and_coefficients = (
+    public_key,
+    secret_key_shares,
+    n,
+    t,
+    secret_key,
+    coefficients,
+) => {
+    const ptr_public_key = mput(public_key, ecc_frost_ristretto255_sha512_PUBLICKEYSIZE);
+    const ptr_secret_key_shares = mput(secret_key_shares, n*ecc_frost_ristretto255_sha512_SCALARSIZE);
+    const ptr_secret_key = mput(secret_key, ecc_frost_ristretto255_sha512_SCALARSIZE);
+    const ptr_coefficients = mput(coefficients, t*ecc_frost_ristretto255_sha512_SCALARSIZE);
+    _ecc_frost_ristretto255_sha512_trusted_dealer_keygen_with_secret_and_coefficients(
+        ptr_public_key,
+        ptr_secret_key_shares,
+        n,
+        t,
+        ptr_secret_key,
+        ptr_coefficients,
+    );
+    mget(public_key, ptr_public_key, ecc_frost_ristretto255_sha512_PUBLICKEYSIZE);
+    mfree(ptr_public_key, ecc_frost_ristretto255_sha512_PUBLICKEYSIZE);
+    mfree(ptr_secret_key_shares, n*ecc_frost_ristretto255_sha512_SCALARSIZE);
+    mfree(ptr_secret_key, ecc_frost_ristretto255_sha512_SCALARSIZE);
+    mfree(ptr_coefficients, t*ecc_frost_ristretto255_sha512_SCALARSIZE);
+}
+
+/**
+ * Generates a group secret s uniformly at random and uses
+ * Shamir and Verifiable Secret Sharing to create secret shares
+ * of s to be sent to all other participants.
+ *
+ * @param {Uint8Array} secret_key (output) a secret key Scalar, size:ecc_frost_ristretto255_sha512_SCALARSIZE
+ * @param {Uint8Array} public_key (output) public key Element, size:ecc_frost_ristretto255_sha512_PUBLICKEYSIZE
+ * @param {Uint8Array} secret_key_shares (output) shares of the secret key, each a Scalar value, size:n*ecc_frost_ristretto255_sha512_SCALARSIZE
+ * @param {number} n the number of shares to generate
+ * @param {number} t the threshold of the secret sharing scheme
+ */
+Module.ecc_frost_ristretto255_sha512_trusted_dealer_keygen = (
+    secret_key,
+    public_key,
+    secret_key_shares,
+    n,
+    t,
+) => {
+    const ptr_secret_key = mput(secret_key, ecc_frost_ristretto255_sha512_SCALARSIZE);
+    const ptr_public_key = mput(public_key, ecc_frost_ristretto255_sha512_PUBLICKEYSIZE);
+    const ptr_secret_key_shares = mput(secret_key_shares, n*ecc_frost_ristretto255_sha512_SCALARSIZE);
+    _ecc_frost_ristretto255_sha512_trusted_dealer_keygen(
+        ptr_secret_key,
+        ptr_public_key,
+        ptr_secret_key_shares,
+        n,
+        t,
+    );
+    mget(secret_key, ptr_secret_key, ecc_frost_ristretto255_sha512_SCALARSIZE);
+    mget(public_key, ptr_public_key, ecc_frost_ristretto255_sha512_PUBLICKEYSIZE);
+    mget(secret_key_shares, ptr_secret_key_shares, n*ecc_frost_ristretto255_sha512_SCALARSIZE);
+    mfree(ptr_secret_key, ecc_frost_ristretto255_sha512_SCALARSIZE);
+    mfree(ptr_public_key, ecc_frost_ristretto255_sha512_PUBLICKEYSIZE);
+    mfree(ptr_secret_key_shares, n*ecc_frost_ristretto255_sha512_SCALARSIZE);
+}
+
+/**
+ * Split a secret into shares.
+ *
+ * @param {Uint8Array} points A list of n secret shares, each of which is an element of F, size:n*ecc_frost_ristretto255_sha512_SCALARSIZE
+ * @param {number} n the number of shares to generate
+ * @param {number} t the threshold of the secret sharing scheme
+ * @param {Uint8Array} coefficients size:t*ecc_frost_ristretto255_sha512_SCALARSIZE
+ */
+Module.ecc_frost_ristretto255_sha512_secret_share_shard_with_coefficients = (
+    points,
+    n,
+    t,
+    coefficients,
+) => {
+    const ptr_points = mput(points, n*ecc_frost_ristretto255_sha512_SCALARSIZE);
+    const ptr_coefficients = mput(coefficients, t*ecc_frost_ristretto255_sha512_SCALARSIZE);
+    _ecc_frost_ristretto255_sha512_secret_share_shard_with_coefficients(
+        ptr_points,
+        n,
+        t,
+        ptr_coefficients,
+    );
+    mfree(ptr_points, n*ecc_frost_ristretto255_sha512_SCALARSIZE);
+    mfree(ptr_coefficients, t*ecc_frost_ristretto255_sha512_SCALARSIZE);
+}
+
+/**
+ * Split a secret into shares.
+ *
+ * @param {Uint8Array} points (output) A list of n secret shares, each of which is an element of F, size:n*ecc_frost_ristretto255_sha512_SCALARSIZE
+ * @param {Uint8Array} s secret to be shared, an element of F, size:ecc_frost_ristretto255_sha512_SCALARSIZE
+ * @param {number} n the number of shares to generate
+ * @param {number} t the threshold of the secret sharing scheme
+ */
+Module.ecc_frost_ristretto255_sha512_secret_share_shard = (
+    points,
+    s,
+    n,
+    t,
+) => {
+    const ptr_points = mput(points, n*ecc_frost_ristretto255_sha512_SCALARSIZE);
+    const ptr_s = mput(s, ecc_frost_ristretto255_sha512_SCALARSIZE);
+    _ecc_frost_ristretto255_sha512_secret_share_shard(
+        ptr_points,
+        ptr_s,
+        n,
+        t,
+    );
+    mget(points, ptr_points, n*ecc_frost_ristretto255_sha512_SCALARSIZE);
+    mfree(ptr_points, n*ecc_frost_ristretto255_sha512_SCALARSIZE);
+    mfree(ptr_s, ecc_frost_ristretto255_sha512_SCALARSIZE);
+}
+
+/**
+ * Performs the aggregate operation to obtain the resulting signature.
+ *
+ * @param {Uint8Array} signature (output) a Schnorr signature consisting of an Element and Scalar value, size:ecc_frost_ristretto255_sha512_SIGNATURESIZE
+ * @param {Uint8Array} group_commitment the group commitment returned by compute_group_commitment, size:ecc_frost_ristretto255_sha512_PUBLICKEYSIZE
+ * @param {Uint8Array} sig_shares a set of signature shares z_i for each signer, size:sig_shares_len*ecc_frost_ristretto255_sha512_SCALARSIZE
+ * @param {number} sig_shares_len the number of elements in `sig_shares`, must satisfy THRESHOLD_LIMIT
+ * <
+ * = sig_shares_len
+ * <
+ * = MAX_SIGNERS
+ */
+Module.ecc_frost_ristretto255_sha512_frost_aggregate = (
+    signature,
+    group_commitment,
+    sig_shares,
+    sig_shares_len,
+) => {
+    const ptr_signature = mput(signature, ecc_frost_ristretto255_sha512_SIGNATURESIZE);
+    const ptr_group_commitment = mput(group_commitment, ecc_frost_ristretto255_sha512_PUBLICKEYSIZE);
+    const ptr_sig_shares = mput(sig_shares, sig_shares_len*ecc_frost_ristretto255_sha512_SCALARSIZE);
+    _ecc_frost_ristretto255_sha512_frost_aggregate(
+        ptr_signature,
+        ptr_group_commitment,
+        ptr_sig_shares,
+        sig_shares_len,
+    );
+    mget(signature, ptr_signature, ecc_frost_ristretto255_sha512_SIGNATURESIZE);
+    mfree(ptr_signature, ecc_frost_ristretto255_sha512_SIGNATURESIZE);
+    mfree(ptr_group_commitment, ecc_frost_ristretto255_sha512_PUBLICKEYSIZE);
+    mfree(ptr_sig_shares, sig_shares_len*ecc_frost_ristretto255_sha512_SCALARSIZE);
+}
