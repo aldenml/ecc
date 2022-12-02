@@ -39,7 +39,7 @@ static void test_ecc_bin2hex(void **state) {
     ECC_UNUSED(state);
 
     const byte_t bin[2] = {0xab, 0xcd};
-    char hex[6];
+    char hex[5];
     ecc_bin2hex(hex, bin, 2);
     assert_string_equal(hex, "abcd");
 }
@@ -58,7 +58,7 @@ static void test_ecc_concat2(void **state) {
     ECC_UNUSED(state);
     byte_t a1[2] = "a1";
     byte_t a2[3] = "b22";
-    byte_t r1[9];
+    byte_t r1[5];
     ecc_concat2(r1, a1, 2, a2, 3);
     const byte_t r2[5] = "a1b22";
     assert_memory_equal(r1, r2, 5);
@@ -144,7 +144,7 @@ static void test_ecc_malloc(void **state) {
     ecc_free(ptr, len);
 }
 
-int main() {
+int main(void) {
     const struct CMUnitTest tests[] = {
         cmocka_unit_test(test_ecc_memzero),
         cmocka_unit_test(test_ecc_randombytes),
