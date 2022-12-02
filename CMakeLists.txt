@@ -79,6 +79,7 @@ elseif(NOT WIN32)
         PREFIX ${CMAKE_CURRENT_SOURCE_DIR}/build/libsodium
         BUILD_COMMAND make -j4
         BUILD_IN_SOURCE 1
+        BUILD_BYPRODUCTS ${CMAKE_CURRENT_SOURCE_DIR}/build/libsodium/lib/libsodium.a
     )
     ExternalProject_Add(
         blst-external
@@ -86,6 +87,7 @@ elseif(NOT WIN32)
         CONFIGURE_COMMAND ""
         BUILD_COMMAND ./build.sh -O2
         BUILD_IN_SOURCE 1
+        BUILD_BYPRODUCTS ${CMAKE_CURRENT_SOURCE_DIR}/deps/blst/libblst.a
         INSTALL_COMMAND ""
     )
 endif()
