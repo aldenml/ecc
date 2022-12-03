@@ -21,6 +21,7 @@ project(ecc LANGUAGES C)
 
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake/Modules)
 
+# setup extra compiler flags to a target
 function(SET_EXTRA_COMPILER_FLAGS TARGET_ARG)
     if(CMAKE_CXX_COMPILER_ID MATCHES Clang)
         target_compile_options(${TARGET_ARG} PRIVATE
@@ -41,6 +42,7 @@ function(SET_EXTRA_COMPILER_FLAGS TARGET_ARG)
     endif()
 endfunction()
 
+# setup a unit test
 function(SETUP_TARGET_TEST TARGET_ARG)
     add_executable(${TARGET_ARG} test/${TARGET_ARG}.c)
     target_link_libraries(${TARGET_ARG} PRIVATE ecc_test)
@@ -53,20 +55,24 @@ function(SETUP_TARGET_TEST TARGET_ARG)
     add_test(NAME ${TARGET_ARG} COMMAND ${TARGET_ARG})
 endfunction()
 
+# common dependencies directories
+set(LIBSODIUM_DEPS_DIR ${CMAKE_CURRENT_SOURCE_DIR}/deps/libsodium)
+set(LIBSODIUM_BUILD_DIR ${CMAKE_CURRENT_SOURCE_DIR}/build/libsodium)
+
 include(ExternalProject)
 if(EMSCRIPTEN)
     ExternalProject_Add(
         libsodium-external
-        SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/deps/libsodium
-        CONFIGURE_COMMAND emconfigure ${CMAKE_CURRENT_SOURCE_DIR}/deps/libsodium/configure
+        SOURCE_DIR ${LIBSODIUM_DEPS_DIR}
+        CONFIGURE_COMMAND emconfigure ${LIBSODIUM_DEPS_DIR}/configure
             "CFLAGS=-DSODIUM_STATIC=1 -Oz -Wno-cpp"
-            --prefix=${CMAKE_CURRENT_SOURCE_DIR}/build/libsodium
+            --prefix=${LIBSODIUM_BUILD_DIR}
             --disable-ssp
             --disable-asm
             --disable-pie
             --disable-shared
             --without-pthreads
-        PREFIX ${CMAKE_CURRENT_SOURCE_DIR}/build/libsodium
+        PREFIX ${LIBSODIUM_BUILD_DIR}
         BUILD_COMMAND emmake make -j4
         BUILD_IN_SOURCE 1
     )
@@ -81,17 +87,17 @@ if(EMSCRIPTEN)
 elseif(NOT WIN32)
     ExternalProject_Add(
         libsodium-external
-        SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/deps/libsodium
-        CONFIGURE_COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/deps/libsodium/configure
+        SOURCE_DIR ${LIBSODIUM_DEPS_DIR}
+        CONFIGURE_COMMAND ${LIBSODIUM_DEPS_DIR}/configure
             "CFLAGS=-DSODIUM_STATIC=1 -O2 -Wno-cpp"
-            --prefix=${CMAKE_CURRENT_SOURCE_DIR}/build/libsodium
+            --prefix=${LIBSODIUM_BUILD_DIR}
             --disable-ssp
             --disable-shared
             --without-pthreads
-        PREFIX ${CMAKE_CURRENT_SOURCE_DIR}/build/libsodium
+        PREFIX ${LIBSODIUM_BUILD_DIR}
         BUILD_COMMAND make -j4
         BUILD_IN_SOURCE 1
-        BUILD_BYPRODUCTS ${CMAKE_CURRENT_SOURCE_DIR}/build/libsodium/lib/libsodium.a
+        BUILD_BYPRODUCTS ${LIBSODIUM_BUILD_DIR}/lib/libsodium.a
     )
     ExternalProject_Add(
         blst-external
@@ -109,13 +115,13 @@ if(NOT WIN32)
     ExternalProject_Add_Step(
         libsodium-external autogen
         COMMAND ./autogen.sh -s
-        WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/deps/libsodium
+        WORKING_DIRECTORY ${LIBSODIUM_DEPS_DIR}
         COMMENT "Running autogen.sh tool"
         DEPENDERS configure
     )
 endif()
 
-file(MAKE_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/build/libsodium/include)
+file(MAKE_DIRECTORY ${LIBSODIUM_BUILD_DIR}/include)
 
 add_library(libsodium STATIC IMPORTED GLOBAL)
 if(NOT WIN32)
@@ -123,8 +129,8 @@ if(NOT WIN32)
 endif()
 
 set_target_properties(libsodium PROPERTIES
-    INTERFACE_INCLUDE_DIRECTORIES ${CMAKE_CURRENT_SOURCE_DIR}/build/libsodium/include
-    IMPORTED_LOCATION ${CMAKE_CURRENT_SOURCE_DIR}/build/libsodium/lib/libsodium.a
+    INTERFACE_INCLUDE_DIRECTORIES ${LIBSODIUM_BUILD_DIR}/include
+    IMPORTED_LOCATION ${LIBSODIUM_BUILD_DIR}/lib/libsodium.a
 )
 
 add_library(blst STATIC IMPORTED GLOBAL)
