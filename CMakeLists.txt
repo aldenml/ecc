@@ -164,6 +164,7 @@ target_include_directories(ecc PUBLIC
 if(NOT DEFINED EMSCRIPTEN)
     # ecc static
     add_library(ecc_static STATIC ${ecc_src_files})
+    set_target_properties(ecc_static PROPERTIES OUTPUT_NAME "ecc")
 
     target_compile_features(ecc_static PUBLIC c_std_11)
     target_compile_options(ecc_static PRIVATE -O2)
