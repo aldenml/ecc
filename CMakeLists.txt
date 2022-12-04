@@ -58,6 +58,7 @@ endfunction()
 # common dependencies directories
 set(LIBSODIUM_DEPS_DIR ${CMAKE_CURRENT_SOURCE_DIR}/deps/libsodium)
 set(LIBSODIUM_BUILD_DIR ${CMAKE_CURRENT_SOURCE_DIR}/build/libsodium)
+set(BLST_DEPS_DIR ${CMAKE_CURRENT_SOURCE_DIR}/deps/blst)
 
 include(ExternalProject)
 if(EMSCRIPTEN)
@@ -78,7 +79,7 @@ if(EMSCRIPTEN)
     )
     ExternalProject_Add(
         blst-external
-        SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/deps/blst
+        SOURCE_DIR ${BLST_DEPS_DIR}
         CONFIGURE_COMMAND ""
         BUILD_COMMAND AR=emar ./build.sh CC=emcc -D__BLST_PORTABLE__ -Oz
         BUILD_IN_SOURCE 1
@@ -101,11 +102,11 @@ elseif(NOT WIN32)
     )
     ExternalProject_Add(
         blst-external
-        SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/deps/blst
+        SOURCE_DIR ${BLST_DEPS_DIR}
         CONFIGURE_COMMAND ""
         BUILD_COMMAND ./build.sh -O2
         BUILD_IN_SOURCE 1
-        BUILD_BYPRODUCTS ${CMAKE_CURRENT_SOURCE_DIR}/deps/blst/libblst.a
+        BUILD_BYPRODUCTS ${BLST_DEPS_DIR}/libblst.a
         INSTALL_COMMAND ""
     )
 endif()
@@ -139,8 +140,8 @@ if(NOT WIN32)
 endif()
 
 set_target_properties(blst PROPERTIES
-    INTERFACE_INCLUDE_DIRECTORIES ${CMAKE_CURRENT_SOURCE_DIR}/deps/blst/bindings
-    IMPORTED_LOCATION ${CMAKE_CURRENT_SOURCE_DIR}/deps/blst/libblst.a
+    INTERFACE_INCLUDE_DIRECTORIES ${BLST_DEPS_DIR}/bindings
+    IMPORTED_LOCATION ${BLST_DEPS_DIR}/libblst.a
 )
 
 set(ecc_src_files
