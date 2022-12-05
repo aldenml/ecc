@@ -424,7 +424,7 @@ void ecc_frost_ristretto255_sha512_trusted_dealer_keygen(
 /**
  * Split a secret into shares.
  *
- * @param points A list of n secret shares, each of which is an element of F, size:n*ecc_frost_ristretto255_sha512_SCALARSIZE
+ * @param points A list of n secret shares, each of which is an element of F, size:n*ecc_frost_ristretto255_sha512_POINTSIZE
  * @param n the number of shares to generate
  * @param t the threshold of the secret sharing scheme
  * @param coefficients size:t*ecc_frost_ristretto255_sha512_SCALARSIZE
@@ -440,7 +440,7 @@ void ecc_frost_ristretto255_sha512_secret_share_shard_with_coefficients(
 /**
  * Split a secret into shares.
  *
- * @param[out] points A list of n secret shares, each of which is an element of F, size:n*ecc_frost_ristretto255_sha512_SCALARSIZE
+ * @param[out] points A list of n secret shares, each of which is an element of F, size:n*ecc_frost_ristretto255_sha512_POINTSIZE
  * @param s secret to be shared, an element of F, size:ecc_frost_ristretto255_sha512_SCALARSIZE
  * @param n the number of shares to generate
  * @param t the threshold of the secret sharing scheme
