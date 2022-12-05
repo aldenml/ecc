@@ -6,11 +6,6 @@
  */
 
 #include "ecc_test.h"
-#include <stdarg.h>
-#include <setjmp.h>
-#include <string.h>
-#include <cmocka.h>
-#include <stdio.h>
 
 static void test_read_string(void **state) {
     ECC_UNUSED(state);
@@ -31,7 +26,7 @@ static void test_read_array(void **state) {
 
     ecc_json_t *json = ecc_json_load("../test/data/read_json_test.json");
 
-    int len = ecc_json_array_size(json, "a1.a2");
+    const int len = ecc_json_array_size(json, "a1.a2");
     const char *v1 = ecc_json_array_string(json, "a1.a2", 1);
 
     assert_int_equal(len, 3);
@@ -40,10 +35,29 @@ static void test_read_array(void **state) {
     ecc_json_destroy(json);
 }
 
-int main() {
+static void test_ecc_json_array_items(void **state) {
+    ECC_UNUSED(state);
+
+    ecc_json_t *json = ecc_json_load("../test/data/read_json_test.json");
+
+    const int len = ecc_json_array_size(json, "vec");
+    ecc_json_t *item1 = ecc_json_array_item(json, "vec", 0);
+    const char *v1 = ecc_json_string(item1, "val");
+    ecc_json_t *item2 = ecc_json_array_item(json, "vec", 1);
+    const char *v2 = ecc_json_string(item2, "val");
+
+    assert_int_equal(len, 2);
+    assert_string_equal(v1, "a");
+    assert_string_equal(v2, "b");
+
+    ecc_json_destroy(json);
+}
+
+int main(void) {
     const struct CMUnitTest tests[] = {
         cmocka_unit_test(test_read_string),
         cmocka_unit_test(test_read_array),
+        cmocka_unit_test(test_ecc_json_array_items),
     };
 
     return cmocka_run_group_tests(tests, NULL, NULL);

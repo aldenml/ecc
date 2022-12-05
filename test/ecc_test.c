@@ -197,7 +197,7 @@ int ecc_json_array_size(ecc_json_t *json, const char *path) {
     return cJSON_GetArraySize(node);
 }
 
-const char *ecc_json_array_string(ecc_json_t *json, const char *path, int index) {
+ecc_json_t *ecc_json_array_item(ecc_json_t *json, const char *path, const int index) {
     if (!ecc_json_is_valid(json))
         return NULL;
 
@@ -234,5 +234,17 @@ const char *ecc_json_array_string(ecc_json_t *json, const char *path, int index)
 
     node = cJSON_GetArrayItem(node, index);
 
-    return cJSON_GetStringValue(node);
+    ecc_json_t *ret = NULL;
+
+    if (node) {
+        ret = malloc(sizeof(ecc_json_t));
+        ret->handle = node;
+    }
+
+    return ret;
+}
+
+const char *ecc_json_array_string(ecc_json_t *json, const char *path, const int index) {
+    ecc_json_t *item = ecc_json_array_item(json, path, index);
+    return item ? cJSON_GetStringValue(item->handle) : NULL;
 }

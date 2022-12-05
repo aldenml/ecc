@@ -52,6 +52,8 @@ const char *ecc_json_string(ecc_json_t *json, const char *path);
 
 int ecc_json_array_size(ecc_json_t *json, const char *path);
 
+ecc_json_t *ecc_json_array_item(ecc_json_t *json, const char *path, int index);
+
 const char *ecc_json_array_string(ecc_json_t *json, const char *path, int index);
 
 #endif // ECC_TEST_H

@@ -230,6 +230,7 @@ if(NOT DEFINED EMSCRIPTEN)
     # unit tests executables
     setup_target_test(json)
     setup_target_test(util)
+    setup_target_test(hash)
     setup_target_test(kdf)
     setup_target_test(bls12_381)
     setup_target_test(h2c)
