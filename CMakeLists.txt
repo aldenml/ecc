@@ -44,15 +44,15 @@ endfunction()
 
 # setup a unit test
 function(SETUP_TARGET_TEST TARGET_ARG)
-    add_executable(${TARGET_ARG} test/${TARGET_ARG}.c)
-    target_link_libraries(${TARGET_ARG} PRIVATE ecc_test)
-    set_extra_compiler_flags(${TARGET_ARG})
+    add_executable(test_${TARGET_ARG} test/test_${TARGET_ARG}.c)
+    target_link_libraries(test_${TARGET_ARG} PRIVATE ecc_test)
+    set_extra_compiler_flags(test_${TARGET_ARG})
 
     if(CODE_COVERAGE)
-        target_code_coverage(${TARGET_ARG} AUTO ALL EXTERNAL)
+        target_code_coverage(test_${TARGET_ARG} AUTO ALL EXTERNAL)
     endif()
 
-    add_test(NAME ${TARGET_ARG} COMMAND ${TARGET_ARG})
+    add_test(NAME test_${TARGET_ARG} COMMAND test_${TARGET_ARG})
 endfunction()
 
 # common dependencies directories
@@ -60,6 +60,7 @@ set(LIBSODIUM_DEPS_DIR ${CMAKE_CURRENT_SOURCE_DIR}/deps/libsodium)
 set(LIBSODIUM_BUILD_DIR ${CMAKE_CURRENT_SOURCE_DIR}/build/libsodium)
 set(BLST_DEPS_DIR ${CMAKE_CURRENT_SOURCE_DIR}/deps/blst)
 
+# setup external projects libsodium and blst
 include(ExternalProject)
 if(EMSCRIPTEN)
     ExternalProject_Add(
@@ -111,6 +112,7 @@ elseif(NOT WIN32)
     )
 endif()
 
+# since we are using libsodium master branch, autogen needs to be run
 if(NOT WIN32)
     # setup build configure for libsodium
     ExternalProject_Add_Step(
@@ -122,28 +124,28 @@ if(NOT WIN32)
     )
 endif()
 
+# setup libsodium library
 file(MAKE_DIRECTORY ${LIBSODIUM_BUILD_DIR}/include)
-
 add_library(libsodium STATIC IMPORTED GLOBAL)
 if(NOT WIN32)
     add_dependencies(libsodium libsodium-external)
 endif()
-
 set_target_properties(libsodium PROPERTIES
     INTERFACE_INCLUDE_DIRECTORIES ${LIBSODIUM_BUILD_DIR}/include
     IMPORTED_LOCATION ${LIBSODIUM_BUILD_DIR}/lib/libsodium.a
 )
 
+# setup blst library
 add_library(blst STATIC IMPORTED GLOBAL)
 if(NOT WIN32)
     add_dependencies(blst blst-external)
 endif()
-
 set_target_properties(blst PROPERTIES
     INTERFACE_INCLUDE_DIRECTORIES ${BLST_DEPS_DIR}/bindings
     IMPORTED_LOCATION ${BLST_DEPS_DIR}/libblst.a
 )
 
+# main set of source files
 set(ecc_src_files
     src/export.h
     src/util.h src/util.c
@@ -205,6 +207,7 @@ if(NOT DEFINED EMSCRIPTEN)
     target_link_libraries(ecc-jvm PRIVATE ecc_static)
 endif()
 
+# unit tests
 if(NOT DEFINED EMSCRIPTEN)
     include(FetchCmocka)
 
@@ -215,67 +218,25 @@ if(NOT DEFINED EMSCRIPTEN)
     target_link_libraries(ecc_test PUBLIC ecc cmocka-static)
     set_extra_compiler_flags(ecc_test)
 
-    # tests executables
-    add_executable(test_kdf test/test_kdf.c)
-    target_link_libraries(test_kdf PRIVATE ecc_test)
-    add_executable(test_bls12_381 test/test_bls12_381.c)
-    target_link_libraries(test_bls12_381 PRIVATE ecc_test)
-    add_executable(test_h2c test/test_h2c.c)
-    target_link_libraries(test_h2c PRIVATE ecc_test)
-    add_executable(test_oprf test/test_oprf.c)
-    target_link_libraries(test_oprf PRIVATE ecc_test)
-    add_executable(test_opaque test/test_opaque.c)
-    target_link_libraries(test_opaque PRIVATE ecc_test)
-    add_executable(test_sign test/test_sign.c)
-    target_link_libraries(test_sign PRIVATE ecc_test)
-    add_executable(test_pre test/test_pre.c)
-    target_link_libraries(test_pre PRIVATE ecc_test)
-    add_executable(test_json test/test_json.c)
-    target_link_libraries(test_json PRIVATE ecc_test)
-    add_executable(test_frost test/test_frost.c)
-    target_link_libraries(test_frost PRIVATE ecc_test)
-    add_executable(test_ristretto255 test/test_ristretto255.c)
-    target_link_libraries(test_ristretto255 PRIVATE ecc_test)
-
-    set_extra_compiler_flags(test_kdf)
-    set_extra_compiler_flags(test_bls12_381)
-    set_extra_compiler_flags(test_h2c)
-    set_extra_compiler_flags(test_oprf)
-    set_extra_compiler_flags(test_opaque)
-    set_extra_compiler_flags(test_sign)
-    set_extra_compiler_flags(test_pre)
-    set_extra_compiler_flags(test_json)
-    set_extra_compiler_flags(test_frost)
-    set_extra_compiler_flags(test_ristretto255)
-
     # setup coverage
     if(CODE_COVERAGE)
         include(code-coverage)
         add_code_coverage_all_targets(EXCLUDE test/*)
         target_code_coverage(ecc AUTO ALL)
-        target_code_coverage(test_kdf AUTO ALL EXTERNAL)
-        target_code_coverage(test_bls12_381 AUTO ALL EXTERNAL)
-        target_code_coverage(test_h2c AUTO ALL EXTERNAL)
-        target_code_coverage(test_oprf AUTO ALL EXTERNAL)
-        target_code_coverage(test_opaque AUTO ALL EXTERNAL)
-        target_code_coverage(test_sign AUTO ALL EXTERNAL)
-        target_code_coverage(test_pre AUTO ALL EXTERNAL)
-        target_code_coverage(test_json AUTO ALL EXTERNAL)
-        target_code_coverage(test_frost AUTO ALL EXTERNAL)
-        target_code_coverage(test_ristretto255 AUTO ALL EXTERNAL)
     endif()
 
     enable_testing()
-    add_test(NAME test_kdf COMMAND test_kdf)
-    add_test(NAME test_bls12_381 COMMAND test_bls12_381)
-    add_test(NAME test_h2c COMMAND test_h2c)
-    add_test(NAME test_oprf COMMAND test_oprf)
-    add_test(NAME test_opaque COMMAND test_opaque)
-    add_test(NAME test_sign COMMAND test_sign)
-    add_test(NAME test_pre COMMAND test_pre)
-    add_test(NAME test_json COMMAND test_json)
-    add_test(NAME test_frost COMMAND test_frost)
-    add_test(NAME test_ristretto255 COMMAND test_ristretto255)
 
-    setup_target_test(test_util)
+    # unit tests executables
+    setup_target_test(json)
+    setup_target_test(util)
+    setup_target_test(kdf)
+    setup_target_test(bls12_381)
+    setup_target_test(h2c)
+    setup_target_test(oprf)
+    setup_target_test(opaque)
+    setup_target_test(sign)
+    setup_target_test(pre)
+    setup_target_test(frost)
+    setup_target_test(ristretto255)
 endif()
