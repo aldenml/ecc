@@ -20,7 +20,6 @@ EMCC_FLAGS="-Oz -flto --no-entry \
   -sSUPPORT_LONGJMP=0 \
   -sSUPPORT_ERRNO=0 \
   -sASSERTIONS=0 \
-  -sDISABLE_EXCEPTION_CATCHING=1 \
   -sNODEJS_CATCH_EXIT=0 \
   -sNODEJS_CATCH_REJECTION=0 \
   -sMODULARIZE=1 \
@@ -29,7 +28,7 @@ EMCC_FLAGS="-Oz -flto --no-entry \
   -sUSES_DYNAMIC_ALLOC=1 \
   -sMALLOC=emmalloc \
   -sALLOW_MEMORY_GROWTH=0 \
-  -sTOTAL_STACK=65536 \
+  -sSTACK_SIZE=65536 \
   -sINITIAL_MEMORY=131072"
 
 emcc -o bindings/js/libecc.js -sEXPORT_NAME=libecc_module \
