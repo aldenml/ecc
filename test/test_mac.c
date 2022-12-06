@@ -7,7 +7,7 @@
 
 #include "ecc_test.h"
 
-// https://datatracker.ietf.org/doc/html/rfc4231
+// https://datatracker.ietf.org/doc/html/rfc4231#section-4
 static void test_ecc_mac_hmac_sha2(void **state) {
     ECC_UNUSED(state);
 

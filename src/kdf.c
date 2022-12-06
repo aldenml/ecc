@@ -6,7 +6,6 @@
  */
 
 #include "kdf.h"
-#include <string.h>
 #include <assert.h>
 
 #ifdef __GNUC__
