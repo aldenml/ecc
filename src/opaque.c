@@ -371,7 +371,8 @@ void ecc_opaque_ristretto255_sha512_EnvelopeStoreWithNonce(
     ecc_mac_hmac_sha512(
         envelope->auth_tag,
         auth_tag_mac_input, auth_tag_mac_input_len,
-        auth_key
+        auth_key,
+        sizeof auth_key
     );
 
     // 9. Create Envelope envelope with (envelope_nonce, auth_tag)
@@ -492,7 +493,7 @@ int ecc_opaque_ristretto255_sha512_EnvelopeRecover(
         cleartext_creds_buf, cleartext_creds_len
     );
     byte_t expected_tag[64];
-    ecc_mac_hmac_sha512(expected_tag, expected_tag_mac_input, expected_tag_mac_input_input_len, auth_key);
+    ecc_mac_hmac_sha512(expected_tag, expected_tag_mac_input, expected_tag_mac_input_input_len, auth_key, sizeof auth_key);
 
     // cleanup stack memory
     ecc_memzero(auth_key_info, sizeof auth_key_info);
@@ -1504,7 +1505,8 @@ int ecc_opaque_ristretto255_sha512_3DH_ClientFinalize(
     ecc_mac_hmac_sha512(
         expected_server_mac,
         preamble_hash, sizeof preamble_hash,
-        km2
+        km2,
+        sizeof km2
     );
 
     // 5. If !ct_equal(ke2.server_mac, expected_server_mac),
@@ -1531,7 +1533,8 @@ int ecc_opaque_ristretto255_sha512_3DH_ClientFinalize(
     ecc_mac_hmac_sha512(
         client_mac,
         client_mac_input, sizeof client_mac_input,
-        km3
+        km3,
+        sizeof km3
     );
 
     // 7. Create KE3 ke3 with client_mac
@@ -1754,7 +1757,8 @@ void ecc_opaque_ristretto255_sha512_3DH_ResponseWithSecrets(
     ecc_mac_hmac_sha512(
         server_mac,
         preamble_hash, sizeof preamble_hash,
-        km2
+        km2,
+        sizeof km2
     );
 
     // 8. expected_client_mac = MAC(Km3, Hash(concat(preamble, server_mac))
@@ -1768,7 +1772,8 @@ void ecc_opaque_ristretto255_sha512_3DH_ResponseWithSecrets(
     ecc_mac_hmac_sha512(
         expected_client_mac,
         expected_client_mac_input, sizeof expected_client_mac_input,
-        km3
+        km3,
+        sizeof km3
     );
 
     // 9. Populate state with ServerState(expected_client_mac, session_key)
