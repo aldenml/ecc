@@ -62,7 +62,7 @@ static void test_ecc_kdf_hkdf_sha256(void **state) {
     ecc_json_destroy(json);
 }
 
-static void hkdf_sha512_extract_test(void **state) {
+static void test_ecc_kdf_hkdf_sha512_extract(void **state) {
     ECC_UNUSED(state);
 
     byte_t salt[10];
@@ -82,7 +82,7 @@ static void hkdf_sha512_extract_test(void **state) {
     assert_string_equal(hex, "457c311719813785096ef45f466aead3db4e535f4a7b0d06084621c0e01220a6b43b90879fc23189d4fed6456e31529905bdc83056feda5940444893a83808bd");
 }
 
-static void hkdf_sha512_expand_test(void **state) {
+static void test_ecc_kdf_hkdf_sha512_expand(void **state) {
     ECC_UNUSED(state);
 
     byte_t prk[64];
@@ -123,7 +123,7 @@ static void hkdf_sha512_expand_test(void **state) {
     assert_string_equal(hex3, "3f78dfe76193f8ca9761f28f0e58453cc8ec97db968b4eebe95a2c664382ccea9fdff742512ff986cc7faae377461d5e455bdf62de4b862bdafcc966f9cfe527");
 }
 
-static void test_scrypt_1(void **state) {
+static void test_ecc_kdf_scrypt_1(void **state) {
     ECC_UNUSED(state);
 
     const byte_t *P = NULL;
@@ -143,7 +143,7 @@ static void test_scrypt_1(void **state) {
                              "e8d3e0fb2e0d3628cf35e20c38d18906");
 }
 
-static void test_scrypt_2(void **state) {
+static void test_ecc_kdf_scrypt_2(void **state) {
     ECC_UNUSED(state);
 
     byte_t P[8] = "password";
@@ -163,7 +163,7 @@ static void test_scrypt_2(void **state) {
                              "c727afb94a83ee6d8360cbdfa2cc0640");
 }
 
-static void test_scrypt_3(void **state) {
+static void test_ecc_kdf_scrypt_3(void **state) {
     ECC_UNUSED(state);
 
     byte_t P[13] = "pleaseletmein";
@@ -183,7 +183,7 @@ static void test_scrypt_3(void **state) {
                              "e61e85dc0d651e40dfcf017b45575887");
 }
 
-static void test_scrypt_4(void **state) {
+static void test_ecc_kdf_scrypt_4(void **state) {
     ECC_UNUSED(state);
 
     byte_t P[13] = "pleaseletmein";
@@ -206,12 +206,12 @@ static void test_scrypt_4(void **state) {
 int main(void) {
     const struct CMUnitTest tests[] = {
         cmocka_unit_test(test_ecc_kdf_hkdf_sha256),
-        cmocka_unit_test(hkdf_sha512_extract_test),
-        cmocka_unit_test(hkdf_sha512_expand_test),
-        cmocka_unit_test(test_scrypt_1),
-        cmocka_unit_test(test_scrypt_2),
-        cmocka_unit_test(test_scrypt_3),
-        cmocka_unit_test(test_scrypt_4),
+        cmocka_unit_test(test_ecc_kdf_hkdf_sha512_extract),
+        cmocka_unit_test(test_ecc_kdf_hkdf_sha512_expand),
+        cmocka_unit_test(test_ecc_kdf_scrypt_1),
+        cmocka_unit_test(test_ecc_kdf_scrypt_2),
+        cmocka_unit_test(test_ecc_kdf_scrypt_3),
+        cmocka_unit_test(test_ecc_kdf_scrypt_4),
     };
 
     return cmocka_run_group_tests(tests, NULL, NULL);
