@@ -6,11 +6,61 @@
  */
 
 #include "ecc_test.h"
-#include <stdarg.h>
-#include <setjmp.h>
-#include <string.h>
-#include <cmocka.h>
-#include <stdio.h>
+
+// https://datatracker.ietf.org/doc/html/rfc5869#appendix-A
+static void test_ecc_kdf_hkdf_sha256(void **state) {
+    ECC_UNUSED(state);
+
+    ecc_json_t json = ecc_json_load("../test/data/kdf/hkdf_sha256.json");
+
+    const int n = ecc_json_array_size(json, "vectors");
+
+    for (int i = 0; i < n; i++) {
+        ecc_json_t item = ecc_json_array_item(json, "vectors", i);
+
+        byte_t IKM[2000];
+        int IKM_len;
+        ecc_json_hex(IKM, &IKM_len, item, "IKM");
+        ecc_log("IKM", IKM, IKM_len);
+
+        byte_t salt[2000];
+        int salt_len;
+        ecc_json_hex(salt, &salt_len, item, "salt");
+        ecc_log("salt", salt, salt_len);
+
+        byte_t info[2000];
+        int info_len;
+        ecc_json_hex(info, &info_len, item, "info");
+        ecc_log("info", info, info_len);
+
+        const double numL = ecc_json_number(item, "L");
+        const int L = (int) numL;
+
+        byte_t PRK[2000];
+        int PRK_len;
+        ecc_json_hex(PRK, &PRK_len, item, "PRK");
+        ecc_log("PRK", PRK, PRK_len);
+
+        byte_t OKM[2000];
+        int OKM_len;
+        ecc_json_hex(OKM, &OKM_len, item, "OKM");
+        ecc_log("OKM", OKM, OKM_len);
+
+        byte_t prk[ecc_kdf_hkdf_sha256_KEYSIZE];
+        ecc_kdf_hkdf_sha256_extract(prk, salt, salt_len, IKM, IKM_len);
+        ecc_log("prk", prk, sizeof prk);
+
+        assert_memory_equal(prk, PRK, (size_t) PRK_len);
+
+        byte_t okm[2000];
+        ecc_kdf_hkdf_sha256_expand(okm, prk, info, info_len, L);
+        ecc_log("okm", okm, L);
+
+        assert_memory_equal(okm, OKM, (size_t) OKM_len);
+    }
+
+    ecc_json_destroy(json);
+}
 
 static void hkdf_sha512_extract_test(void **state) {
     ECC_UNUSED(state);
@@ -153,8 +203,9 @@ static void test_scrypt_4(void **state) {
                              "37304049e8a952fbcbf45c6fa77a41a4");
 }
 
-int main() {
+int main(void) {
     const struct CMUnitTest tests[] = {
+        cmocka_unit_test(test_ecc_kdf_hkdf_sha256),
         cmocka_unit_test(hkdf_sha512_extract_test),
         cmocka_unit_test(hkdf_sha512_expand_test),
         cmocka_unit_test(test_scrypt_1),
