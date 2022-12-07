@@ -7,10 +7,14 @@
 
 #include "ecc_test.h"
 #include <stdint.h>
+#include <math.h>
 #include "cJSON.h"
 
 char *readfile(const char *filename);
 char *str_split(char **p_str, const char *sep);
+
+// find a json node given a path
+cJSON *json_node(cJSON *node, const char *path);
 
 #if !ECC_LOG
 void ecc_log(const char *label, const byte_t *data, const int data_len) {
@@ -20,10 +24,6 @@ void ecc_log(const char *label, const byte_t *data, const int data_len) {
     free(hex);
 }
 #endif
-
-struct ecc_json {
-    cJSON *handle;
-};
 
 char *readfile(const char *filename) {
 
@@ -92,104 +92,92 @@ char *str_split(char **p_str, const char *sep) {
     return token;
 }
 
-ecc_json_t *ecc_json_load(const char *filename) {
+cJSON *json_node(cJSON *node, const char *path) {
+
+#ifdef __GNUC__
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wcast-qual"
+#endif
+
+#ifdef __clang__
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wcast-qual"
+#endif
+
+    char *ptr = (char *) path;
+
+#ifdef __clang__
+#pragma clang diagnostic pop
+#endif
+
+#ifdef __GNUC__
+#pragma GCC diagnostic pop
+#endif
+    char *token = NULL;
+
+    while ((token = str_split(&ptr, ".")) != NULL) {
+        node = cJSON_GetObjectItemCaseSensitive(node, token);
+        free(token);
+    }
+
+    return node;
+}
+
+static ecc_json_t invalid_json = {NULL};
+
+ecc_json_t ecc_json_load(const char *filename) {
 
     char *value = readfile(filename);
 
-    ecc_json_t *ret = NULL;
+    ecc_json_t ret = invalid_json;
 
     if (value) {
-        ret = malloc(sizeof(ecc_json_t));
-        ret->handle = cJSON_Parse(value);
-        if (ret->handle == NULL)
-            ret = NULL;
+        ret.handle = cJSON_Parse(value);
         free(value);
     }
 
     return ret;
 }
 
-void ecc_json_destroy(ecc_json_t *json) {
-    if (json && json->handle) {
-        cJSON_Delete(json->handle);
-        json->handle = NULL;
-        free(json);
+void ecc_json_destroy(ecc_json_t json) {
+    if (json.handle) {
+        cJSON_Delete(json.handle);
+        json.handle = NULL;
     }
 }
 
-int ecc_json_is_valid(ecc_json_t *json) {
-    if (json && json->handle)
+int ecc_json_is_valid(ecc_json_t json) {
+    if (json.handle)
         return 1;
     else
         return 0;
 }
 
-const char *ecc_json_string(ecc_json_t *json, const char *path) {
+ecc_json_t ecc_json_object(ecc_json_t json, const char *path) {
     if (!ecc_json_is_valid(json))
-        return NULL;
+        return invalid_json;
 
-    cJSON *node = json->handle;
+    cJSON *node = json_node(json.handle, path);
+    ecc_json_t ret = {node};
 
-#ifdef __GNUC__
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wcast-qual"
-#endif
-
-#ifdef __clang__
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wcast-qual"
-#endif
-
-    char *ptr = (char *) path;
-
-#ifdef __clang__
-#pragma clang diagnostic pop
-#endif
-
-#ifdef __GNUC__
-#pragma GCC diagnostic pop
-#endif
-    char *token = NULL;
-
-    while ((token = str_split(&ptr, ".")) != NULL) {
-        node = cJSON_GetObjectItemCaseSensitive(node, token);
-        free(token);
-    }
-
-    return cJSON_GetStringValue(node);
+    return ret;
 }
 
-int ecc_json_array_size(ecc_json_t *json, const char *path) {
+const char *ecc_json_string(ecc_json_t json, const char *path) {
+    ecc_json_t obj = ecc_json_object(json, path);
+    return obj.handle ? cJSON_GetStringValue(obj.handle) : NULL;
+}
+
+double ecc_json_number(ecc_json_t json, const char *path) {
+    ecc_json_t obj = ecc_json_object(json, path);
+    return obj.handle ? cJSON_GetNumberValue(obj.handle) : (double) NAN;
+}
+
+int ecc_json_array_size(ecc_json_t json, const char *path) {
     if (!ecc_json_is_valid(json))
         return -1;
 
-    cJSON *node = json->handle;
-
-#ifdef __GNUC__
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wcast-qual"
-#endif
-
-#ifdef __clang__
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wcast-qual"
-#endif
-
-    char *ptr = (char *) path;
-
-#ifdef __clang__
-#pragma clang diagnostic pop
-#endif
-
-#ifdef __GNUC__
-#pragma GCC diagnostic pop
-#endif
-    char *token = NULL;
-
-    while ((token = str_split(&ptr, ".")) != NULL) {
-        node = cJSON_GetObjectItemCaseSensitive(node, token);
-        free(token);
-    }
+    cJSON *node = json_node(json.handle, path);
 
     if (!cJSON_IsArray(node))
         return -1;
@@ -197,54 +185,27 @@ int ecc_json_array_size(ecc_json_t *json, const char *path) {
     return cJSON_GetArraySize(node);
 }
 
-ecc_json_t *ecc_json_array_item(ecc_json_t *json, const char *path, const int index) {
+ecc_json_t ecc_json_array_item(ecc_json_t json, const char *path, const int index) {
     if (!ecc_json_is_valid(json))
-        return NULL;
+        return invalid_json;
 
-    cJSON *node = json->handle;
-
-#ifdef __GNUC__
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wcast-qual"
-#endif
-
-#ifdef __clang__
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wcast-qual"
-#endif
-
-    char *ptr = (char *) path;
-
-#ifdef __clang__
-#pragma clang diagnostic pop
-#endif
-
-#ifdef __GNUC__
-#pragma GCC diagnostic pop
-#endif
-    char *token = NULL;
-
-    while ((token = str_split(&ptr, ".")) != NULL) {
-        node = cJSON_GetObjectItemCaseSensitive(node, token);
-        free(token);
-    }
+    cJSON *node = json_node(json.handle, path);
 
     if (!cJSON_IsArray(node))
-        return NULL;
+        return invalid_json;
 
     node = cJSON_GetArrayItem(node, index);
-
-    ecc_json_t *ret = NULL;
-
-    if (node) {
-        ret = malloc(sizeof(ecc_json_t));
-        ret->handle = node;
-    }
+    ecc_json_t ret = {node};
 
     return ret;
 }
 
-const char *ecc_json_array_string(ecc_json_t *json, const char *path, const int index) {
-    ecc_json_t *item = ecc_json_array_item(json, path, index);
-    return item ? cJSON_GetStringValue(item->handle) : NULL;
+const char *ecc_json_array_string(ecc_json_t json, const char *path, const int index) {
+    ecc_json_t item = ecc_json_array_item(json, path, index);
+    return item.handle ? cJSON_GetStringValue(item.handle) : NULL;
+}
+
+double ecc_json_array_number(ecc_json_t json, const char *path, const int index) {
+    ecc_json_t item = ecc_json_array_item(json, path, index);
+    return item.handle ? cJSON_GetNumberValue(item.handle) : (double) NAN;
 }

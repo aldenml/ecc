@@ -254,17 +254,18 @@ JNIEXPORT void JNICALL Java_org_ssohub_crypto_ecc_libecc_ecc_1mac_1hmac_1sha256(
 ) {
     byte_t *ptr_digest = mput(env, digest, ecc_mac_hmac_sha256_HASHSIZE);
     byte_t *ptr_text = mput(env, text, text_len);
-    byte_t *ptr_key = mput(env, key, ecc_mac_hmac_sha256_KEYSIZE);
+    byte_t *ptr_key = mput(env, key, 32);
     ecc_mac_hmac_sha256(
         ptr_digest,
         ptr_text,
         text_len,
-        ptr_key
+        ptr_key,
+        32
     );
     mget(env, digest, ptr_digest, ecc_mac_hmac_sha256_HASHSIZE);
     mfree(ptr_digest, ecc_mac_hmac_sha256_HASHSIZE);
     mfree(ptr_text, text_len);
-    mfree(ptr_key, ecc_mac_hmac_sha256_KEYSIZE);
+    mfree(ptr_key, 32);
 }
 
 JNIEXPORT void JNICALL Java_org_ssohub_crypto_ecc_libecc_ecc_1mac_1hmac_1sha512(
@@ -276,17 +277,18 @@ JNIEXPORT void JNICALL Java_org_ssohub_crypto_ecc_libecc_ecc_1mac_1hmac_1sha512(
 ) {
     byte_t *ptr_digest = mput(env, digest, ecc_mac_hmac_sha512_HASHSIZE);
     byte_t *ptr_text = mput(env, text, text_len);
-    byte_t *ptr_key = mput(env, key, ecc_mac_hmac_sha512_KEYSIZE);
+    byte_t *ptr_key = mput(env, key, 64);
     ecc_mac_hmac_sha512(
         ptr_digest,
         ptr_text,
         text_len,
-        ptr_key
+        ptr_key,
+        64
     );
     mget(env, digest, ptr_digest, ecc_mac_hmac_sha512_HASHSIZE);
     mfree(ptr_digest, ecc_mac_hmac_sha512_HASHSIZE);
     mfree(ptr_text, text_len);
-    mfree(ptr_key, ecc_mac_hmac_sha512_KEYSIZE);
+    mfree(ptr_key, 64);
 }
 
 // kdf

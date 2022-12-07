@@ -40,20 +40,28 @@
 void ecc_log(const char *label, const byte_t *data, int data_len);
 #endif
 
-typedef struct ecc_json ecc_json_t;
+typedef struct {
+    void *handle;
+} ecc_json_t;
 
-ecc_json_t *ecc_json_load(const char *filename);
+ecc_json_t ecc_json_load(const char *filename);
 
-void ecc_json_destroy(ecc_json_t *json);
+void ecc_json_destroy(ecc_json_t json);
 
-int ecc_json_is_valid(ecc_json_t *json);
+int ecc_json_is_valid(ecc_json_t json);
 
-const char *ecc_json_string(ecc_json_t *json, const char *path);
+ecc_json_t ecc_json_object(ecc_json_t json, const char *path);
 
-int ecc_json_array_size(ecc_json_t *json, const char *path);
+const char *ecc_json_string(ecc_json_t json, const char *path);
 
-ecc_json_t *ecc_json_array_item(ecc_json_t *json, const char *path, int index);
+double ecc_json_number(ecc_json_t json, const char *path);
 
-const char *ecc_json_array_string(ecc_json_t *json, const char *path, int index);
+int ecc_json_array_size(ecc_json_t json, const char *path);
+
+ecc_json_t ecc_json_array_item(ecc_json_t json, const char *path, int index);
+
+const char *ecc_json_array_string(ecc_json_t json, const char *path, int index);
+
+double ecc_json_array_number(ecc_json_t json, const char *path, int index);
 
 #endif // ECC_TEST_H

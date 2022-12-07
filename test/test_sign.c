@@ -108,7 +108,7 @@ static void test_ecc_sign_eth_bls_Verify(void **state) {
 static void test_ecc_sign_eth_bls_Aggregate(void **state) {
     ECC_UNUSED(state);
 
-    ecc_json_t *json = ecc_json_load("../test/data/bls_tests_json/aggregate/aggregate_0x5656565656565656565656565656565656565656565656565656565656565656.json");
+    ecc_json_t json = ecc_json_load("../test/data/bls_tests_json/aggregate/aggregate_0x5656565656565656565656565656565656565656565656565656565656565656.json");
 
     byte_t input[3 * ecc_sign_eth_bls_SIGNATURESIZE];
     ecc_hex2bin(&input[0],
@@ -145,7 +145,7 @@ static void test_ecc_sign_eth_bls_Aggregate(void **state) {
 static void test_ecc_sign_eth_bls_FastAggregateVerify(void **state) {
     ECC_UNUSED(state);
 
-    ecc_json_t *json = ecc_json_load("../test/data/bls_tests_json/fast_aggregate_verify/fast_aggregate_verify_valid_3d7576f3c0e3570a.json");
+    ecc_json_t json = ecc_json_load("../test/data/bls_tests_json/fast_aggregate_verify/fast_aggregate_verify_valid_3d7576f3c0e3570a.json");
 
     byte_t pks[3 * ecc_sign_eth_bls_PUBLICKEYSIZE];
     ecc_hex2bin(&pks[0],
@@ -186,7 +186,7 @@ static void test_ecc_sign_eth_bls_FastAggregateVerify(void **state) {
 static void test_ecc_sign_eth_bls_AggregateVerify(void **state) {
     ECC_UNUSED(state);
 
-    ecc_json_t *json = ecc_json_load("../test/data/bls_tests_json/aggregate_verify/aggregate_verify_valid.json");
+    ecc_json_t json = ecc_json_load("../test/data/bls_tests_json/aggregate_verify/aggregate_verify_valid.json");
 
     byte_t pks[3 * ecc_sign_eth_bls_PUBLICKEYSIZE];
     ecc_hex2bin(&pks[0],

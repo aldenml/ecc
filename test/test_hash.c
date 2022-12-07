@@ -11,12 +11,12 @@
 static void test_ecc_hash_sha2(void **state) {
     ECC_UNUSED(state);
 
-    ecc_json_t *json = ecc_json_load("../test/data/hash/sha2.json");
+    ecc_json_t json = ecc_json_load("../test/data/hash/sha2.json");
 
     const int n = ecc_json_array_size(json, "vectors");
 
     for (int i = 0; i < n; i++) {
-        ecc_json_t *item = ecc_json_array_item(json, "vectors", i);
+        ecc_json_t item = ecc_json_array_item(json, "vectors", i);
         const char *input = ecc_json_string(item, "input");
 
         {
