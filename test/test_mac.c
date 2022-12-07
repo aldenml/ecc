@@ -17,43 +17,42 @@ static void test_ecc_mac_hmac_sha2(void **state) {
 
     for (int i = 0; i < n; i++) {
         ecc_json_t item = ecc_json_array_item(json, "vectors", i);
-        const char *key_hex = ecc_json_string(item, "key");
-        const char *data_hex = ecc_json_string(item, "data");
 
-        const int key_hex_len = (int) strlen(key_hex);
-        const int key_len = key_hex_len / 2;
-        byte_t *key = ecc_malloc(key_len);
-        ecc_hex2bin(key, key_hex, key_hex_len);
+        byte_t key[2000];
+        int key_len;
+        ecc_json_hex(key, &key_len, item, "key");
+        ecc_log("key", key, key_len);
 
-        const int data_hex_len = (int) strlen(data_hex);
-        const int data_len = data_hex_len / 2;
-        byte_t *data = ecc_malloc(data_len);
-        ecc_hex2bin(data, data_hex, data_hex_len);
+        byte_t data[2000];
+        int data_len;
+        ecc_json_hex(data, &data_len, item, "data");
+        ecc_log("data", data, data_len);
 
         {
-            const char *sha256 = ecc_json_string(item, "sha256");
+            byte_t mac[ecc_mac_hmac_sha256_HASHSIZE];
+            int mac_len;
+            ecc_json_hex(mac, &mac_len, item, "sha256");
+            ecc_log("HMAC-SHA-256 Value", mac, mac_len);
 
             byte_t digest[ecc_mac_hmac_sha256_HASHSIZE];
             ecc_mac_hmac_sha256(digest, data, data_len, key, key_len);
+            ecc_log("HMAC-SHA-256 Digest", mac, mac_len);
 
-            char hex[2 * ecc_mac_hmac_sha256_HASHSIZE + 1];
-            ecc_bin2hex(hex, digest, sizeof digest);
-            assert_string_equal(hex, sha256);
+            assert_memory_equal(digest, mac, (size_t) mac_len);
         }
 
         {
-            const char *sha512 = ecc_json_string(item, "sha512");
+            byte_t mac[ecc_mac_hmac_sha512_HASHSIZE];
+            int mac_len;
+            ecc_json_hex(mac, &mac_len, item, "sha512");
+            ecc_log("HMAC-SHA-512 Value", mac, mac_len);
 
             byte_t digest[ecc_mac_hmac_sha512_HASHSIZE];
             ecc_mac_hmac_sha512(digest, data, data_len, key, key_len);
+            ecc_log("HMAC-SHA-512 Digest", mac, mac_len);
 
-            char hex[2 * ecc_mac_hmac_sha512_HASHSIZE + 1];
-            ecc_bin2hex(hex, digest, sizeof digest);
-            assert_string_equal(hex, sha512);
+            assert_memory_equal(digest, mac, (size_t) mac_len);
         }
-
-        ecc_free(key, key_len);
-        ecc_free(data, data_len);
     }
 
     ecc_json_destroy(json);

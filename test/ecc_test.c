@@ -209,3 +209,13 @@ double ecc_json_array_number(ecc_json_t json, const char *path, const int index)
     ecc_json_t item = ecc_json_array_item(json, path, index);
     return item.handle ? cJSON_GetNumberValue(item.handle) : (double) NAN;
 }
+
+void ecc_json_hex(
+    byte_t *bin, int *bin_len,
+    ecc_json_t json, const char *path
+) {
+    const char *hex = ecc_json_string(json, path);
+    const int hex_len = (int) strlen(hex);
+    *bin_len = hex_len / 2;
+    ecc_hex2bin(bin, hex, hex_len);
+}

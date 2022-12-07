@@ -64,4 +64,12 @@ const char *ecc_json_array_string(ecc_json_t json, const char *path, int index);
 
 double ecc_json_array_number(ecc_json_t json, const char *path, int index);
 
+/**
+ * Utility function to read an hex string from a json string value.
+ */
+void ecc_json_hex(
+    byte_t *bin, int *bin_len,
+    ecc_json_t json, const char *path
+);
+
 #endif // ECC_TEST_H
