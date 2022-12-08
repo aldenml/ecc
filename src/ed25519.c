@@ -39,6 +39,12 @@ int ecc_ed25519_sub(byte_t *r, const byte_t *p, const byte_t *q) {
     return crypto_core_ed25519_sub(r, p, q);
 }
 
+void ecc_ed25519_generator(byte_t *g) {
+    byte_t one[ecc_ed25519_SCALARSIZE] = {0};
+    one[0] = 0x01;
+    ecc_ed25519_scalarmult_base(g, one);
+}
+
 void ecc_ed25519_from_uniform(byte_t *p, const byte_t *r) {
     crypto_core_ed25519_from_uniform(p, r);
 }
@@ -80,9 +86,9 @@ void ecc_ed25519_scalar_reduce(byte_t *r, const byte_t *s) {
 }
 
 int ecc_ed25519_scalarmult(byte_t *q, const byte_t *n, const byte_t *p) {
-    return crypto_scalarmult_ed25519_noclamp(q, n, p);
+    return crypto_scalarmult_ed25519(q, n, p);
 }
 
 int ecc_ed25519_scalarmult_base(byte_t *q, const byte_t *n) {
-    return crypto_scalarmult_ed25519_base_noclamp(q, n);
+    return crypto_scalarmult_ed25519_base(q, n);
 }
