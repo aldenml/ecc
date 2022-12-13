@@ -30,7 +30,7 @@
 #pragma GCC diagnostic pop
 #endif
 
-void ecc_h2c_expand_message_xmd_sha256(
+int ecc_h2c_expand_message_xmd_sha256(
     byte_t *out,
     const byte_t *msg, const int msg_len,
     const byte_t *dst, const int dst_len,
@@ -57,7 +57,7 @@ void ecc_h2c_expand_message_xmd_sha256(
 
     // Steps:
     // 1.  ell = ceil(len_in_bytes / b_in_bytes)
-    // 2.  ABORT if ell > 255
+    // 2.  ABORT if ell > 255 or len_in_bytes > 65535 or len(DST) > 255
     // 3.  DST_prime = DST || I2OSP(len(DST), 1)
     // 4.  Z_pad = I2OSP(0, r_in_bytes)
     // 5.  l_i_b_str = I2OSP(len_in_bytes, 2)
@@ -75,8 +75,9 @@ void ecc_h2c_expand_message_xmd_sha256(
     const double ellf = ceil((double) len_in_bytes / b_in_bytes);
     const int ell = (int) ellf;
 
-    // 2.  ABORT if ell > 255
-    // never happens because len_in_bytes is required to be <= 256
+    // 2.  ABORT if ell > 255 or len_in_bytes > 65535 or len(DST) > 255
+    if (ell > 255 || dst_len > ecc_h2c_expand_message_xmd_sha256_DSTMAXSIZE)
+        return -1;
 
     crypto_hash_sha256_state st;
     // the idea is to pass to the hash all the elements in the right order
@@ -131,8 +132,8 @@ void ecc_h2c_expand_message_xmd_sha256(
     // 9.  for i in (2, ..., ell):
     // 10.    b_i = H(strxor(b_0, b_(i - 1)) || I2OSP(i, 1) || DST_prime)
     // 11. uniform_bytes = b_1 || ... || b_ell
-    byte_t uniform_bytes[128] = {0};
-    // 256 is the max, I'm using memory tricks here to work directly
+    byte_t uniform_bytes[ecc_h2c_expand_message_xmd_sha256_MAXSIZE] = {0};
+    // I'm using memory tricks here to work directly
     // on uniform_bytes and avoid temporary variables
     memcpy(uniform_bytes, b_1, 32);
     for (int i = 2; i <= ell; i++) {
@@ -162,9 +163,11 @@ void ecc_h2c_expand_message_xmd_sha256(
     // stack memory cleanup
     ecc_memzero((byte_t *) &st, sizeof st);
     ecc_memzero(uniform_bytes, sizeof uniform_bytes);
+
+    return 0;
 }
 
-void ecc_h2c_expand_message_xmd_sha512(
+int ecc_h2c_expand_message_xmd_sha512(
     byte_t *out,
     const byte_t *msg, const int msg_len,
     const byte_t *dst, const int dst_len,
@@ -191,7 +194,7 @@ void ecc_h2c_expand_message_xmd_sha512(
 
     // Steps:
     // 1.  ell = ceil(len_in_bytes / b_in_bytes)
-    // 2.  ABORT if ell > 255
+    // 2.  ABORT if ell > 255 or len_in_bytes > 65535 or len(DST) > 255
     // 3.  DST_prime = DST || I2OSP(len(DST), 1)
     // 4.  Z_pad = I2OSP(0, r_in_bytes)
     // 5.  l_i_b_str = I2OSP(len_in_bytes, 2)
@@ -209,8 +212,9 @@ void ecc_h2c_expand_message_xmd_sha512(
     const double ellf = ceil((double) len_in_bytes / b_in_bytes);
     const int ell = (int) ellf;
 
-    // 2.  ABORT if ell > 255
-    // never happens because len_in_bytes is required to be <= 256
+    // 2.  ABORT if ell > 255 or len_in_bytes > 65535 or len(DST) > 255
+    if (ell > 255 || dst_len > ecc_h2c_expand_message_xmd_sha512_DSTMAXSIZE)
+        return -1;
 
     crypto_hash_sha512_state st;
     // the idea is to pass to the hash all the elements in the right order
@@ -265,8 +269,8 @@ void ecc_h2c_expand_message_xmd_sha512(
     // 9.  for i in (2, ..., ell):
     // 10.    b_i = H(strxor(b_0, b_(i - 1)) || I2OSP(i, 1) || DST_prime)
     // 11. uniform_bytes = b_1 || ... || b_ell
-    byte_t uniform_bytes[256] = {0};
-    // 256 is the max, I'm using memory tricks here to work directly
+    byte_t uniform_bytes[ecc_h2c_expand_message_xmd_sha512_MAXSIZE] = {0};
+    // I'm using memory tricks here to work directly
     // on uniform_bytes and avoid temporary variables
     memcpy(uniform_bytes, b_1, 64);
     for (int i = 2; i <= ell; i++) {
@@ -296,4 +300,6 @@ void ecc_h2c_expand_message_xmd_sha512(
     // stack memory cleanup
     ecc_memzero((byte_t *) &st, sizeof st);
     ecc_memzero(uniform_bytes, sizeof uniform_bytes);
+
+    return 0;
 }

@@ -108,6 +108,7 @@ void ecc_kdf_hkdf_sha512_expand(
  * @param block_size block size
  * @param parallelization parallelization
  * @param len intended output length
+ * @return 0 on success and -1 if the computation didn't complete
  */
 ECC_EXPORT
 int ecc_kdf_scrypt(
