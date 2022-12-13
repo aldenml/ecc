@@ -60,6 +60,12 @@
  */
 #define ecc_voprf_ristretto255_sha512_MODE_POPRF 2
 
+// const
+/**
+ *
+ */
+#define ecc_voprf_ristretto255_sha512_MAXINFOSIZE 2000
+
 /**
  *
  * @param[out] proof size:ecc_voprf_ristretto255_sha512_PROOFSIZE
@@ -169,6 +175,75 @@ void ecc_voprf_ristretto255_sha512_ComputeComposites(
     const byte_t *C,
     const byte_t *D,
     int m,
+    int mode
+);
+
+/**
+ * In the offline setup phase, the server key pair (skS, pkS) is generated using
+ * this function, which produces a randomly generate private and public key pair.
+ *
+ * @param[out] skS size:ecc_voprf_ristretto255_sha512_SCALARSIZE
+ * @param[out] pkS size:ecc_voprf_ristretto255_sha512_ELEMENTSIZE
+ */
+ECC_EXPORT
+void ecc_voprf_ristretto255_sha512_GenerateKeyPair(
+    byte_t *skS,
+    byte_t *pkS
+);
+
+/**
+ * Deterministically generate a key. It accepts a randomly generated seed of
+ * length Ns bytes and an optional (possibly empty) public info string.
+ *
+ * @param[out] skS size:ecc_voprf_ristretto255_sha512_SCALARSIZE
+ * @param[out] pkS size:ecc_voprf_ristretto255_sha512_ELEMENTSIZE
+ * @param seed size:ecc_voprf_ristretto255_sha512_SCALARSIZE
+ * @param info size:infoLen
+ * @param infoLen the size of `info`, it should be <= ecc_voprf_ristretto255_sha512_MAXINFOSIZE
+ * @return 0 on success, or -1 if an error
+ */
+ECC_EXPORT
+int ecc_voprf_ristretto255_sha512_DeriveKeyPair(
+    byte_t *skS,
+    byte_t *pkS,
+    byte_t *seed,
+    byte_t *info, int infoLen,
+    int mode
+);
+
+/**
+ * Same as calling `ecc_voprf_ristretto255_sha512_Blind` with an
+ * specified scalar blind.
+ *
+ * @param[out] blindedElement blinded element, size:ecc_voprf_ristretto255_sha512_ELEMENTSIZE
+ * @param input message to blind, size:inputLen
+ * @param inputLen length of `input`
+ * @param blind scalar to use in the blind operation, size:ecc_voprf_ristretto255_sha512_SCALARSIZE
+ * @param mode oprf mode
+ * @return 0 on success, or -1 if an error
+ */
+ECC_EXPORT
+int ecc_voprf_ristretto255_sha512_BlindWithScalar(
+    byte_t *blindedElement, // 32
+    const byte_t *input, int inputLen,
+    const byte_t *blind,
+    int mode
+);
+
+/**
+ *
+ * @param[out] blind scalar used in the blind operation, size:ecc_voprf_ristretto255_sha512_SCALARSIZE
+ * @param[out] blindedElement blinded element, size:ecc_voprf_ristretto255_sha512_ELEMENTSIZE
+ * @param input message to blind, size:inputLen
+ * @param inputLen length of `input`
+ * @param mode oprf mode
+ * @return 0 on success, or -1 if an error
+ */
+ECC_EXPORT
+int ecc_voprf_ristretto255_sha512_Blind(
+    byte_t *blind,
+    byte_t *blindedElement,
+    const byte_t *input, int inputLen,
     int mode
 );
 

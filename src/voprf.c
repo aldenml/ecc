@@ -599,6 +599,133 @@ void ecc_voprf_ristretto255_sha512_ComputeComposites(
     ecc_memzero(t, sizeof t);
 }
 
+void ecc_voprf_ristretto255_sha512_GenerateKeyPair(
+    byte_t *skS,
+    byte_t *pkS
+) {
+    // skS = G.RandomScalar()
+    // pkS = G.ScalarMultGen(skS)
+    // return skS, pkS
+
+    ecc_ristretto255_scalar_random(skS);
+    ecc_ristretto255_scalarmult_base(pkS, skS);
+}
+
+int ecc_voprf_ristretto255_sha512_DeriveKeyPair(
+    byte_t *skS,
+    byte_t *pkS,
+    byte_t *seed,
+    byte_t *info, int infoLen,
+    int mode
+) {
+    if (infoLen > ecc_voprf_ristretto255_sha512_MAXINFOSIZE)
+        return -1;
+
+    // deriveInput = seed || I2OSP(len(info), 2) || info
+    // counter = 0
+    // skS = 0
+    // while skS == 0:
+    //   if counter > 255:
+    //     raise DeriveKeyPairError
+    //   skS = G.HashToScalar(deriveInput || I2OSP(counter, 1),
+    //                         DST = "DeriveKeyPair" || contextString)
+    // counter = counter + 1
+    //  pkS = G.ScalarMultGen(skS)
+    //  return skS, pkS
+
+    // deriveInput = seed || I2OSP(len(info), 2) || info
+    byte_t deriveInput[2048];
+    int deriveInputLen = 0;
+    ecc_concat2(&deriveInput[deriveInputLen], seed, SCALARSIZE, NULL, 0);
+    deriveInputLen += SCALARSIZE;
+    ecc_I2OSP(&deriveInput[deriveInputLen], infoLen, 2);
+    deriveInputLen += 2;
+    ecc_concat2(&deriveInput[deriveInputLen], info, infoLen, NULL, 0);
+    deriveInputLen += infoLen;
+
+    // counter = 0
+    int counter = 0;
+    // skS = 0
+    ecc_memzero(skS, SCALARSIZE);
+
+    // while skS == 0:
+    //   if counter > 255:
+    //     raise DeriveKeyPairError
+    //   skS = G.HashToScalar(deriveInput || I2OSP(counter, 1),
+    //                         DST = "DeriveKeyPair" || contextString)
+    //   counter = counter + 1
+    byte_t DST[100];
+    byte_t DSTPrefix[13] = "DeriveKeyPair";
+    const int DSTLen = createContextString(
+        DST,
+        mode,
+        DSTPrefix, sizeof DSTPrefix
+    );
+    byte_t input[2048];
+    while (ecc_is_zero(skS, SCALARSIZE)) {
+        if (counter > 255) {
+            // stack memory cleanup
+            ecc_memzero(deriveInput, sizeof deriveInput);
+            ecc_memzero(input, sizeof input);
+            return -1;
+        }
+        int inputLen = 0;
+        ecc_concat2(&input[inputLen], deriveInput, deriveInputLen, NULL, 0);
+        inputLen += deriveInputLen;
+        ecc_I2OSP(&input[inputLen], counter, 1);
+        inputLen += 1;
+        ecc_voprf_ristretto255_sha512_HashToScalarWithDST(
+            skS,
+            input, inputLen,
+            DST, DSTLen
+        );
+
+        counter = counter + 1;
+    }
+
+    // pkS = G.ScalarMultGen(skS)
+    ecc_ristretto255_scalarmult_base(pkS, skS);
+
+    // stack memory cleanup
+    ecc_memzero(deriveInput, sizeof deriveInput);
+    ecc_memzero(input, sizeof input);
+
+    return 0;
+}
+
+int ecc_voprf_ristretto255_sha512_BlindWithScalar(
+    byte_t *blindedElement, // 32
+    const byte_t *input, const int inputLen,
+    const byte_t *blind,
+    const int mode
+) {
+    byte_t inputElement[ELEMENTSIZE];
+    ecc_voprf_ristretto255_sha512_HashToGroup(inputElement, input, inputLen, mode);
+    if (ecc_is_zero(inputElement, sizeof inputElement))
+        return -1;
+    ecc_ristretto255_scalarmult(blindedElement, blind, inputElement);
+
+    // stack memory cleanup
+    ecc_memzero(inputElement, sizeof inputElement);
+
+    return 0;
+}
+
+int ecc_voprf_ristretto255_sha512_Blind(
+    byte_t *blind,
+    byte_t *blindedElement,
+    const byte_t *input, const int inputLen,
+    const int mode
+) {
+    ecc_ristretto255_scalar_random(blind);
+    return ecc_voprf_ristretto255_sha512_BlindWithScalar(
+        blindedElement,
+        input, inputLen,
+        blind,
+        mode
+    );
+}
+
 void ecc_voprf_ristretto255_sha512_HashToGroupWithDST(
     byte_t *out,
     const byte_t *input, const int inputLen,
