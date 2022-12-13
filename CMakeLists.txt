@@ -157,6 +157,7 @@ set(ecc_src_files
     src/bls12_381.h src/bls12_381.c
     src/h2c.h src/h2c.c
     src/oprf.h src/oprf.c
+    src/voprf.h src/voprf.c
     src/opaque.h src/opaque.c
     src/sign.h src/sign.c
     src/frost.h src/frost.c
