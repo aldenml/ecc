@@ -437,6 +437,52 @@ int ecc_voprf_ristretto255_sha512_PartiallyBlindEvaluate(
 );
 
 /**
+ *
+ * @param[out] output size:ecc_voprf_ristretto255_sha512_Nh
+ * @param input the input message, size:inputLen
+ * @param inputLen the length of `input`
+ * @param blind size:ecc_voprf_ristretto255_sha512_SCALARSIZE
+ * @param evaluatedElement size:ecc_voprf_ristretto255_sha512_ELEMENTSIZE
+ * @param blindedElement size:ecc_voprf_ristretto255_sha512_ELEMENTSIZE
+ * @param proof size:ecc_voprf_ristretto255_sha512_PROOFSIZE
+ * @param info message to blind, size:infoLen
+ * @param infoLen length of `info`, it should be <= ecc_voprf_ristretto255_sha512_MAXINFOSIZE
+ * @param tweakedKey blinded element, size:ecc_voprf_ristretto255_sha512_ELEMENTSIZE
+ * @return 0 on success, or -1 if an error
+ */
+ECC_EXPORT
+int ecc_voprf_ristretto255_sha512_PartiallyFinalize(
+    byte_t *output,
+    const byte_t *input, int inputLen,
+    const byte_t *blind,
+    const byte_t *evaluatedElement,
+    const byte_t *blindedElement,
+    const byte_t *proof,
+    const byte_t *info, int infoLen,
+    const byte_t *tweakedKey
+);
+
+/**
+ * An entity which knows both the secret key and the input can compute the PRF
+ * result using this function.
+ *
+ * @param[out] output size:ecc_voprf_ristretto255_sha512_Nh
+ * @param skS size:ecc_voprf_ristretto255_sha512_SCALARSIZE
+ * @param input the input message, size:inputLen
+ * @param inputLen the length of `input`
+ * @param info message to blind, size:infoLen
+ * @param infoLen length of `info`, it should be <= ecc_voprf_ristretto255_sha512_MAXINFOSIZE
+ * @return 0 on success, or -1 if an error
+ */
+ECC_EXPORT
+int ecc_voprf_ristretto255_sha512_PartiallyEvaluate(
+    byte_t *output,
+    const byte_t *skS,
+    const byte_t *input, int inputLen,
+    const byte_t *info, int infoLen
+);
+
+/**
  * Same as calling `ecc_voprf_ristretto255_sha512_HashToGroup` with an
  * specified DST string.
  *

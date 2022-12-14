@@ -1173,6 +1173,205 @@ int ecc_voprf_ristretto255_sha512_PartiallyBlindEvaluate(
     return ret;
 }
 
+int ecc_voprf_ristretto255_sha512_PartiallyFinalize(
+    byte_t *output,
+    const byte_t *input, int inputLen,
+    const byte_t *blind,
+    const byte_t *evaluatedElement,
+    const byte_t *blindedElement,
+    const byte_t *proof,
+    const byte_t *info, int infoLen,
+    const byte_t *tweakedKey
+) {
+    if (infoLen > ecc_voprf_ristretto255_sha512_MAXINFOSIZE)
+        return -1;
+
+    // evaluatedElements = [evaluatedElement] // list of length 1
+    // blindedElements = [blindedElement]     // list of length 1
+    // if VerifyProof(G.Generator(), tweakedKey, evaluatedElements,
+    //                blindedElements, proof) == false:
+    //   raise VerifyError
+    //
+    // N = G.ScalarInverse(blind) * evaluatedElement
+    // unblindedElement = G.SerializeElement(N)
+    //
+    // hashInput = I2OSP(len(input), 2) || input ||
+    //             I2OSP(len(info), 2) || info ||
+    //             I2OSP(len(unblindedElement), 2) || unblindedElement ||
+    //             "Finalize"
+    // return Hash(hashInput)
+
+    byte_t generator[ELEMENTSIZE];
+    ecc_ristretto255_generator(generator);
+
+    int verification = ecc_voprf_ristretto255_sha512_VerifyProof(
+        generator, tweakedKey,
+        evaluatedElement, blindedElement, 1,
+        MODE_POPRF,
+        proof
+    );
+
+    if (verification == 0)
+        return -1;
+
+    // N = G.ScalarInverse(blind) * evaluatedElement
+    // unblindedElement = G.SerializeElement(N)
+    byte_t blindInverted[SCALARSIZE];
+    byte_t unblindedElement[ELEMENTSIZE];
+    ecc_ristretto255_scalar_invert(blindInverted, blind); // blind^(-1)
+    ecc_ristretto255_scalarmult(unblindedElement, blindInverted, evaluatedElement);
+
+    // hashInput = I2OSP(len(input), 2) || input ||
+    //             I2OSP(len(info), 2) || info ||
+    //             I2OSP(len(unblindedElement), 2) || unblindedElement ||
+    //             "Finalize"
+
+    crypto_hash_sha512_state st;
+    crypto_hash_sha512_init(&st);
+
+    byte_t tmp[2];
+    // I2OSP(len(input), 2)
+    ecc_I2OSP(tmp, inputLen, 2);
+    crypto_hash_sha512_update(&st, tmp, 2);
+    // input
+    crypto_hash_sha512_update(&st, input, (unsigned long long) inputLen);
+    // I2OSP(len(info), 2)
+    ecc_I2OSP(tmp, infoLen, 2);
+    crypto_hash_sha512_update(&st, tmp, 2);
+    // info
+    crypto_hash_sha512_update(&st, info, (unsigned long long) infoLen);
+    // I2OSP(len(unblindedElement), 2)
+    ecc_I2OSP(tmp, ELEMENTSIZE, 2);
+    crypto_hash_sha512_update(&st, tmp, 2);
+    // unblindedElement
+    crypto_hash_sha512_update(&st, unblindedElement, ELEMENTSIZE);
+    // "Finalize"
+    byte_t finalizeString[8] = "Finalize";
+    crypto_hash_sha512_update(&st, finalizeString, sizeof finalizeString);
+
+    // return Hash(hashInput)
+    crypto_hash_sha512_final(&st, output);
+
+    // stack memory cleanup
+    ecc_memzero(blindInverted, sizeof blindInverted);
+    ecc_memzero(unblindedElement, sizeof unblindedElement);
+    ecc_memzero((byte_t *) &st, sizeof st);
+
+    return 0;
+}
+
+int ecc_voprf_ristretto255_sha512_PartiallyEvaluate(
+    byte_t *output,
+    const byte_t *skS,
+    const byte_t *input, int inputLen,
+    const byte_t *info, int infoLen
+) {
+    if (infoLen > ecc_voprf_ristretto255_sha512_MAXINFOSIZE)
+        return -1;
+
+    // inputElement = G.HashToGroup(input)
+    // if inputElement == G.Identity():
+    // raise InvalidInputError
+    //
+    // framedInfo = "Info" || I2OSP(len(info), 2) || info
+    // m = G.HashToScalar(framedInfo)
+    // t = skS + m
+    // if t == 0:
+    //   raise InverseError
+    // evaluatedElement = G.ScalarInverse(t) * inputElement
+    // issuedElement = G.SerializeElement(evaluatedElement)
+    //
+    // hashInput = I2OSP(len(input), 2) || input ||
+    //             I2OSP(len(info), 2) || info ||
+    //             I2OSP(len(issuedElement), 2) || issuedElement ||
+    //             "Finalize"
+    // return Hash(hashInput)
+
+    // inputElement = G.HashToGroup(input)
+    // if inputElement == G.Identity():
+    //   raise InvalidInputError
+    byte_t inputElement[ELEMENTSIZE];
+    ecc_voprf_ristretto255_sha512_HashToGroup(inputElement, input, inputLen, MODE_POPRF);
+    if (ecc_is_zero(inputElement, sizeof inputElement))
+        return -1;
+
+    // framedInfo = "Info" || I2OSP(len(info), 2) || info
+    byte_t infoString[4] = "Info";
+    byte_t framedInfo[2048];
+    int framedInfoLen = 0;
+    ecc_concat2(&framedInfo[framedInfoLen], infoString, sizeof infoString, NULL, 0);
+    framedInfoLen += sizeof infoString;
+    ecc_I2OSP(&framedInfo[framedInfoLen], infoLen, 2);
+    framedInfoLen += 2;
+    ecc_concat2(&framedInfo[framedInfoLen], info, infoLen, NULL, 0);
+    framedInfoLen += infoLen;
+
+    // m = G.HashToScalar(framedInfo)
+    byte_t m[SCALARSIZE];
+    ecc_voprf_ristretto255_sha512_HashToScalar(m, framedInfo, framedInfoLen, MODE_POPRF);
+
+    // t = skS + m
+    // if t == 0:
+    //   raise InverseError
+    byte_t t[SCALARSIZE];
+    ecc_ristretto255_scalar_add(t, skS, m);
+    if (ecc_is_zero(t, sizeof t)) {
+        // stack memory cleanup
+        ecc_memzero(inputElement, sizeof inputElement);
+        ecc_memzero(framedInfo, sizeof framedInfo);
+        ecc_memzero(m, sizeof m);
+        return -1;
+    }
+
+    // evaluatedElement = G.ScalarInverse(t) * inputElement
+    // issuedElement = G.SerializeElement(evaluatedElement)
+    byte_t tInverted[SCALARSIZE];
+    byte_t issuedElement[ELEMENTSIZE];
+    ecc_ristretto255_scalar_invert(tInverted, t); // t^(-1)
+    ecc_ristretto255_scalarmult(issuedElement, tInverted, inputElement);
+
+    // hashInput = I2OSP(len(input), 2) || input ||
+    //             I2OSP(len(info), 2) || info ||
+    //             I2OSP(len(issuedElement), 2) || issuedElement ||
+    //             "Finalize"
+
+    crypto_hash_sha512_state st;
+    crypto_hash_sha512_init(&st);
+
+    byte_t tmp[2];
+    // I2OSP(len(input), 2)
+    ecc_I2OSP(tmp, inputLen, 2);
+    crypto_hash_sha512_update(&st, tmp, 2);
+    // input
+    crypto_hash_sha512_update(&st, input, (unsigned long long) inputLen);
+    // I2OSP(len(info), 2)
+    ecc_I2OSP(tmp, infoLen, 2);
+    crypto_hash_sha512_update(&st, tmp, 2);
+    // info
+    crypto_hash_sha512_update(&st, info, (unsigned long long) infoLen);
+    // I2OSP(len(issuedElement), 2)
+    ecc_I2OSP(tmp, ELEMENTSIZE, 2);
+    crypto_hash_sha512_update(&st, tmp, 2);
+    // issuedElement
+    crypto_hash_sha512_update(&st, issuedElement, ELEMENTSIZE);
+    // "Finalize"
+    byte_t finalizeString[8] = "Finalize";
+    crypto_hash_sha512_update(&st, finalizeString, sizeof finalizeString);
+
+    // return Hash(hashInput)
+    crypto_hash_sha512_final(&st, output);
+
+    // stack memory cleanup
+    ecc_memzero(inputElement, sizeof inputElement);
+    ecc_memzero(framedInfo, sizeof framedInfo);
+    ecc_memzero(m, sizeof m);
+    ecc_memzero(tInverted, sizeof tInverted);
+    ecc_memzero(issuedElement, sizeof issuedElement);
+    ecc_memzero((byte_t *) &st, sizeof st);
+
+    return 0;
+}
+
 void ecc_voprf_ristretto255_sha512_HashToGroupWithDST(
     byte_t *out,
     const byte_t *input, const int inputLen,

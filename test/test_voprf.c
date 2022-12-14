@@ -300,19 +300,30 @@ static void test_ecc_voprf_ristretto255_sha512_poprf(void **state) {
         assert_memory_equal(evaluatedElement, EvaluationElement, sizeof evaluatedElement);
         assert_memory_equal(proof, Proof, sizeof proof);
 
-//        byte_t output[ecc_voprf_ristretto255_sha512_Nh];
-//        r = ecc_voprf_ristretto255_sha512_VerifiableFinalize(
-//            output,
-//            Input, InputLen,
-//            Blind,
-//            evaluatedElement,
-//            blindedElement,
-//            pkSm,
-//            proof
-//        );
-//
-//        assert_int_equal(r, 0);
-//        assert_memory_equal(output, Output, sizeof output);
+        byte_t output[ecc_voprf_ristretto255_sha512_Nh];
+        r = ecc_voprf_ristretto255_sha512_PartiallyFinalize(
+            output,
+            Input, InputLen,
+            Blind,
+            evaluatedElement,
+            blindedElement,
+            proof,
+            Info, InfoLen,
+            tweakedKey
+        );
+
+        assert_int_equal(r, 0);
+        assert_memory_equal(output, Output, sizeof output);
+
+        // move verifications
+        r = ecc_voprf_ristretto255_sha512_PartiallyEvaluate(
+            output,
+            skSm,
+            Input, InputLen,
+            Info, InfoLen
+        );
+        assert_int_equal(r, 0);
+        assert_memory_equal(output, Output, sizeof output);
     }
 
     ecc_json_destroy(json);
