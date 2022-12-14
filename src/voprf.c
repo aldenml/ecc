@@ -1058,6 +1058,121 @@ int ecc_voprf_ristretto255_sha512_PartiallyBlind(
     );
 }
 
+int ecc_voprf_ristretto255_sha512_PartiallyBlindEvaluateWithScalar(
+    byte_t *evaluatedElement,
+    byte_t *proof,
+    const byte_t *skS,
+    const byte_t *blindedElement,
+    const byte_t *info, int infoLen,
+    const byte_t *r
+) {
+    if (infoLen > ecc_voprf_ristretto255_sha512_MAXINFOSIZE)
+        return -1;
+
+    // framedInfo = "Info" || I2OSP(len(info), 2) || info
+    // m = G.HashToScalar(framedInfo)
+    // t = skS + m
+    // if t == 0:
+    //   raise InverseError
+    //
+    // evaluatedElement = G.ScalarInverse(t) * blindedElement
+    //
+    // tweakedKey = G.ScalarMultGen(t)
+    // evaluatedElements = [evaluatedElement] // list of length 1
+    // blindedElements = [blindedElement]     // list of length 1
+    // proof = GenerateProof(t, G.Generator(), tweakedKey,
+    //                       evaluatedElements, blindedElements)
+    //
+    // return evaluatedElement, proof
+
+    // framedInfo = "Info" || I2OSP(len(info), 2) || info
+    byte_t infoString[4] = "Info";
+    byte_t framedInfo[2048];
+    int framedInfoLen = 0;
+    ecc_concat2(&framedInfo[framedInfoLen], infoString, sizeof infoString, NULL, 0);
+    framedInfoLen += sizeof infoString;
+    ecc_I2OSP(&framedInfo[framedInfoLen], infoLen, 2);
+    framedInfoLen += 2;
+    ecc_concat2(&framedInfo[framedInfoLen], info, infoLen, NULL, 0);
+    framedInfoLen += infoLen;
+
+    // m = G.HashToScalar(framedInfo)
+    byte_t m[SCALARSIZE];
+    ecc_voprf_ristretto255_sha512_HashToScalar(m, framedInfo, framedInfoLen, MODE_POPRF);
+
+    // t = skS + m
+    // if t == 0:
+    //   raise InverseError
+    byte_t t[SCALARSIZE];
+    ecc_ristretto255_scalar_add(t, skS, m);
+    if (ecc_is_zero(t, sizeof t)) {
+        // stack memory cleanup
+        ecc_memzero(framedInfo, framedInfoLen);
+        ecc_memzero(m, sizeof m);
+        return -1;
+    }
+
+    // evaluatedElement = G.ScalarInverse(t) * blindedElement
+    byte_t tInverted[SCALARSIZE];
+    ecc_ristretto255_scalar_invert(tInverted, t); // tInverted^(-1)
+    ecc_ristretto255_scalarmult(evaluatedElement, tInverted, blindedElement);
+
+    // tweakedKey = G.ScalarMultGen(t)
+    byte_t tweakedKey[ELEMENTSIZE];
+    ecc_ristretto255_scalarmult_base(tweakedKey, t);
+
+    // evaluatedElements = [evaluatedElement] // list of length 1
+    // blindedElements = [blindedElement]     // list of length 1
+    // proof = GenerateProof(t, G.Generator(), tweakedKey,
+    //                       evaluatedElements, blindedElements)
+    byte_t generator[ELEMENTSIZE];
+    ecc_ristretto255_generator(generator);
+
+    ecc_voprf_ristretto255_sha512_GenerateProofWithScalar(
+        proof,
+        t,
+        generator, tweakedKey,
+        evaluatedElement, blindedElement, 1,
+        MODE_POPRF,
+        r
+    );
+
+    // return evaluatedElement, proof
+
+    // stack memory cleanup
+    ecc_memzero(framedInfo, framedInfoLen);
+    ecc_memzero(m, sizeof m);
+    ecc_memzero(tInverted, sizeof tInverted);
+    ecc_memzero(tweakedKey, sizeof tweakedKey);
+
+    return 0;
+}
+
+int ecc_voprf_ristretto255_sha512_PartiallyBlindEvaluate(
+    byte_t *evaluatedElement,
+    byte_t *proof,
+    const byte_t *skS,
+    const byte_t *blindedElement,
+    const byte_t *info, int infoLen
+) {
+    byte_t r[SCALARSIZE];
+    ecc_ristretto255_scalar_random(r);
+
+    int ret = ecc_voprf_ristretto255_sha512_PartiallyBlindEvaluateWithScalar(
+        evaluatedElement,
+        proof,
+        skS,
+        blindedElement,
+        info, infoLen,
+        r
+    );
+
+    // stack memory cleanup
+    ecc_memzero(r, sizeof r);
+
+    return ret;
+}
+
 void ecc_voprf_ristretto255_sha512_HashToGroupWithDST(
     byte_t *out,
     const byte_t *input, const int inputLen,

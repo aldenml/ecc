@@ -286,20 +286,20 @@ static void test_ecc_voprf_ristretto255_sha512_poprf(void **state) {
         assert_int_equal(r, 0);
         assert_memory_equal(blindedElement, BlindedElement, sizeof blindedElement);
 
-//        byte_t evaluatedElement[ecc_voprf_ristretto255_sha512_ELEMENTSIZE];
-//        byte_t proof[ecc_voprf_ristretto255_sha512_PROOFSIZE];
-//        ecc_voprf_ristretto255_sha512_ParVerifiableBlindEvaluateWithScalar(
-//            evaluatedElement,
-//            proof,
-//            skSm,
-//            pkSm,
-//            blindedElement,
-//            ProofRandomScalar
-//        );
-//
-//        assert_memory_equal(evaluatedElement, EvaluationElement, sizeof evaluatedElement);
-//        assert_memory_equal(proof, Proof, sizeof proof);
-//
+        byte_t evaluatedElement[ecc_voprf_ristretto255_sha512_ELEMENTSIZE];
+        byte_t proof[ecc_voprf_ristretto255_sha512_PROOFSIZE];
+        ecc_voprf_ristretto255_sha512_PartiallyBlindEvaluateWithScalar(
+            evaluatedElement,
+            proof,
+            skSm,
+            blindedElement,
+            Info, InfoLen,
+            ProofRandomScalar
+        );
+
+        assert_memory_equal(evaluatedElement, EvaluationElement, sizeof evaluatedElement);
+        assert_memory_equal(proof, Proof, sizeof proof);
+
 //        byte_t output[ecc_voprf_ristretto255_sha512_Nh];
 //        r = ecc_voprf_ristretto255_sha512_VerifiableFinalize(
 //            output,

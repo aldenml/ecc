@@ -397,6 +397,46 @@ int ecc_voprf_ristretto255_sha512_PartiallyBlind(
 );
 
 /**
+ *
+ * @param[out] evaluatedElement size:ecc_voprf_ristretto255_sha512_ELEMENTSIZE
+ * @param[out] proof size:ecc_voprf_ristretto255_sha512_PROOFSIZE
+ * @param skS size:ecc_voprf_ristretto255_sha512_SCALARSIZE
+ * @param blindedElement size:ecc_voprf_ristretto255_sha512_ELEMENTSIZE
+ * @param info message to blind, size:infoLen
+ * @param infoLen length of `info`, it should be <= ecc_voprf_ristretto255_sha512_MAXINFOSIZE
+ * @param r size:ecc_voprf_ristretto255_sha512_SCALARSIZE
+ * @return 0 on success, or -1 if an error
+ */
+ECC_EXPORT
+int ecc_voprf_ristretto255_sha512_PartiallyBlindEvaluateWithScalar(
+    byte_t *evaluatedElement,
+    byte_t *proof,
+    const byte_t *skS,
+    const byte_t *blindedElement,
+    const byte_t *info, int infoLen,
+    const byte_t *r
+);
+
+/**
+ *
+ * @param[out] evaluatedElement size:ecc_voprf_ristretto255_sha512_ELEMENTSIZE
+ * @param[out] proof size:ecc_voprf_ristretto255_sha512_PROOFSIZE
+ * @param skS size:ecc_voprf_ristretto255_sha512_SCALARSIZE
+ * @param blindedElement size:ecc_voprf_ristretto255_sha512_ELEMENTSIZE
+ * @param info message to blind, size:infoLen
+ * @param infoLen length of `info`, it should be <= ecc_voprf_ristretto255_sha512_MAXINFOSIZE
+ * @return 0 on success, or -1 if an error
+ */
+ECC_EXPORT
+int ecc_voprf_ristretto255_sha512_PartiallyBlindEvaluate(
+    byte_t *evaluatedElement,
+    byte_t *proof,
+    const byte_t *skS,
+    const byte_t *blindedElement,
+    const byte_t *info, int infoLen
+);
+
+/**
  * Same as calling `ecc_voprf_ristretto255_sha512_HashToGroup` with an
  * specified DST string.
  *
