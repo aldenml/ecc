@@ -248,6 +248,52 @@ int ecc_voprf_ristretto255_sha512_Blind(
 );
 
 /**
+ *
+ * @param[out] evaluatedElement blinded element, size:ecc_voprf_ristretto255_sha512_ELEMENTSIZE
+ * @param skS scalar used in the blind operation, size:ecc_voprf_ristretto255_sha512_SCALARSIZE
+ * @param blindedElement blinded element, size:ecc_voprf_ristretto255_sha512_ELEMENTSIZE
+ */
+ECC_EXPORT
+void ecc_voprf_ristretto255_sha512_BlindEvaluate(
+    byte_t *evaluatedElement,
+    const byte_t *skS,
+    const byte_t *blindedElement
+);
+
+/**
+ *
+ * @param[out] output size:ecc_voprf_ristretto255_sha512_Nh
+ * @param input the input message, size:inputLen
+ * @param inputLen the length of `input`
+ * @param blind size:ecc_voprf_ristretto255_sha512_SCALARSIZE
+ * @param evaluatedElement size:ecc_voprf_ristretto255_sha512_ELEMENTSIZE
+ */
+ECC_EXPORT
+void ecc_voprf_ristretto255_sha512_Finalize(
+    byte_t *output,
+    const byte_t *input, int inputLen,
+    const byte_t *blind,
+    const byte_t *evaluatedElement
+);
+
+/**
+ *
+ * @param[out] output size:ecc_voprf_ristretto255_sha512_Nh
+ * @param skS size:ecc_voprf_ristretto255_sha512_SCALARSIZE
+ * @param input the input message, size:inputLen
+ * @param inputLen the length of `input`
+ * @param mode oprf mode
+ * @return 0 on success, or -1 if an error
+ */
+ECC_EXPORT
+int ecc_voprf_ristretto255_sha512_Evaluate(
+    byte_t *output,
+    const byte_t *skS,
+    const byte_t *input, int inputLen,
+    int mode
+);
+
+/**
  * Same as calling `ecc_voprf_ristretto255_sha512_HashToGroup` with an
  * specified DST string.
  *

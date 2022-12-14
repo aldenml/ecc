@@ -1,0 +1,14 @@
+{
+  "Seed": "a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3",
+  "KeyInfo": "74657374206b6579",
+  "skSm": "e617ae6f2d10de61e16cab73023c5a2df74335d13f89470957214664468d2e0b",
+  "vectors": [
+    {
+      "Input": "00",
+      "Blind": "64d37aed22a27f5191de1c1d69fadb899d8862b58eb4220029e036ec4c1f6706",
+      "BlindedElement": "c83d0d8a3e80be2ced8bf35c5f3e24d42260ca8fa9a0403ca83033588c26614d",
+      "EvaluationElement": "b29ca44d6dfafc77a50b72abc53cfb7abcbe9cf6714afc76893ee8dcaf053b59",
+      "Output": "8a19c9b8f4459d541ebbfff4e29f36620e44e825a27b0f2e3a3c0d8e963588ee04348312dc8b43a48c41d4e7d904f95c91813a6b4f624392433f0568409da628"
+    }
+  ]
+}
