@@ -8,6 +8,9 @@
 #ifndef ECC_OPRF_H
 #define ECC_OPRF_H
 
+// NOTE: Deprecated, only used in the current OPAQUE implementation until
+// that is updated.
+
 #include "export.h"
 
 // const

@@ -17,7 +17,6 @@
 #include "ristretto255.h"
 #include "bls12_381.h"
 #include "h2c.h"
-#include "oprf.h"
 #include "voprf.h"
 #include "opaque.h"
 #include "sign.h"

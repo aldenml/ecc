@@ -163,8 +163,8 @@ int ecc_voprf_ristretto255_sha512_VerifyProof(
  * @param[out] M size:ecc_voprf_ristretto255_sha512_ELEMENTSIZE
  * @param[out] Z size:ecc_voprf_ristretto255_sha512_ELEMENTSIZE
  * @param B size:ecc_voprf_ristretto255_sha512_ELEMENTSIZE
- * @param C size:m*ecc_oprf_ristretto255_sha512_ELEMENTSIZE
- * @param D size:m*ecc_oprf_ristretto255_sha512_ELEMENTSIZE
+ * @param C size:m*ecc_voprf_ristretto255_sha512_ELEMENTSIZE
+ * @param D size:m*ecc_voprf_ristretto255_sha512_ELEMENTSIZE
  * @param m the size of the `C` and `D` arrays
  */
 ECC_EXPORT
