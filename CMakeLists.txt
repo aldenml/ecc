@@ -198,14 +198,14 @@ if(NOT DEFINED EMSCRIPTEN)
     set_extra_compiler_flags(ecc_static)
 
     # jvm
-    add_library(ecc-jvm SHARED
-        bindings/jvm/jni.h
-        bindings/jvm/libecc.c
-    )
-
-    target_compile_features(ecc-jvm PUBLIC c_std_11)
-    target_compile_options(ecc-jvm PRIVATE -O2)
-    target_link_libraries(ecc-jvm PRIVATE ecc_static)
+#    add_library(ecc-jvm SHARED
+#        bindings/jvm/jni.h
+#        bindings/jvm/libecc.c
+#    )
+#
+#    target_compile_features(ecc-jvm PUBLIC c_std_11)
+#    target_compile_options(ecc-jvm PRIVATE -O2)
+#    target_link_libraries(ecc-jvm PRIVATE ecc_static)
 endif()
 
 # unit tests
