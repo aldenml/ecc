@@ -842,6 +842,112 @@ int ecc_voprf_ristretto255_sha512_Evaluate(
     return 0;
 }
 
+void ecc_voprf_ristretto255_sha512_VerifiableBlindEvaluateWithScalar(
+    byte_t *evaluatedElement,
+    byte_t *proof,
+    const byte_t *skS,
+    const byte_t *pkS,
+    const byte_t *blindedElement,
+    const byte_t *r
+) {
+    // evaluatedElement = skS * blindedElement
+    // blindedElements = [blindedElement]     // list of length 1
+    // evaluatedElements = [evaluatedElement] // list of length 1
+    // proof = GenerateProof(skS, G.Generator(), pkS,
+    //                       blindedElements, evaluatedElements)
+    // return evaluatedElement, proof
+
+    // evaluatedElement = skS * blindedElement
+    ecc_ristretto255_scalarmult(evaluatedElement, skS, blindedElement);
+
+    byte_t generator[ELEMENTSIZE];
+    ecc_ristretto255_generator(generator);
+
+    ecc_voprf_ristretto255_sha512_GenerateProofWithScalar(
+        proof,
+        skS,
+        generator, pkS,
+        blindedElement, evaluatedElement, 1,
+        ecc_voprf_ristretto255_sha512_MODE_VOPRF,
+        r
+    );
+}
+
+void ecc_voprf_ristretto255_sha512_VerifiableBlindEvaluate(
+    byte_t *evaluatedElement,
+    byte_t *proof,
+    const byte_t *skS,
+    const byte_t *pkS,
+    const byte_t *blindedElement
+) {
+    // evaluatedElement = skS * blindedElement
+    // blindedElements = [blindedElement]     // list of length 1
+    // evaluatedElements = [evaluatedElement] // list of length 1
+    // proof = GenerateProof(skS, G.Generator(), pkS,
+    //                       blindedElements, evaluatedElements)
+    // return evaluatedElement, proof
+
+    // evaluatedElement = skS * blindedElement
+    ecc_ristretto255_scalarmult(evaluatedElement, skS, blindedElement);
+
+    byte_t generator[ELEMENTSIZE];
+    ecc_ristretto255_generator(generator);
+
+    ecc_voprf_ristretto255_sha512_GenerateProof(
+        proof,
+        skS,
+        generator, pkS,
+        blindedElement, evaluatedElement, 1,
+        ecc_voprf_ristretto255_sha512_MODE_VOPRF
+    );
+}
+
+int ecc_voprf_ristretto255_sha512_VerifiableFinalize(
+    byte_t *output,
+    const byte_t *input, int inputLen,
+    const byte_t *blind,
+    const byte_t *evaluatedElement,
+    const byte_t *blindedElement,
+    const byte_t *pkS,
+    const byte_t *proof
+) {
+    // blindedElements = [blindedElement]     // list of length 1
+    // evaluatedElements = [evaluatedElement] // list of length 1
+    // if VerifyProof(G.Generator(), pkS, blindedElements,
+    //                evaluatedElements, proof) == false:
+    // raise VerifyError
+    //
+    // N = G.ScalarInverse(blind) * evaluatedElement
+    // unblindedElement = G.SerializeElement(N)
+    //
+    // hashInput = I2OSP(len(input), 2) || input ||
+    //             I2OSP(len(unblindedElement), 2) || unblindedElement ||
+    //             "Finalize"
+    // return Hash(hashInput)
+
+    byte_t generator[ELEMENTSIZE];
+    ecc_ristretto255_generator(generator);
+
+    int verification = ecc_voprf_ristretto255_sha512_VerifyProof(
+        generator, pkS,
+        blindedElement, evaluatedElement, 1,
+        ecc_voprf_ristretto255_sha512_MODE_VOPRF,
+        proof
+    );
+
+    if (verification == 0)
+        return -1;
+
+    ecc_voprf_ristretto255_sha512_Finalize(
+        output,
+        input, inputLen,
+        blind,
+        evaluatedElement
+    );
+
+    return 0;
+}
+
 void ecc_voprf_ristretto255_sha512_HashToGroupWithDST(
     byte_t *out,
     const byte_t *input, const int inputLen,

@@ -294,6 +294,67 @@ int ecc_voprf_ristretto255_sha512_Evaluate(
 );
 
 /**
+ *
+ * @param[out] evaluatedElement size:ecc_voprf_ristretto255_sha512_ELEMENTSIZE
+ * @param[out] proof size:ecc_voprf_ristretto255_sha512_PROOFSIZE
+ * @param skS size:ecc_voprf_ristretto255_sha512_SCALARSIZE
+ * @param pkS size:ecc_voprf_ristretto255_sha512_ELEMENTSIZE
+ * @param blindedElement size:ecc_voprf_ristretto255_sha512_ELEMENTSIZE
+ * @param r size:ecc_voprf_ristretto255_sha512_SCALARSIZE
+ */
+ECC_EXPORT
+void ecc_voprf_ristretto255_sha512_VerifiableBlindEvaluateWithScalar(
+    byte_t *evaluatedElement,
+    byte_t *proof,
+    const byte_t *skS,
+    const byte_t *pkS,
+    const byte_t *blindedElement,
+    const byte_t *r
+);
+
+/**
+ *
+ * @param[out] evaluatedElement size:ecc_voprf_ristretto255_sha512_ELEMENTSIZE
+ * @param[out] proof size:ecc_voprf_ristretto255_sha512_PROOFSIZE
+ * @param skS size:ecc_voprf_ristretto255_sha512_SCALARSIZE
+ * @param pkS size:ecc_voprf_ristretto255_sha512_ELEMENTSIZE
+ * @param blindedElement size:ecc_voprf_ristretto255_sha512_ELEMENTSIZE
+ */
+ECC_EXPORT
+void ecc_voprf_ristretto255_sha512_VerifiableBlindEvaluate(
+    byte_t *evaluatedElement,
+    byte_t *proof,
+    const byte_t *skS,
+    const byte_t *pkS,
+    const byte_t *blindedElement
+);
+
+/**
+ *
+ * @param[out] output size:ecc_voprf_ristretto255_sha512_Nh
+ * @param input the input message, size:inputLen
+ * @param inputLen the length of `input`
+ * @param blind size:ecc_voprf_ristretto255_sha512_SCALARSIZE
+ * @param evaluatedElement size:ecc_voprf_ristretto255_sha512_ELEMENTSIZE
+ * @param blindedElement size:ecc_voprf_ristretto255_sha512_ELEMENTSIZE
+ * @param pkS size:ecc_voprf_ristretto255_sha512_ELEMENTSIZE
+ * @param proof size:ecc_voprf_ristretto255_sha512_PROOFSIZE
+ * @return 0 on success, or -1 if an error
+ */
+ECC_EXPORT
+int ecc_voprf_ristretto255_sha512_VerifiableFinalize(
+    byte_t *output,
+    const byte_t *input, int inputLen,
+    const byte_t *blind,
+    const byte_t *evaluatedElement,
+    const byte_t *blindedElement,
+    const byte_t *pkS,
+    const byte_t *proof
+);
+
+// partially
+
+/**
  * Same as calling `ecc_voprf_ristretto255_sha512_HashToGroup` with an
  * specified DST string.
  *
