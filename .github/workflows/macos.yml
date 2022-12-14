@@ -46,12 +46,12 @@ jobs:
           ./build-c.sh
           otool -L build/libecc.dylib
 
-      - name: jvm tests
-        run: |
-          otool -L bindings/jvm/libecc-jvm.dylib
-          cd bindings/jvm
-          ./gradlew test
-          cd ../..
+#      - name: jvm tests
+#        run: |
+#          otool -L bindings/jvm/libecc-jvm.dylib
+#          cd bindings/jvm
+#          ./gradlew test
+#          cd ../..
 
 #      - name: python wheel
 #        run: |
@@ -71,6 +71,6 @@ jobs:
           name: ecc-macos-x86_64
           path: |
             build/libecc.dylib
-            build/libecc-jvm.dylib
+#            build/libecc-jvm.dylib
 #            bindings/python/src/libecc/_libecc_cffi.*.so
           retention-days: 5

@@ -39,12 +39,12 @@ jobs:
           ctest -C "Release" --rerun-failed --output-on-failure
           cd ..
 
-      - name: jvm tests
-        run: |
-          readelf -d bindings/jvm/libecc-jvm.so
-          cd bindings/jvm
-          ./gradlew test
-          cd ../..
+#      - name: jvm tests
+#        run: |
+#          readelf -d bindings/jvm/libecc-jvm.so
+#          cd bindings/jvm
+#          ./gradlew test
+#          cd ../..
 
 #      - name: python wheel
 #        run: |
@@ -64,6 +64,6 @@ jobs:
           name: ecc-linux-x86_64
           path: |
             build/libecc.so
-            build/libecc-jvm.so
+#            build/libecc-jvm.so
 #            bindings/python/src/libecc/_libecc_cffi.*.so
           retention-days: 5

@@ -10,4 +10,4 @@ popd
 cmake -DCMAKE_BUILD_TYPE=Release -B build -G "Ninja" .
 cmake --build build --config Release --parallel 2
 
-cp build/libecc-jvm.{dylib,so} bindings/jvm/ 2>/dev/null || :
+#cp build/libecc-jvm.{dylib,so} bindings/jvm/ 2>/dev/null || :
