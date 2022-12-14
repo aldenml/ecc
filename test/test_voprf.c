@@ -48,6 +48,16 @@ static void test_ecc_voprf_ristretto255_sha512_oprf(void **state) {
         ecc_json_hex(BlindedElement, &BlindedElementLen, item, "BlindedElement");
         ecc_log("BlindedElement", BlindedElement, sizeof BlindedElement);
 
+        byte_t EvaluationElement[ecc_voprf_ristretto255_sha512_ELEMENTSIZE];
+        int EvaluationElementLen;
+        ecc_json_hex(EvaluationElement, &EvaluationElementLen, item, "EvaluationElement");
+        ecc_log("EvaluationElement", EvaluationElement, sizeof EvaluationElement);
+
+        byte_t Output[ecc_voprf_ristretto255_sha512_Nh];
+        int OutputLen;
+        ecc_json_hex(Output, &OutputLen, item, "Output");
+        ecc_log("Output", Output, sizeof Output);
+
         byte_t blindedElement[ecc_voprf_ristretto255_sha512_ELEMENTSIZE];
         int r = ecc_voprf_ristretto255_sha512_BlindWithScalar(
             blindedElement,
@@ -58,6 +68,25 @@ static void test_ecc_voprf_ristretto255_sha512_oprf(void **state) {
 
         assert_int_equal(r, 0);
         assert_memory_equal(blindedElement, BlindedElement, sizeof blindedElement);
+
+        byte_t evaluatedElement[ecc_voprf_ristretto255_sha512_ELEMENTSIZE];
+        ecc_voprf_ristretto255_sha512_BlindEvaluate(
+            evaluatedElement,
+            skSm,
+            blindedElement
+        );
+
+        assert_memory_equal(evaluatedElement, EvaluationElement, sizeof evaluatedElement);
+
+        byte_t output[ecc_voprf_ristretto255_sha512_Nh];
+        ecc_voprf_ristretto255_sha512_Finalize(
+            output,
+            Input, InputLen,
+            Blind,
+            evaluatedElement
+        );
+
+        assert_memory_equal(output, Output, sizeof output);
     }
 
     ecc_json_destroy(json);

@@ -735,7 +735,7 @@ void ecc_voprf_ristretto255_sha512_BlindEvaluate(
 }
 
 void ecc_voprf_ristretto255_sha512_Finalize(
-    byte_t *output, // 64 bytes
+    byte_t *output,
     const byte_t *input, const int inputLen,
     const byte_t *blind,
     const byte_t *evaluatedElement
