@@ -62,10 +62,10 @@ jobs:
           ./build.sh -O2
           cd ../..
 
+      #          cp build/libecc-jvm.dll bindings/jvm/ TODO: restore
       - name: c build
         run: |
           cmake --build build --config Release --parallel 2
-#          cp build/libecc-jvm.dll bindings/jvm/
           objdump -p build/libecc.dll | grep DLL
 
       - name: c tests
