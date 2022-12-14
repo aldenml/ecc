@@ -35,6 +35,8 @@
 
 #define ELEMENTSIZE ecc_voprf_ristretto255_sha512_ELEMENTSIZE
 #define SCALARSIZE ecc_voprf_ristretto255_sha512_SCALARSIZE
+#define MODE_VOPRF ecc_voprf_ristretto255_sha512_MODE_VOPRF
+#define MODE_POPRF ecc_voprf_ristretto255_sha512_MODE_POPRF
 
 typedef struct {
     byte_t c[SCALARSIZE];
@@ -868,7 +870,7 @@ void ecc_voprf_ristretto255_sha512_VerifiableBlindEvaluateWithScalar(
         skS,
         generator, pkS,
         blindedElement, evaluatedElement, 1,
-        ecc_voprf_ristretto255_sha512_MODE_VOPRF,
+        MODE_VOPRF,
         r
     );
 }
@@ -898,7 +900,7 @@ void ecc_voprf_ristretto255_sha512_VerifiableBlindEvaluate(
         skS,
         generator, pkS,
         blindedElement, evaluatedElement, 1,
-        ecc_voprf_ristretto255_sha512_MODE_VOPRF
+        MODE_VOPRF
     );
 }
 
@@ -931,7 +933,7 @@ int ecc_voprf_ristretto255_sha512_VerifiableFinalize(
     int verification = ecc_voprf_ristretto255_sha512_VerifyProof(
         generator, pkS,
         blindedElement, evaluatedElement, 1,
-        ecc_voprf_ristretto255_sha512_MODE_VOPRF,
+        MODE_VOPRF,
         proof
     );
 
@@ -946,6 +948,114 @@ int ecc_voprf_ristretto255_sha512_VerifiableFinalize(
     );
 
     return 0;
+}
+
+int ecc_voprf_ristretto255_sha512_PartiallyBlindWithScalar(
+    byte_t *blindedElement,
+    byte_t *tweakedKey,
+    const byte_t *input, const int inputLen,
+    const byte_t *info, const int infoLen,
+    byte_t *pkS,
+    const byte_t *blind
+) {
+    if (infoLen > ecc_voprf_ristretto255_sha512_MAXINFOSIZE)
+        return -1;
+
+    // framedInfo = "Info" || I2OSP(len(info), 2) || info
+    // m = G.HashToScalar(framedInfo)
+    // T = G.ScalarMultGen(m)
+    // tweakedKey = T + pkS
+    // if tweakedKey == G.Identity():
+    //   raise InvalidInputError
+    //
+    // blind = G.RandomScalar()
+    // inputElement = G.HashToGroup(input)
+    // if inputElement == G.Identity():
+    //   raise InvalidInputError
+    //
+    // blindedElement = blind * inputElement
+    //
+    // return blind, blindedElement, tweakedKey
+
+    // framedInfo = "Info" || I2OSP(len(info), 2) || info
+    byte_t infoString[4] = "Info";
+    byte_t framedInfo[2048];
+    int framedInfoLen = 0;
+    ecc_concat2(&framedInfo[framedInfoLen], infoString, sizeof infoString, NULL, 0);
+    framedInfoLen += sizeof infoString;
+    ecc_I2OSP(&framedInfo[framedInfoLen], infoLen, 2);
+    framedInfoLen += 2;
+    ecc_concat2(&framedInfo[framedInfoLen], info, infoLen, NULL, 0);
+    framedInfoLen += infoLen;
+
+    // m = G.HashToScalar(framedInfo)
+    byte_t m[SCALARSIZE];
+    ecc_voprf_ristretto255_sha512_HashToScalar(m, framedInfo, framedInfoLen, MODE_POPRF);
+
+    // T = G.ScalarMultGen(m)
+    byte_t T[ELEMENTSIZE];
+    ecc_ristretto255_scalarmult_base(T, m);
+
+    // tweakedKey = T + pkS
+    // if tweakedKey == G.Identity():
+    //   raise InvalidInputError
+    ecc_ristretto255_add(tweakedKey, T, pkS);
+    if (ecc_is_zero(tweakedKey, ELEMENTSIZE)) {
+        // stack memory cleanup
+        ecc_memzero(framedInfo, framedInfoLen);
+        ecc_memzero(m, sizeof m);
+        ecc_memzero(T, sizeof T);
+        return -1;
+    }
+
+    // blind = G.RandomScalar()
+
+    // inputElement = G.HashToGroup(input)
+    // if inputElement == G.Identity():
+    //   raise InvalidInputError
+    byte_t inputElement[ELEMENTSIZE];
+    ecc_voprf_ristretto255_sha512_HashToGroup(
+        inputElement,
+        input, inputLen,
+        MODE_POPRF
+    );
+    if (ecc_is_zero(inputElement, ELEMENTSIZE)) {
+        // stack memory cleanup
+        ecc_memzero(framedInfo, framedInfoLen);
+        ecc_memzero(m, sizeof m);
+        ecc_memzero(T, sizeof T);
+        return -1;
+    }
+
+    // blindedElement = blind * inputElement
+    ecc_ristretto255_scalarmult(blindedElement, blind, inputElement);
+
+    // stack memory cleanup
+    ecc_memzero(framedInfo, framedInfoLen);
+    ecc_memzero(m, sizeof m);
+    ecc_memzero(T, sizeof T);
+    ecc_memzero(inputElement, sizeof inputElement);
+
+    return 0;
+}
+
+int ecc_voprf_ristretto255_sha512_PartiallyBlind(
+    byte_t *blind,
+    byte_t *blindedElement,
+    byte_t *tweakedKey,
+    const byte_t *input, const int inputLen,
+    const byte_t *info, const int infoLen,
+    byte_t *pkS
+) {
+    ecc_ristretto255_scalar_random(blind);
+    return ecc_voprf_ristretto255_sha512_PartiallyBlindWithScalar(
+        blindedElement,
+        tweakedKey,
+        input, inputLen,
+        info, infoLen,
+        pkS,
+        blind
+    );
 }
 
 void ecc_voprf_ristretto255_sha512_HashToGroupWithDST(

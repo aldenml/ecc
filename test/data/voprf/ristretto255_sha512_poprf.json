@@ -1,0 +1,28 @@
+{
+  "Seed": "a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3",
+  "KeyInfo": "74657374206b6579",
+  "skSm": "024eaeb72e5b3729d7f19d90aa44e3d2f4c445fb29011ffd755655636f2b100a",
+  "pkSm": "e001954ccd18ec5aa89bcbf26c03d84dc4d9c9b973d9f06b1e0ceb7b79f41d65",
+  "vectors": [
+    {
+      "Input": "00",
+      "Info": "7465737420696e666f",
+      "Blind": "64d37aed22a27f5191de1c1d69fadb899d8862b58eb4220029e036ec4c1f6706",
+      "BlindedElement": "009ffa1ffc529e4f1d3d8de1c06d22fbb15e39920a72ad4efed6c39af9438a2d",
+      "EvaluationElement": "aa9af25bf4edead5e2e0a4b8f93db9b497017f93cf68c75045f02172bfc5d304",
+      "Proof": "bb893ccce54685a871185bb056cb5e0594d09d3b53f2f879de06a650b8aeff08371f2ff9f3d5cac7f393cc37b2c71c2a6fbb80f35fe36b8e5cbddf11469c8e03",
+      "ProofRandomScalar": "222a5e897cf59db8145db8d16e597e8facb80ae7d4e26d9881aa6f61d645fc0e",
+      "Output": "e7ed59e3f808c369598961ebfd9af74272894e0904d1c11653a21b08204dba1a5fb5c3dd6be6c419190a84b576d91eb3d8d920d450fee0427fd24524950d72d6"
+    },
+    {
+      "Input": "5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a",
+      "Info": "7465737420696e666f",
+      "Blind": "64d37aed22a27f5191de1c1d69fadb899d8862b58eb4220029e036ec4c1f6706",
+      "BlindedElement": "5e009e08e228f95ee3703cff60a1d54225bb282bdb6d7dc9a78e287f8418315a",
+      "EvaluationElement": "2e528236481eb6d87b07ef5f8c17910323d04b3bf0cb2f2d23d5a7ad9f069b22",
+      "Proof": "3796381ab287189839288bbaffc971eb87c3a28226fa99dc83b363adb2f4b20e4ae81fb675ebcd43d13918f71846cb488d0ce7d473bfca68450a5a5472564500",
+      "ProofRandomScalar": "222a5e897cf59db8145db8d16e597e8facb80ae7d4e26d9881aa6f61d645fc0e",
+      "Output": "9a0d8c55e2fef4bada9fb5877a0e739496e539a0d835722911dab9ec112397e763a605acbc072619e8b8acefb8ee704a357556edc802648089d684baa763ce14"
+    }
+  ]
+}

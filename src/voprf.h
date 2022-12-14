@@ -352,7 +352,49 @@ int ecc_voprf_ristretto255_sha512_VerifiableFinalize(
     const byte_t *proof
 );
 
-// partially
+/**
+ *
+ * @param[out] blindedElement blinded element, size:ecc_voprf_ristretto255_sha512_ELEMENTSIZE
+ * @param[out] tweakedKey blinded element, size:ecc_voprf_ristretto255_sha512_ELEMENTSIZE
+ * @param input message to blind, size:inputLen
+ * @param inputLen length of `input`
+ * @param info message to blind, size:infoLen
+ * @param infoLen length of `info`, it should be <= ecc_voprf_ristretto255_sha512_MAXINFOSIZE
+ * @param pkS size:ecc_voprf_ristretto255_sha512_ELEMENTSIZE
+ * @param blind size:ecc_voprf_ristretto255_sha512_SCALARSIZE
+ * @return 0 on success, or -1 if an error
+ */
+ECC_EXPORT
+int ecc_voprf_ristretto255_sha512_PartiallyBlindWithScalar(
+    byte_t *blindedElement,
+    byte_t *tweakedKey,
+    const byte_t *input, int inputLen,
+    const byte_t *info, int infoLen,
+    byte_t *pkS,
+    const byte_t *blind
+);
+
+/**
+ *
+ * @param[out] blind scalar used in the blind operation, size:ecc_voprf_ristretto255_sha512_SCALARSIZE
+ * @param[out] blindedElement blinded element, size:ecc_voprf_ristretto255_sha512_ELEMENTSIZE
+ * @param[out] tweakedKey blinded element, size:ecc_voprf_ristretto255_sha512_ELEMENTSIZE
+ * @param input message to blind, size:inputLen
+ * @param inputLen length of `input`
+ * @param info message to blind, size:infoLen
+ * @param infoLen length of `info`, it should be <= ecc_voprf_ristretto255_sha512_MAXINFOSIZE
+ * @param pkS size:ecc_voprf_ristretto255_sha512_ELEMENTSIZE
+ * @return 0 on success, or -1 if an error
+ */
+ECC_EXPORT
+int ecc_voprf_ristretto255_sha512_PartiallyBlind(
+    byte_t *blind,
+    byte_t *blindedElement,
+    byte_t *tweakedKey,
+    const byte_t *input, int inputLen,
+    const byte_t *info, int infoLen,
+    byte_t *pkS
+);
 
 /**
  * Same as calling `ecc_voprf_ristretto255_sha512_HashToGroup` with an

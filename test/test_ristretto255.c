@@ -42,7 +42,7 @@ static void test_ecc_ristretto255_identity(void **state) {
     assert_memory_equal(ident, zero, ecc_ristretto255_ELEMENTSIZE);
 }
 
-int main() {
+int main(void) {
     const struct CMUnitTest tests[] = {
         cmocka_unit_test(test_ecc_ristretto255_scalar_invert),
         cmocka_unit_test(test_ecc_ristretto255_identity),
