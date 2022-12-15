@@ -53,7 +53,7 @@ static_assert(sizeof(Proof_t) == ecc_voprf_ristretto255_sha512_PROOFSIZE, "");
 static int createContextString(
     byte_t *contextString,
     const int mode,
-    byte_t *prefix,
+    const byte_t *prefix,
     const int prefixLen
 ) {
     // contextString = "${RFC_ID}-" || I2OSP(mode, 1) || I2OSP(suite_id, 2)

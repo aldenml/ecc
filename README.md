@@ -31,7 +31,7 @@ and [blst](https://github.com/supranational/blst).
 
 ### OPRF Oblivious pseudo-random functions using ristretto255
 
-This is an implementation of [draft-irtf-cfrg-voprf-08](https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-voprf-08)
+This is an implementation of [draft-irtf-cfrg-voprf-16](https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-voprf-16)
 ciphersuite **OPRF(ristretto255, SHA-512)** using `libsodium`.
 
 There are two variants in this protocol: a *base* mode and *verifiable* mode. In the
