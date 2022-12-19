@@ -64,8 +64,8 @@ static int createContextString(
     byte_t *p = contextString;
 
     if (prefix != NULL) {
-        ecc_concat2(p, prefix, prefixLen, dash, 1);
-        p += prefixLen + 1;
+        ecc_concat2(p, prefix, prefixLen, NULL, 0);
+        p += prefixLen;
     }
 
     ecc_concat2(p, rfcId, sizeof rfcId, dash, 1);
@@ -262,7 +262,7 @@ void ecc_voprf_ristretto255_sha512_ComputeCompositesFast(
 
     // seedDST = "Seed-" || contextString
     byte_t seedDST[100];
-    byte_t seedDSTPrefix[4] = "Seed";
+    byte_t seedDSTPrefix[5] = "Seed-";
     const int seedDSTLen = createContextString(
         seedDST, mode,
         seedDSTPrefix, sizeof seedDSTPrefix
@@ -510,7 +510,7 @@ void ecc_voprf_ristretto255_sha512_ComputeComposites(
 
     // seedDST = "Seed-" || contextString
     byte_t seedDST[100];
-    byte_t seedDSTPrefix[4] = "Seed";
+    byte_t seedDSTPrefix[5] = "Seed-";
     const int seedDSTLen = createContextString(
         seedDST, mode,
         seedDSTPrefix, sizeof seedDSTPrefix
@@ -616,8 +616,8 @@ void ecc_voprf_ristretto255_sha512_GenerateKeyPair(
 int ecc_voprf_ristretto255_sha512_DeriveKeyPair(
     byte_t *skS,
     byte_t *pkS,
-    byte_t *seed,
-    byte_t *info, int infoLen,
+    const byte_t *seed,
+    const byte_t *info, const int infoLen,
     int mode
 ) {
     if (infoLen > ecc_voprf_ristretto255_sha512_MAXINFOSIZE)
@@ -644,6 +644,9 @@ int ecc_voprf_ristretto255_sha512_DeriveKeyPair(
     deriveInputLen += 2;
     ecc_concat2(&deriveInput[deriveInputLen], info, infoLen, NULL, 0);
     deriveInputLen += infoLen;
+#if ECC_LOG
+    ecc_log("voprf:DeriveKeyPair:deriveInput", deriveInput, deriveInputLen);
+#endif
 
     // counter = 0
     int counter = 0;
@@ -676,6 +679,10 @@ int ecc_voprf_ristretto255_sha512_DeriveKeyPair(
         inputLen += deriveInputLen;
         ecc_I2OSP(&input[inputLen], counter, 1);
         inputLen += 1;
+#if ECC_LOG
+        ecc_log("voprf:DeriveKeyPair:input", input, inputLen);
+        ecc_log("voprf:DeriveKeyPair:DST", DST, DSTLen);
+#endif
         ecc_voprf_ristretto255_sha512_HashToScalarWithDST(
             skS,
             input, inputLen,
@@ -1392,7 +1399,7 @@ void ecc_voprf_ristretto255_sha512_HashToGroup(
     const int mode
 ) {
     byte_t DST[100];
-    byte_t DSTPrefix[11] = "HashToGroup";
+    byte_t DSTPrefix[12] = "HashToGroup-";
     const int DSTLen = createContextString(
         DST, mode,
         DSTPrefix, sizeof DSTPrefix
@@ -1421,7 +1428,7 @@ void ecc_voprf_ristretto255_sha512_HashToScalar(
     const int mode
 ) {
     byte_t DST[100];
-    byte_t DSTPrefix[12] = "HashToScalar";
+    byte_t DSTPrefix[13] = "HashToScalar-";
     const int DSTLen = createContextString(
         DST, mode,
         DSTPrefix, sizeof DSTPrefix

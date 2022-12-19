@@ -206,8 +206,8 @@ ECC_EXPORT
 int ecc_voprf_ristretto255_sha512_DeriveKeyPair(
     byte_t *skS,
     byte_t *pkS,
-    byte_t *seed,
-    byte_t *info, int infoLen,
+    const byte_t *seed,
+    const byte_t *info, int infoLen,
     int mode
 );
 
