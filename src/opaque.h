@@ -210,14 +210,13 @@
  *
  * @param[out] private_key a private key, size:ecc_opaque_ristretto255_sha512_Nsk
  * @param[out] public_key the associated public key, size:ecc_opaque_ristretto255_sha512_Npk
- * @param seed pseudo-random byte sequence used as a seed, size:seed_len
- * @param seed_len the length of `seed`
+ * @param seed pseudo-random byte sequence used as a seed, size:ecc_opaque_ristretto255_sha512_Nok
  */
 ECC_EXPORT
 void ecc_opaque_ristretto255_sha512_DeriveKeyPair(
     byte_t *private_key,
     byte_t *public_key,
-    const byte_t *seed, int seed_len
+    const byte_t *seed
 );
 
 /**
@@ -373,13 +372,12 @@ void ecc_opaque_ristretto255_sha512_GenerateAuthKeyPair(
  *
  * @param[out] private_key a private key, size:ecc_opaque_ristretto255_sha512_Nsk
  * @param[out] public_key the associated public key, size:ecc_opaque_ristretto255_sha512_Npk
- * @param seed pseudo-random byte sequence used as a seed, size:seed_len
- * @param seed_len the length of `seed`
+ * @param seed pseudo-random byte sequence used as a seed, size:ecc_opaque_ristretto255_sha512_Nok
  */
 ECC_EXPORT
 void ecc_opaque_ristretto255_sha512_DeriveAuthKeyPair(
     byte_t *private_key, byte_t *public_key,
-    const byte_t *seed, int seed_len
+    const byte_t *seed
 );
 
 /**

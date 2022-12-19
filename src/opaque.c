@@ -13,7 +13,7 @@
 #include "mac.h"
 #include "kdf.h"
 #include "ristretto255.h"
-#include "oprf.h"
+#include "voprf.h"
 
 #ifdef __GNUC__
 #pragma GCC diagnostic push
@@ -222,20 +222,16 @@ int serializeCleartextCredentials(byte_t *out, const CleartextCredentials_t *cre
 void ecc_opaque_ristretto255_sha512_DeriveKeyPair(
     byte_t *private_key,
     byte_t *public_key,
-    const byte_t *seed, int seed_len
+    const byte_t *seed
 ) {
-    // Steps:
-    // 1. private_key = HashToScalar(seed, dst="OPAQUE-DeriveKeyPair")
-    // 2. public_key = ScalarBaseMult(private_key)
-    // 3. Output (private_key, public_key)
-
-    byte_t dst[20] = "OPAQUE-DeriveKeyPair";
-    ecc_oprf_ristretto255_sha512_HashToScalarWithDST(
+    byte_t info[20] = "OPAQUE-DeriveKeyPair";
+    ecc_voprf_ristretto255_sha512_DeriveKeyPair(
         private_key,
-        seed, seed_len,
-        dst, sizeof dst
+        public_key,
+        seed,
+        info, sizeof info,
+        ecc_voprf_ristretto255_sha512_MODE_OPRF
     );
-    ecc_ristretto255_scalarmult_base(public_key, private_key);
 }
 
 void ecc_opaque_ristretto255_sha512_CreateCleartextCredentials(
@@ -344,7 +340,7 @@ void ecc_opaque_ristretto255_sha512_EnvelopeStoreWithNonce(
 
     // 6. _, client_public_key = DeriveAuthKeyPair(seed)
     byte_t ignore[Nsk];
-    ecc_opaque_ristretto255_sha512_DeriveAuthKeyPair(ignore, client_public_key, seed, Nseed);
+    ecc_opaque_ristretto255_sha512_DeriveAuthKeyPair(ignore, client_public_key, seed);
 
     // 7. cleartext_creds = CreateCleartextCredentials(server_public_key, client_public_key, server_identity, client_identity)
     CleartextCredentials_t cleartext_creds;
@@ -465,7 +461,7 @@ int ecc_opaque_ristretto255_sha512_EnvelopeRecover(
     ecc_opaque_ristretto255_sha512_DeriveAuthKeyPair(
         client_private_key,
         client_public_key,
-        seed, Nseed
+        seed
     );
 
     // 5. cleartext_creds = CreateCleartextCredentials(server_public_key,
@@ -532,7 +528,7 @@ void ecc_opaque_ristretto255_sha512_GenerateAuthKeyPair(
 
     ecc_opaque_ristretto255_sha512_DeriveAuthKeyPair(
         private_key, public_key,
-        seed, sizeof seed
+        seed
     );
 
     // cleanup stack memory
@@ -541,20 +537,16 @@ void ecc_opaque_ristretto255_sha512_GenerateAuthKeyPair(
 
 void ecc_opaque_ristretto255_sha512_DeriveAuthKeyPair(
     byte_t *private_key, byte_t *public_key,
-    const byte_t *seed, const int seed_len
+    const byte_t *seed
 ) {
-    // Steps:
-    // 1. private_key = HashToScalar(seed, dst="OPAQUE-DeriveAuthKeyPair")
-    // 2. public_key = ScalarBaseMult(private_key)
-    // 3. Output (private_key, public_key)
-
-    byte_t dst[24] = "OPAQUE-DeriveAuthKeyPair";
-    ecc_oprf_ristretto255_sha512_HashToScalarWithDST(
+    byte_t info[24] = "OPAQUE-DeriveAuthKeyPair";
+    ecc_voprf_ristretto255_sha512_DeriveKeyPair(
         private_key,
-        seed, seed_len,
-        dst, sizeof dst
+        public_key,
+        seed,
+        info, sizeof info,
+        ecc_voprf_ristretto255_sha512_MODE_OPRF
     );
-    ecc_ristretto255_scalarmult_base(public_key, private_key);
 }
 
 void ecc_opaque_ristretto255_sha512_CreateRegistrationRequestWithBlind(
@@ -567,11 +559,11 @@ void ecc_opaque_ristretto255_sha512_CreateRegistrationRequestWithBlind(
     // 2. Create RegistrationRequest request with M
     // 3. Output (request, blind)
 
-    ecc_oprf_ristretto255_sha512_BlindWithScalar(
+    ecc_voprf_ristretto255_sha512_BlindWithScalar(
         request,
         password, password_len,
         blind,
-        ecc_oprf_ristretto255_sha512_MODE_BASE
+        ecc_voprf_ristretto255_sha512_MODE_OPRF
     );
 }
 
@@ -606,7 +598,12 @@ void ecc_opaque_ristretto255_sha512_CreateRegistrationResponseWithOprfKey(
 
     // 3. Z = Evaluate(oprf_key, request.data)
     byte_t *Z = response->data;
-    ecc_oprf_ristretto255_sha512_Evaluate(Z, oprf_key, request->data, NULL, 0);
+    // TODO: review draft
+    ecc_voprf_ristretto255_sha512_BlindEvaluate(
+        Z,
+        oprf_key,
+        request->data
+    );
 
     // 4. Create RegistrationResponse response with (Z, server_public_key)
     // 5. Output (response, oprf_key)
@@ -641,14 +638,20 @@ void ecc_opaque_ristretto255_sha512_CreateRegistrationResponse(
     // - Expand(oprf_seed, ikm_info, Nseed)
     byte_t ikm[Nseed];
     ecc_kdf_hkdf_sha512_expand(ikm, oprf_seed, ikm_info, ikm_info_len, Nseed);
+#if ECC_LOG
+    ecc_log("ikm", ikm, sizeof ikm);
+#endif
 
     // 2. (oprf_key, _) = DeriveKeyPair(ikm)
     byte_t ignore[Npk];
     ecc_opaque_ristretto255_sha512_DeriveKeyPair(
         oprf_key,
         ignore,
-        ikm, sizeof ikm
+        ikm
     );
+#if ECC_LOG
+    ecc_log("oprf_key", oprf_key, 32);
+#endif
 
     // 3. Z = Evaluate(oprf_key, request.data, nil)
     // 4. Create RegistrationResponse response with (Z, server_public_key)
@@ -692,12 +695,11 @@ void ecc_opaque_ristretto255_sha512_FinalizeRequestWithNonce(
 
     // 1. y = Finalize(password, blind, response.data, nil)
     byte_t y[Nh];
-    ecc_oprf_ristretto255_sha512_Finalize(
+    ecc_voprf_ristretto255_sha512_Finalize(
         y,
         password, password_len,
         blind,
-        response->data,
-        NULL, 0
+        response->data
     );
 
     // 2. randomized_pwd = Extract("", concat(y, Harden(y, params)))
@@ -785,9 +787,11 @@ void ecc_opaque_ristretto255_sha512_CreateCredentialRequestWithBlind(
     // 3. Output (request, blind)
 
     CredentialRequest_t *request = (CredentialRequest_t *) request_ptr;
-    ecc_oprf_ristretto255_sha512_BlindWithScalar(request->data, password, password_len,
+    ecc_voprf_ristretto255_sha512_BlindWithScalar(
+        request->data,
+        password, password_len,
         blind,
-        ecc_oprf_ristretto255_sha512_MODE_BASE
+        ecc_voprf_ristretto255_sha512_MODE_OPRF
     );
 }
 
@@ -802,8 +806,11 @@ void ecc_opaque_ristretto255_sha512_CreateCredentialRequest(
     // 3. Output (request, blind)
 
     CredentialRequest_t *request = (CredentialRequest_t *) request_ptr;
-    ecc_oprf_ristretto255_sha512_Blind(request->data, blind, password, password_len,
-        ecc_oprf_ristretto255_sha512_MODE_BASE
+    ecc_voprf_ristretto255_sha512_Blind(
+        request->data,
+        blind,
+        password, password_len,
+        ecc_voprf_ristretto255_sha512_MODE_OPRF
     );
 }
 
@@ -844,14 +851,19 @@ void ecc_opaque_ristretto255_sha512_CreateCredentialResponseWithMasking(
     // 2. (oprf_key, _) = DeriveKeyPair(seed)
     byte_t oprf_key[32];
     byte_t ignore[32];
-    ecc_opaque_ristretto255_sha512_DeriveKeyPair(oprf_key, ignore, seed, sizeof seed);
+    ecc_opaque_ristretto255_sha512_DeriveKeyPair(oprf_key, ignore, seed);
 #if ECC_LOG
     ecc_log("oprf_key", oprf_key, 32);
 #endif
 
     // 3. Z = Evaluate(oprf_key, request.data, nil)
     byte_t Z[32];
-    ecc_oprf_ristretto255_sha512_Evaluate(Z, oprf_key, request->data, NULL, 0);
+    // TODO: review draft
+    ecc_voprf_ristretto255_sha512_BlindEvaluate(
+        Z,
+        oprf_key,
+        request->data
+    );
 
     // 5. credential_response_pad = Expand(record.masking_key,
     //      concat(masking_nonce, "CredentialResponsePad"), Npk + Ne)
@@ -939,12 +951,11 @@ int ecc_opaque_ristretto255_sha512_RecoverCredentials(
     // 1. y = Finalize(password, blind, response.data)
     const CredentialResponse_t *res = (const CredentialResponse_t *) response;
     byte_t y[64];
-    ecc_oprf_ristretto255_sha512_Finalize(
+    ecc_voprf_ristretto255_sha512_Finalize(
         y,
         password, password_len,
         blind,
-        res->data,
-        NULL, 0
+        res->data
     );
 
     // 2. randomized_pwd = Extract("", Harden(y, params))
