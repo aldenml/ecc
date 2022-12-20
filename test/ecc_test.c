@@ -215,7 +215,10 @@ void ecc_json_hex(
     ecc_json_t json, const char *path
 ) {
     const char *hex = ecc_json_string(json, path);
-    const int hex_len = (int) strlen(hex);
-    *bin_len = hex_len / 2;
-    ecc_hex2bin(bin, hex, hex_len);
+    if (hex != NULL) {
+        const int hex_len = (int) strlen(hex);
+        *bin_len = hex_len / 2;
+        ecc_hex2bin(bin, hex, hex_len);
+    } else
+        *bin_len = 0;
 }

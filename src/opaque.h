@@ -10,7 +10,7 @@
 
 #include "export.h"
 
-// See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-07
+// See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-09
 //
 // This implements only the following configuration:
 //
@@ -206,8 +206,6 @@
 /**
  * Derive a private and public key pair deterministically from a seed.
  *
- * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-07#section-2.1
- *
  * @param[out] private_key a private key, size:ecc_opaque_ristretto255_sha512_Nsk
  * @param[out] public_key the associated public key, size:ecc_opaque_ristretto255_sha512_Npk
  * @param seed pseudo-random byte sequence used as a seed, size:ecc_opaque_ristretto255_sha512_Nok
@@ -222,8 +220,6 @@ void ecc_opaque_ristretto255_sha512_DeriveKeyPair(
 /**
  * Constructs a "CleartextCredentials" structure given application
  * credential information.
- *
- * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-07#section-4
  *
  * @param[out] cleartext_credentials a CleartextCredentials structure, size:ecc_opaque_ristretto255_sha512_CLEARTEXTCREDENTIALSSIZE
  * @param server_public_key the encoded server public key for the AKE protocol, size:ecc_opaque_ristretto255_sha512_Npk
@@ -245,8 +241,6 @@ void ecc_opaque_ristretto255_sha512_CreateCleartextCredentials(
 /**
  * Same as calling `ecc_opaque_ristretto255_sha512_EnvelopeStore` with an
  * specified `nonce`.
- *
- * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-07#section-4.2
  *
  * @param[out] envelope size:ecc_opaque_ristretto255_sha512_Ne
  * @param[out] client_public_key size:ecc_opaque_ristretto255_sha512_Npk
@@ -280,8 +274,6 @@ void ecc_opaque_ristretto255_sha512_EnvelopeStoreWithNonce(
  * allocation), it's necessary to add the restriction on length of the
  * identities to less than 200 bytes.
  *
- * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-07#section-4.2
- *
  * @param[out] envelope size:ecc_opaque_ristretto255_sha512_Ne
  * @param[out] client_public_key size:ecc_opaque_ristretto255_sha512_Npk
  * @param[out] masking_key size:ecc_opaque_ristretto255_sha512_Nh
@@ -309,8 +301,6 @@ void ecc_opaque_ristretto255_sha512_EnvelopeStore(
  * This functions attempts to recover the credentials from the input. On
  * success returns 0, else -1.
  *
- * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-07#section-4.2
- *
  * @param[out] client_private_key size:ecc_opaque_ristretto255_sha512_Nsk
  * @param[out] export_key size:ecc_opaque_ristretto255_sha512_Nh
  * @param randomized_pwd size:64
@@ -336,8 +326,6 @@ int ecc_opaque_ristretto255_sha512_EnvelopeRecover(
 /**
  * Recover the public key related to the input "private_key".
  *
- * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-07#section-2
- *
  * @param[out] public_key size:ecc_opaque_ristretto255_sha512_Npk
  * @param private_key size:ecc_opaque_ristretto255_sha512_Nsk
  */
@@ -353,8 +341,6 @@ void ecc_opaque_ristretto255_sha512_RecoverPublicKey(
  * This is implemented by generating a random "seed", then
  * calling internally DeriveAuthKeyPair.
  *
- * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-07#section-2
- *
  * @param[out] private_key a private key, size:ecc_opaque_ristretto255_sha512_Nsk
  * @param[out] public_key the associated public key, size:ecc_opaque_ristretto255_sha512_Npk
  */
@@ -366,9 +352,6 @@ void ecc_opaque_ristretto255_sha512_GenerateAuthKeyPair(
 /**
  * Derive a private and public authentication key pair deterministically
  * from the input "seed".
- *
- * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-07#section-4.3.1
- * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-07#section-2
  *
  * @param[out] private_key a private key, size:ecc_opaque_ristretto255_sha512_Nsk
  * @param[out] public_key the associated public key, size:ecc_opaque_ristretto255_sha512_Npk
@@ -383,8 +366,6 @@ void ecc_opaque_ristretto255_sha512_DeriveAuthKeyPair(
 /**
  * Same as calling CreateRegistrationRequest with a specified blind.
  *
- * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-07#section-5.1.1.1
- *
  * @param[out] request a RegistrationRequest structure, size:ecc_opaque_ristretto255_sha512_REGISTRATIONREQUESTSIZE
  * @param password an opaque byte string containing the client's password, size:password_len
  * @param password_len the length of `password`
@@ -398,7 +379,6 @@ void ecc_opaque_ristretto255_sha512_CreateRegistrationRequestWithBlind(
 );
 
 /**
- * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-07#section-5.1.1.1
  *
  * @param[out] request a RegistrationRequest structure, size:ecc_opaque_ristretto255_sha512_REGISTRATIONREQUESTSIZE
  * @param[out] blind an OPRF scalar value, size:ecc_opaque_ristretto255_sha512_Noe
@@ -417,8 +397,6 @@ void ecc_opaque_ristretto255_sha512_CreateRegistrationRequest(
  *
  * In order to make this method not to use dynamic memory allocation, there is a
  * limit of credential_identifier_len <= 200.
- *
- * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-07#section-5.1.1.2
  *
  * @param[out] response size:ecc_opaque_ristretto255_sha512_REGISTRATIONRESPONSESIZE
  * @param request size:ecc_opaque_ristretto255_sha512_REGISTRATIONREQUESTSIZE
@@ -439,8 +417,6 @@ void ecc_opaque_ristretto255_sha512_CreateRegistrationResponseWithOprfKey(
 /**
  * In order to make this method not to use dynamic memory allocation, there is a
  * limit of credential_identifier_len <= 200.
- *
- * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-07#section-5.1.1.2
  *
  * @param[out] response a RegistrationResponse structure, size:ecc_opaque_ristretto255_sha512_REGISTRATIONRESPONSESIZE
  * @param[out] oprf_key the per-client OPRF key known only to the server, size:ecc_opaque_ristretto255_sha512_Nsk
@@ -524,7 +500,6 @@ void ecc_opaque_ristretto255_sha512_FinalizeRequest(
 );
 
 /**
- * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-07#section-6.1.2.1
  *
  * @param[out] request a CredentialRequest structure, size:ecc_opaque_ristretto255_sha512_CREDENTIALREQUESTSIZE
  * @param password an opaque byte string containing the client's password, size:password_len
@@ -539,7 +514,6 @@ void ecc_opaque_ristretto255_sha512_CreateCredentialRequestWithBlind(
 );
 
 /**
- * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-07#section-6.1.2.1
  *
  * @param[out] request a CredentialRequest structure, size:ecc_opaque_ristretto255_sha512_CREDENTIALREQUESTSIZE
  * @param[out] blind an OPRF scalar value, size:ecc_opaque_ristretto255_sha512_Noe
@@ -728,8 +702,6 @@ int ecc_opaque_ristretto255_sha512_3DH_Preamble(
  * Computes the OPAQUE-3DH shared secret derived during the key
  * exchange protocol.
  *
- * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-07#section-6.2.2.2
- *
  * @param[out] ikm size:96
  * @param sk1 size:32
  * @param pk1 size:32
@@ -766,7 +738,6 @@ void ecc_opaque_ristretto255_sha512_3DH_DeriveKeys(
 );
 
 /**
- * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-07#section-6.2.3
  *
  * @param[out] ke1 a KE1 message structure, size:ecc_opaque_ristretto255_sha512_KE1SIZE
  * @param[in,out] state a ClientState structure, size:ecc_opaque_ristretto255_sha512_CLIENTSTATESIZE
@@ -789,7 +760,6 @@ void ecc_opaque_ristretto255_sha512_3DH_ClientInitWithSecrets(
 );
 
 /**
- * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-07#section-6.2.3
  *
  * @param[out] ke1 a KE1 message structure, size:ecc_opaque_ristretto255_sha512_KE1SIZE
  * @param[in,out] state a ClientState structure, size:ecc_opaque_ristretto255_sha512_CLIENTSTATESIZE
@@ -838,7 +808,6 @@ int ecc_opaque_ristretto255_sha512_3DH_ClientFinish(
 );
 
 /**
- * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-07#section-6.2.3.1
  *
  * @param[out] ke1 size:ecc_opaque_ristretto255_sha512_KE1SIZE
  * @param[in,out] state size:ecc_opaque_ristretto255_sha512_CLIENTSTATESIZE
@@ -858,7 +827,6 @@ void ecc_opaque_ristretto255_sha512_3DH_StartWithSecrets(
 );
 
 /**
- * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-07#section-6.2.3.1
  *
  * @param[out] ke1 size:ecc_opaque_ristretto255_sha512_KE1SIZE
  * @param[in,out] state size:ecc_opaque_ristretto255_sha512_CLIENTSTATESIZE
@@ -901,7 +869,6 @@ int ecc_opaque_ristretto255_sha512_3DH_ClientFinalize(
 );
 
 /**
- * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-07#section-6.2.4
  *
  * @param[out] ke2_raw a KE2 structure, size:ecc_opaque_ristretto255_sha512_KE2SIZE
  * @param[in,out] state_raw a ServerState structure, size:ecc_opaque_ristretto255_sha512_SERVERSTATESIZE
@@ -946,7 +913,6 @@ void ecc_opaque_ristretto255_sha512_3DH_ServerInitWithSecrets(
 );
 
 /**
- * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-07#section-6.2.4
  *
  * @param[out] ke2_raw a KE2 structure, size:ecc_opaque_ristretto255_sha512_KE2SIZE
  * @param[in,out] state_raw a ServerState structure, size:ecc_opaque_ristretto255_sha512_SERVERSTATESIZE
@@ -983,7 +949,6 @@ void ecc_opaque_ristretto255_sha512_3DH_ServerInit(
 );
 
 /**
- * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-07#section-6.2.4
  *
  * @param[out] session_key the shared session secret if and only if KE3 is valid, size:64
  * @param[in,out] state_raw a ServerState structure, size:ecc_opaque_ristretto255_sha512_SERVERSTATESIZE

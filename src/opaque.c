@@ -1109,7 +1109,7 @@ int ecc_opaque_ristretto255_sha512_3DH_Preamble(
     n += 2;
     ecc_concat2(p + n, context, context_len, NULL, 0);
     n += context_len;
-    if (client_identity != NULL) {
+    if (client_identity != NULL && client_identity_len > 0) {
         ecc_I2OSP(p + n, client_identity_len, 2);
         n += 2;
         ecc_concat2(p + n, client_identity, client_identity_len, NULL, 0);
@@ -1122,7 +1122,7 @@ int ecc_opaque_ristretto255_sha512_3DH_Preamble(
     }
     ecc_concat2(p + n, ke1_ptr, ecc_opaque_ristretto255_sha512_KE1SIZE, NULL, 0);
     n += ecc_opaque_ristretto255_sha512_KE1SIZE;
-    if (server_identity != NULL) {
+    if (server_identity != NULL && server_identity_len > 0) {
         ecc_I2OSP(p + n, server_identity_len, 2);
         n += 2;
         ecc_concat2(p + n, server_identity, server_identity_len, NULL, 0);

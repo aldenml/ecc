@@ -53,7 +53,7 @@ producing the protocol output.
 
 ### OPAQUE The OPAQUE Asymmetric PAKE Protocol
 
-This is an implementation of [draft-irtf-cfrg-opaque-07](https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-07)
+This is an implementation of [draft-irtf-cfrg-opaque-09](https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-09)
 using `libsodium`.
 
 OPAQUE consists of two stages: registration and authenticated key
