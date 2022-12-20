@@ -251,7 +251,7 @@ static void test_opaque_ristretto255_sha512(void **state) {
 
     ecc_json_destroy(json);
 }
-/*
+
 static void test_opaque_ristretto255_sha512_random1(void **state) {
     ECC_UNUSED(state);
 
@@ -327,6 +327,7 @@ static void test_opaque_ristretto255_sha512_random1(void **state) {
         ke1,
         NULL, 0
     );
+//    ecc_log("ke2", ke2, sizeof ke2);
 
     byte_t ke3[ecc_opaque_ristretto255_sha512_KE3SIZE];
     byte_t client_session_key[64];
@@ -363,13 +364,13 @@ static void test_opaque_ristretto255_sha512_random1(void **state) {
 //    ecc_log("server_session_key", server_session_key, sizeof server_session_key);
     assert_memory_equal(client_session_key, server_session_key, 64);
     assert_memory_equal(export_key, export_key2, 64);
-}*/
+}
 
 int main(void) {
     const struct CMUnitTest tests[] = {
         cmocka_unit_test(test_opaque_ristretto255_sha512),
         // protocol
-        // cmocka_unit_test(test_opaque_ristretto255_sha512_random1),
+        cmocka_unit_test(test_opaque_ristretto255_sha512_random1),
     };
 
     return cmocka_run_group_tests(tests, NULL, NULL);

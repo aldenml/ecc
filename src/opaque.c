@@ -373,6 +373,9 @@ void ecc_opaque_ristretto255_sha512_EnvelopeStoreWithNonce(
 
     // 9. Create Envelope envelope with (envelope_nonce, auth_tag)
     memcpy(envelope->nonce, envelope_nonce, Nn);
+#if ECC_LOG
+    ecc_log("opaque:EnvelopeStoreWithNonce:envelope_nonce", envelope_nonce, Nn);
+#endif
 
     // cleanup stack memory
     ecc_memzero(auth_key_info, sizeof auth_key_info);
@@ -442,6 +445,9 @@ int ecc_opaque_ristretto255_sha512_EnvelopeRecover(
     ecc_concat2(auth_key_info, envelope->nonce, Nn, auth_key_label, 7);
     byte_t auth_key[Nh];
     ecc_kdf_hkdf_sha512_expand(auth_key, randomized_pwd, auth_key_info, sizeof auth_key_info, Nh);
+#if ECC_LOG
+    ecc_log("opaque:EnvelopeRecover:envelope->nonce", envelope->nonce, Nn);
+#endif
 
     // 2. export_key = Expand(randomized_pwd, concat(envelope.nonce, "ExportKey", Nh)
     byte_t export_key_label[9] = "ExportKey";
@@ -701,6 +707,10 @@ void ecc_opaque_ristretto255_sha512_FinalizeRequestWithNonce(
         blind,
         response->data
     );
+#if ECC_LOG
+    ecc_log("opaque:FinalizeRequestWithNonce:response->data", response->data, sizeof response->data);
+    ecc_log("opaque:FinalizeRequestWithNonce:y", y, sizeof y);
+#endif
 
     // 2. randomized_pwd = Extract("", concat(y, Harden(y, params)))
     // - Harden(y, params)
@@ -715,6 +725,9 @@ void ecc_opaque_ristretto255_sha512_FinalizeRequestWithNonce(
     ecc_concat2(extract_input, y, Nh, harden_result, Nh);
     byte_t randomized_pwd[Nh];
     ecc_kdf_hkdf_sha512_extract(randomized_pwd, NULL, 0, extract_input, sizeof extract_input);
+#if ECC_LOG
+    ecc_log("opaque:FinalizeRequestWithNonce:randomized_pwd", randomized_pwd, sizeof randomized_pwd);
+#endif
 
     // 3. (envelope, client_public_key, masking_key, export_key) =
     //     Store(randomized_pwd, response.server_public_key,
@@ -798,7 +811,7 @@ void ecc_opaque_ristretto255_sha512_CreateCredentialRequestWithBlind(
 void ecc_opaque_ristretto255_sha512_CreateCredentialRequest(
     byte_t *request_ptr,
     byte_t *blind,
-    const byte_t *password, int password_len
+    const byte_t *password, const int password_len
 ) {
     // Steps:
     // 1. (blind, M) = Blind(password)
@@ -807,8 +820,8 @@ void ecc_opaque_ristretto255_sha512_CreateCredentialRequest(
 
     CredentialRequest_t *request = (CredentialRequest_t *) request_ptr;
     ecc_voprf_ristretto255_sha512_Blind(
-        request->data,
         blind,
+        request->data,
         password, password_len,
         ecc_voprf_ristretto255_sha512_MODE_OPRF
     );
@@ -853,7 +866,7 @@ void ecc_opaque_ristretto255_sha512_CreateCredentialResponseWithMasking(
     byte_t ignore[32];
     ecc_opaque_ristretto255_sha512_DeriveKeyPair(oprf_key, ignore, seed);
 #if ECC_LOG
-    ecc_log("oprf_key", oprf_key, 32);
+    ecc_log("opaque:CreateCredentialResponseWithMasking:oprf_key", oprf_key, 32);
 #endif
 
     // 3. Z = Evaluate(oprf_key, request.data, nil)
@@ -864,6 +877,10 @@ void ecc_opaque_ristretto255_sha512_CreateCredentialResponseWithMasking(
         oprf_key,
         request->data
     );
+#if ECC_LOG
+    ecc_log("opaque:CreateCredentialResponseWithMasking:request->data", request->data, sizeof request->data);
+    ecc_log("opaque:CreateCredentialResponseWithMasking:Z", Z, sizeof Z);
+#endif
 
     // 5. credential_response_pad = Expand(record.masking_key,
     //      concat(masking_nonce, "CredentialResponsePad"), Npk + Ne)
@@ -928,11 +945,11 @@ int ecc_opaque_ristretto255_sha512_RecoverCredentials(
     byte_t *client_private_key,
     byte_t *server_public_key,
     byte_t *export_key, // 64
-    const byte_t *password, int password_len,
+    const byte_t *password, const int password_len,
     const byte_t *blind,
     const byte_t *response,
-    const byte_t *server_identity, int server_identity_len,
-    const byte_t *client_identity, int client_identity_len,
+    const byte_t *server_identity, const int server_identity_len,
+    const byte_t *client_identity, const int client_identity_len,
     const int mhf
 ) {
     // Steps:
@@ -957,6 +974,10 @@ int ecc_opaque_ristretto255_sha512_RecoverCredentials(
         blind,
         res->data
     );
+#if ECC_LOG
+    ecc_log("opaque:RecoverCredentials:res->data", res->data, sizeof res->data);
+    ecc_log("opaque:RecoverCredentials:y", y, sizeof y);
+#endif
 
     // 2. randomized_pwd = Extract("", Harden(y, params))
     // - Harden(y, params)
@@ -1005,6 +1026,10 @@ int ecc_opaque_ristretto255_sha512_RecoverCredentials(
         server_identity, server_identity_len,
         client_identity, client_identity_len
     );
+#if ECC_LOG
+    ecc_log("opaque:RecoverCredentials:randomized_pwd", randomized_pwd, sizeof randomized_pwd);
+    ecc_log("opaque:RecoverCredentials:envelope", envelope, sizeof envelope);
+#endif
 
     // cleanup stack memory
     ecc_memzero(y, sizeof y);
@@ -1313,12 +1338,12 @@ int ecc_opaque_ristretto255_sha512_3DH_ClientFinish(
     byte_t *session_key,
     byte_t *export_key, // 64
     byte_t *state_raw,
-    const byte_t *password, int password_len,
-    const byte_t *client_identity, int client_identity_len,
-    const byte_t *server_identity, int server_identity_len,
+    const byte_t *password, const int password_len,
+    const byte_t *client_identity, const int client_identity_len,
+    const byte_t *server_identity, const int server_identity_len,
     const byte_t *ke2_raw,
     const int mhf,
-    const byte_t *context, int context_len
+    const byte_t *context, const int context_len
 ) {
     // Steps:
     // 1. (client_private_key, server_public_key, export_key) =
