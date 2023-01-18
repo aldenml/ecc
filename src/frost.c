@@ -8,6 +8,7 @@
 #include "frost.h"
 #include <string.h>
 #include <assert.h>
+#include <math.h>
 #include "util.h"
 #include "hash.h"
 #include "ristretto255.h"
@@ -582,9 +583,9 @@ int ecc_frost_ristretto255_sha512_verify_signature_share(
     const byte_t *public_key_share_i,
     const byte_t *comm_i_ptr,
     const byte_t *sig_share_i,
-    const byte_t *commitment_list, int commitment_list_len,
+    const byte_t *commitment_list, const int commitment_list_len,
     const byte_t *group_public_key,
-    const byte_t *msg, int msg_len
+    const byte_t *msg, const int msg_len
 ) {
     // # Compute the binding factors
     // binding_factor_list = compute_binding_factors(commitment_list, msg)
@@ -644,6 +645,9 @@ int ecc_frost_ristretto255_sha512_verify_signature_share(
     byte_t comm_share[ecc_ristretto255_ELEMENTSIZE];
     ecc_ristretto255_scalarmult(T, binding_factor, comm_i->binding_nonce_commitment);
     ecc_ristretto255_add(comm_share, comm_i->hiding_nonce_commitment, T);
+#if ECC_LOG
+    ecc_log("frost:verify_signature_share:comm_share", comm_share, sizeof comm_share);
+#endif
 
     // # Compute the challenge
     // challenge = compute_challenge(group_commitment, group_public_key, msg)
@@ -654,6 +658,9 @@ int ecc_frost_ristretto255_sha512_verify_signature_share(
         group_public_key,
         msg, msg_len
     );
+#if ECC_LOG
+    ecc_log("frost:verify_signature_share:challenge", challenge, sizeof challenge);
+#endif
 
     // # Compute Lagrange coefficient
     // participant_list = participants_from_commitment_list(commitment_list)
@@ -670,17 +677,27 @@ int ecc_frost_ristretto255_sha512_verify_signature_share(
         identifier,
         participant_list, commitment_list_len
     );
+#if ECC_LOG
+    ecc_log("frost:verify_signature_share:lambda_i", lambda_i, sizeof lambda_i);
+#endif
 
     // # Compute relation values
     // l = G.ScalarBaseMult(sig_share_i)
     byte_t l[ELEMENTSIZE];
     ecc_ristretto255_scalarmult_base(l, sig_share_i);
+#if ECC_LOG
+    ecc_log("frost:verify_signature_share:l", l, sizeof l);
+#endif
     // r = comm_share + G.ScalarMult(PK_i, challenge * lambda_i)
     byte_t t[SCALARSIZE];
     byte_t r[ELEMENTSIZE];
     ecc_ristretto255_scalar_mul(t, challenge, lambda_i);
     ecc_ristretto255_scalarmult(r, t, public_key_share_i);
     ecc_ristretto255_add(r, comm_share, r);
+#if ECC_LOG
+    ecc_log("frost:verify_signature_share:public_key_share_i", public_key_share_i, ecc_frost_ristretto255_sha512_PUBLICKEYSIZE);
+    ecc_log("frost:verify_signature_share:r", r, sizeof r);
+#endif
 
     // return l == r
     // 1 if the signature share is valid, and 0 otherwise.
@@ -866,7 +883,7 @@ void ecc_frost_ristretto255_sha512_H5(
     ecc_memzero((byte_t *) &st, sizeof st);
 }
 
-void ecc_frost_ristretto255_sha512_schnorr_signature_generate(
+void ecc_frost_ristretto255_sha512_prime_order_sign(
     byte_t *signature_ptr,
     const byte_t *msg, const int msg_len,
     const byte_t *SK
@@ -925,7 +942,7 @@ void ecc_frost_ristretto255_sha512_schnorr_signature_generate(
     ecc_memzero(z, sizeof z);
 }
 
-int ecc_frost_ristretto255_sha512_schnorr_signature_verify(
+int ecc_frost_ristretto255_sha512_prime_order_verify(
     const byte_t *msg, const int msg_len,
     const byte_t *signature_ptr,
     const byte_t *PK
@@ -1071,6 +1088,23 @@ int ecc_frost_ristretto255_sha512_secret_share_shard(
     return 0;
 }
 
+int ecc_frost_ristretto255_sha512_secret_share_combine(
+    byte_t *s,
+    const byte_t *shares, const int shares_len
+) {
+    // if len(shares) < MIN_PARTICIPANTS:
+    //   raise "invalid parameters"
+    // s = polynomial_interpolate_constant(shares)
+    // return s
+
+    ecc_frost_ristretto255_sha512_polynomial_interpolate_constant(
+        s,
+        shares, shares_len
+    );
+
+    return 0;
+}
+
 void ecc_frost_ristretto255_sha512_polynomial_evaluate(
     byte_t *value,
     const byte_t *x,
@@ -1084,10 +1118,44 @@ void ecc_frost_ristretto255_sha512_polynomial_evaluate(
     }
 }
 
+void ecc_frost_ristretto255_sha512_polynomial_interpolate_constant(
+    byte_t *f_zero,
+    const byte_t *points, const int points_len
+) {
+    // x_coords = []
+    // for (x, y) in points:
+    //   x_coords.append(x)
+    //
+    // f_zero = Scalar(0)
+    // for (x, y) in points:
+    //   delta = y * derive_interpolating_value(x, x_coords)
+    //   f_zero += delta
+    //
+    // return f_zero
+
+    ecc_memzero(f_zero, SCALARSIZE);
+
+    byte_t delta[SCALARSIZE];
+    byte_t interpolating_value[SCALARSIZE];
+
+    for (int i = 0; i < points_len; i++) {
+        const Point_t *point = (const Point_t *) &points[i * ecc_frost_ristretto255_sha512_POINTSIZE];
+
+        ecc_frost_ristretto255_sha512_derive_interpolating_value_with_points(interpolating_value, point->x, points, points_len);
+        ecc_ristretto255_scalar_mul(delta, point->y, interpolating_value);
+
+        ecc_ristretto255_scalar_add(f_zero, f_zero, delta);
+    }
+
+    // cleanup stack memory
+    ecc_memzero(delta, sizeof delta);
+    ecc_memzero(interpolating_value, sizeof interpolating_value);
+}
+
 void ecc_frost_ristretto255_sha512_vss_commit(
     byte_t *vss_commitment,
     const byte_t *coeffs,
-    int coeffs_len
+    const int coeffs_len
 ) {
     // vss_commitment = []
     // for coeff in coeffs:
@@ -1102,30 +1170,98 @@ void ecc_frost_ristretto255_sha512_vss_commit(
     }
 }
 
-void ecc_frost_ristretto255_sha512_polynomial_interpolation(
-    byte_t *constant_term,
-    const byte_t *points, const int points_len
+int ecc_frost_ristretto255_sha512_vss_verify(
+    const byte_t *share_i_ptr,
+    const byte_t *vss_commitment,
+    const int t
 ) {
-    // f_zero = F(0)
-    // for point in points:
-    //   delta = point.y * derive_lagrange_coefficient(point.x, L)
-    //   f_zero = f_zero + delta
+    // (i, sk_i) = share_i
+    // S_i = ScalarBaseMult(sk_i)
+    // S_i' = G.Identity()
+    // for j in range(0, MIN_PARTICIPANTS):
+    //   S_i' += G.ScalarMult(vss_commitment[j], pow(i, j))
+    // return S_i == S_i'
 
-    ecc_memzero(constant_term, ecc_frost_ristretto255_sha512_SCALARSIZE);
+    const Point_t *share_i = (const Point_t *) share_i_ptr;
 
-    byte_t L_i[ecc_frost_ristretto255_sha512_SCALARSIZE];
-    byte_t delta[ecc_frost_ristretto255_sha512_SCALARSIZE];
+    byte_t S_i[ELEMENTSIZE];
+    ecc_ristretto255_scalarmult_base(S_i, share_i->y);
+#if ECC_LOG
+    ecc_log("frost:vss_verify:S_i", S_i, ELEMENTSIZE);
+#endif
 
-    for (int i = 0; i < points_len; i++) {
-        const Point_t *point = (const Point_t *) &points[i * ecc_frost_ristretto255_sha512_POINTSIZE];
+    byte_t S_i_p[ELEMENTSIZE] = {0};
+    byte_t q[ELEMENTSIZE];
+    for (int j = 0; j < t; j++) {
+        // TODO: fix overflow
+        const int i = share_i->x[0];
+        const double di = (double) i;
+        const double dj = (double) j;
+        const double dp = pow(di, dj);
+        // TODO: fix overflow
+        byte_t s[SCALARSIZE] = {(byte_t) dp, 0};
+        ecc_ristretto255_scalarmult(
+            q,
+            s,
+            &vss_commitment[j * ELEMENTSIZE]
+        );
+        ecc_ristretto255_add(S_i_p, S_i_p, q);
+    }
 
-        ecc_frost_ristretto255_sha512_derive_interpolating_value_with_points(L_i, point->x, points, points_len);
-        ecc_ristretto255_scalar_mul(delta, point->y, L_i);
+    const int r = ecc_compare(S_i, S_i_p, ELEMENTSIZE) == 0 ? 1 : 0;
 
-        ecc_ristretto255_scalar_add(constant_term, constant_term, delta);
+    // cleanup stack memory
+    ecc_memzero(S_i, sizeof S_i);
+    ecc_memzero(S_i_p, sizeof S_i_p);
+    ecc_memzero(q, sizeof q);
+
+    return r;
+}
+
+void ecc_frost_ristretto255_sha512_derive_group_info(
+    byte_t *PK,
+    byte_t *participant_public_keys,
+    const int n,
+    const int t,
+    const byte_t *vss_commitment
+) {
+    // PK = vss_commitment[0]
+    // participant_public_keys = []
+    // for i in range(1, MAX_PARTICIPANTS+1):
+    //   PK_i = G.Identity()
+    //   for j in range(0, MIN_PARTICIPANTS):
+    //     PK_i += G.ScalarMult(vss_commitment[j], pow(i, j))
+    //   participant_public_keys.append(PK_i)
+    // return PK, participant_public_keys
+
+    memcpy(PK, &vss_commitment[0], ELEMENTSIZE);
+
+    byte_t PK_i[ELEMENTSIZE];
+    byte_t q[ELEMENTSIZE];
+    for (int i = 1; i < n + 1; i++) {
+        ecc_memzero(PK_i, ELEMENTSIZE);
+
+        for (int j = 0; j < t; j++) {
+            const double di = (double) i;
+            const double dj = (double) j;
+            const double dp = pow(di, dj);
+            // TODO: fix overflow
+            byte_t s[SCALARSIZE] = {(byte_t) dp, 0};
+            ecc_ristretto255_scalarmult(
+                q,
+                s,
+                &vss_commitment[j * ELEMENTSIZE]
+            );
+            ecc_ristretto255_add(PK_i, PK_i, q);
+        }
+#if ECC_LOG
+        ecc_log("frost:derive_group_info:PK_i", PK_i, sizeof PK_i);
+#endif
+
+        memcpy(&participant_public_keys[(i - 1) * ELEMENTSIZE], PK_i, ELEMENTSIZE);
     }
 
     // cleanup stack memory
-    ecc_memzero(L_i, sizeof L_i);
-    ecc_memzero(delta, sizeof delta);
+    ecc_memzero(PK_i, sizeof PK_i);
+    ecc_memzero(q, sizeof q);
 }

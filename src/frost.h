@@ -459,7 +459,7 @@ void ecc_frost_ristretto255_sha512_H5(
  * @param SK private key, a scalar, size:ecc_frost_ristretto255_sha512_SECRETKEYSIZE
  */
 ECC_EXPORT
-void ecc_frost_ristretto255_sha512_schnorr_signature_generate(
+void ecc_frost_ristretto255_sha512_prime_order_sign(
     byte_t *signature,
     const byte_t *msg, int msg_len,
     const byte_t *SK
@@ -475,7 +475,7 @@ void ecc_frost_ristretto255_sha512_schnorr_signature_generate(
  * @return 1 if signature is valid, and 0 otherwise
  */
 ECC_EXPORT
-int ecc_frost_ristretto255_sha512_schnorr_signature_verify(
+int ecc_frost_ristretto255_sha512_prime_order_verify(
     const byte_t *msg, int msg_len,
     const byte_t *signature,
     const byte_t *PK
@@ -484,7 +484,7 @@ int ecc_frost_ristretto255_sha512_schnorr_signature_verify(
 /**
  * @param[out] participant_private_keys MAX_PARTICIPANTS shares of the secret key s, each a tuple consisting of the participant identifier (a NonZeroScalar) and the key share (a Scalar), size:n*ecc_frost_ristretto255_sha512_POINTSIZE
  * @param[out] group_public_key public key corresponding to the group signing key, an Element, size:ecc_frost_ristretto255_sha512_ELEMENTSIZE
- * @param[out] vss_commitment a vector commitment of Elements in G, to each of the coefficients in the polynomial defined by secret_key_shares and whose first element is G.ScalarBaseMult(s), size:n*ecc_frost_ristretto255_sha512_ELEMENTSIZE
+ * @param[out] vss_commitment a vector commitment of Elements in G, to each of the coefficients in the polynomial defined by secret_key_shares and whose first element is G.ScalarBaseMult(s), size:t*ecc_frost_ristretto255_sha512_ELEMENTSIZE
  * @param[out] polynomial_coefficients size:t*ecc_frost_ristretto255_sha512_SCALARSIZE
  * @param secret_key a group secret, a Scalar, that MUST be derived from at least Ns bytes of entropy, size:ecc_frost_ristretto255_sha512_SCALARSIZE
  * @param n the number of shares to generate
@@ -525,6 +525,20 @@ int ecc_frost_ristretto255_sha512_secret_share_shard(
 );
 
 /**
+ * Combines a shares list of length MIN_PARTICIPANTS to recover the secret.
+ *
+ * @param[out] s the resulting secret s that was previously split into shares, size:ecc_frost_ristretto255_sha512_SCALARSIZE
+ * @param shares a list of at minimum MIN_PARTICIPANTS secret shares, each a tuple (i, f(i)) where i and f(i) are Scalars, size:shares_len*ecc_frost_ristretto255_sha512_POINTSIZE
+ * @param shares_len the number of shares in `shares`
+ * @return 0 if no errors, else -1
+ */
+ECC_EXPORT
+int ecc_frost_ristretto255_sha512_secret_share_combine(
+    byte_t *s,
+    const byte_t *shares, int shares_len
+);
+
+/**
  * Evaluate a polynomial f at a particular input x, i.e., y = f(x)
  * using Horner's method.
  *
@@ -538,6 +552,20 @@ void ecc_frost_ristretto255_sha512_polynomial_evaluate(
     byte_t *value,
     const byte_t *x,
     const byte_t *coeffs, int coeffs_len
+);
+
+/**
+ * Recover the constant term of an interpolating polynomial defined by a set
+ * of points.
+ *
+ * @param[out] f_zero the constant term of f, i.e., f(0), a scalar, size:ecc_frost_ristretto255_sha512_SCALARSIZE
+ * @param points a set of t points with distinct x coordinates on a polynomial f, each a tuple of two Scalar values representing the x and y coordinates, size:points_len*ecc_frost_ristretto255_sha512_POINTSIZE
+ * @param points_len the number of elements in `points`
+ */
+ECC_EXPORT
+void ecc_frost_ristretto255_sha512_polynomial_interpolate_constant(
+    byte_t *f_zero,
+    const byte_t *points, int points_len
 );
 
 /**
@@ -555,18 +583,36 @@ void ecc_frost_ristretto255_sha512_vss_commit(
 );
 
 /**
- * Secret sharing requires "splitting" a secret, which is represented
- * as a constant term of some polynomial f of degree t. Recovering the
- * constant term occurs with a set of t points using polynomial interpolation.
+ * For verification of a participant's share.
  *
- * @param[out] constant_term the constant term of f, i.e., f(0), size:ecc_frost_ristretto255_sha512_SCALARSIZE
- * @param points a set of `t` points on a polynomial f, each a tuple of two scalar values representing the x and y coordinates, size:points_len*ecc_frost_ristretto255_sha512_POINTSIZE
- * @param points_len the number of points in `points`
+ * @param share_i a tuple of the form (i, sk_i), size:ecc_frost_ristretto255_sha512_POINTSIZE
+ * @param vss_commitment a vector commitment to each of the coefficients in coeffs, where each item of the vector commitment is an Element, size:t*ecc_frost_ristretto255_sha512_ELEMENTSIZE
+ * @param t the threshold of the secret sharing scheme
+ * @return 1 if sk_i is valid, and 0 otherwise.
  */
 ECC_EXPORT
-void ecc_frost_ristretto255_sha512_polynomial_interpolation(
-    byte_t *constant_term,
-    const byte_t *points, int points_len
+int ecc_frost_ristretto255_sha512_vss_verify(
+    const byte_t *share_i,
+    const byte_t *vss_commitment,
+    int t
+);
+
+/**
+ * Derive group info.
+ *
+ * @param[out] PK the public key representing the group, an Element, size:ecc_frost_ristretto255_sha512_ELEMENTSIZE
+ * @param[out] participant_public_keys a list of MAX_PARTICIPANTS public keys PK_i for i=1,...,MAX_PARTICIPANTS, where each PK_i is the public key, an Element, for participant i., size:n*ecc_frost_ristretto255_sha512_ELEMENTSIZE
+ * @param n the number of shares to generate
+ * @param t the threshold of the secret sharing scheme
+ * @param vss_commitment a VSS commitment to a secret polynomial f, a vector commitment to each of the coefficients in coeffs, where each element of the vector commitment is an Element, size:vss_commitment_len*ecc_frost_ristretto255_sha512_ELEMENTSIZE
+ */
+ECC_EXPORT
+void ecc_frost_ristretto255_sha512_derive_group_info(
+    byte_t *PK,
+    byte_t *participant_public_keys,
+    int n,
+    int t,
+    const byte_t *vss_commitment
 );
 
 #endif // ECC_FROST_H
