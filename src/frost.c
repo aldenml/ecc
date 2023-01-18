@@ -8,7 +8,6 @@
 #include "frost.h"
 #include <string.h>
 #include <assert.h>
-#include <math.h>
 #include "util.h"
 #include "hash.h"
 #include "ristretto255.h"
@@ -84,6 +83,16 @@ static_assert(sizeof(BindingFactor_t) == ecc_frost_ristretto255_sha512_BINDINGFA
 static_assert(sizeof(Signature_t) == ecc_frost_ristretto255_sha512_SIGNATURESIZE, "");
 static_assert(sizeof(NoncePair_t) == ecc_frost_ristretto255_sha512_NONCEPAIRSIZE, "");
 static_assert(sizeof(NonceCommitmentPair_t) == ecc_frost_ristretto255_sha512_NONCECOMMITMENTPAIRSIZE, "");
+
+static int pow(int x, int n) {
+    int r = 1;
+
+    for (int i = 0; i < n; i++) {
+        r = r * x;
+    }
+
+    return r;
+}
 
 void ecc_frost_ristretto255_sha512_nonce_generate_with_randomness(
     byte_t *nonce,
@@ -1195,11 +1204,9 @@ int ecc_frost_ristretto255_sha512_vss_verify(
     for (int j = 0; j < t; j++) {
         // TODO: fix overflow
         const int i = share_i->x[0];
-        const double di = (double) i;
-        const double dj = (double) j;
-        const double dp = pow(di, dj);
+        const int p = pow(i, j);
         // TODO: fix overflow
-        byte_t s[SCALARSIZE] = {(byte_t) dp, 0};
+        byte_t s[SCALARSIZE] = {(byte_t) p, 0};
         ecc_ristretto255_scalarmult(
             q,
             s,
@@ -1242,11 +1249,9 @@ void ecc_frost_ristretto255_sha512_derive_group_info(
         ecc_memzero(PK_i, ELEMENTSIZE);
 
         for (int j = 0; j < t; j++) {
-            const double di = (double) i;
-            const double dj = (double) j;
-            const double dp = pow(di, dj);
+            const int p = pow(i, j);
             // TODO: fix overflow
-            byte_t s[SCALARSIZE] = {(byte_t) dp, 0};
+            byte_t s[SCALARSIZE] = {(byte_t) p, 0};
             ecc_ristretto255_scalarmult(
                 q,
                 s,
