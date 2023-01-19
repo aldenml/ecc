@@ -84,7 +84,7 @@ static_assert(sizeof(Signature_t) == ecc_frost_ristretto255_sha512_SIGNATURESIZE
 static_assert(sizeof(NoncePair_t) == ecc_frost_ristretto255_sha512_NONCEPAIRSIZE, "");
 static_assert(sizeof(NonceCommitmentPair_t) == ecc_frost_ristretto255_sha512_NONCECOMMITMENTPAIRSIZE, "");
 
-static int pow(int x, int n) {
+static int power(int x, int n) {
     int r = 1;
 
     for (int i = 0; i < n; i++) {
@@ -1204,7 +1204,7 @@ int ecc_frost_ristretto255_sha512_vss_verify(
     for (int j = 0; j < t; j++) {
         // TODO: fix overflow
         const int i = share_i->x[0];
-        const int p = pow(i, j);
+        const int p = power(i, j);
         // TODO: fix overflow
         byte_t s[SCALARSIZE] = {(byte_t) p, 0};
         ecc_ristretto255_scalarmult(
@@ -1249,7 +1249,7 @@ void ecc_frost_ristretto255_sha512_derive_group_info(
         ecc_memzero(PK_i, ELEMENTSIZE);
 
         for (int j = 0; j < t; j++) {
-            const int p = pow(i, j);
+            const int p = power(i, j);
             // TODO: fix overflow
             byte_t s[SCALARSIZE] = {(byte_t) p, 0};
             ecc_ristretto255_scalarmult(
