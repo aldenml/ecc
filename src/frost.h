@@ -259,7 +259,7 @@ void ecc_frost_ristretto255_sha512_commit(
  * To produce a signature share.
  *
  * @param[out] sig_share signature share, size:ecc_frost_ristretto255_sha512_SCALARSIZE
- * @param identifier identifier of the signer. Note identifier will never equal 0.
+ * @param identifier identifier of the signer. Note identifier will never equal 0, size:ecc_frost_ristretto255_sha512_SCALARSIZE
  * @param sk_i signer secret key share, size:ecc_frost_ristretto255_sha512_SECRETKEYSIZE
  * @param group_public_key public key corresponding to the signer secret key share, size:ecc_frost_ristretto255_sha512_PUBLICKEYSIZE
  * @param nonce_i pair of scalar values generated in round one, size:ecc_frost_ristretto255_sha512_NONCEPAIRSIZE
@@ -301,7 +301,7 @@ void ecc_frost_ristretto255_sha512_aggregate(
 /**
  * Check that the signature share is valid.
  *
- * @param identifier identifier of the signer. Note identifier will never equal 0.
+ * @param identifier identifier of the signer. Note identifier will never equal 0, size:ecc_frost_ristretto255_sha512_SCALARSIZE
  * @param public_key_share_i the public key for the ith signer, size:ecc_frost_ristretto255_sha512_PUBLICKEYSIZE
  * @param comm_i pair of Element values (hiding_nonce_commitment, binding_nonce_commitment) generated in round one from the ith signer, size:ecc_frost_ristretto255_sha512_NONCECOMMITMENTPAIRSIZE
  * @param sig_share_i a Scalar value indicating the signature share as produced in round two from the ith signer, size:ecc_frost_ristretto255_sha512_SCALARSIZE
@@ -604,7 +604,7 @@ int ecc_frost_ristretto255_sha512_vss_verify(
  * @param[out] participant_public_keys a list of MAX_PARTICIPANTS public keys PK_i for i=1,...,MAX_PARTICIPANTS, where each PK_i is the public key, an Element, for participant i., size:n*ecc_frost_ristretto255_sha512_ELEMENTSIZE
  * @param n the number of shares to generate
  * @param t the threshold of the secret sharing scheme
- * @param vss_commitment a VSS commitment to a secret polynomial f, a vector commitment to each of the coefficients in coeffs, where each element of the vector commitment is an Element, size:vss_commitment_len*ecc_frost_ristretto255_sha512_ELEMENTSIZE
+ * @param vss_commitment a VSS commitment to a secret polynomial f, a vector commitment to each of the coefficients in coeffs, where each element of the vector commitment is an Element, size:t*ecc_frost_ristretto255_sha512_ELEMENTSIZE
  */
 ECC_EXPORT
 void ecc_frost_ristretto255_sha512_derive_group_info(

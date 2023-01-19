@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2022, Alden Torres
+ * Copyright (c) 2021-2023, Alden Torres
  *
  * Licensed under the terms of the MIT license.
  * Copy of the license at https://opensource.org/licenses/MIT
@@ -237,22 +237,10 @@ public final class libecc {
     public static final int ecc_mac_hmac_sha256_HASHSIZE = 32;
 
     /**
-     * Size of a HMAC-SHA-256 key.
-     *
-     */
-    public static final int ecc_mac_hmac_sha256_KEYSIZE = 32;
-
-    /**
      * Size of the HMAC-SHA-512 digest.
      *
      */
     public static final int ecc_mac_hmac_sha512_HASHSIZE = 64;
-
-    /**
-     * Size of a HMAC-SHA-512 key.
-     *
-     */
-    public static final int ecc_mac_hmac_sha512_KEYSIZE = 64;
 
     /**
      * Computes the HMAC-SHA-256 of the input stream.
@@ -263,13 +251,15 @@ public final class libecc {
      * @param digest (output) the HMAC-SHA-256 of the input, size:ecc_mac_hmac_sha256_HASHSIZE
      * @param text the input message, size:text_len
      * @param text_len the length of `input`
-     * @param key authentication key, size:ecc_mac_hmac_sha256_KEYSIZE
+     * @param key authentication key, size:key_len
+     * @param key_len the length of `key`
      */
     public static native void ecc_mac_hmac_sha256(
         byte[] digest,
         byte[] text,
         int text_len,
-        byte[] key
+        byte[] key,
+        int key_len
     );
 
     /**
@@ -281,13 +271,15 @@ public final class libecc {
      * @param digest (output) the HMAC-SHA-512 of the input, size:ecc_mac_hmac_sha512_HASHSIZE
      * @param text the input message, size:text_len
      * @param text_len the length of `input`
-     * @param key authentication key, size:ecc_mac_hmac_sha512_KEYSIZE
+     * @param key authentication key, size:key_len
+     * @param key_len the length of `key`
      */
     public static native void ecc_mac_hmac_sha512(
         byte[] digest,
         byte[] text,
         int text_len,
-        byte[] key
+        byte[] key,
+        int key_len
     );
 
     // kdf
@@ -392,6 +384,7 @@ public final class libecc {
      * @param block_size block size
      * @param parallelization parallelization
      * @param len intended output length
+     * @return 0 on success and -1 if the computation didn't complete
      */
     public static native int ecc_kdf_scrypt(
         byte[] out,
@@ -468,6 +461,15 @@ public final class libecc {
         byte[] r,
         byte[] p,
         byte[] q
+    );
+
+    /**
+     * Main group base point (x, 4/5), generator of the prime group.
+     *
+     * @param g (output) size:ecc_ed25519_ELEMENTSIZE
+     */
+    public static native void ecc_ed25519_generator(
+        byte[] g
     );
 
     /**
@@ -597,12 +599,18 @@ public final class libecc {
     );
 
     /**
-     * Multiplies a point p by a valid scalar n (without clamping) and puts
+     * Multiplies a point p by a valid scalar n (clamped) and puts
      * the Y coordinate of the resulting point into q.
      * 
      * This function returns 0 on success, or -1 if n is 0 or if p is not
      * on the curve, not on the main subgroup, is a point of small order,
      * or is not provided in canonical form.
+     * 
+     * Note that n is "clamped" (the 3 low bits are cleared to make it a
+     * multiple of the cofactor, bit 254 is set and bit 255 is cleared to
+     * respect the original design). This prevents attacks using small
+     * subgroups. If you want to implement protocols that involve blinding
+     * operations, use ristretto255.
      *
      * @param q (output) the result, size:ecc_ed25519_ELEMENTSIZE
      * @param n the valid input scalar, size:ecc_ed25519_SCALARSIZE
@@ -616,8 +624,14 @@ public final class libecc {
     );
 
     /**
-     * Multiplies the base point (x, 4/5) by a scalar n (without clamping) and puts
+     * Multiplies the base point (x, 4/5) by a scalar n (clamped) and puts
      * the Y coordinate of the resulting point into q.
+     * 
+     * Note that n is "clamped" (the 3 low bits are cleared to make it a
+     * multiple of the cofactor, bit 254 is set and bit 255 is cleared to
+     * respect the original design). This prevents attacks using small
+     * subgroups. If you want to implement protocols that involve blinding
+     * operations, use ristretto255.
      *
      * @param q (output) the result, size:ecc_ed25519_ELEMENTSIZE
      * @param n the valid input scalar, size:ecc_ed25519_SCALARSIZE
@@ -1149,43 +1163,42 @@ public final class libecc {
      * *
      *
      */
-    public static final int ecc_h2c_expand_message_xmd_sha256_MAXSIZE = 256;
+    public static final int ecc_h2c_expand_message_xmd_sha256_MAXSIZE = 8160;
 
     /**
      * *
      *
      */
-    public static final int ecc_h2c_expand_message_xmd_sha256_DSTMAXSIZE = 256;
+    public static final int ecc_h2c_expand_message_xmd_sha256_DSTMAXSIZE = 255;
 
     /**
      * *
      *
      */
-    public static final int ecc_h2c_expand_message_xmd_sha512_MAXSIZE = 256;
+    public static final int ecc_h2c_expand_message_xmd_sha512_MAXSIZE = 16320;
 
     /**
      * *
      *
      */
-    public static final int ecc_h2c_expand_message_xmd_sha512_DSTMAXSIZE = 256;
+    public static final int ecc_h2c_expand_message_xmd_sha512_DSTMAXSIZE = 255;
 
     /**
      * Produces a uniformly random byte string using SHA-256.
-     * 
-     * In order to make this method to use only the stack, len should be
-     * <
-     * = 256.
-     * 
-     * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-hash-to-curve-11#section-5.4.1
      *
      * @param out (output) a byte string, should be at least of size `len`, size:len
      * @param msg a byte string, size:msg_len
      * @param msg_len the length of `msg`
      * @param dst a byte string of at most 255 bytes, size:dst_len
-     * @param dst_len the length of `dst`, should be less or equal to 256
-     * @param len the length of the requested output in bytes, should be less or equal to 256
+     * @param dst_len the length of `dst`, should be
+     * <
+     * = ecc_h2c_expand_message_xmd_sha256_DSTMAXSIZE
+     * @param len the length of the requested output in bytes, should be
+     * <
+     * = ecc_h2c_expand_message_xmd_sha256_MAXSIZE
+     * @return 0 on success or -1 if arguments are out of range
      */
-    public static native void ecc_h2c_expand_message_xmd_sha256(
+    public static native int ecc_h2c_expand_message_xmd_sha256(
         byte[] out,
         byte[] msg,
         int msg_len,
@@ -1196,12 +1209,6 @@ public final class libecc {
 
     /**
      * Produces a uniformly random byte string using SHA-512.
-     * 
-     * In order to make this method to use only the stack, len should be
-     * <
-     * = 256.
-     * 
-     * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-hash-to-curve-11#section-5.4.1
      *
      * @param out (output) a byte string, should be at least of size `len`, size:len
      * @param msg a byte string, size:msg_len
@@ -1209,12 +1216,13 @@ public final class libecc {
      * @param dst a byte string of at most 255 bytes, size:dst_len
      * @param dst_len the length of `dst`, should be
      * <
-     * = 256
+     * = ecc_h2c_expand_message_xmd_sha512_DSTMAXSIZE
      * @param len the length of the requested output in bytes, should be
      * <
-     * = 256
+     * = ecc_h2c_expand_message_xmd_sha512_MAXSIZE
+     * @return 0 on success or -1 if arguments are out of range
      */
-    public static native void ecc_h2c_expand_message_xmd_sha512(
+    public static native int ecc_h2c_expand_message_xmd_sha512(
         byte[] out,
         byte[] msg,
         int msg_len,
@@ -1223,40 +1231,40 @@ public final class libecc {
         int len
     );
 
-    // oprf
+    // voprf
 
     /**
      * Size of a serialized group element, since this is the ristretto255
      * curve the size is 32 bytes.
      *
      */
-    public static final int ecc_oprf_ristretto255_sha512_ELEMENTSIZE = 32;
+    public static final int ecc_voprf_ristretto255_sha512_ELEMENTSIZE = 32;
 
     /**
      * Size of a serialized scalar, since this is the ristretto255
      * curve the size is 32 bytes.
      *
      */
-    public static final int ecc_oprf_ristretto255_sha512_SCALARSIZE = 32;
+    public static final int ecc_voprf_ristretto255_sha512_SCALARSIZE = 32;
 
     /**
      * Size of a proof. Proof is a sequence of two scalars.
      *
      */
-    public static final int ecc_oprf_ristretto255_sha512_PROOFSIZE = 64;
+    public static final int ecc_voprf_ristretto255_sha512_PROOFSIZE = 64;
 
     /**
      * Size of the protocol output in the `Finalize` operations, since
      * this is ristretto255 with SHA-512, the size is 64 bytes.
      *
      */
-    public static final int ecc_oprf_ristretto255_sha512_Nh = 64;
+    public static final int ecc_voprf_ristretto255_sha512_Nh = 64;
 
     /**
      * A client and server interact to compute output = F(skS, input, info).
      *
      */
-    public static final int ecc_oprf_ristretto255_sha512_MODE_BASE = 0;
+    public static final int ecc_voprf_ristretto255_sha512_MODE_OPRF = 0;
 
     /**
      * A client and server interact to compute output = F(skS, input, info) and
@@ -1264,52 +1272,382 @@ public final class libecc {
      * the function.
      *
      */
-    public static final int ecc_oprf_ristretto255_sha512_MODE_VERIFIABLE = 1;
+    public static final int ecc_voprf_ristretto255_sha512_MODE_VOPRF = 1;
 
     /**
-     * Evaluates serialized representations of blinded group elements from the
-     * client as inputs.
-     * 
-     * This operation could fail if internally, there is an attempt to invert
-     * the `0` scalar.
-     * 
-     * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-voprf-08#section-3.3.1.1
+     * A client and server interact to compute output = F(skS, input, info).
+     * Allows clients and servers to provide public input to the PRF computation.
      *
-     * @param evaluatedElement (output) evaluated element, size:ecc_oprf_ristretto255_sha512_ELEMENTSIZE
-     * @param skS private key, size:ecc_oprf_ristretto255_sha512_SCALARSIZE
-     * @param blindedElement blinded element, size:ecc_oprf_ristretto255_sha512_ELEMENTSIZE
-     * @param info opaque byte string no larger than 200 bytes, size:infoLen
-     * @param infoLen the size of `info`
-     * @return 0 on success, or -1 if an error
      */
-    public static native int ecc_oprf_ristretto255_sha512_Evaluate(
-        byte[] evaluatedElement,
-        byte[] skS,
-        byte[] blindedElement,
-        byte[] info,
-        int infoLen
+    public static final int ecc_voprf_ristretto255_sha512_MODE_POPRF = 2;
+
+    /**
+     * *
+     *
+     */
+    public static final int ecc_voprf_ristretto255_sha512_MAXINFOSIZE = 2000;
+
+    /**
+     * 
+     *
+     * @param proof (output) size:ecc_voprf_ristretto255_sha512_PROOFSIZE
+     * @param k size:ecc_voprf_ristretto255_sha512_SCALARSIZE
+     * @param A size:ecc_voprf_ristretto255_sha512_ELEMENTSIZE
+     * @param B size:ecc_voprf_ristretto255_sha512_ELEMENTSIZE
+     * @param C size:m*ecc_voprf_ristretto255_sha512_ELEMENTSIZE
+     * @param D size:m*ecc_voprf_ristretto255_sha512_ELEMENTSIZE
+     * @param m the size of the `C` and `D` arrays
+     * @param mode the protocol mode VOPRF or POPRF
+     * @param r size:ecc_voprf_ristretto255_sha512_SCALARSIZE
+     */
+    public static native void ecc_voprf_ristretto255_sha512_GenerateProofWithScalar(
+        byte[] proof,
+        byte[] k,
+        byte[] A,
+        byte[] B,
+        byte[] C,
+        byte[] D,
+        int m,
+        int mode,
+        byte[] r
     );
 
     /**
-     * Evaluates serialized representations of blinded group elements from the
-     * client as inputs and produces a proof that `skS` was used in computing
-     * the result.
      * 
-     * This operation could fail if internally, there is an attempt to invert
-     * the `0` scalar.
-     * 
-     * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-voprf-08#section-3.3.2.1
      *
-     * @param evaluatedElement (output) evaluated element, size:ecc_oprf_ristretto255_sha512_ELEMENTSIZE
-     * @param proof (output) size:ecc_oprf_ristretto255_sha512_PROOFSIZE
-     * @param skS private key, size:ecc_oprf_ristretto255_sha512_SCALARSIZE
-     * @param blindedElement blinded element, size:ecc_oprf_ristretto255_sha512_ELEMENTSIZE
-     * @param info opaque byte string no larger than 200 bytes, size:infoLen
-     * @param infoLen the size of `info`
-     * @param r size:ecc_oprf_ristretto255_sha512_SCALARSIZE
+     * @param proof (output) size:ecc_voprf_ristretto255_sha512_PROOFSIZE
+     * @param k size:ecc_voprf_ristretto255_sha512_SCALARSIZE
+     * @param A size:ecc_voprf_ristretto255_sha512_ELEMENTSIZE
+     * @param B size:ecc_voprf_ristretto255_sha512_ELEMENTSIZE
+     * @param C size:m*ecc_voprf_ristretto255_sha512_ELEMENTSIZE
+     * @param D size:m*ecc_voprf_ristretto255_sha512_ELEMENTSIZE
+     * @param m the size of the `C` and `D` arrays
+     * @param mode the protocol mode VOPRF or POPRF
+     */
+    public static native void ecc_voprf_ristretto255_sha512_GenerateProof(
+        byte[] proof,
+        byte[] k,
+        byte[] A,
+        byte[] B,
+        byte[] C,
+        byte[] D,
+        int m,
+        int mode
+    );
+
+    /**
+     * 
+     *
+     * @param M (output) size:ecc_voprf_ristretto255_sha512_ELEMENTSIZE
+     * @param Z (output) size:ecc_voprf_ristretto255_sha512_ELEMENTSIZE
+     * @param k size:ecc_voprf_ristretto255_sha512_SCALARSIZE
+     * @param B size:ecc_voprf_ristretto255_sha512_ELEMENTSIZE
+     * @param C size:m*ecc_voprf_ristretto255_sha512_ELEMENTSIZE
+     * @param D size:m*ecc_voprf_ristretto255_sha512_ELEMENTSIZE
+     * @param m the size of the `C` and `D` arrays
+     * @param mode the protocol mode VOPRF or POPRF
+     */
+    public static native void ecc_voprf_ristretto255_sha512_ComputeCompositesFast(
+        byte[] M,
+        byte[] Z,
+        byte[] k,
+        byte[] B,
+        byte[] C,
+        byte[] D,
+        int m,
+        int mode
+    );
+
+    /**
+     * 
+     *
+     * @param A size:ecc_voprf_ristretto255_sha512_ELEMENTSIZE
+     * @param B size:ecc_voprf_ristretto255_sha512_ELEMENTSIZE
+     * @param C size:m*ecc_voprf_ristretto255_sha512_ELEMENTSIZE
+     * @param D size:m*ecc_voprf_ristretto255_sha512_ELEMENTSIZE
+     * @param m the size of the `C` and `D` arrays
+     * @param mode the protocol mode VOPRF or POPRF
+     * @param proof size:ecc_voprf_ristretto255_sha512_PROOFSIZE
+     * @return on success verification returns 1, else 0.
+     */
+    public static native int ecc_voprf_ristretto255_sha512_VerifyProof(
+        byte[] A,
+        byte[] B,
+        byte[] C,
+        byte[] D,
+        int m,
+        int mode,
+        byte[] proof
+    );
+
+    /**
+     * 
+     *
+     * @param M (output) size:ecc_voprf_ristretto255_sha512_ELEMENTSIZE
+     * @param Z (output) size:ecc_voprf_ristretto255_sha512_ELEMENTSIZE
+     * @param B size:ecc_voprf_ristretto255_sha512_ELEMENTSIZE
+     * @param C size:m*ecc_voprf_ristretto255_sha512_ELEMENTSIZE
+     * @param D size:m*ecc_voprf_ristretto255_sha512_ELEMENTSIZE
+     * @param m the size of the `C` and `D` arrays
+     * @param mode the protocol mode VOPRF or POPRF
+     */
+    public static native void ecc_voprf_ristretto255_sha512_ComputeComposites(
+        byte[] M,
+        byte[] Z,
+        byte[] B,
+        byte[] C,
+        byte[] D,
+        int m,
+        int mode
+    );
+
+    /**
+     * In the offline setup phase, the server key pair (skS, pkS) is generated using
+     * this function, which produces a randomly generate private and public key pair.
+     *
+     * @param skS (output) size:ecc_voprf_ristretto255_sha512_SCALARSIZE
+     * @param pkS (output) size:ecc_voprf_ristretto255_sha512_ELEMENTSIZE
+     */
+    public static native void ecc_voprf_ristretto255_sha512_GenerateKeyPair(
+        byte[] skS,
+        byte[] pkS
+    );
+
+    /**
+     * Deterministically generate a key. It accepts a randomly generated seed of
+     * length Ns bytes and an optional (possibly empty) public info string.
+     *
+     * @param skS (output) size:ecc_voprf_ristretto255_sha512_SCALARSIZE
+     * @param pkS (output) size:ecc_voprf_ristretto255_sha512_ELEMENTSIZE
+     * @param seed size:ecc_voprf_ristretto255_sha512_SCALARSIZE
+     * @param info size:infoLen
+     * @param infoLen the size of `info`, it should be
+     * <
+     * = ecc_voprf_ristretto255_sha512_MAXINFOSIZE
+     * @param mode the protocol mode VOPRF or POPRF
      * @return 0 on success, or -1 if an error
      */
-    public static native int ecc_oprf_ristretto255_sha512_VerifiableEvaluateWithScalar(
+    public static native int ecc_voprf_ristretto255_sha512_DeriveKeyPair(
+        byte[] skS,
+        byte[] pkS,
+        byte[] seed,
+        byte[] info,
+        int infoLen,
+        int mode
+    );
+
+    /**
+     * Same as calling `ecc_voprf_ristretto255_sha512_Blind` with an
+     * specified scalar blind.
+     *
+     * @param blindedElement (output) blinded element, size:ecc_voprf_ristretto255_sha512_ELEMENTSIZE
+     * @param input message to blind, size:inputLen
+     * @param inputLen length of `input`
+     * @param blind scalar to use in the blind operation, size:ecc_voprf_ristretto255_sha512_SCALARSIZE
+     * @param mode oprf mode
+     * @return 0 on success, or -1 if an error
+     */
+    public static native int ecc_voprf_ristretto255_sha512_BlindWithScalar(
+        byte[] blindedElement,
+        byte[] input,
+        int inputLen,
+        byte[] blind,
+        int mode
+    );
+
+    /**
+     * 
+     *
+     * @param blind (output) scalar used in the blind operation, size:ecc_voprf_ristretto255_sha512_SCALARSIZE
+     * @param blindedElement (output) blinded element, size:ecc_voprf_ristretto255_sha512_ELEMENTSIZE
+     * @param input message to blind, size:inputLen
+     * @param inputLen length of `input`
+     * @param mode oprf mode
+     * @return 0 on success, or -1 if an error
+     */
+    public static native int ecc_voprf_ristretto255_sha512_Blind(
+        byte[] blind,
+        byte[] blindedElement,
+        byte[] input,
+        int inputLen,
+        int mode
+    );
+
+    /**
+     * 
+     *
+     * @param evaluatedElement (output) blinded element, size:ecc_voprf_ristretto255_sha512_ELEMENTSIZE
+     * @param skS scalar used in the blind operation, size:ecc_voprf_ristretto255_sha512_SCALARSIZE
+     * @param blindedElement blinded element, size:ecc_voprf_ristretto255_sha512_ELEMENTSIZE
+     */
+    public static native void ecc_voprf_ristretto255_sha512_BlindEvaluate(
+        byte[] evaluatedElement,
+        byte[] skS,
+        byte[] blindedElement
+    );
+
+    /**
+     * 
+     *
+     * @param output (output) size:ecc_voprf_ristretto255_sha512_Nh
+     * @param input the input message, size:inputLen
+     * @param inputLen the length of `input`
+     * @param blind size:ecc_voprf_ristretto255_sha512_SCALARSIZE
+     * @param evaluatedElement size:ecc_voprf_ristretto255_sha512_ELEMENTSIZE
+     */
+    public static native void ecc_voprf_ristretto255_sha512_Finalize(
+        byte[] output,
+        byte[] input,
+        int inputLen,
+        byte[] blind,
+        byte[] evaluatedElement
+    );
+
+    /**
+     * 
+     *
+     * @param output (output) size:ecc_voprf_ristretto255_sha512_Nh
+     * @param skS size:ecc_voprf_ristretto255_sha512_SCALARSIZE
+     * @param input the input message, size:inputLen
+     * @param inputLen the length of `input`
+     * @param mode oprf mode
+     * @return 0 on success, or -1 if an error
+     */
+    public static native int ecc_voprf_ristretto255_sha512_Evaluate(
+        byte[] output,
+        byte[] skS,
+        byte[] input,
+        int inputLen,
+        int mode
+    );
+
+    /**
+     * 
+     *
+     * @param evaluatedElement (output) size:ecc_voprf_ristretto255_sha512_ELEMENTSIZE
+     * @param proof (output) size:ecc_voprf_ristretto255_sha512_PROOFSIZE
+     * @param skS size:ecc_voprf_ristretto255_sha512_SCALARSIZE
+     * @param pkS size:ecc_voprf_ristretto255_sha512_ELEMENTSIZE
+     * @param blindedElement size:ecc_voprf_ristretto255_sha512_ELEMENTSIZE
+     * @param r size:ecc_voprf_ristretto255_sha512_SCALARSIZE
+     */
+    public static native void ecc_voprf_ristretto255_sha512_VerifiableBlindEvaluateWithScalar(
+        byte[] evaluatedElement,
+        byte[] proof,
+        byte[] skS,
+        byte[] pkS,
+        byte[] blindedElement,
+        byte[] r
+    );
+
+    /**
+     * 
+     *
+     * @param evaluatedElement (output) size:ecc_voprf_ristretto255_sha512_ELEMENTSIZE
+     * @param proof (output) size:ecc_voprf_ristretto255_sha512_PROOFSIZE
+     * @param skS size:ecc_voprf_ristretto255_sha512_SCALARSIZE
+     * @param pkS size:ecc_voprf_ristretto255_sha512_ELEMENTSIZE
+     * @param blindedElement size:ecc_voprf_ristretto255_sha512_ELEMENTSIZE
+     */
+    public static native void ecc_voprf_ristretto255_sha512_VerifiableBlindEvaluate(
+        byte[] evaluatedElement,
+        byte[] proof,
+        byte[] skS,
+        byte[] pkS,
+        byte[] blindedElement
+    );
+
+    /**
+     * 
+     *
+     * @param output (output) size:ecc_voprf_ristretto255_sha512_Nh
+     * @param input the input message, size:inputLen
+     * @param inputLen the length of `input`
+     * @param blind size:ecc_voprf_ristretto255_sha512_SCALARSIZE
+     * @param evaluatedElement size:ecc_voprf_ristretto255_sha512_ELEMENTSIZE
+     * @param blindedElement size:ecc_voprf_ristretto255_sha512_ELEMENTSIZE
+     * @param pkS size:ecc_voprf_ristretto255_sha512_ELEMENTSIZE
+     * @param proof size:ecc_voprf_ristretto255_sha512_PROOFSIZE
+     * @return 0 on success, or -1 if an error
+     */
+    public static native int ecc_voprf_ristretto255_sha512_VerifiableFinalize(
+        byte[] output,
+        byte[] input,
+        int inputLen,
+        byte[] blind,
+        byte[] evaluatedElement,
+        byte[] blindedElement,
+        byte[] pkS,
+        byte[] proof
+    );
+
+    /**
+     * 
+     *
+     * @param blindedElement (output) blinded element, size:ecc_voprf_ristretto255_sha512_ELEMENTSIZE
+     * @param tweakedKey (output) blinded element, size:ecc_voprf_ristretto255_sha512_ELEMENTSIZE
+     * @param input message to blind, size:inputLen
+     * @param inputLen length of `input`
+     * @param info message to blind, size:infoLen
+     * @param infoLen length of `info`, it should be
+     * <
+     * = ecc_voprf_ristretto255_sha512_MAXINFOSIZE
+     * @param pkS size:ecc_voprf_ristretto255_sha512_ELEMENTSIZE
+     * @param blind size:ecc_voprf_ristretto255_sha512_SCALARSIZE
+     * @return 0 on success, or -1 if an error
+     */
+    public static native int ecc_voprf_ristretto255_sha512_PartiallyBlindWithScalar(
+        byte[] blindedElement,
+        byte[] tweakedKey,
+        byte[] input,
+        int inputLen,
+        byte[] info,
+        int infoLen,
+        byte[] pkS,
+        byte[] blind
+    );
+
+    /**
+     * 
+     *
+     * @param blind (output) scalar used in the blind operation, size:ecc_voprf_ristretto255_sha512_SCALARSIZE
+     * @param blindedElement (output) blinded element, size:ecc_voprf_ristretto255_sha512_ELEMENTSIZE
+     * @param tweakedKey (output) blinded element, size:ecc_voprf_ristretto255_sha512_ELEMENTSIZE
+     * @param input message to blind, size:inputLen
+     * @param inputLen length of `input`
+     * @param info message to blind, size:infoLen
+     * @param infoLen length of `info`, it should be
+     * <
+     * = ecc_voprf_ristretto255_sha512_MAXINFOSIZE
+     * @param pkS size:ecc_voprf_ristretto255_sha512_ELEMENTSIZE
+     * @return 0 on success, or -1 if an error
+     */
+    public static native int ecc_voprf_ristretto255_sha512_PartiallyBlind(
+        byte[] blind,
+        byte[] blindedElement,
+        byte[] tweakedKey,
+        byte[] input,
+        int inputLen,
+        byte[] info,
+        int infoLen,
+        byte[] pkS
+    );
+
+    /**
+     * 
+     *
+     * @param evaluatedElement (output) size:ecc_voprf_ristretto255_sha512_ELEMENTSIZE
+     * @param proof (output) size:ecc_voprf_ristretto255_sha512_PROOFSIZE
+     * @param skS size:ecc_voprf_ristretto255_sha512_SCALARSIZE
+     * @param blindedElement size:ecc_voprf_ristretto255_sha512_ELEMENTSIZE
+     * @param info message to blind, size:infoLen
+     * @param infoLen length of `info`, it should be
+     * <
+     * = ecc_voprf_ristretto255_sha512_MAXINFOSIZE
+     * @param r size:ecc_voprf_ristretto255_sha512_SCALARSIZE
+     * @return 0 on success, or -1 if an error
+     */
+    public static native int ecc_voprf_ristretto255_sha512_PartiallyBlindEvaluateWithScalar(
         byte[] evaluatedElement,
         byte[] proof,
         byte[] skS,
@@ -1320,24 +1658,19 @@ public final class libecc {
     );
 
     /**
-     * Evaluates serialized representations of blinded group elements from the
-     * client as inputs and produces a proof that `skS` was used in computing
-     * the result.
      * 
-     * This operation could fail if internally, there is an attempt to invert
-     * the `0` scalar.
-     * 
-     * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-voprf-08#section-3.3.2.1
      *
-     * @param evaluatedElement (output) evaluated element, size:ecc_oprf_ristretto255_sha512_ELEMENTSIZE
-     * @param proof (output) size:ecc_oprf_ristretto255_sha512_PROOFSIZE
-     * @param skS private key, size:ecc_oprf_ristretto255_sha512_SCALARSIZE
-     * @param blindedElement blinded element, size:ecc_oprf_ristretto255_sha512_ELEMENTSIZE
-     * @param info opaque byte string no larger than 200 bytes, size:infoLen
-     * @param infoLen the size of `info`
+     * @param evaluatedElement (output) size:ecc_voprf_ristretto255_sha512_ELEMENTSIZE
+     * @param proof (output) size:ecc_voprf_ristretto255_sha512_PROOFSIZE
+     * @param skS size:ecc_voprf_ristretto255_sha512_SCALARSIZE
+     * @param blindedElement size:ecc_voprf_ristretto255_sha512_ELEMENTSIZE
+     * @param info message to blind, size:infoLen
+     * @param infoLen length of `info`, it should be
+     * <
+     * = ecc_voprf_ristretto255_sha512_MAXINFOSIZE
      * @return 0 on success, or -1 if an error
      */
-    public static native int ecc_oprf_ristretto255_sha512_VerifiableEvaluate(
+    public static native int ecc_voprf_ristretto255_sha512_PartiallyBlindEvaluate(
         byte[] evaluatedElement,
         byte[] proof,
         byte[] skS,
@@ -1347,240 +1680,69 @@ public final class libecc {
     );
 
     /**
-     * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-voprf-08#section-3.3.2.2
-     *
-     * @param proof (output) size:ecc_oprf_ristretto255_sha512_PROOFSIZE
-     * @param k size:ecc_oprf_ristretto255_sha512_SCALARSIZE
-     * @param A size:ecc_oprf_ristretto255_sha512_ELEMENTSIZE
-     * @param B size:ecc_oprf_ristretto255_sha512_ELEMENTSIZE
-     * @param C size:ecc_oprf_ristretto255_sha512_ELEMENTSIZE
-     * @param D size:ecc_oprf_ristretto255_sha512_ELEMENTSIZE
-     * @param r size:ecc_oprf_ristretto255_sha512_SCALARSIZE
-     */
-    public static native void ecc_oprf_ristretto255_sha512_GenerateProofWithScalar(
-        byte[] proof,
-        byte[] k,
-        byte[] A,
-        byte[] B,
-        byte[] C,
-        byte[] D,
-        byte[] r
-    );
-
-    /**
-     * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-voprf-08#section-3.3.2.2
-     *
-     * @param proof (output) size:ecc_oprf_ristretto255_sha512_PROOFSIZE
-     * @param k size:ecc_oprf_ristretto255_sha512_SCALARSIZE
-     * @param A size:ecc_oprf_ristretto255_sha512_ELEMENTSIZE
-     * @param B size:ecc_oprf_ristretto255_sha512_ELEMENTSIZE
-     * @param C size:ecc_oprf_ristretto255_sha512_ELEMENTSIZE
-     * @param D size:ecc_oprf_ristretto255_sha512_ELEMENTSIZE
-     */
-    public static native void ecc_oprf_ristretto255_sha512_GenerateProof(
-        byte[] proof,
-        byte[] k,
-        byte[] A,
-        byte[] B,
-        byte[] C,
-        byte[] D
-    );
-
-    /**
-     * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-voprf-08#section-3.3.2.3
-     *
-     * @param M (output) size:ecc_oprf_ristretto255_sha512_ELEMENTSIZE
-     * @param Z (output) size:ecc_oprf_ristretto255_sha512_ELEMENTSIZE
-     * @param B size:ecc_oprf_ristretto255_sha512_ELEMENTSIZE
-     * @param Cs size:m*ecc_oprf_ristretto255_sha512_ELEMENTSIZE
-     * @param Ds size:m*ecc_oprf_ristretto255_sha512_ELEMENTSIZE
-     * @param m the size of the `Cs` and `Ds` arrays
-     */
-    public static native void ecc_oprf_ristretto255_sha512_ComputeComposites(
-        byte[] M,
-        byte[] Z,
-        byte[] B,
-        byte[] Cs,
-        byte[] Ds,
-        int m
-    );
-
-    /**
-     * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-voprf-08#section-3.3.2.3
-     *
-     * @param M (output) size:ecc_oprf_ristretto255_sha512_ELEMENTSIZE
-     * @param Z (output) size:ecc_oprf_ristretto255_sha512_ELEMENTSIZE
-     * @param k size:ecc_oprf_ristretto255_sha512_SCALARSIZE
-     * @param B size:ecc_oprf_ristretto255_sha512_ELEMENTSIZE
-     * @param Cs size:m*ecc_oprf_ristretto255_sha512_ELEMENTSIZE
-     * @param Ds size:m*ecc_oprf_ristretto255_sha512_ELEMENTSIZE
-     * @param m the size of the `Cs` and `Ds` arrays
-     */
-    public static native void ecc_oprf_ristretto255_sha512_ComputeCompositesFast(
-        byte[] M,
-        byte[] Z,
-        byte[] k,
-        byte[] B,
-        byte[] Cs,
-        byte[] Ds,
-        int m
-    );
-
-    /**
-     * Same as calling `ecc_oprf_ristretto255_sha512_Blind` with an
-     * specified scalar blind.
      * 
-     * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-voprf-08#section-3.3.3.1
      *
-     * @param blindedElement (output) blinded element, size:ecc_oprf_ristretto255_sha512_ELEMENTSIZE
-     * @param input message to blind, size:inputLen
-     * @param inputLen length of `input`
-     * @param blind scalar to use in the blind operation, size:ecc_oprf_ristretto255_sha512_SCALARSIZE
-     * @param mode oprf mode
-     */
-    public static native void ecc_oprf_ristretto255_sha512_BlindWithScalar(
-        byte[] blindedElement,
-        byte[] input,
-        int inputLen,
-        byte[] blind,
-        int mode
-    );
-
-    /**
-     * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-voprf-08#section-3.3.3.1
-     *
-     * @param blindedElement (output) blinded element, size:ecc_oprf_ristretto255_sha512_ELEMENTSIZE
-     * @param blind (output) scalar used in the blind operation, size:ecc_oprf_ristretto255_sha512_SCALARSIZE
-     * @param input message to blind, size:inputLen
-     * @param inputLen length of `input`
-     * @param mode oprf mode
-     */
-    public static native void ecc_oprf_ristretto255_sha512_Blind(
-        byte[] blindedElement,
-        byte[] blind,
-        byte[] input,
-        int inputLen,
-        int mode
-    );
-
-    /**
-     * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-voprf-08#section-3.3.3.1
-     *
-     * @param unblindedElement (output) size:ecc_oprf_ristretto255_sha512_ELEMENTSIZE
-     * @param blind size:ecc_oprf_ristretto255_sha512_SCALARSIZE
-     * @param evaluatedElement size:ecc_oprf_ristretto255_sha512_ELEMENTSIZE
-     */
-    public static native void ecc_oprf_ristretto255_sha512_Unblind(
-        byte[] unblindedElement,
-        byte[] blind,
-        byte[] evaluatedElement
-    );
-
-    /**
-     * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-voprf-08#section-3.3.3.2
-     *
-     * @param output (output) size:ecc_oprf_ristretto255_sha512_Nh
+     * @param output (output) size:ecc_voprf_ristretto255_sha512_Nh
      * @param input the input message, size:inputLen
      * @param inputLen the length of `input`
-     * @param blind size:ecc_oprf_ristretto255_sha512_SCALARSIZE
-     * @param evaluatedElement size:ecc_oprf_ristretto255_sha512_ELEMENTSIZE
-     * @param info size:infoLen
-     * @param infoLen the length of `info`
+     * @param blind size:ecc_voprf_ristretto255_sha512_SCALARSIZE
+     * @param evaluatedElement size:ecc_voprf_ristretto255_sha512_ELEMENTSIZE
+     * @param blindedElement size:ecc_voprf_ristretto255_sha512_ELEMENTSIZE
+     * @param proof size:ecc_voprf_ristretto255_sha512_PROOFSIZE
+     * @param info message to blind, size:infoLen
+     * @param infoLen length of `info`, it should be
+     * <
+     * = ecc_voprf_ristretto255_sha512_MAXINFOSIZE
+     * @param tweakedKey blinded element, size:ecc_voprf_ristretto255_sha512_ELEMENTSIZE
+     * @return 0 on success, or -1 if an error
      */
-    public static native void ecc_oprf_ristretto255_sha512_Finalize(
+    public static native int ecc_voprf_ristretto255_sha512_PartiallyFinalize(
         byte[] output,
         byte[] input,
         int inputLen,
         byte[] blind,
         byte[] evaluatedElement,
-        byte[] info,
-        int infoLen
-    );
-
-    /**
-     * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-voprf-08#section-3.3.4.1
-     *
-     * @param A size:ecc_oprf_ristretto255_sha512_ELEMENTSIZE
-     * @param B size:ecc_oprf_ristretto255_sha512_ELEMENTSIZE
-     * @param C size:ecc_oprf_ristretto255_sha512_ELEMENTSIZE
-     * @param D size:ecc_oprf_ristretto255_sha512_ELEMENTSIZE
-     * @param proof size:ecc_oprf_ristretto255_sha512_PROOFSIZE
-     * @return on success verification returns 1, else 0.
-     */
-    public static native int ecc_oprf_ristretto255_sha512_VerifyProof(
-        byte[] A,
-        byte[] B,
-        byte[] C,
-        byte[] D,
-        byte[] proof
-    );
-
-    /**
-     * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-voprf-08#section-3.3.4.2
-     *
-     * @param unblindedElement (output) size:ecc_oprf_ristretto255_sha512_ELEMENTSIZE
-     * @param blind size:ecc_oprf_ristretto255_sha512_SCALARSIZE
-     * @param evaluatedElement size:ecc_oprf_ristretto255_sha512_ELEMENTSIZE
-     * @param blindedElement size:ecc_oprf_ristretto255_sha512_ELEMENTSIZE
-     * @param pkS size:ecc_oprf_ristretto255_sha512_ELEMENTSIZE
-     * @param proof size:ecc_oprf_ristretto255_sha512_PROOFSIZE
-     * @param info size:infoLen
-     * @param infoLen the length of `info`
-     * @return on success verification returns 0, else -1.
-     */
-    public static native int ecc_oprf_ristretto255_sha512_VerifiableUnblind(
-        byte[] unblindedElement,
-        byte[] blind,
-        byte[] evaluatedElement,
         byte[] blindedElement,
-        byte[] pkS,
         byte[] proof,
         byte[] info,
-        int infoLen
+        int infoLen,
+        byte[] tweakedKey
     );
 
     /**
-     * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-voprf-08#section-3.3.4.3
+     * An entity which knows both the secret key and the input can compute the PRF
+     * result using this function.
      *
-     * @param output (output) size:ecc_oprf_ristretto255_sha512_Nh
-     * @param input size:inputLen
+     * @param output (output) size:ecc_voprf_ristretto255_sha512_Nh
+     * @param skS size:ecc_voprf_ristretto255_sha512_SCALARSIZE
+     * @param input the input message, size:inputLen
      * @param inputLen the length of `input`
-     * @param blind size:ecc_oprf_ristretto255_sha512_SCALARSIZE
-     * @param evaluatedElement size:ecc_oprf_ristretto255_sha512_ELEMENTSIZE
-     * @param blindedElement size:ecc_oprf_ristretto255_sha512_ELEMENTSIZE
-     * @param pkS size:ecc_oprf_ristretto255_sha512_ELEMENTSIZE
-     * @param proof size:ecc_oprf_ristretto255_sha512_PROOFSIZE
-     * @param info size:infoLen
-     * @param infoLen the length of `info`
-     * @return on success verification returns 0, else -1.
+     * @param info message to blind, size:infoLen
+     * @param infoLen length of `info`, it should be
+     * <
+     * = ecc_voprf_ristretto255_sha512_MAXINFOSIZE
+     * @return 0 on success, or -1 if an error
      */
-    public static native int ecc_oprf_ristretto255_sha512_VerifiableFinalize(
+    public static native int ecc_voprf_ristretto255_sha512_PartiallyEvaluate(
         byte[] output,
+        byte[] skS,
         byte[] input,
         int inputLen,
-        byte[] blind,
-        byte[] evaluatedElement,
-        byte[] blindedElement,
-        byte[] pkS,
-        byte[] proof,
         byte[] info,
         int infoLen
     );
 
     /**
-     * Same as calling `ecc_oprf_ristretto255_sha512_HashToGroup` with an
+     * Same as calling `ecc_voprf_ristretto255_sha512_HashToGroup` with an
      * specified DST string.
-     * 
-     * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-voprf-08#section-2.1
-     * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-voprf-08#section-4.1
      *
-     * @param out (output) element of the group, size:ecc_oprf_ristretto255_sha512_ELEMENTSIZE
+     * @param out (output) element of the group, size:ecc_voprf_ristretto255_sha512_ELEMENTSIZE
      * @param input input string to map, size:inputLen
      * @param inputLen length of `input`
      * @param dst domain separation tag (DST), size:dstLen
      * @param dstLen length of `dst`
      */
-    public static native void ecc_oprf_ristretto255_sha512_HashToGroupWithDST(
+    public static native void ecc_voprf_ristretto255_sha512_HashToGroupWithDST(
         byte[] out,
         byte[] input,
         int inputLen,
@@ -1589,20 +1751,15 @@ public final class libecc {
     );
 
     /**
-     * Deterministically maps an array of bytes "x" to an element of "GG" in
+     * Deterministically maps an array of bytes "x" to an element of "G" in
      * the ristretto255 curve.
-     * 
-     * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-voprf-08#section-2.1
-     * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-voprf-08#section-4.1
-     * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-hash-to-curve-13#section-2.2.5
-     * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-voprf-08#section-3
      *
-     * @param out (output) element of the group, size:ecc_oprf_ristretto255_sha512_ELEMENTSIZE
+     * @param out (output) element of the group, size:ecc_voprf_ristretto255_sha512_ELEMENTSIZE
      * @param input input string to map, size:inputLen
      * @param inputLen length of `input`
-     * @param mode mode to build the internal DST string (modeBase=0x00, modeVerifiable=0x01)
+     * @param mode mode to build the internal DST string (OPRF, VOPRF, POPRF)
      */
-    public static native void ecc_oprf_ristretto255_sha512_HashToGroup(
+    public static native void ecc_voprf_ristretto255_sha512_HashToGroup(
         byte[] out,
         byte[] input,
         int inputLen,
@@ -1612,13 +1769,13 @@ public final class libecc {
     /**
      * 
      *
-     * @param out (output) size:ecc_oprf_ristretto255_sha512_SCALARSIZE
+     * @param out (output) size:ecc_voprf_ristretto255_sha512_SCALARSIZE
      * @param input size:inputLen
      * @param inputLen the length of `input`
      * @param dst size:dstLen
      * @param dstLen the length of `dst`
      */
-    public static native void ecc_oprf_ristretto255_sha512_HashToScalarWithDST(
+    public static native void ecc_voprf_ristretto255_sha512_HashToScalarWithDST(
         byte[] out,
         byte[] input,
         int inputLen,
@@ -1629,12 +1786,12 @@ public final class libecc {
     /**
      * 
      *
-     * @param out (output) size:ecc_oprf_ristretto255_sha512_SCALARSIZE
+     * @param out (output) size:ecc_voprf_ristretto255_sha512_SCALARSIZE
      * @param input size:inputLen
      * @param inputLen the length of `input`
      * @param mode oprf mode
      */
-    public static native void ecc_oprf_ristretto255_sha512_HashToScalar(
+    public static native void ecc_voprf_ristretto255_sha512_HashToScalar(
         byte[] out,
         byte[] input,
         int inputLen,
@@ -1783,26 +1940,20 @@ public final class libecc {
 
     /**
      * Derive a private and public key pair deterministically from a seed.
-     * 
-     * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-07#section-2.1
      *
      * @param private_key (output) a private key, size:ecc_opaque_ristretto255_sha512_Nsk
      * @param public_key (output) the associated public key, size:ecc_opaque_ristretto255_sha512_Npk
-     * @param seed pseudo-random byte sequence used as a seed, size:seed_len
-     * @param seed_len the length of `seed`
+     * @param seed pseudo-random byte sequence used as a seed, size:ecc_opaque_ristretto255_sha512_Nok
      */
     public static native void ecc_opaque_ristretto255_sha512_DeriveKeyPair(
         byte[] private_key,
         byte[] public_key,
-        byte[] seed,
-        int seed_len
+        byte[] seed
     );
 
     /**
      * Constructs a "CleartextCredentials" structure given application
      * credential information.
-     * 
-     * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-07#section-4
      *
      * @param cleartext_credentials (output) a CleartextCredentials structure, size:ecc_opaque_ristretto255_sha512_CLEARTEXTCREDENTIALSSIZE
      * @param server_public_key the encoded server public key for the AKE protocol, size:ecc_opaque_ristretto255_sha512_Npk
@@ -1825,8 +1976,6 @@ public final class libecc {
     /**
      * Same as calling `ecc_opaque_ristretto255_sha512_EnvelopeStore` with an
      * specified `nonce`.
-     * 
-     * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-07#section-4.2
      *
      * @param envelope (output) size:ecc_opaque_ristretto255_sha512_Ne
      * @param client_public_key (output) size:ecc_opaque_ristretto255_sha512_Npk
@@ -1860,8 +2009,6 @@ public final class libecc {
      * In order to work with stack allocated memory (i.e. fixed and not dynamic
      * allocation), it's necessary to add the restriction on length of the
      * identities to less than 200 bytes.
-     * 
-     * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-07#section-4.2
      *
      * @param envelope (output) size:ecc_opaque_ristretto255_sha512_Ne
      * @param client_public_key (output) size:ecc_opaque_ristretto255_sha512_Npk
@@ -1890,8 +2037,6 @@ public final class libecc {
     /**
      * This functions attempts to recover the credentials from the input. On
      * success returns 0, else -1.
-     * 
-     * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-07#section-4.2
      *
      * @param client_private_key (output) size:ecc_opaque_ristretto255_sha512_Nsk
      * @param export_key (output) size:ecc_opaque_ristretto255_sha512_Nh
@@ -1918,8 +2063,6 @@ public final class libecc {
 
     /**
      * Recover the public key related to the input "private_key".
-     * 
-     * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-07#section-2
      *
      * @param public_key (output) size:ecc_opaque_ristretto255_sha512_Npk
      * @param private_key size:ecc_opaque_ristretto255_sha512_Nsk
@@ -1934,8 +2077,6 @@ public final class libecc {
      * 
      * This is implemented by generating a random "seed", then
      * calling internally DeriveAuthKeyPair.
-     * 
-     * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-07#section-2
      *
      * @param private_key (output) a private key, size:ecc_opaque_ristretto255_sha512_Nsk
      * @param public_key (output) the associated public key, size:ecc_opaque_ristretto255_sha512_Npk
@@ -1948,26 +2089,19 @@ public final class libecc {
     /**
      * Derive a private and public authentication key pair deterministically
      * from the input "seed".
-     * 
-     * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-07#section-4.3.1
-     * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-07#section-2
      *
      * @param private_key (output) a private key, size:ecc_opaque_ristretto255_sha512_Nsk
      * @param public_key (output) the associated public key, size:ecc_opaque_ristretto255_sha512_Npk
-     * @param seed pseudo-random byte sequence used as a seed, size:seed_len
-     * @param seed_len the length of `seed`
+     * @param seed pseudo-random byte sequence used as a seed, size:ecc_opaque_ristretto255_sha512_Nok
      */
     public static native void ecc_opaque_ristretto255_sha512_DeriveAuthKeyPair(
         byte[] private_key,
         byte[] public_key,
-        byte[] seed,
-        int seed_len
+        byte[] seed
     );
 
     /**
      * Same as calling CreateRegistrationRequest with a specified blind.
-     * 
-     * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-07#section-5.1.1.1
      *
      * @param request (output) a RegistrationRequest structure, size:ecc_opaque_ristretto255_sha512_REGISTRATIONREQUESTSIZE
      * @param password an opaque byte string containing the client's password, size:password_len
@@ -1982,7 +2116,7 @@ public final class libecc {
     );
 
     /**
-     * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-07#section-5.1.1.1
+     * 
      *
      * @param request (output) a RegistrationRequest structure, size:ecc_opaque_ristretto255_sha512_REGISTRATIONREQUESTSIZE
      * @param blind (output) an OPRF scalar value, size:ecc_opaque_ristretto255_sha512_Noe
@@ -2003,8 +2137,6 @@ public final class libecc {
      * limit of credential_identifier_len
      * <
      * = 200.
-     * 
-     * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-07#section-5.1.1.2
      *
      * @param response (output) size:ecc_opaque_ristretto255_sha512_REGISTRATIONRESPONSESIZE
      * @param request size:ecc_opaque_ristretto255_sha512_REGISTRATIONREQUESTSIZE
@@ -2027,8 +2159,6 @@ public final class libecc {
      * limit of credential_identifier_len
      * <
      * = 200.
-     * 
-     * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-07#section-5.1.1.2
      *
      * @param response (output) a RegistrationResponse structure, size:ecc_opaque_ristretto255_sha512_REGISTRATIONRESPONSESIZE
      * @param oprf_key (output) the per-client OPRF key known only to the server, size:ecc_opaque_ristretto255_sha512_Nsk
@@ -2116,7 +2246,7 @@ public final class libecc {
     );
 
     /**
-     * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-07#section-6.1.2.1
+     * 
      *
      * @param request (output) a CredentialRequest structure, size:ecc_opaque_ristretto255_sha512_CREDENTIALREQUESTSIZE
      * @param password an opaque byte string containing the client's password, size:password_len
@@ -2131,7 +2261,7 @@ public final class libecc {
     );
 
     /**
-     * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-07#section-6.1.2.1
+     * 
      *
      * @param request (output) a CredentialRequest structure, size:ecc_opaque_ristretto255_sha512_CREDENTIALREQUESTSIZE
      * @param blind (output) an OPRF scalar value, size:ecc_opaque_ristretto255_sha512_Noe
@@ -2332,8 +2462,6 @@ public final class libecc {
     /**
      * Computes the OPAQUE-3DH shared secret derived during the key
      * exchange protocol.
-     * 
-     * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-07#section-6.2.2.2
      *
      * @param ikm (output) size:96
      * @param sk1 size:32
@@ -2375,7 +2503,7 @@ public final class libecc {
     );
 
     /**
-     * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-07#section-6.2.3
+     * 
      *
      * @param ke1 (output) a KE1 message structure, size:ecc_opaque_ristretto255_sha512_KE1SIZE
      * @param state (input, output) a ClientState structure, size:ecc_opaque_ristretto255_sha512_CLIENTSTATESIZE
@@ -2398,7 +2526,7 @@ public final class libecc {
     );
 
     /**
-     * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-07#section-6.2.3
+     * 
      *
      * @param ke1 (output) a KE1 message structure, size:ecc_opaque_ristretto255_sha512_KE1SIZE
      * @param state (input, output) a ClientState structure, size:ecc_opaque_ristretto255_sha512_CLIENTSTATESIZE
@@ -2451,7 +2579,7 @@ public final class libecc {
     );
 
     /**
-     * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-07#section-6.2.3.1
+     * 
      *
      * @param ke1 (output) size:ecc_opaque_ristretto255_sha512_KE1SIZE
      * @param state (input, output) size:ecc_opaque_ristretto255_sha512_CLIENTSTATESIZE
@@ -2470,7 +2598,7 @@ public final class libecc {
     );
 
     /**
-     * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-07#section-6.2.3.1
+     * 
      *
      * @param ke1 (output) size:ecc_opaque_ristretto255_sha512_KE1SIZE
      * @param state (input, output) size:ecc_opaque_ristretto255_sha512_CLIENTSTATESIZE
@@ -2515,7 +2643,7 @@ public final class libecc {
     );
 
     /**
-     * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-07#section-6.2.4
+     * 
      *
      * @param ke2_raw (output) a KE2 structure, size:ecc_opaque_ristretto255_sha512_KE2SIZE
      * @param state_raw (input, output) a ServerState structure, size:ecc_opaque_ristretto255_sha512_SERVERSTATESIZE
@@ -2563,7 +2691,7 @@ public final class libecc {
     );
 
     /**
-     * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-07#section-6.2.4
+     * 
      *
      * @param ke2_raw (output) a KE2 structure, size:ecc_opaque_ristretto255_sha512_KE2SIZE
      * @param state_raw (input, output) a ServerState structure, size:ecc_opaque_ristretto255_sha512_SERVERSTATESIZE
@@ -2603,7 +2731,7 @@ public final class libecc {
     );
 
     /**
-     * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-07#section-6.2.4
+     * 
      *
      * @param session_key (output) the shared session secret if and only if KE3 is valid, size:64
      * @param state_raw (input, output) a ServerState structure, size:ecc_opaque_ristretto255_sha512_SERVERSTATESIZE
@@ -2937,6 +3065,622 @@ public final class libecc {
         byte[] signature
     );
 
+    // frost
+
+    /**
+     * Size of a scalar, since this is using the ristretto255
+     * curve the size is 32 bytes.
+     *
+     */
+    public static final int ecc_frost_ristretto255_sha512_SCALARSIZE = 32;
+
+    /**
+     * Size of an element, since this is using the ristretto255
+     * curve the size is 32 bytes.
+     *
+     */
+    public static final int ecc_frost_ristretto255_sha512_ELEMENTSIZE = 32;
+
+    /**
+     * Size of a scalar point for polynomial evaluation (x, y).
+     *
+     */
+    public static final int ecc_frost_ristretto255_sha512_POINTSIZE = 64;
+
+    /**
+     * *
+     *
+     */
+    public static final int ecc_frost_ristretto255_sha512_COMMITMENTSIZE = 96;
+
+    /**
+     * *
+     *
+     */
+    public static final int ecc_frost_ristretto255_sha512_BINDINGFACTORSIZE = 64;
+
+    /**
+     * Size of a private key, since this is using the ristretto255
+     * curve the size is 32 bytes, the size of an scalar.
+     *
+     */
+    public static final int ecc_frost_ristretto255_sha512_SECRETKEYSIZE = 32;
+
+    /**
+     * Size of a public key, since this is using the ristretto255
+     * curve the size is 32 bytes, the size of a group element.
+     *
+     */
+    public static final int ecc_frost_ristretto255_sha512_PUBLICKEYSIZE = 32;
+
+    /**
+     * Size of a schnorr signature, a pair of a scalar and an element.
+     *
+     */
+    public static final int ecc_frost_ristretto255_sha512_SIGNATURESIZE = 64;
+
+    /**
+     * Size of a nonce tuple.
+     *
+     */
+    public static final int ecc_frost_ristretto255_sha512_NONCEPAIRSIZE = 64;
+
+    /**
+     * Size of a nonce commitment tuple.
+     *
+     */
+    public static final int ecc_frost_ristretto255_sha512_NONCECOMMITMENTPAIRSIZE = 64;
+
+    /**
+     * 
+     *
+     * @param nonce (output) size:ecc_frost_ristretto255_sha512_SCALARSIZE
+     * @param secret size:ecc_frost_ristretto255_sha512_SCALARSIZE
+     * @param random_bytes size:32
+     */
+    public static native void ecc_frost_ristretto255_sha512_nonce_generate_with_randomness(
+        byte[] nonce,
+        byte[] secret,
+        byte[] random_bytes
+    );
+
+    /**
+     * 
+     *
+     * @param nonce (output) size:ecc_frost_ristretto255_sha512_SCALARSIZE
+     * @param secret size:ecc_frost_ristretto255_sha512_SCALARSIZE
+     */
+    public static native void ecc_frost_ristretto255_sha512_nonce_generate(
+        byte[] nonce,
+        byte[] secret
+    );
+
+    /**
+     * Lagrange coefficients are used in FROST to evaluate a polynomial f at f(0),
+     * given a set of t other points, where f is represented as a set of coefficients.
+     *
+     * @param L_i (output) the i-th Lagrange coefficient, size:ecc_frost_ristretto255_sha512_SCALARSIZE
+     * @param x_i an x-coordinate contained in L, a scalar, size:ecc_frost_ristretto255_sha512_SCALARSIZE
+     * @param L the set of x-coordinates, each a scalar, size:L_len*ecc_frost_ristretto255_sha512_SCALARSIZE
+     * @param L_len the number of x-coordinates in `L`
+     */
+    public static native void ecc_frost_ristretto255_sha512_derive_interpolating_value(
+        byte[] L_i,
+        byte[] x_i,
+        byte[] L,
+        int L_len
+    );
+
+    /**
+     * This is an optimization that works like `ecc_frost_ristretto255_sha512_derive_interpolating_value`
+     * but with a set of points (x, y).
+     *
+     * @param L_i (output) the i-th Lagrange coefficient, size:ecc_frost_ristretto255_sha512_SCALARSIZE
+     * @param x_i an x-coordinate contained in L, a scalar, size:ecc_frost_ristretto255_sha512_SCALARSIZE
+     * @param L the set of (x, y)-points, size:L_len*ecc_frost_ristretto255_sha512_POINTSIZE
+     * @param L_len the number of (x, y)-points in `L`
+     */
+    public static native void ecc_frost_ristretto255_sha512_derive_interpolating_value_with_points(
+        byte[] L_i,
+        byte[] x_i,
+        byte[] L,
+        int L_len
+    );
+
+    /**
+     * Encodes a list of participant commitments into a bytestring for use in the
+     * FROST protocol.
+     *
+     * @param out (output) size:commitment_list_len*ecc_frost_ristretto255_sha512_COMMITMENTSIZE
+     * @param commitment_list a list of commitments issued by each signer, MUST be sorted in ascending order by signer index, size:commitment_list_len*ecc_frost_ristretto255_sha512_COMMITMENTSIZE
+     * @param commitment_list_len the number of elements in `commitment_list`
+     */
+    public static native void ecc_frost_ristretto255_sha512_encode_group_commitment_list(
+        byte[] out,
+        byte[] commitment_list,
+        int commitment_list_len
+    );
+
+    /**
+     * Extracts participant identifiers from a commitment list.
+     *
+     * @param identifiers (output) size:commitment_list_len*ecc_frost_ristretto255_sha512_SCALARSIZE
+     * @param commitment_list a list of commitments issued by each signer, MUST be sorted in ascending order by signer index, size:commitment_list_len*ecc_frost_ristretto255_sha512_COMMITMENTSIZE
+     * @param commitment_list_len the number of elements in `commitment_list`
+     */
+    public static native void ecc_frost_ristretto255_sha512_participants_from_commitment_list(
+        byte[] identifiers,
+        byte[] commitment_list,
+        int commitment_list_len
+    );
+
+    /**
+     * Extracts a binding factor from a list of binding factors.
+     *
+     * @param binding_factor (output) size:ecc_frost_ristretto255_sha512_SCALARSIZE
+     * @param binding_factor_list a list of binding factors for each participant, MUST be sorted in ascending order by signer index, size:binding_factor_list_len*ecc_frost_ristretto255_sha512_BINDINGFACTORSIZE
+     * @param binding_factor_list_len the number of elements in `binding_factor_list`
+     * @param identifier participant identifier, size:ecc_frost_ristretto255_sha512_SCALARSIZE
+     * @return 0 on success, or -1 if the designated participant is not known
+     */
+    public static native int ecc_frost_ristretto255_sha512_binding_factor_for_participant(
+        byte[] binding_factor,
+        byte[] binding_factor_list,
+        int binding_factor_list_len,
+        byte[] identifier
+    );
+
+    /**
+     * Compute binding factors based on the participant commitment list and message
+     * to be signed.
+     *
+     * @param binding_factor_list (output) list of binding factors (identifier, Scalar) tuples representing the binding factors, size:commitment_list_len*ecc_frost_ristretto255_sha512_BINDINGFACTORSIZE
+     * @param commitment_list a list of commitments issued by each signer, MUST be sorted in ascending order by signer index, size:commitment_list_len*ecc_frost_ristretto255_sha512_COMMITMENTSIZE
+     * @param commitment_list_len the number of elements in `commitment_list`
+     * @param msg the message to be signed, size:msg_len
+     * @param msg_len the length of `msg`
+     */
+    public static native void ecc_frost_ristretto255_sha512_compute_binding_factors(
+        byte[] binding_factor_list,
+        byte[] commitment_list,
+        int commitment_list_len,
+        byte[] msg,
+        int msg_len
+    );
+
+    /**
+     * Create the group commitment from a commitment list.
+     *
+     * @param group_comm (output) size:ecc_frost_ristretto255_sha512_ELEMENTSIZE
+     * @param commitment_list a list of commitments issued by each signer, MUST be sorted in ascending order by signer index, size:commitment_list_len*ecc_frost_ristretto255_sha512_COMMITMENTSIZE
+     * @param commitment_list_len the number of elements in `commitment_list`
+     * @param binding_factor_list size:ecc_frost_ristretto255_sha512_BINDINGFACTORSIZE
+     * @param binding_factor_list_len the number of elements in `binding_factor_list`
+     */
+    public static native void ecc_frost_ristretto255_sha512_compute_group_commitment(
+        byte[] group_comm,
+        byte[] commitment_list,
+        int commitment_list_len,
+        byte[] binding_factor_list,
+        int binding_factor_list_len
+    );
+
+    /**
+     * Create the per-message challenge.
+     *
+     * @param challenge (output) a challenge Scalar value, size:ecc_frost_ristretto255_sha512_SCALARSIZE
+     * @param group_commitment an Element representing the group commitment, size:ecc_frost_ristretto255_sha512_ELEMENTSIZE
+     * @param group_public_key public key corresponding to the signer secret key share, size:ecc_frost_ristretto255_sha512_PUBLICKEYSIZE
+     * @param msg the message to be signed (sent by the Coordinator), size:msg_len
+     * @param msg_len the length of `msg`
+     */
+    public static native void ecc_frost_ristretto255_sha512_compute_challenge(
+        byte[] challenge,
+        byte[] group_commitment,
+        byte[] group_public_key,
+        byte[] msg,
+        int msg_len
+    );
+
+    /**
+     * 
+     *
+     * @param nonce (output) a nonce pair, size:ecc_frost_ristretto255_sha512_NONCEPAIRSIZE
+     * @param comm (output) a nonce commitment pair, size:ecc_frost_ristretto255_sha512_NONCECOMMITMENTPAIRSIZE
+     * @param sk_i the secret key share, size:ecc_frost_ristretto255_sha512_SCALARSIZE
+     * @param hiding_nonce_randomness size:32
+     * @param binding_nonce_randomness size:32
+     */
+    public static native void ecc_frost_ristretto255_sha512_commit_with_randomness(
+        byte[] nonce,
+        byte[] comm,
+        byte[] sk_i,
+        byte[] hiding_nonce_randomness,
+        byte[] binding_nonce_randomness
+    );
+
+    /**
+     * 
+     *
+     * @param nonce (output) a nonce pair, size:ecc_frost_ristretto255_sha512_NONCEPAIRSIZE
+     * @param comm (output) a nonce commitment pair, size:ecc_frost_ristretto255_sha512_NONCECOMMITMENTPAIRSIZE
+     * @param sk_i the secret key share, size:ecc_frost_ristretto255_sha512_SCALARSIZE
+     */
+    public static native void ecc_frost_ristretto255_sha512_commit(
+        byte[] nonce,
+        byte[] comm,
+        byte[] sk_i
+    );
+
+    /**
+     * To produce a signature share.
+     *
+     * @param sig_share (output) signature share, size:ecc_frost_ristretto255_sha512_SCALARSIZE
+     * @param identifier identifier of the signer. Note identifier will never equal 0, size:ecc_frost_ristretto255_sha512_SCALARSIZE
+     * @param sk_i signer secret key share, size:ecc_frost_ristretto255_sha512_SECRETKEYSIZE
+     * @param group_public_key public key corresponding to the signer secret key share, size:ecc_frost_ristretto255_sha512_PUBLICKEYSIZE
+     * @param nonce_i pair of scalar values generated in round one, size:ecc_frost_ristretto255_sha512_NONCEPAIRSIZE
+     * @param msg the message to be signed (sent by the Coordinator), size:msg_len
+     * @param msg_len the length of `msg`
+     * @param commitment_list a list of commitments issued by each signer, MUST be sorted in ascending order by signer index, size:commitment_list_len*ecc_frost_ristretto255_sha512_COMMITMENTSIZE
+     * @param commitment_list_len the number of elements in `commitment_list`
+     */
+    public static native void ecc_frost_ristretto255_sha512_sign(
+        byte[] sig_share,
+        byte[] identifier,
+        byte[] sk_i,
+        byte[] group_public_key,
+        byte[] nonce_i,
+        byte[] msg,
+        int msg_len,
+        byte[] commitment_list,
+        int commitment_list_len
+    );
+
+    /**
+     * Performs the aggregate operation to obtain the resulting signature.
+     *
+     * @param signature (output) a Schnorr signature consisting of an Element and Scalar value, size:ecc_frost_ristretto255_sha512_SIGNATURESIZE
+     * @param commitment_list the group commitment returned by compute_group_commitment, size:commitment_list_len*ecc_frost_ristretto255_sha512_PUBLICKEYSIZE
+     * @param commitment_list_len the group commitment returned by compute_group_commitment, size:ecc_frost_ristretto255_sha512_PUBLICKEYSIZE
+     * @param msg the message to be signed (sent by the Coordinator), size:msg_len
+     * @param msg_len the length of `msg`
+     * @param sig_shares a set of signature shares z_i for each signer, size:sig_shares_len*ecc_frost_ristretto255_sha512_SCALARSIZE
+     * @param sig_shares_len the number of elements in `sig_shares`, must satisfy THRESHOLD_LIMIT
+     * <
+     * = sig_shares_len
+     * <
+     * = MAX_SIGNERS
+     */
+    public static native void ecc_frost_ristretto255_sha512_aggregate(
+        byte[] signature,
+        byte[] commitment_list,
+        int commitment_list_len,
+        byte[] msg,
+        int msg_len,
+        byte[] sig_shares,
+        int sig_shares_len
+    );
+
+    /**
+     * Check that the signature share is valid.
+     *
+     * @param identifier identifier of the signer. Note identifier will never equal 0, size:ecc_frost_ristretto255_sha512_SCALARSIZE
+     * @param public_key_share_i the public key for the ith signer, size:ecc_frost_ristretto255_sha512_PUBLICKEYSIZE
+     * @param comm_i pair of Element values (hiding_nonce_commitment, binding_nonce_commitment) generated in round one from the ith signer, size:ecc_frost_ristretto255_sha512_NONCECOMMITMENTPAIRSIZE
+     * @param sig_share_i a Scalar value indicating the signature share as produced in round two from the ith signer, size:ecc_frost_ristretto255_sha512_SCALARSIZE
+     * @param commitment_list a list of commitments issued by each signer, MUST be sorted in ascending order by signer index, size:commitment_list_len*ecc_frost_ristretto255_sha512_COMMITMENTSIZE
+     * @param commitment_list_len the number of elements in `commitment_list`
+     * @param group_public_key the public key for the group, size:ecc_frost_ristretto255_sha512_PUBLICKEYSIZE
+     * @param msg the message to be signed (sent by the Coordinator), size:msg_len
+     * @param msg_len the length of `msg`
+     * @return 1 if the signature share is valid, and 0 otherwise.
+     */
+    public static native int ecc_frost_ristretto255_sha512_verify_signature_share(
+        byte[] identifier,
+        byte[] public_key_share_i,
+        byte[] comm_i,
+        byte[] sig_share_i,
+        byte[] commitment_list,
+        int commitment_list_len,
+        byte[] group_public_key,
+        byte[] msg,
+        int msg_len
+    );
+
+    /**
+     * Map arbitrary inputs to non-zero Scalar elements of the prime-order group scalar field.
+     *
+     * @param h1 (output) size:ecc_frost_ristretto255_sha512_SCALARSIZE
+     * @param m size:m_len
+     * @param m_len the length of `m`
+     */
+    public static native void ecc_frost_ristretto255_sha512_H1(
+        byte[] h1,
+        byte[] m,
+        int m_len
+    );
+
+    /**
+     * Map arbitrary inputs to non-zero Scalar elements of the prime-order group scalar field.
+     * 
+     * This is a variant of H2 that folds internally all inputs in the same
+     * hash calculation.
+     *
+     * @param h1 (output) size:ecc_frost_ristretto255_sha512_SCALARSIZE
+     * @param m1 size:m1_len
+     * @param m1_len the length of `m1`
+     * @param m2 size:m2_len
+     * @param m2_len the length of `m2`
+     */
+    public static native void ecc_frost_ristretto255_sha512_H1_2(
+        byte[] h1,
+        byte[] m1,
+        int m1_len,
+        byte[] m2,
+        int m2_len
+    );
+
+    /**
+     * Map arbitrary inputs to non-zero Scalar elements of the prime-order group scalar field.
+     *
+     * @param h2 (output) size:ecc_frost_ristretto255_sha512_SCALARSIZE
+     * @param m size:m_len
+     * @param m_len the length of `m`
+     */
+    public static native void ecc_frost_ristretto255_sha512_H2(
+        byte[] h2,
+        byte[] m,
+        int m_len
+    );
+
+    /**
+     * Map arbitrary inputs to non-zero Scalar elements of the prime-order group scalar field.
+     * 
+     * This is a variant of H2 that folds internally all inputs in the same
+     * hash calculation.
+     *
+     * @param h2 (output) size:ecc_frost_ristretto255_sha512_SCALARSIZE
+     * @param m1 size:m1_len
+     * @param m1_len the length of `m1`
+     * @param m2 size:m2_len
+     * @param m2_len the length of `m2`
+     * @param m3 size:m3_len
+     * @param m3_len the length of `m3`
+     */
+    public static native void ecc_frost_ristretto255_sha512_H2_3(
+        byte[] h2,
+        byte[] m1,
+        int m1_len,
+        byte[] m2,
+        int m2_len,
+        byte[] m3,
+        int m3_len
+    );
+
+    /**
+     * This is an alias for the ciphersuite hash function with
+     * domain separation applied.
+     *
+     * @param h3 (output) size:ecc_frost_ristretto255_sha512_SCALARSIZE
+     * @param m size:m_len
+     * @param m_len the length of `m`
+     */
+    public static native void ecc_frost_ristretto255_sha512_H3(
+        byte[] h3,
+        byte[] m,
+        int m_len
+    );
+
+    /**
+     * This is an alias for the ciphersuite hash function with
+     * domain separation applied.
+     * 
+     * This is a variant of H3 that folds internally all inputs in the same
+     * hash calculation.
+     *
+     * @param h3 (output) size:ecc_frost_ristretto255_sha512_SCALARSIZE
+     * @param m1 size:m1_len
+     * @param m1_len the length of `m1`
+     * @param m2 size:m2_len
+     * @param m2_len the length of `m2`
+     */
+    public static native void ecc_frost_ristretto255_sha512_H3_2(
+        byte[] h3,
+        byte[] m1,
+        int m1_len,
+        byte[] m2,
+        int m2_len
+    );
+
+    /**
+     * Implemented by computing H(contextString || "msg" || m).
+     *
+     * @param h4 (output) size:64
+     * @param m size:m_len
+     * @param m_len the length of `m`
+     */
+    public static native void ecc_frost_ristretto255_sha512_H4(
+        byte[] h4,
+        byte[] m,
+        int m_len
+    );
+
+    /**
+     * Implemented by computing H(contextString || "com" || m).
+     *
+     * @param h5 (output) size:64
+     * @param m size:m_len
+     * @param m_len the length of `m`
+     */
+    public static native void ecc_frost_ristretto255_sha512_H5(
+        byte[] h5,
+        byte[] m,
+        int m_len
+    );
+
+    /**
+     * Generate a single-party setting Schnorr signature.
+     *
+     * @param signature (output) signature, size:ecc_frost_ristretto255_sha512_SIGNATURESIZE
+     * @param msg message to be signed, size:msg_len
+     * @param msg_len the length of `msg`
+     * @param SK private key, a scalar, size:ecc_frost_ristretto255_sha512_SECRETKEYSIZE
+     */
+    public static native void ecc_frost_ristretto255_sha512_prime_order_sign(
+        byte[] signature,
+        byte[] msg,
+        int msg_len,
+        byte[] SK
+    );
+
+    /**
+     * Verify a Schnorr signature.
+     *
+     * @param msg signed message, size:msg_len
+     * @param msg_len the length of `msg`
+     * @param signature signature, size:ecc_frost_ristretto255_sha512_SIGNATURESIZE
+     * @param PK public key, a group element, size:ecc_frost_ristretto255_sha512_PUBLICKEYSIZE
+     * @return 1 if signature is valid, and 0 otherwise
+     */
+    public static native int ecc_frost_ristretto255_sha512_prime_order_verify(
+        byte[] msg,
+        int msg_len,
+        byte[] signature,
+        byte[] PK
+    );
+
+    /**
+     * 
+     *
+     * @param participant_private_keys (output) MAX_PARTICIPANTS shares of the secret key s, each a tuple consisting of the participant identifier (a NonZeroScalar) and the key share (a Scalar), size:n*ecc_frost_ristretto255_sha512_POINTSIZE
+     * @param group_public_key (output) public key corresponding to the group signing key, an Element, size:ecc_frost_ristretto255_sha512_ELEMENTSIZE
+     * @param vss_commitment (output) a vector commitment of Elements in G, to each of the coefficients in the polynomial defined by secret_key_shares and whose first element is G.ScalarBaseMult(s), size:t*ecc_frost_ristretto255_sha512_ELEMENTSIZE
+     * @param polynomial_coefficients (output) size:t*ecc_frost_ristretto255_sha512_SCALARSIZE
+     * @param secret_key a group secret, a Scalar, that MUST be derived from at least Ns bytes of entropy, size:ecc_frost_ristretto255_sha512_SCALARSIZE
+     * @param n the number of shares to generate
+     * @param t the threshold of the secret sharing scheme
+     * @param coefficients size:(t-1)*ecc_frost_ristretto255_sha512_SCALARSIZE
+     */
+    public static native void ecc_frost_ristretto255_sha512_trusted_dealer_keygen_with_coefficients(
+        byte[] participant_private_keys,
+        byte[] group_public_key,
+        byte[] vss_commitment,
+        byte[] polynomial_coefficients,
+        byte[] secret_key,
+        int n,
+        int t,
+        byte[] coefficients
+    );
+
+    /**
+     * Split a secret into shares.
+     *
+     * @param secret_key_shares (output) A list of n secret shares, each of which is an element of F, size:n*ecc_frost_ristretto255_sha512_POINTSIZE
+     * @param polynomial_coefficients (output) a vector of t coefficients which uniquely determine a polynomial f, size:t*ecc_frost_ristretto255_sha512_SCALARSIZE
+     * @param s secret value to be shared, a scalar, size:ecc_frost_ristretto255_sha512_SCALARSIZE
+     * @param coefficients an array of size t - 1 with randomly generated scalars, not including the 0th coefficient of the polynomial, size:(t-1)*ecc_frost_ristretto255_sha512_SCALARSIZE
+     * @param n the number of shares to generate, an integer less than 2^16
+     * @param t the threshold of the secret sharing scheme, an integer greater than 0
+     * @return 0 if no errors, else -1
+     */
+    public static native int ecc_frost_ristretto255_sha512_secret_share_shard(
+        byte[] secret_key_shares,
+        byte[] polynomial_coefficients,
+        byte[] s,
+        byte[] coefficients,
+        int n,
+        int t
+    );
+
+    /**
+     * Combines a shares list of length MIN_PARTICIPANTS to recover the secret.
+     *
+     * @param s (output) the resulting secret s that was previously split into shares, size:ecc_frost_ristretto255_sha512_SCALARSIZE
+     * @param shares a list of at minimum MIN_PARTICIPANTS secret shares, each a tuple (i, f(i)) where i and f(i) are Scalars, size:shares_len*ecc_frost_ristretto255_sha512_POINTSIZE
+     * @param shares_len the number of shares in `shares`
+     * @return 0 if no errors, else -1
+     */
+    public static native int ecc_frost_ristretto255_sha512_secret_share_combine(
+        byte[] s,
+        byte[] shares,
+        int shares_len
+    );
+
+    /**
+     * Evaluate a polynomial f at a particular input x, i.e., y = f(x)
+     * using Horner's method.
+     *
+     * @param value (output) scalar result of the polynomial evaluated at input x, size:ecc_frost_ristretto255_sha512_SCALARSIZE
+     * @param x input at which to evaluate the polynomial, a scalar, size:ecc_frost_ristretto255_sha512_SCALARSIZE
+     * @param coeffs the polynomial coefficients, a list of scalars, size:coeffs_len*ecc_frost_ristretto255_sha512_SCALARSIZE
+     * @param coeffs_len the number of coefficients in `coeffs`
+     */
+    public static native void ecc_frost_ristretto255_sha512_polynomial_evaluate(
+        byte[] value,
+        byte[] x,
+        byte[] coeffs,
+        int coeffs_len
+    );
+
+    /**
+     * Recover the constant term of an interpolating polynomial defined by a set
+     * of points.
+     *
+     * @param f_zero (output) the constant term of f, i.e., f(0), a scalar, size:ecc_frost_ristretto255_sha512_SCALARSIZE
+     * @param points a set of t points with distinct x coordinates on a polynomial f, each a tuple of two Scalar values representing the x and y coordinates, size:points_len*ecc_frost_ristretto255_sha512_POINTSIZE
+     * @param points_len the number of elements in `points`
+     */
+    public static native void ecc_frost_ristretto255_sha512_polynomial_interpolate_constant(
+        byte[] f_zero,
+        byte[] points,
+        int points_len
+    );
+
+    /**
+     * Compute the commitment using a polynomial f of degree at most MIN_PARTICIPANTS-1.
+     *
+     * @param vss_commitment (output) a vector commitment to each of the coefficients in coeffs, where each item of the vector commitment is an Element, size:coeffs_len*ecc_frost_ristretto255_sha512_ELEMENTSIZE
+     * @param coeffs a vector of the MIN_PARTICIPANTS coefficients which uniquely determine a polynomial f, size:coeffs_len*ecc_frost_ristretto255_sha512_SCALARSIZE
+     * @param coeffs_len the length of `coeffs`
+     */
+    public static native void ecc_frost_ristretto255_sha512_vss_commit(
+        byte[] vss_commitment,
+        byte[] coeffs,
+        int coeffs_len
+    );
+
+    /**
+     * For verification of a participant's share.
+     *
+     * @param share_i a tuple of the form (i, sk_i), size:ecc_frost_ristretto255_sha512_POINTSIZE
+     * @param vss_commitment a vector commitment to each of the coefficients in coeffs, where each item of the vector commitment is an Element, size:t*ecc_frost_ristretto255_sha512_ELEMENTSIZE
+     * @param t the threshold of the secret sharing scheme
+     * @return 1 if sk_i is valid, and 0 otherwise.
+     */
+    public static native int ecc_frost_ristretto255_sha512_vss_verify(
+        byte[] share_i,
+        byte[] vss_commitment,
+        int t
+    );
+
+    /**
+     * Derive group info.
+     *
+     * @param PK (output) the public key representing the group, an Element, size:ecc_frost_ristretto255_sha512_ELEMENTSIZE
+     * @param participant_public_keys (output) a list of MAX_PARTICIPANTS public keys PK_i for i=1,...,MAX_PARTICIPANTS, where each PK_i is the public key, an Element, for participant i., size:n*ecc_frost_ristretto255_sha512_ELEMENTSIZE
+     * @param n the number of shares to generate
+     * @param t the threshold of the secret sharing scheme
+     * @param vss_commitment a VSS commitment to a secret polynomial f, a vector commitment to each of the coefficients in coeffs, where each element of the vector commitment is an Element, size:t*ecc_frost_ristretto255_sha512_ELEMENTSIZE
+     */
+    public static native void ecc_frost_ristretto255_sha512_derive_group_info(
+        byte[] PK,
+        byte[] participant_public_keys,
+        int n,
+        int t,
+        byte[] vss_commitment
+    );
+
     // pre
 
     /**
@@ -3198,467 +3942,6 @@ public final class libecc {
         byte[] C_j_raw,
         byte[] sk_j,
         byte[] spk
-    );
-
-    // frost
-
-    /**
-     * Size of a scalar, since this is using the ristretto255
-     * curve the size is 32 bytes.
-     *
-     */
-    public static final int ecc_frost_ristretto255_sha512_SCALARSIZE = 32;
-
-    /**
-     * Size of an element, since this is using the ristretto255
-     * curve the size is 32 bytes.
-     *
-     */
-    public static final int ecc_frost_ristretto255_sha512_ELEMENTSIZE = 32;
-
-    /**
-     * Size of a private key, since this is using the ristretto255
-     * curve the size is 32 bytes, the size of an scalar.
-     *
-     */
-    public static final int ecc_frost_ristretto255_sha512_SECRETKEYSIZE = 32;
-
-    /**
-     * Size of a public key, since this is using the ristretto255
-     * curve the size is 32 bytes, the size of a group element.
-     *
-     */
-    public static final int ecc_frost_ristretto255_sha512_PUBLICKEYSIZE = 32;
-
-    /**
-     * Size of a schnorr signature, a pair of a scalar and an element.
-     *
-     */
-    public static final int ecc_frost_ristretto255_sha512_SIGNATURESIZE = 64;
-
-    /**
-     * Size of a scalar point for polynomial evaluation (x, y).
-     *
-     */
-    public static final int ecc_frost_ristretto255_sha512_POINTSIZE = 64;
-
-    /**
-     * Size of a nonce tuple.
-     *
-     */
-    public static final int ecc_frost_ristretto255_sha512_NONCEPAIRSIZE = 64;
-
-    /**
-     * Size of a nonce commitment tuple.
-     *
-     */
-    public static final int ecc_frost_ristretto255_sha512_NONCECOMMITMENTPAIRSIZE = 64;
-
-    /**
-     * Size of a signing commitment structure.
-     *
-     */
-    public static final int ecc_frost_ristretto255_sha512_SIGNINGCOMMITMENTSIZE = 66;
-
-    /**
-     * Map arbitrary inputs to non-zero Scalar elements of the prime-order group scalar field.
-     *
-     * @param h1 (output) size:ecc_frost_ristretto255_sha512_SCALARSIZE
-     * @param m size:m_len
-     * @param m_len the length of `m`
-     */
-    public static native void ecc_frost_ristretto255_sha512_H1(
-        byte[] h1,
-        byte[] m,
-        int m_len
-    );
-
-    /**
-     * Map arbitrary inputs to non-zero Scalar elements of the prime-order group scalar field.
-     * 
-     * This is a variant of H2 that folds internally all inputs in the same
-     * hash calculation.
-     *
-     * @param h1 (output) size:ecc_frost_ristretto255_sha512_SCALARSIZE
-     * @param m1 size:m1_len
-     * @param m1_len the length of `m1`
-     * @param m2 size:m2_len
-     * @param m2_len the length of `m2`
-     */
-    public static native void ecc_frost_ristretto255_sha512_H1_2(
-        byte[] h1,
-        byte[] m1,
-        int m1_len,
-        byte[] m2,
-        int m2_len
-    );
-
-    /**
-     * Map arbitrary inputs to non-zero Scalar elements of the prime-order group scalar field.
-     *
-     * @param h2 (output) size:ecc_frost_ristretto255_sha512_SCALARSIZE
-     * @param m size:m_len
-     * @param m_len the length of `m`
-     */
-    public static native void ecc_frost_ristretto255_sha512_H2(
-        byte[] h2,
-        byte[] m,
-        int m_len
-    );
-
-    /**
-     * Map arbitrary inputs to non-zero Scalar elements of the prime-order group scalar field.
-     * 
-     * This is a variant of H2 that folds internally all inputs in the same
-     * hash calculation.
-     *
-     * @param h2 (output) size:ecc_frost_ristretto255_sha512_SCALARSIZE
-     * @param m1 size:m1_len
-     * @param m1_len the length of `m1`
-     * @param m2 size:m2_len
-     * @param m2_len the length of `m2`
-     * @param m3 size:m3_len
-     * @param m3_len the length of `m3`
-     */
-    public static native void ecc_frost_ristretto255_sha512_H2_3(
-        byte[] h2,
-        byte[] m1,
-        int m1_len,
-        byte[] m2,
-        int m2_len,
-        byte[] m3,
-        int m3_len
-    );
-
-    /**
-     * This is an alias for the ciphersuite hash function with
-     * domain separation applied.
-     *
-     * @param h3 (output) size:64
-     * @param m size:m_len
-     * @param m_len the length of `m`
-     */
-    public static native void ecc_frost_ristretto255_sha512_H3(
-        byte[] h3,
-        byte[] m,
-        int m_len
-    );
-
-    /**
-     * Generate a single-party setting Schnorr signature.
-     *
-     * @param signature (output) signature, size:ecc_frost_ristretto255_sha512_SIGNATURESIZE
-     * @param msg message to be signed, size:msg_len
-     * @param msg_len the length of `msg`
-     * @param SK private key, a scalar, size:ecc_frost_ristretto255_sha512_SECRETKEYSIZE
-     */
-    public static native void ecc_frost_ristretto255_sha512_schnorr_signature_generate(
-        byte[] signature,
-        byte[] msg,
-        int msg_len,
-        byte[] SK
-    );
-
-    /**
-     * Verify a Schnorr signature.
-     *
-     * @param msg signed message, size:msg_len
-     * @param msg_len the length of `msg`
-     * @param signature signature, size:ecc_frost_ristretto255_sha512_SIGNATURESIZE
-     * @param PK public key, a group element, size:ecc_frost_ristretto255_sha512_PUBLICKEYSIZE
-     * @return 1 if signature is valid, and 0 otherwise
-     */
-    public static native int ecc_frost_ristretto255_sha512_schnorr_signature_verify(
-        byte[] msg,
-        int msg_len,
-        byte[] signature,
-        byte[] PK
-    );
-
-    /**
-     * Evaluate a polynomial f at a particular input x, i.e., y = f(x)
-     * using Horner's method.
-     *
-     * @param value (output) scalar result of the polynomial evaluated at input x, size:ecc_frost_ristretto255_sha512_SCALARSIZE
-     * @param x input at which to evaluate the polynomial, a scalar, size:ecc_frost_ristretto255_sha512_SCALARSIZE
-     * @param coeffs the polynomial coefficients, a list of scalars, size:coeffs_len*ecc_frost_ristretto255_sha512_SCALARSIZE
-     * @param coeffs_len the number of coefficients in `coeffs`
-     */
-    public static native void ecc_frost_ristretto255_sha512_polynomial_evaluate(
-        byte[] value,
-        byte[] x,
-        byte[] coeffs,
-        int coeffs_len
-    );
-
-    /**
-     * Lagrange coefficients are used in FROST to evaluate a polynomial f at f(0),
-     * given a set of t other points, where f is represented as a set of coefficients.
-     *
-     * @param L_i (output) the i-th Lagrange coefficient, size:ecc_frost_ristretto255_sha512_SCALARSIZE
-     * @param x_i an x-coordinate contained in L, a scalar, size:ecc_frost_ristretto255_sha512_SCALARSIZE
-     * @param L the set of x-coordinates, each a scalar, size:L_len*ecc_frost_ristretto255_sha512_SCALARSIZE
-     * @param L_len the number of x-coordinates in `L`
-     */
-    public static native void ecc_frost_ristretto255_sha512_derive_lagrange_coefficient(
-        byte[] L_i,
-        byte[] x_i,
-        byte[] L,
-        int L_len
-    );
-
-    /**
-     * This is an optimization that works like `ecc_frost_ristretto255_sha512_derive_lagrange_coefficient`
-     * but with a set of points (x, y).
-     *
-     * @param L_i (output) the i-th Lagrange coefficient, size:ecc_frost_ristretto255_sha512_SCALARSIZE
-     * @param x_i an x-coordinate contained in L, a scalar, size:ecc_frost_ristretto255_sha512_SCALARSIZE
-     * @param L the set of (x, y)-points, size:L_len*ecc_frost_ristretto255_sha512_POINTSIZE
-     * @param L_len the number of (x, y)-points in `L`
-     */
-    public static native void ecc_frost_ristretto255_sha512_derive_lagrange_coefficient_with_points(
-        byte[] L_i,
-        byte[] x_i,
-        byte[] L,
-        int L_len
-    );
-
-    /**
-     * Secret sharing requires "splitting" a secret, which is represented
-     * as a constant term of some polynomial f of degree t. Recovering the
-     * constant term occurs with a set of t points using polynomial interpolation.
-     *
-     * @param constant_term (output) the constant term of f, i.e., f(0), size:ecc_frost_ristretto255_sha512_SCALARSIZE
-     * @param points a set of `t` points on a polynomial f, each a tuple of two scalar values representing the x and y coordinates, size:points_len*ecc_frost_ristretto255_sha512_POINTSIZE
-     * @param points_len the number of points in `points`
-     */
-    public static native void ecc_frost_ristretto255_sha512_polynomial_interpolation(
-        byte[] constant_term,
-        byte[] points,
-        int points_len
-    );
-
-    /**
-     * Compute the binding factor based on the signer commitment list and a message to be signed.
-     *
-     * @param binding_factor (output) a Scalar representing the binding factor, size:ecc_frost_ristretto255_sha512_SCALARSIZE
-     * @param encoded_commitment_list an encoded commitment list, size:encoded_commitment_list_len*ecc_frost_ristretto255_sha512_SIGNINGCOMMITMENTSIZE
-     * @param encoded_commitment_list_len the number of elements in `encoded_commitment_list`
-     * @param msg the message to be signed (sent by the Coordinator), size:msg_len
-     * @param msg_len the length of `msg`
-     */
-    public static native void ecc_frost_ristretto255_sha512_compute_binding_factor(
-        byte[] binding_factor,
-        byte[] encoded_commitment_list,
-        int encoded_commitment_list_len,
-        byte[] msg,
-        int msg_len
-    );
-
-    /**
-     * Create the per-message challenge.
-     *
-     * @param challenge (output) a challenge Scalar value, size:ecc_frost_ristretto255_sha512_SCALARSIZE
-     * @param group_commitment an Element representing the group commitment, size:ecc_frost_ristretto255_sha512_ELEMENTSIZE
-     * @param group_public_key public key corresponding to the signer secret key share, size:ecc_frost_ristretto255_sha512_PUBLICKEYSIZE
-     * @param msg the message to be signed (sent by the Coordinator), size:msg_len
-     * @param msg_len the length of `msg`
-     */
-    public static native void ecc_frost_ristretto255_sha512_compute_challenge(
-        byte[] challenge,
-        byte[] group_commitment,
-        byte[] group_public_key,
-        byte[] msg,
-        int msg_len
-    );
-
-    /**
-     * Generate a pair of public commitments corresponding to the nonce pair.
-     *
-     * @param comm (output) a nonce commitment pair, size:ecc_frost_ristretto255_sha512_NONCECOMMITMENTPAIRSIZE
-     * @param nonce a nonce pair, size:ecc_frost_ristretto255_sha512_NONCEPAIRSIZE
-     */
-    public static native void ecc_frost_ristretto255_sha512_commit_with_nonce(
-        byte[] comm,
-        byte[] nonce
-    );
-
-    /**
-     * Generate a pair of nonces and their corresponding public commitments.
-     *
-     * @param nonce (output) a nonce pair, size:ecc_frost_ristretto255_sha512_NONCEPAIRSIZE
-     * @param comm (output) a nonce commitment pair, size:ecc_frost_ristretto255_sha512_NONCECOMMITMENTPAIRSIZE
-     */
-    public static native void ecc_frost_ristretto255_sha512_commit(
-        byte[] nonce,
-        byte[] comm
-    );
-
-    /**
-     * Create the group commitment from a commitment list.
-     *
-     * @param group_comm (output) size:ecc_frost_ristretto255_sha512_ELEMENTSIZE
-     * @param commitment_list a list of commitments issued by each signer, MUST be sorted in ascending order by signer index, size:commitment_list_len*ecc_frost_ristretto255_sha512_SIGNINGCOMMITMENTSIZE
-     * @param commitment_list_len the number of elements in `commitment_list`
-     * @param binding_factor size:ecc_frost_ristretto255_sha512_SCALARSIZE
-     */
-    public static native void ecc_frost_ristretto255_sha512_group_commitment(
-        byte[] group_comm,
-        byte[] commitment_list,
-        int commitment_list_len,
-        byte[] binding_factor
-    );
-
-    /**
-     * To produce a signature share.
-     *
-     * @param sig_share (output) signature share, size:ecc_frost_ristretto255_sha512_SCALARSIZE
-     * @param comm_share (output) commitment share, size:ecc_frost_ristretto255_sha512_ELEMENTSIZE
-     * @param index index `i` of the signer. Note index will never equal `0` and must be less thant 256
-     * @param sk_i signer secret key share, size:ecc_frost_ristretto255_sha512_SECRETKEYSIZE
-     * @param group_public_key public key corresponding to the signer secret key share, size:ecc_frost_ristretto255_sha512_PUBLICKEYSIZE
-     * @param nonce_i pair of scalar values generated in round one, size:ecc_frost_ristretto255_sha512_NONCEPAIRSIZE
-     * @param comm_i pair of element values generated in round one, size:ecc_frost_ristretto255_sha512_NONCECOMMITMENTPAIRSIZE
-     * @param msg the message to be signed (sent by the Coordinator), size:msg_len
-     * @param msg_len the length of `msg`
-     * @param commitment_list a list of commitments issued by each signer, MUST be sorted in ascending order by signer index, size:commitment_list_len*ecc_frost_ristretto255_sha512_SIGNINGCOMMITMENTSIZE
-     * @param commitment_list_len the number of elements in `commitment_list`
-     * @param participant_list a set containing identifiers for each signer, size:participant_list_len
-     * @param participant_list_len the number of elements in `participant_list`
-     */
-    public static native void ecc_frost_ristretto255_sha512_sign(
-        byte[] sig_share,
-        byte[] comm_share,
-        int index,
-        byte[] sk_i,
-        byte[] group_public_key,
-        byte[] nonce_i,
-        byte[] comm_i,
-        byte[] msg,
-        int msg_len,
-        byte[] commitment_list,
-        int commitment_list_len,
-        byte[] participant_list,
-        int participant_list_len
-    );
-
-    /**
-     * Check that the signature share is valid.
-     *
-     * @param index Index `i` of the signer. Note index will never equal `0`.
-     * @param public_key_share_i the public key for the ith signer, size:ecc_frost_ristretto255_sha512_PUBLICKEYSIZE
-     * @param comm_i pair of Element values (hiding_nonce_commitment, binding_nonce_commitment) generated in round one from the ith signer, size:ecc_frost_ristretto255_sha512_NONCECOMMITMENTPAIRSIZE
-     * @param sig_share_i a Scalar value indicating the signature share as produced in round two from the ith signer, size:ecc_frost_ristretto255_sha512_SCALARSIZE
-     * @param commitment_list a list of commitments issued by each signer, MUST be sorted in ascending order by signer index, size:commitment_list_len*ecc_frost_ristretto255_sha512_SIGNINGCOMMITMENTSIZE
-     * @param commitment_list_len the number of elements in `commitment_list`
-     * @param participant_list a set containing identifiers for each signer, size:participant_list_len
-     * @param participant_list_len the number of elements in `participant_list`
-     * @param group_public_key the public key for the group, size:ecc_frost_ristretto255_sha512_PUBLICKEYSIZE
-     * @param msg the message to be signed (sent by the Coordinator), size:msg_len
-     * @param msg_len the length of `msg`
-     * @return 1 if the signature share is valid, and 0 otherwise.
-     */
-    public static native int ecc_frost_ristretto255_sha512_verify_signature_share(
-        int index,
-        byte[] public_key_share_i,
-        byte[] comm_i,
-        byte[] sig_share_i,
-        byte[] commitment_list,
-        int commitment_list_len,
-        byte[] participant_list,
-        int participant_list_len,
-        byte[] group_public_key,
-        byte[] msg,
-        int msg_len
-    );
-
-    /**
-     * Generates a group secret s uniformly at random and uses
-     * Shamir and Verifiable Secret Sharing to create secret shares
-     * of s to be sent to all other participants.
-     *
-     * @param public_key (output) public key Element, size:ecc_frost_ristretto255_sha512_PUBLICKEYSIZE
-     * @param secret_key_shares shares of the secret key, each a Scalar value, size:n*ecc_frost_ristretto255_sha512_SCALARSIZE
-     * @param n the number of shares to generate
-     * @param t the threshold of the secret sharing scheme
-     * @param secret_key a secret key Scalar, size:ecc_frost_ristretto255_sha512_SCALARSIZE
-     * @param coefficients size:t*ecc_frost_ristretto255_sha512_SCALARSIZE
-     */
-    public static native void ecc_frost_ristretto255_sha512_trusted_dealer_keygen_with_secret_and_coefficients(
-        byte[] public_key,
-        byte[] secret_key_shares,
-        int n,
-        int t,
-        byte[] secret_key,
-        byte[] coefficients
-    );
-
-    /**
-     * Generates a group secret s uniformly at random and uses
-     * Shamir and Verifiable Secret Sharing to create secret shares
-     * of s to be sent to all other participants.
-     *
-     * @param secret_key (output) a secret key Scalar, size:ecc_frost_ristretto255_sha512_SCALARSIZE
-     * @param public_key (output) public key Element, size:ecc_frost_ristretto255_sha512_PUBLICKEYSIZE
-     * @param secret_key_shares (output) shares of the secret key, each a Scalar value, size:n*ecc_frost_ristretto255_sha512_SCALARSIZE
-     * @param n the number of shares to generate
-     * @param t the threshold of the secret sharing scheme
-     */
-    public static native void ecc_frost_ristretto255_sha512_trusted_dealer_keygen(
-        byte[] secret_key,
-        byte[] public_key,
-        byte[] secret_key_shares,
-        int n,
-        int t
-    );
-
-    /**
-     * Split a secret into shares.
-     *
-     * @param points A list of n secret shares, each of which is an element of F, size:n*ecc_frost_ristretto255_sha512_SCALARSIZE
-     * @param n the number of shares to generate
-     * @param t the threshold of the secret sharing scheme
-     * @param coefficients size:t*ecc_frost_ristretto255_sha512_SCALARSIZE
-     */
-    public static native void ecc_frost_ristretto255_sha512_secret_share_shard_with_coefficients(
-        byte[] points,
-        int n,
-        int t,
-        byte[] coefficients
-    );
-
-    /**
-     * Split a secret into shares.
-     *
-     * @param points (output) A list of n secret shares, each of which is an element of F, size:n*ecc_frost_ristretto255_sha512_SCALARSIZE
-     * @param s secret to be shared, an element of F, size:ecc_frost_ristretto255_sha512_SCALARSIZE
-     * @param n the number of shares to generate
-     * @param t the threshold of the secret sharing scheme
-     */
-    public static native void ecc_frost_ristretto255_sha512_secret_share_shard(
-        byte[] points,
-        byte[] s,
-        int n,
-        int t
-    );
-
-    /**
-     * Performs the aggregate operation to obtain the resulting signature.
-     *
-     * @param signature (output) a Schnorr signature consisting of an Element and Scalar value, size:ecc_frost_ristretto255_sha512_SIGNATURESIZE
-     * @param group_commitment the group commitment returned by compute_group_commitment, size:ecc_frost_ristretto255_sha512_PUBLICKEYSIZE
-     * @param sig_shares a set of signature shares z_i for each signer, size:sig_shares_len*ecc_frost_ristretto255_sha512_SCALARSIZE
-     * @param sig_shares_len the number of elements in `sig_shares`, must satisfy THRESHOLD_LIMIT
-     * <
-     * = sig_shares_len
-     * <
-     * = MAX_SIGNERS
-     */
-    public static native void ecc_frost_ristretto255_sha512_frost_aggregate(
-        byte[] signature,
-        byte[] group_commitment,
-        byte[] sig_shares,
-        int sig_shares_len
     );
 
 }

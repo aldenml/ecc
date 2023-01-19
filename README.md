@@ -135,7 +135,7 @@ opaque_ristretto255_sha512_3DH_ServerFinish
 
 ### Two-Round Threshold Schnorr Signatures with FROST
 
-This is an implementation of [draft-irtf-cfrg-frost-02](https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-frost-02)
+This is an implementation of [draft-irtf-cfrg-frost-11](https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-frost-11)
 using `libsodium`.
 
 The draft presents a two-round signing variant of FROST, a Flexible Round-Optimized Schnorr Threshold signature
@@ -269,3 +269,14 @@ Read more at:<br/>
 "A Multi-User CCA-Secure Proxy Re-Encryption Scheme" by Y. Cai and X. Liu, 2014 <br/>
 "Cryptographically Enforced Orthogonal Access Control at Scale" by B. Wall and P. Walsh, 2018 <br/>
 https://en.wikipedia.org/wiki/Proxy_re-encryption
+
+### Bindings and building
+
+To generate the static files for bindings:
+```shell
+python3 bindings/gen_code.py
+```
+To build c shared and static libraries and jvm bindings:
+```shell
+./build-c.sh
+```

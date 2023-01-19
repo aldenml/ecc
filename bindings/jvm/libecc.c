@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2022, Alden Torres
+ * Copyright (c) 2021-2023, Alden Torres
  *
  * Licensed under the terms of the MIT license.
  * Copy of the license at https://opensource.org/licenses/MIT
@@ -250,22 +250,23 @@ JNIEXPORT void JNICALL Java_org_ssohub_crypto_ecc_libecc_ecc_1mac_1hmac_1sha256(
     jbyteArray digest,
     jbyteArray text,
     jint text_len,
-    jbyteArray key
+    jbyteArray key,
+    jint key_len
 ) {
     byte_t *ptr_digest = mput(env, digest, ecc_mac_hmac_sha256_HASHSIZE);
     byte_t *ptr_text = mput(env, text, text_len);
-    byte_t *ptr_key = mput(env, key, 32);
+    byte_t *ptr_key = mput(env, key, key_len);
     ecc_mac_hmac_sha256(
         ptr_digest,
         ptr_text,
         text_len,
         ptr_key,
-        32
+        key_len
     );
     mget(env, digest, ptr_digest, ecc_mac_hmac_sha256_HASHSIZE);
     mfree(ptr_digest, ecc_mac_hmac_sha256_HASHSIZE);
     mfree(ptr_text, text_len);
-    mfree(ptr_key, 32);
+    mfree(ptr_key, key_len);
 }
 
 JNIEXPORT void JNICALL Java_org_ssohub_crypto_ecc_libecc_ecc_1mac_1hmac_1sha512(
@@ -273,22 +274,23 @@ JNIEXPORT void JNICALL Java_org_ssohub_crypto_ecc_libecc_ecc_1mac_1hmac_1sha512(
     jbyteArray digest,
     jbyteArray text,
     jint text_len,
-    jbyteArray key
+    jbyteArray key,
+    jint key_len
 ) {
     byte_t *ptr_digest = mput(env, digest, ecc_mac_hmac_sha512_HASHSIZE);
     byte_t *ptr_text = mput(env, text, text_len);
-    byte_t *ptr_key = mput(env, key, 64);
+    byte_t *ptr_key = mput(env, key, key_len);
     ecc_mac_hmac_sha512(
         ptr_digest,
         ptr_text,
         text_len,
         ptr_key,
-        64
+        key_len
     );
     mget(env, digest, ptr_digest, ecc_mac_hmac_sha512_HASHSIZE);
     mfree(ptr_digest, ecc_mac_hmac_sha512_HASHSIZE);
     mfree(ptr_text, text_len);
-    mfree(ptr_key, 64);
+    mfree(ptr_key, key_len);
 }
 
 // kdf
@@ -476,6 +478,18 @@ JNIEXPORT int JNICALL Java_org_ssohub_crypto_ecc_libecc_ecc_1ed25519_1sub(
     mfree(ptr_p, ecc_ed25519_ELEMENTSIZE);
     mfree(ptr_q, ecc_ed25519_ELEMENTSIZE);
     return fun_ret;
+}
+
+JNIEXPORT void JNICALL Java_org_ssohub_crypto_ecc_libecc_ecc_1ed25519_1generator(
+    JNIEnv *env, jclass cls,
+    jbyteArray g
+) {
+    byte_t *ptr_g = mput(env, g, ecc_ed25519_ELEMENTSIZE);
+    ecc_ed25519_generator(
+        ptr_g
+    );
+    mget(env, g, ptr_g, ecc_ed25519_ELEMENTSIZE);
+    mfree(ptr_g, ecc_ed25519_ELEMENTSIZE);
 }
 
 JNIEXPORT void JNICALL Java_org_ssohub_crypto_ecc_libecc_ecc_1ed25519_1from_1uniform(
@@ -1306,7 +1320,7 @@ JNIEXPORT int JNICALL Java_org_ssohub_crypto_ecc_libecc_ecc_1bls12_1381_1pairing
 
 // h2c
 
-JNIEXPORT void JNICALL Java_org_ssohub_crypto_ecc_libecc_ecc_1h2c_1expand_1message_1xmd_1sha256(
+JNIEXPORT int JNICALL Java_org_ssohub_crypto_ecc_libecc_ecc_1h2c_1expand_1message_1xmd_1sha256(
     JNIEnv *env, jclass cls,
     jbyteArray out,
     jbyteArray msg,
@@ -1318,7 +1332,7 @@ JNIEXPORT void JNICALL Java_org_ssohub_crypto_ecc_libecc_ecc_1h2c_1expand_1messa
     byte_t *ptr_out = mput(env, out, len);
     byte_t *ptr_msg = mput(env, msg, msg_len);
     byte_t *ptr_dst = mput(env, dst, dst_len);
-    ecc_h2c_expand_message_xmd_sha256(
+    const int fun_ret = ecc_h2c_expand_message_xmd_sha256(
         ptr_out,
         ptr_msg,
         msg_len,
@@ -1330,9 +1344,10 @@ JNIEXPORT void JNICALL Java_org_ssohub_crypto_ecc_libecc_ecc_1h2c_1expand_1messa
     mfree(ptr_out, len);
     mfree(ptr_msg, msg_len);
     mfree(ptr_dst, dst_len);
+    return fun_ret;
 }
 
-JNIEXPORT void JNICALL Java_org_ssohub_crypto_ecc_libecc_ecc_1h2c_1expand_1message_1xmd_1sha512(
+JNIEXPORT int JNICALL Java_org_ssohub_crypto_ecc_libecc_ecc_1h2c_1expand_1message_1xmd_1sha512(
     JNIEnv *env, jclass cls,
     jbyteArray out,
     jbyteArray msg,
@@ -1344,7 +1359,7 @@ JNIEXPORT void JNICALL Java_org_ssohub_crypto_ecc_libecc_ecc_1h2c_1expand_1messa
     byte_t *ptr_out = mput(env, out, len);
     byte_t *ptr_msg = mput(env, msg, msg_len);
     byte_t *ptr_dst = mput(env, dst, dst_len);
-    ecc_h2c_expand_message_xmd_sha512(
+    const int fun_ret = ecc_h2c_expand_message_xmd_sha512(
         ptr_out,
         ptr_msg,
         msg_len,
@@ -1356,38 +1371,537 @@ JNIEXPORT void JNICALL Java_org_ssohub_crypto_ecc_libecc_ecc_1h2c_1expand_1messa
     mfree(ptr_out, len);
     mfree(ptr_msg, msg_len);
     mfree(ptr_dst, dst_len);
+    return fun_ret;
 }
 
-// oprf
+// voprf
 
-JNIEXPORT int JNICALL Java_org_ssohub_crypto_ecc_libecc_ecc_1oprf_1ristretto255_1sha512_1Evaluate(
+JNIEXPORT void JNICALL Java_org_ssohub_crypto_ecc_libecc_ecc_1voprf_1ristretto255_1sha512_1GenerateProofWithScalar(
     JNIEnv *env, jclass cls,
-    jbyteArray evaluatedElement,
+    jbyteArray proof,
+    jbyteArray k,
+    jbyteArray A,
+    jbyteArray B,
+    jbyteArray C,
+    jbyteArray D,
+    jint m,
+    jint mode,
+    jbyteArray r
+) {
+    byte_t *ptr_proof = mput(env, proof, ecc_voprf_ristretto255_sha512_PROOFSIZE);
+    byte_t *ptr_k = mput(env, k, ecc_voprf_ristretto255_sha512_SCALARSIZE);
+    byte_t *ptr_A = mput(env, A, ecc_voprf_ristretto255_sha512_ELEMENTSIZE);
+    byte_t *ptr_B = mput(env, B, ecc_voprf_ristretto255_sha512_ELEMENTSIZE);
+    byte_t *ptr_C = mput(env, C, m*ecc_voprf_ristretto255_sha512_ELEMENTSIZE);
+    byte_t *ptr_D = mput(env, D, m*ecc_voprf_ristretto255_sha512_ELEMENTSIZE);
+    byte_t *ptr_r = mput(env, r, ecc_voprf_ristretto255_sha512_SCALARSIZE);
+    ecc_voprf_ristretto255_sha512_GenerateProofWithScalar(
+        ptr_proof,
+        ptr_k,
+        ptr_A,
+        ptr_B,
+        ptr_C,
+        ptr_D,
+        m,
+        mode,
+        ptr_r
+    );
+    mget(env, proof, ptr_proof, ecc_voprf_ristretto255_sha512_PROOFSIZE);
+    mfree(ptr_proof, ecc_voprf_ristretto255_sha512_PROOFSIZE);
+    mfree(ptr_k, ecc_voprf_ristretto255_sha512_SCALARSIZE);
+    mfree(ptr_A, ecc_voprf_ristretto255_sha512_ELEMENTSIZE);
+    mfree(ptr_B, ecc_voprf_ristretto255_sha512_ELEMENTSIZE);
+    mfree(ptr_C, m*ecc_voprf_ristretto255_sha512_ELEMENTSIZE);
+    mfree(ptr_D, m*ecc_voprf_ristretto255_sha512_ELEMENTSIZE);
+    mfree(ptr_r, ecc_voprf_ristretto255_sha512_SCALARSIZE);
+}
+
+JNIEXPORT void JNICALL Java_org_ssohub_crypto_ecc_libecc_ecc_1voprf_1ristretto255_1sha512_1GenerateProof(
+    JNIEnv *env, jclass cls,
+    jbyteArray proof,
+    jbyteArray k,
+    jbyteArray A,
+    jbyteArray B,
+    jbyteArray C,
+    jbyteArray D,
+    jint m,
+    jint mode
+) {
+    byte_t *ptr_proof = mput(env, proof, ecc_voprf_ristretto255_sha512_PROOFSIZE);
+    byte_t *ptr_k = mput(env, k, ecc_voprf_ristretto255_sha512_SCALARSIZE);
+    byte_t *ptr_A = mput(env, A, ecc_voprf_ristretto255_sha512_ELEMENTSIZE);
+    byte_t *ptr_B = mput(env, B, ecc_voprf_ristretto255_sha512_ELEMENTSIZE);
+    byte_t *ptr_C = mput(env, C, m*ecc_voprf_ristretto255_sha512_ELEMENTSIZE);
+    byte_t *ptr_D = mput(env, D, m*ecc_voprf_ristretto255_sha512_ELEMENTSIZE);
+    ecc_voprf_ristretto255_sha512_GenerateProof(
+        ptr_proof,
+        ptr_k,
+        ptr_A,
+        ptr_B,
+        ptr_C,
+        ptr_D,
+        m,
+        mode
+    );
+    mget(env, proof, ptr_proof, ecc_voprf_ristretto255_sha512_PROOFSIZE);
+    mfree(ptr_proof, ecc_voprf_ristretto255_sha512_PROOFSIZE);
+    mfree(ptr_k, ecc_voprf_ristretto255_sha512_SCALARSIZE);
+    mfree(ptr_A, ecc_voprf_ristretto255_sha512_ELEMENTSIZE);
+    mfree(ptr_B, ecc_voprf_ristretto255_sha512_ELEMENTSIZE);
+    mfree(ptr_C, m*ecc_voprf_ristretto255_sha512_ELEMENTSIZE);
+    mfree(ptr_D, m*ecc_voprf_ristretto255_sha512_ELEMENTSIZE);
+}
+
+JNIEXPORT void JNICALL Java_org_ssohub_crypto_ecc_libecc_ecc_1voprf_1ristretto255_1sha512_1ComputeCompositesFast(
+    JNIEnv *env, jclass cls,
+    jbyteArray M,
+    jbyteArray Z,
+    jbyteArray k,
+    jbyteArray B,
+    jbyteArray C,
+    jbyteArray D,
+    jint m,
+    jint mode
+) {
+    byte_t *ptr_M = mput(env, M, ecc_voprf_ristretto255_sha512_ELEMENTSIZE);
+    byte_t *ptr_Z = mput(env, Z, ecc_voprf_ristretto255_sha512_ELEMENTSIZE);
+    byte_t *ptr_k = mput(env, k, ecc_voprf_ristretto255_sha512_SCALARSIZE);
+    byte_t *ptr_B = mput(env, B, ecc_voprf_ristretto255_sha512_ELEMENTSIZE);
+    byte_t *ptr_C = mput(env, C, m*ecc_voprf_ristretto255_sha512_ELEMENTSIZE);
+    byte_t *ptr_D = mput(env, D, m*ecc_voprf_ristretto255_sha512_ELEMENTSIZE);
+    ecc_voprf_ristretto255_sha512_ComputeCompositesFast(
+        ptr_M,
+        ptr_Z,
+        ptr_k,
+        ptr_B,
+        ptr_C,
+        ptr_D,
+        m,
+        mode
+    );
+    mget(env, M, ptr_M, ecc_voprf_ristretto255_sha512_ELEMENTSIZE);
+    mget(env, Z, ptr_Z, ecc_voprf_ristretto255_sha512_ELEMENTSIZE);
+    mfree(ptr_M, ecc_voprf_ristretto255_sha512_ELEMENTSIZE);
+    mfree(ptr_Z, ecc_voprf_ristretto255_sha512_ELEMENTSIZE);
+    mfree(ptr_k, ecc_voprf_ristretto255_sha512_SCALARSIZE);
+    mfree(ptr_B, ecc_voprf_ristretto255_sha512_ELEMENTSIZE);
+    mfree(ptr_C, m*ecc_voprf_ristretto255_sha512_ELEMENTSIZE);
+    mfree(ptr_D, m*ecc_voprf_ristretto255_sha512_ELEMENTSIZE);
+}
+
+JNIEXPORT int JNICALL Java_org_ssohub_crypto_ecc_libecc_ecc_1voprf_1ristretto255_1sha512_1VerifyProof(
+    JNIEnv *env, jclass cls,
+    jbyteArray A,
+    jbyteArray B,
+    jbyteArray C,
+    jbyteArray D,
+    jint m,
+    jint mode,
+    jbyteArray proof
+) {
+    byte_t *ptr_A = mput(env, A, ecc_voprf_ristretto255_sha512_ELEMENTSIZE);
+    byte_t *ptr_B = mput(env, B, ecc_voprf_ristretto255_sha512_ELEMENTSIZE);
+    byte_t *ptr_C = mput(env, C, m*ecc_voprf_ristretto255_sha512_ELEMENTSIZE);
+    byte_t *ptr_D = mput(env, D, m*ecc_voprf_ristretto255_sha512_ELEMENTSIZE);
+    byte_t *ptr_proof = mput(env, proof, ecc_voprf_ristretto255_sha512_PROOFSIZE);
+    const int fun_ret = ecc_voprf_ristretto255_sha512_VerifyProof(
+        ptr_A,
+        ptr_B,
+        ptr_C,
+        ptr_D,
+        m,
+        mode,
+        ptr_proof
+    );
+    mfree(ptr_A, ecc_voprf_ristretto255_sha512_ELEMENTSIZE);
+    mfree(ptr_B, ecc_voprf_ristretto255_sha512_ELEMENTSIZE);
+    mfree(ptr_C, m*ecc_voprf_ristretto255_sha512_ELEMENTSIZE);
+    mfree(ptr_D, m*ecc_voprf_ristretto255_sha512_ELEMENTSIZE);
+    mfree(ptr_proof, ecc_voprf_ristretto255_sha512_PROOFSIZE);
+    return fun_ret;
+}
+
+JNIEXPORT void JNICALL Java_org_ssohub_crypto_ecc_libecc_ecc_1voprf_1ristretto255_1sha512_1ComputeComposites(
+    JNIEnv *env, jclass cls,
+    jbyteArray M,
+    jbyteArray Z,
+    jbyteArray B,
+    jbyteArray C,
+    jbyteArray D,
+    jint m,
+    jint mode
+) {
+    byte_t *ptr_M = mput(env, M, ecc_voprf_ristretto255_sha512_ELEMENTSIZE);
+    byte_t *ptr_Z = mput(env, Z, ecc_voprf_ristretto255_sha512_ELEMENTSIZE);
+    byte_t *ptr_B = mput(env, B, ecc_voprf_ristretto255_sha512_ELEMENTSIZE);
+    byte_t *ptr_C = mput(env, C, m*ecc_voprf_ristretto255_sha512_ELEMENTSIZE);
+    byte_t *ptr_D = mput(env, D, m*ecc_voprf_ristretto255_sha512_ELEMENTSIZE);
+    ecc_voprf_ristretto255_sha512_ComputeComposites(
+        ptr_M,
+        ptr_Z,
+        ptr_B,
+        ptr_C,
+        ptr_D,
+        m,
+        mode
+    );
+    mget(env, M, ptr_M, ecc_voprf_ristretto255_sha512_ELEMENTSIZE);
+    mget(env, Z, ptr_Z, ecc_voprf_ristretto255_sha512_ELEMENTSIZE);
+    mfree(ptr_M, ecc_voprf_ristretto255_sha512_ELEMENTSIZE);
+    mfree(ptr_Z, ecc_voprf_ristretto255_sha512_ELEMENTSIZE);
+    mfree(ptr_B, ecc_voprf_ristretto255_sha512_ELEMENTSIZE);
+    mfree(ptr_C, m*ecc_voprf_ristretto255_sha512_ELEMENTSIZE);
+    mfree(ptr_D, m*ecc_voprf_ristretto255_sha512_ELEMENTSIZE);
+}
+
+JNIEXPORT void JNICALL Java_org_ssohub_crypto_ecc_libecc_ecc_1voprf_1ristretto255_1sha512_1GenerateKeyPair(
+    JNIEnv *env, jclass cls,
     jbyteArray skS,
-    jbyteArray blindedElement,
-    jbyteArray info,
-    jint infoLen
+    jbyteArray pkS
 ) {
-    byte_t *ptr_evaluatedElement = mput(env, evaluatedElement, ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
-    byte_t *ptr_skS = mput(env, skS, ecc_oprf_ristretto255_sha512_SCALARSIZE);
-    byte_t *ptr_blindedElement = mput(env, blindedElement, ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
-    byte_t *ptr_info = mput(env, info, infoLen);
-    const int fun_ret = ecc_oprf_ristretto255_sha512_Evaluate(
-        ptr_evaluatedElement,
+    byte_t *ptr_skS = mput(env, skS, ecc_voprf_ristretto255_sha512_SCALARSIZE);
+    byte_t *ptr_pkS = mput(env, pkS, ecc_voprf_ristretto255_sha512_ELEMENTSIZE);
+    ecc_voprf_ristretto255_sha512_GenerateKeyPair(
         ptr_skS,
-        ptr_blindedElement,
-        ptr_info,
-        infoLen
+        ptr_pkS
     );
-    mget(env, evaluatedElement, ptr_evaluatedElement, ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
-    mfree(ptr_evaluatedElement, ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
-    mfree(ptr_skS, ecc_oprf_ristretto255_sha512_SCALARSIZE);
-    mfree(ptr_blindedElement, ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
+    mget(env, skS, ptr_skS, ecc_voprf_ristretto255_sha512_SCALARSIZE);
+    mget(env, pkS, ptr_pkS, ecc_voprf_ristretto255_sha512_ELEMENTSIZE);
+    mfree(ptr_skS, ecc_voprf_ristretto255_sha512_SCALARSIZE);
+    mfree(ptr_pkS, ecc_voprf_ristretto255_sha512_ELEMENTSIZE);
+}
+
+JNIEXPORT int JNICALL Java_org_ssohub_crypto_ecc_libecc_ecc_1voprf_1ristretto255_1sha512_1DeriveKeyPair(
+    JNIEnv *env, jclass cls,
+    jbyteArray skS,
+    jbyteArray pkS,
+    jbyteArray seed,
+    jbyteArray info,
+    jint infoLen,
+    jint mode
+) {
+    byte_t *ptr_skS = mput(env, skS, ecc_voprf_ristretto255_sha512_SCALARSIZE);
+    byte_t *ptr_pkS = mput(env, pkS, ecc_voprf_ristretto255_sha512_ELEMENTSIZE);
+    byte_t *ptr_seed = mput(env, seed, ecc_voprf_ristretto255_sha512_SCALARSIZE);
+    byte_t *ptr_info = mput(env, info, infoLen);
+    const int fun_ret = ecc_voprf_ristretto255_sha512_DeriveKeyPair(
+        ptr_skS,
+        ptr_pkS,
+        ptr_seed,
+        ptr_info,
+        infoLen,
+        mode
+    );
+    mget(env, skS, ptr_skS, ecc_voprf_ristretto255_sha512_SCALARSIZE);
+    mget(env, pkS, ptr_pkS, ecc_voprf_ristretto255_sha512_ELEMENTSIZE);
+    mfree(ptr_skS, ecc_voprf_ristretto255_sha512_SCALARSIZE);
+    mfree(ptr_pkS, ecc_voprf_ristretto255_sha512_ELEMENTSIZE);
+    mfree(ptr_seed, ecc_voprf_ristretto255_sha512_SCALARSIZE);
     mfree(ptr_info, infoLen);
     return fun_ret;
 }
 
-JNIEXPORT int JNICALL Java_org_ssohub_crypto_ecc_libecc_ecc_1oprf_1ristretto255_1sha512_1VerifiableEvaluateWithScalar(
+JNIEXPORT int JNICALL Java_org_ssohub_crypto_ecc_libecc_ecc_1voprf_1ristretto255_1sha512_1BlindWithScalar(
+    JNIEnv *env, jclass cls,
+    jbyteArray blindedElement,
+    jbyteArray input,
+    jint inputLen,
+    jbyteArray blind,
+    jint mode
+) {
+    byte_t *ptr_blindedElement = mput(env, blindedElement, ecc_voprf_ristretto255_sha512_ELEMENTSIZE);
+    byte_t *ptr_input = mput(env, input, inputLen);
+    byte_t *ptr_blind = mput(env, blind, ecc_voprf_ristretto255_sha512_SCALARSIZE);
+    const int fun_ret = ecc_voprf_ristretto255_sha512_BlindWithScalar(
+        ptr_blindedElement,
+        ptr_input,
+        inputLen,
+        ptr_blind,
+        mode
+    );
+    mget(env, blindedElement, ptr_blindedElement, ecc_voprf_ristretto255_sha512_ELEMENTSIZE);
+    mfree(ptr_blindedElement, ecc_voprf_ristretto255_sha512_ELEMENTSIZE);
+    mfree(ptr_input, inputLen);
+    mfree(ptr_blind, ecc_voprf_ristretto255_sha512_SCALARSIZE);
+    return fun_ret;
+}
+
+JNIEXPORT int JNICALL Java_org_ssohub_crypto_ecc_libecc_ecc_1voprf_1ristretto255_1sha512_1Blind(
+    JNIEnv *env, jclass cls,
+    jbyteArray blind,
+    jbyteArray blindedElement,
+    jbyteArray input,
+    jint inputLen,
+    jint mode
+) {
+    byte_t *ptr_blind = mput(env, blind, ecc_voprf_ristretto255_sha512_SCALARSIZE);
+    byte_t *ptr_blindedElement = mput(env, blindedElement, ecc_voprf_ristretto255_sha512_ELEMENTSIZE);
+    byte_t *ptr_input = mput(env, input, inputLen);
+    const int fun_ret = ecc_voprf_ristretto255_sha512_Blind(
+        ptr_blind,
+        ptr_blindedElement,
+        ptr_input,
+        inputLen,
+        mode
+    );
+    mget(env, blind, ptr_blind, ecc_voprf_ristretto255_sha512_SCALARSIZE);
+    mget(env, blindedElement, ptr_blindedElement, ecc_voprf_ristretto255_sha512_ELEMENTSIZE);
+    mfree(ptr_blind, ecc_voprf_ristretto255_sha512_SCALARSIZE);
+    mfree(ptr_blindedElement, ecc_voprf_ristretto255_sha512_ELEMENTSIZE);
+    mfree(ptr_input, inputLen);
+    return fun_ret;
+}
+
+JNIEXPORT void JNICALL Java_org_ssohub_crypto_ecc_libecc_ecc_1voprf_1ristretto255_1sha512_1BlindEvaluate(
+    JNIEnv *env, jclass cls,
+    jbyteArray evaluatedElement,
+    jbyteArray skS,
+    jbyteArray blindedElement
+) {
+    byte_t *ptr_evaluatedElement = mput(env, evaluatedElement, ecc_voprf_ristretto255_sha512_ELEMENTSIZE);
+    byte_t *ptr_skS = mput(env, skS, ecc_voprf_ristretto255_sha512_SCALARSIZE);
+    byte_t *ptr_blindedElement = mput(env, blindedElement, ecc_voprf_ristretto255_sha512_ELEMENTSIZE);
+    ecc_voprf_ristretto255_sha512_BlindEvaluate(
+        ptr_evaluatedElement,
+        ptr_skS,
+        ptr_blindedElement
+    );
+    mget(env, evaluatedElement, ptr_evaluatedElement, ecc_voprf_ristretto255_sha512_ELEMENTSIZE);
+    mfree(ptr_evaluatedElement, ecc_voprf_ristretto255_sha512_ELEMENTSIZE);
+    mfree(ptr_skS, ecc_voprf_ristretto255_sha512_SCALARSIZE);
+    mfree(ptr_blindedElement, ecc_voprf_ristretto255_sha512_ELEMENTSIZE);
+}
+
+JNIEXPORT void JNICALL Java_org_ssohub_crypto_ecc_libecc_ecc_1voprf_1ristretto255_1sha512_1Finalize(
+    JNIEnv *env, jclass cls,
+    jbyteArray output,
+    jbyteArray input,
+    jint inputLen,
+    jbyteArray blind,
+    jbyteArray evaluatedElement
+) {
+    byte_t *ptr_output = mput(env, output, ecc_voprf_ristretto255_sha512_Nh);
+    byte_t *ptr_input = mput(env, input, inputLen);
+    byte_t *ptr_blind = mput(env, blind, ecc_voprf_ristretto255_sha512_SCALARSIZE);
+    byte_t *ptr_evaluatedElement = mput(env, evaluatedElement, ecc_voprf_ristretto255_sha512_ELEMENTSIZE);
+    ecc_voprf_ristretto255_sha512_Finalize(
+        ptr_output,
+        ptr_input,
+        inputLen,
+        ptr_blind,
+        ptr_evaluatedElement
+    );
+    mget(env, output, ptr_output, ecc_voprf_ristretto255_sha512_Nh);
+    mfree(ptr_output, ecc_voprf_ristretto255_sha512_Nh);
+    mfree(ptr_input, inputLen);
+    mfree(ptr_blind, ecc_voprf_ristretto255_sha512_SCALARSIZE);
+    mfree(ptr_evaluatedElement, ecc_voprf_ristretto255_sha512_ELEMENTSIZE);
+}
+
+JNIEXPORT int JNICALL Java_org_ssohub_crypto_ecc_libecc_ecc_1voprf_1ristretto255_1sha512_1Evaluate(
+    JNIEnv *env, jclass cls,
+    jbyteArray output,
+    jbyteArray skS,
+    jbyteArray input,
+    jint inputLen,
+    jint mode
+) {
+    byte_t *ptr_output = mput(env, output, ecc_voprf_ristretto255_sha512_Nh);
+    byte_t *ptr_skS = mput(env, skS, ecc_voprf_ristretto255_sha512_SCALARSIZE);
+    byte_t *ptr_input = mput(env, input, inputLen);
+    const int fun_ret = ecc_voprf_ristretto255_sha512_Evaluate(
+        ptr_output,
+        ptr_skS,
+        ptr_input,
+        inputLen,
+        mode
+    );
+    mget(env, output, ptr_output, ecc_voprf_ristretto255_sha512_Nh);
+    mfree(ptr_output, ecc_voprf_ristretto255_sha512_Nh);
+    mfree(ptr_skS, ecc_voprf_ristretto255_sha512_SCALARSIZE);
+    mfree(ptr_input, inputLen);
+    return fun_ret;
+}
+
+JNIEXPORT void JNICALL Java_org_ssohub_crypto_ecc_libecc_ecc_1voprf_1ristretto255_1sha512_1VerifiableBlindEvaluateWithScalar(
+    JNIEnv *env, jclass cls,
+    jbyteArray evaluatedElement,
+    jbyteArray proof,
+    jbyteArray skS,
+    jbyteArray pkS,
+    jbyteArray blindedElement,
+    jbyteArray r
+) {
+    byte_t *ptr_evaluatedElement = mput(env, evaluatedElement, ecc_voprf_ristretto255_sha512_ELEMENTSIZE);
+    byte_t *ptr_proof = mput(env, proof, ecc_voprf_ristretto255_sha512_PROOFSIZE);
+    byte_t *ptr_skS = mput(env, skS, ecc_voprf_ristretto255_sha512_SCALARSIZE);
+    byte_t *ptr_pkS = mput(env, pkS, ecc_voprf_ristretto255_sha512_ELEMENTSIZE);
+    byte_t *ptr_blindedElement = mput(env, blindedElement, ecc_voprf_ristretto255_sha512_ELEMENTSIZE);
+    byte_t *ptr_r = mput(env, r, ecc_voprf_ristretto255_sha512_SCALARSIZE);
+    ecc_voprf_ristretto255_sha512_VerifiableBlindEvaluateWithScalar(
+        ptr_evaluatedElement,
+        ptr_proof,
+        ptr_skS,
+        ptr_pkS,
+        ptr_blindedElement,
+        ptr_r
+    );
+    mget(env, evaluatedElement, ptr_evaluatedElement, ecc_voprf_ristretto255_sha512_ELEMENTSIZE);
+    mget(env, proof, ptr_proof, ecc_voprf_ristretto255_sha512_PROOFSIZE);
+    mfree(ptr_evaluatedElement, ecc_voprf_ristretto255_sha512_ELEMENTSIZE);
+    mfree(ptr_proof, ecc_voprf_ristretto255_sha512_PROOFSIZE);
+    mfree(ptr_skS, ecc_voprf_ristretto255_sha512_SCALARSIZE);
+    mfree(ptr_pkS, ecc_voprf_ristretto255_sha512_ELEMENTSIZE);
+    mfree(ptr_blindedElement, ecc_voprf_ristretto255_sha512_ELEMENTSIZE);
+    mfree(ptr_r, ecc_voprf_ristretto255_sha512_SCALARSIZE);
+}
+
+JNIEXPORT void JNICALL Java_org_ssohub_crypto_ecc_libecc_ecc_1voprf_1ristretto255_1sha512_1VerifiableBlindEvaluate(
+    JNIEnv *env, jclass cls,
+    jbyteArray evaluatedElement,
+    jbyteArray proof,
+    jbyteArray skS,
+    jbyteArray pkS,
+    jbyteArray blindedElement
+) {
+    byte_t *ptr_evaluatedElement = mput(env, evaluatedElement, ecc_voprf_ristretto255_sha512_ELEMENTSIZE);
+    byte_t *ptr_proof = mput(env, proof, ecc_voprf_ristretto255_sha512_PROOFSIZE);
+    byte_t *ptr_skS = mput(env, skS, ecc_voprf_ristretto255_sha512_SCALARSIZE);
+    byte_t *ptr_pkS = mput(env, pkS, ecc_voprf_ristretto255_sha512_ELEMENTSIZE);
+    byte_t *ptr_blindedElement = mput(env, blindedElement, ecc_voprf_ristretto255_sha512_ELEMENTSIZE);
+    ecc_voprf_ristretto255_sha512_VerifiableBlindEvaluate(
+        ptr_evaluatedElement,
+        ptr_proof,
+        ptr_skS,
+        ptr_pkS,
+        ptr_blindedElement
+    );
+    mget(env, evaluatedElement, ptr_evaluatedElement, ecc_voprf_ristretto255_sha512_ELEMENTSIZE);
+    mget(env, proof, ptr_proof, ecc_voprf_ristretto255_sha512_PROOFSIZE);
+    mfree(ptr_evaluatedElement, ecc_voprf_ristretto255_sha512_ELEMENTSIZE);
+    mfree(ptr_proof, ecc_voprf_ristretto255_sha512_PROOFSIZE);
+    mfree(ptr_skS, ecc_voprf_ristretto255_sha512_SCALARSIZE);
+    mfree(ptr_pkS, ecc_voprf_ristretto255_sha512_ELEMENTSIZE);
+    mfree(ptr_blindedElement, ecc_voprf_ristretto255_sha512_ELEMENTSIZE);
+}
+
+JNIEXPORT int JNICALL Java_org_ssohub_crypto_ecc_libecc_ecc_1voprf_1ristretto255_1sha512_1VerifiableFinalize(
+    JNIEnv *env, jclass cls,
+    jbyteArray output,
+    jbyteArray input,
+    jint inputLen,
+    jbyteArray blind,
+    jbyteArray evaluatedElement,
+    jbyteArray blindedElement,
+    jbyteArray pkS,
+    jbyteArray proof
+) {
+    byte_t *ptr_output = mput(env, output, ecc_voprf_ristretto255_sha512_Nh);
+    byte_t *ptr_input = mput(env, input, inputLen);
+    byte_t *ptr_blind = mput(env, blind, ecc_voprf_ristretto255_sha512_SCALARSIZE);
+    byte_t *ptr_evaluatedElement = mput(env, evaluatedElement, ecc_voprf_ristretto255_sha512_ELEMENTSIZE);
+    byte_t *ptr_blindedElement = mput(env, blindedElement, ecc_voprf_ristretto255_sha512_ELEMENTSIZE);
+    byte_t *ptr_pkS = mput(env, pkS, ecc_voprf_ristretto255_sha512_ELEMENTSIZE);
+    byte_t *ptr_proof = mput(env, proof, ecc_voprf_ristretto255_sha512_PROOFSIZE);
+    const int fun_ret = ecc_voprf_ristretto255_sha512_VerifiableFinalize(
+        ptr_output,
+        ptr_input,
+        inputLen,
+        ptr_blind,
+        ptr_evaluatedElement,
+        ptr_blindedElement,
+        ptr_pkS,
+        ptr_proof
+    );
+    mget(env, output, ptr_output, ecc_voprf_ristretto255_sha512_Nh);
+    mfree(ptr_output, ecc_voprf_ristretto255_sha512_Nh);
+    mfree(ptr_input, inputLen);
+    mfree(ptr_blind, ecc_voprf_ristretto255_sha512_SCALARSIZE);
+    mfree(ptr_evaluatedElement, ecc_voprf_ristretto255_sha512_ELEMENTSIZE);
+    mfree(ptr_blindedElement, ecc_voprf_ristretto255_sha512_ELEMENTSIZE);
+    mfree(ptr_pkS, ecc_voprf_ristretto255_sha512_ELEMENTSIZE);
+    mfree(ptr_proof, ecc_voprf_ristretto255_sha512_PROOFSIZE);
+    return fun_ret;
+}
+
+JNIEXPORT int JNICALL Java_org_ssohub_crypto_ecc_libecc_ecc_1voprf_1ristretto255_1sha512_1PartiallyBlindWithScalar(
+    JNIEnv *env, jclass cls,
+    jbyteArray blindedElement,
+    jbyteArray tweakedKey,
+    jbyteArray input,
+    jint inputLen,
+    jbyteArray info,
+    jint infoLen,
+    jbyteArray pkS,
+    jbyteArray blind
+) {
+    byte_t *ptr_blindedElement = mput(env, blindedElement, ecc_voprf_ristretto255_sha512_ELEMENTSIZE);
+    byte_t *ptr_tweakedKey = mput(env, tweakedKey, ecc_voprf_ristretto255_sha512_ELEMENTSIZE);
+    byte_t *ptr_input = mput(env, input, inputLen);
+    byte_t *ptr_info = mput(env, info, infoLen);
+    byte_t *ptr_pkS = mput(env, pkS, ecc_voprf_ristretto255_sha512_ELEMENTSIZE);
+    byte_t *ptr_blind = mput(env, blind, ecc_voprf_ristretto255_sha512_SCALARSIZE);
+    const int fun_ret = ecc_voprf_ristretto255_sha512_PartiallyBlindWithScalar(
+        ptr_blindedElement,
+        ptr_tweakedKey,
+        ptr_input,
+        inputLen,
+        ptr_info,
+        infoLen,
+        ptr_pkS,
+        ptr_blind
+    );
+    mget(env, blindedElement, ptr_blindedElement, ecc_voprf_ristretto255_sha512_ELEMENTSIZE);
+    mget(env, tweakedKey, ptr_tweakedKey, ecc_voprf_ristretto255_sha512_ELEMENTSIZE);
+    mfree(ptr_blindedElement, ecc_voprf_ristretto255_sha512_ELEMENTSIZE);
+    mfree(ptr_tweakedKey, ecc_voprf_ristretto255_sha512_ELEMENTSIZE);
+    mfree(ptr_input, inputLen);
+    mfree(ptr_info, infoLen);
+    mfree(ptr_pkS, ecc_voprf_ristretto255_sha512_ELEMENTSIZE);
+    mfree(ptr_blind, ecc_voprf_ristretto255_sha512_SCALARSIZE);
+    return fun_ret;
+}
+
+JNIEXPORT int JNICALL Java_org_ssohub_crypto_ecc_libecc_ecc_1voprf_1ristretto255_1sha512_1PartiallyBlind(
+    JNIEnv *env, jclass cls,
+    jbyteArray blind,
+    jbyteArray blindedElement,
+    jbyteArray tweakedKey,
+    jbyteArray input,
+    jint inputLen,
+    jbyteArray info,
+    jint infoLen,
+    jbyteArray pkS
+) {
+    byte_t *ptr_blind = mput(env, blind, ecc_voprf_ristretto255_sha512_SCALARSIZE);
+    byte_t *ptr_blindedElement = mput(env, blindedElement, ecc_voprf_ristretto255_sha512_ELEMENTSIZE);
+    byte_t *ptr_tweakedKey = mput(env, tweakedKey, ecc_voprf_ristretto255_sha512_ELEMENTSIZE);
+    byte_t *ptr_input = mput(env, input, inputLen);
+    byte_t *ptr_info = mput(env, info, infoLen);
+    byte_t *ptr_pkS = mput(env, pkS, ecc_voprf_ristretto255_sha512_ELEMENTSIZE);
+    const int fun_ret = ecc_voprf_ristretto255_sha512_PartiallyBlind(
+        ptr_blind,
+        ptr_blindedElement,
+        ptr_tweakedKey,
+        ptr_input,
+        inputLen,
+        ptr_info,
+        infoLen,
+        ptr_pkS
+    );
+    mget(env, blind, ptr_blind, ecc_voprf_ristretto255_sha512_SCALARSIZE);
+    mget(env, blindedElement, ptr_blindedElement, ecc_voprf_ristretto255_sha512_ELEMENTSIZE);
+    mget(env, tweakedKey, ptr_tweakedKey, ecc_voprf_ristretto255_sha512_ELEMENTSIZE);
+    mfree(ptr_blind, ecc_voprf_ristretto255_sha512_SCALARSIZE);
+    mfree(ptr_blindedElement, ecc_voprf_ristretto255_sha512_ELEMENTSIZE);
+    mfree(ptr_tweakedKey, ecc_voprf_ristretto255_sha512_ELEMENTSIZE);
+    mfree(ptr_input, inputLen);
+    mfree(ptr_info, infoLen);
+    mfree(ptr_pkS, ecc_voprf_ristretto255_sha512_ELEMENTSIZE);
+    return fun_ret;
+}
+
+JNIEXPORT int JNICALL Java_org_ssohub_crypto_ecc_libecc_ecc_1voprf_1ristretto255_1sha512_1PartiallyBlindEvaluateWithScalar(
     JNIEnv *env, jclass cls,
     jbyteArray evaluatedElement,
     jbyteArray proof,
@@ -1397,13 +1911,13 @@ JNIEXPORT int JNICALL Java_org_ssohub_crypto_ecc_libecc_ecc_1oprf_1ristretto255_
     jint infoLen,
     jbyteArray r
 ) {
-    byte_t *ptr_evaluatedElement = mput(env, evaluatedElement, ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
-    byte_t *ptr_proof = mput(env, proof, ecc_oprf_ristretto255_sha512_PROOFSIZE);
-    byte_t *ptr_skS = mput(env, skS, ecc_oprf_ristretto255_sha512_SCALARSIZE);
-    byte_t *ptr_blindedElement = mput(env, blindedElement, ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
+    byte_t *ptr_evaluatedElement = mput(env, evaluatedElement, ecc_voprf_ristretto255_sha512_ELEMENTSIZE);
+    byte_t *ptr_proof = mput(env, proof, ecc_voprf_ristretto255_sha512_PROOFSIZE);
+    byte_t *ptr_skS = mput(env, skS, ecc_voprf_ristretto255_sha512_SCALARSIZE);
+    byte_t *ptr_blindedElement = mput(env, blindedElement, ecc_voprf_ristretto255_sha512_ELEMENTSIZE);
     byte_t *ptr_info = mput(env, info, infoLen);
-    byte_t *ptr_r = mput(env, r, ecc_oprf_ristretto255_sha512_SCALARSIZE);
-    const int fun_ret = ecc_oprf_ristretto255_sha512_VerifiableEvaluateWithScalar(
+    byte_t *ptr_r = mput(env, r, ecc_voprf_ristretto255_sha512_SCALARSIZE);
+    const int fun_ret = ecc_voprf_ristretto255_sha512_PartiallyBlindEvaluateWithScalar(
         ptr_evaluatedElement,
         ptr_proof,
         ptr_skS,
@@ -1412,18 +1926,18 @@ JNIEXPORT int JNICALL Java_org_ssohub_crypto_ecc_libecc_ecc_1oprf_1ristretto255_
         infoLen,
         ptr_r
     );
-    mget(env, evaluatedElement, ptr_evaluatedElement, ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
-    mget(env, proof, ptr_proof, ecc_oprf_ristretto255_sha512_PROOFSIZE);
-    mfree(ptr_evaluatedElement, ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
-    mfree(ptr_proof, ecc_oprf_ristretto255_sha512_PROOFSIZE);
-    mfree(ptr_skS, ecc_oprf_ristretto255_sha512_SCALARSIZE);
-    mfree(ptr_blindedElement, ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
+    mget(env, evaluatedElement, ptr_evaluatedElement, ecc_voprf_ristretto255_sha512_ELEMENTSIZE);
+    mget(env, proof, ptr_proof, ecc_voprf_ristretto255_sha512_PROOFSIZE);
+    mfree(ptr_evaluatedElement, ecc_voprf_ristretto255_sha512_ELEMENTSIZE);
+    mfree(ptr_proof, ecc_voprf_ristretto255_sha512_PROOFSIZE);
+    mfree(ptr_skS, ecc_voprf_ristretto255_sha512_SCALARSIZE);
+    mfree(ptr_blindedElement, ecc_voprf_ristretto255_sha512_ELEMENTSIZE);
     mfree(ptr_info, infoLen);
-    mfree(ptr_r, ecc_oprf_ristretto255_sha512_SCALARSIZE);
+    mfree(ptr_r, ecc_voprf_ristretto255_sha512_SCALARSIZE);
     return fun_ret;
 }
 
-JNIEXPORT int JNICALL Java_org_ssohub_crypto_ecc_libecc_ecc_1oprf_1ristretto255_1sha512_1VerifiableEvaluate(
+JNIEXPORT int JNICALL Java_org_ssohub_crypto_ecc_libecc_ecc_1voprf_1ristretto255_1sha512_1PartiallyBlindEvaluate(
     JNIEnv *env, jclass cls,
     jbyteArray evaluatedElement,
     jbyteArray proof,
@@ -1432,12 +1946,12 @@ JNIEXPORT int JNICALL Java_org_ssohub_crypto_ecc_libecc_ecc_1oprf_1ristretto255_
     jbyteArray info,
     jint infoLen
 ) {
-    byte_t *ptr_evaluatedElement = mput(env, evaluatedElement, ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
-    byte_t *ptr_proof = mput(env, proof, ecc_oprf_ristretto255_sha512_PROOFSIZE);
-    byte_t *ptr_skS = mput(env, skS, ecc_oprf_ristretto255_sha512_SCALARSIZE);
-    byte_t *ptr_blindedElement = mput(env, blindedElement, ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
+    byte_t *ptr_evaluatedElement = mput(env, evaluatedElement, ecc_voprf_ristretto255_sha512_ELEMENTSIZE);
+    byte_t *ptr_proof = mput(env, proof, ecc_voprf_ristretto255_sha512_PROOFSIZE);
+    byte_t *ptr_skS = mput(env, skS, ecc_voprf_ristretto255_sha512_SCALARSIZE);
+    byte_t *ptr_blindedElement = mput(env, blindedElement, ecc_voprf_ristretto255_sha512_ELEMENTSIZE);
     byte_t *ptr_info = mput(env, info, infoLen);
-    const int fun_ret = ecc_oprf_ristretto255_sha512_VerifiableEvaluate(
+    const int fun_ret = ecc_voprf_ristretto255_sha512_PartiallyBlindEvaluate(
         ptr_evaluatedElement,
         ptr_proof,
         ptr_skS,
@@ -1445,319 +1959,17 @@ JNIEXPORT int JNICALL Java_org_ssohub_crypto_ecc_libecc_ecc_1oprf_1ristretto255_
         ptr_info,
         infoLen
     );
-    mget(env, evaluatedElement, ptr_evaluatedElement, ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
-    mget(env, proof, ptr_proof, ecc_oprf_ristretto255_sha512_PROOFSIZE);
-    mfree(ptr_evaluatedElement, ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
-    mfree(ptr_proof, ecc_oprf_ristretto255_sha512_PROOFSIZE);
-    mfree(ptr_skS, ecc_oprf_ristretto255_sha512_SCALARSIZE);
-    mfree(ptr_blindedElement, ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
+    mget(env, evaluatedElement, ptr_evaluatedElement, ecc_voprf_ristretto255_sha512_ELEMENTSIZE);
+    mget(env, proof, ptr_proof, ecc_voprf_ristretto255_sha512_PROOFSIZE);
+    mfree(ptr_evaluatedElement, ecc_voprf_ristretto255_sha512_ELEMENTSIZE);
+    mfree(ptr_proof, ecc_voprf_ristretto255_sha512_PROOFSIZE);
+    mfree(ptr_skS, ecc_voprf_ristretto255_sha512_SCALARSIZE);
+    mfree(ptr_blindedElement, ecc_voprf_ristretto255_sha512_ELEMENTSIZE);
     mfree(ptr_info, infoLen);
     return fun_ret;
 }
 
-JNIEXPORT void JNICALL Java_org_ssohub_crypto_ecc_libecc_ecc_1oprf_1ristretto255_1sha512_1GenerateProofWithScalar(
-    JNIEnv *env, jclass cls,
-    jbyteArray proof,
-    jbyteArray k,
-    jbyteArray A,
-    jbyteArray B,
-    jbyteArray C,
-    jbyteArray D,
-    jbyteArray r
-) {
-    byte_t *ptr_proof = mput(env, proof, ecc_oprf_ristretto255_sha512_PROOFSIZE);
-    byte_t *ptr_k = mput(env, k, ecc_oprf_ristretto255_sha512_SCALARSIZE);
-    byte_t *ptr_A = mput(env, A, ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
-    byte_t *ptr_B = mput(env, B, ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
-    byte_t *ptr_C = mput(env, C, ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
-    byte_t *ptr_D = mput(env, D, ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
-    byte_t *ptr_r = mput(env, r, ecc_oprf_ristretto255_sha512_SCALARSIZE);
-    ecc_oprf_ristretto255_sha512_GenerateProofWithScalar(
-        ptr_proof,
-        ptr_k,
-        ptr_A,
-        ptr_B,
-        ptr_C,
-        ptr_D,
-        ptr_r
-    );
-    mget(env, proof, ptr_proof, ecc_oprf_ristretto255_sha512_PROOFSIZE);
-    mfree(ptr_proof, ecc_oprf_ristretto255_sha512_PROOFSIZE);
-    mfree(ptr_k, ecc_oprf_ristretto255_sha512_SCALARSIZE);
-    mfree(ptr_A, ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
-    mfree(ptr_B, ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
-    mfree(ptr_C, ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
-    mfree(ptr_D, ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
-    mfree(ptr_r, ecc_oprf_ristretto255_sha512_SCALARSIZE);
-}
-
-JNIEXPORT void JNICALL Java_org_ssohub_crypto_ecc_libecc_ecc_1oprf_1ristretto255_1sha512_1GenerateProof(
-    JNIEnv *env, jclass cls,
-    jbyteArray proof,
-    jbyteArray k,
-    jbyteArray A,
-    jbyteArray B,
-    jbyteArray C,
-    jbyteArray D
-) {
-    byte_t *ptr_proof = mput(env, proof, ecc_oprf_ristretto255_sha512_PROOFSIZE);
-    byte_t *ptr_k = mput(env, k, ecc_oprf_ristretto255_sha512_SCALARSIZE);
-    byte_t *ptr_A = mput(env, A, ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
-    byte_t *ptr_B = mput(env, B, ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
-    byte_t *ptr_C = mput(env, C, ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
-    byte_t *ptr_D = mput(env, D, ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
-    ecc_oprf_ristretto255_sha512_GenerateProof(
-        ptr_proof,
-        ptr_k,
-        ptr_A,
-        ptr_B,
-        ptr_C,
-        ptr_D
-    );
-    mget(env, proof, ptr_proof, ecc_oprf_ristretto255_sha512_PROOFSIZE);
-    mfree(ptr_proof, ecc_oprf_ristretto255_sha512_PROOFSIZE);
-    mfree(ptr_k, ecc_oprf_ristretto255_sha512_SCALARSIZE);
-    mfree(ptr_A, ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
-    mfree(ptr_B, ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
-    mfree(ptr_C, ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
-    mfree(ptr_D, ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
-}
-
-JNIEXPORT void JNICALL Java_org_ssohub_crypto_ecc_libecc_ecc_1oprf_1ristretto255_1sha512_1ComputeComposites(
-    JNIEnv *env, jclass cls,
-    jbyteArray M,
-    jbyteArray Z,
-    jbyteArray B,
-    jbyteArray Cs,
-    jbyteArray Ds,
-    jint m
-) {
-    byte_t *ptr_M = mput(env, M, ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
-    byte_t *ptr_Z = mput(env, Z, ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
-    byte_t *ptr_B = mput(env, B, ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
-    byte_t *ptr_Cs = mput(env, Cs, m*ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
-    byte_t *ptr_Ds = mput(env, Ds, m*ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
-    ecc_oprf_ristretto255_sha512_ComputeComposites(
-        ptr_M,
-        ptr_Z,
-        ptr_B,
-        ptr_Cs,
-        ptr_Ds,
-        m
-    );
-    mget(env, M, ptr_M, ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
-    mget(env, Z, ptr_Z, ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
-    mfree(ptr_M, ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
-    mfree(ptr_Z, ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
-    mfree(ptr_B, ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
-    mfree(ptr_Cs, m*ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
-    mfree(ptr_Ds, m*ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
-}
-
-JNIEXPORT void JNICALL Java_org_ssohub_crypto_ecc_libecc_ecc_1oprf_1ristretto255_1sha512_1ComputeCompositesFast(
-    JNIEnv *env, jclass cls,
-    jbyteArray M,
-    jbyteArray Z,
-    jbyteArray k,
-    jbyteArray B,
-    jbyteArray Cs,
-    jbyteArray Ds,
-    jint m
-) {
-    byte_t *ptr_M = mput(env, M, ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
-    byte_t *ptr_Z = mput(env, Z, ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
-    byte_t *ptr_k = mput(env, k, ecc_oprf_ristretto255_sha512_SCALARSIZE);
-    byte_t *ptr_B = mput(env, B, ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
-    byte_t *ptr_Cs = mput(env, Cs, m*ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
-    byte_t *ptr_Ds = mput(env, Ds, m*ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
-    ecc_oprf_ristretto255_sha512_ComputeCompositesFast(
-        ptr_M,
-        ptr_Z,
-        ptr_k,
-        ptr_B,
-        ptr_Cs,
-        ptr_Ds,
-        m
-    );
-    mget(env, M, ptr_M, ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
-    mget(env, Z, ptr_Z, ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
-    mfree(ptr_M, ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
-    mfree(ptr_Z, ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
-    mfree(ptr_k, ecc_oprf_ristretto255_sha512_SCALARSIZE);
-    mfree(ptr_B, ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
-    mfree(ptr_Cs, m*ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
-    mfree(ptr_Ds, m*ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
-}
-
-JNIEXPORT void JNICALL Java_org_ssohub_crypto_ecc_libecc_ecc_1oprf_1ristretto255_1sha512_1BlindWithScalar(
-    JNIEnv *env, jclass cls,
-    jbyteArray blindedElement,
-    jbyteArray input,
-    jint inputLen,
-    jbyteArray blind,
-    jint mode
-) {
-    byte_t *ptr_blindedElement = mput(env, blindedElement, ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
-    byte_t *ptr_input = mput(env, input, inputLen);
-    byte_t *ptr_blind = mput(env, blind, ecc_oprf_ristretto255_sha512_SCALARSIZE);
-    ecc_oprf_ristretto255_sha512_BlindWithScalar(
-        ptr_blindedElement,
-        ptr_input,
-        inputLen,
-        ptr_blind,
-        mode
-    );
-    mget(env, blindedElement, ptr_blindedElement, ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
-    mfree(ptr_blindedElement, ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
-    mfree(ptr_input, inputLen);
-    mfree(ptr_blind, ecc_oprf_ristretto255_sha512_SCALARSIZE);
-}
-
-JNIEXPORT void JNICALL Java_org_ssohub_crypto_ecc_libecc_ecc_1oprf_1ristretto255_1sha512_1Blind(
-    JNIEnv *env, jclass cls,
-    jbyteArray blindedElement,
-    jbyteArray blind,
-    jbyteArray input,
-    jint inputLen,
-    jint mode
-) {
-    byte_t *ptr_blindedElement = mput(env, blindedElement, ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
-    byte_t *ptr_blind = mput(env, blind, ecc_oprf_ristretto255_sha512_SCALARSIZE);
-    byte_t *ptr_input = mput(env, input, inputLen);
-    ecc_oprf_ristretto255_sha512_Blind(
-        ptr_blindedElement,
-        ptr_blind,
-        ptr_input,
-        inputLen,
-        mode
-    );
-    mget(env, blindedElement, ptr_blindedElement, ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
-    mget(env, blind, ptr_blind, ecc_oprf_ristretto255_sha512_SCALARSIZE);
-    mfree(ptr_blindedElement, ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
-    mfree(ptr_blind, ecc_oprf_ristretto255_sha512_SCALARSIZE);
-    mfree(ptr_input, inputLen);
-}
-
-JNIEXPORT void JNICALL Java_org_ssohub_crypto_ecc_libecc_ecc_1oprf_1ristretto255_1sha512_1Unblind(
-    JNIEnv *env, jclass cls,
-    jbyteArray unblindedElement,
-    jbyteArray blind,
-    jbyteArray evaluatedElement
-) {
-    byte_t *ptr_unblindedElement = mput(env, unblindedElement, ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
-    byte_t *ptr_blind = mput(env, blind, ecc_oprf_ristretto255_sha512_SCALARSIZE);
-    byte_t *ptr_evaluatedElement = mput(env, evaluatedElement, ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
-    ecc_oprf_ristretto255_sha512_Unblind(
-        ptr_unblindedElement,
-        ptr_blind,
-        ptr_evaluatedElement
-    );
-    mget(env, unblindedElement, ptr_unblindedElement, ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
-    mfree(ptr_unblindedElement, ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
-    mfree(ptr_blind, ecc_oprf_ristretto255_sha512_SCALARSIZE);
-    mfree(ptr_evaluatedElement, ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
-}
-
-JNIEXPORT void JNICALL Java_org_ssohub_crypto_ecc_libecc_ecc_1oprf_1ristretto255_1sha512_1Finalize(
-    JNIEnv *env, jclass cls,
-    jbyteArray output,
-    jbyteArray input,
-    jint inputLen,
-    jbyteArray blind,
-    jbyteArray evaluatedElement,
-    jbyteArray info,
-    jint infoLen
-) {
-    byte_t *ptr_output = mput(env, output, ecc_oprf_ristretto255_sha512_Nh);
-    byte_t *ptr_input = mput(env, input, inputLen);
-    byte_t *ptr_blind = mput(env, blind, ecc_oprf_ristretto255_sha512_SCALARSIZE);
-    byte_t *ptr_evaluatedElement = mput(env, evaluatedElement, ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
-    byte_t *ptr_info = mput(env, info, infoLen);
-    ecc_oprf_ristretto255_sha512_Finalize(
-        ptr_output,
-        ptr_input,
-        inputLen,
-        ptr_blind,
-        ptr_evaluatedElement,
-        ptr_info,
-        infoLen
-    );
-    mget(env, output, ptr_output, ecc_oprf_ristretto255_sha512_Nh);
-    mfree(ptr_output, ecc_oprf_ristretto255_sha512_Nh);
-    mfree(ptr_input, inputLen);
-    mfree(ptr_blind, ecc_oprf_ristretto255_sha512_SCALARSIZE);
-    mfree(ptr_evaluatedElement, ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
-    mfree(ptr_info, infoLen);
-}
-
-JNIEXPORT int JNICALL Java_org_ssohub_crypto_ecc_libecc_ecc_1oprf_1ristretto255_1sha512_1VerifyProof(
-    JNIEnv *env, jclass cls,
-    jbyteArray A,
-    jbyteArray B,
-    jbyteArray C,
-    jbyteArray D,
-    jbyteArray proof
-) {
-    byte_t *ptr_A = mput(env, A, ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
-    byte_t *ptr_B = mput(env, B, ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
-    byte_t *ptr_C = mput(env, C, ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
-    byte_t *ptr_D = mput(env, D, ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
-    byte_t *ptr_proof = mput(env, proof, ecc_oprf_ristretto255_sha512_PROOFSIZE);
-    const int fun_ret = ecc_oprf_ristretto255_sha512_VerifyProof(
-        ptr_A,
-        ptr_B,
-        ptr_C,
-        ptr_D,
-        ptr_proof
-    );
-    mfree(ptr_A, ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
-    mfree(ptr_B, ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
-    mfree(ptr_C, ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
-    mfree(ptr_D, ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
-    mfree(ptr_proof, ecc_oprf_ristretto255_sha512_PROOFSIZE);
-    return fun_ret;
-}
-
-JNIEXPORT int JNICALL Java_org_ssohub_crypto_ecc_libecc_ecc_1oprf_1ristretto255_1sha512_1VerifiableUnblind(
-    JNIEnv *env, jclass cls,
-    jbyteArray unblindedElement,
-    jbyteArray blind,
-    jbyteArray evaluatedElement,
-    jbyteArray blindedElement,
-    jbyteArray pkS,
-    jbyteArray proof,
-    jbyteArray info,
-    jint infoLen
-) {
-    byte_t *ptr_unblindedElement = mput(env, unblindedElement, ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
-    byte_t *ptr_blind = mput(env, blind, ecc_oprf_ristretto255_sha512_SCALARSIZE);
-    byte_t *ptr_evaluatedElement = mput(env, evaluatedElement, ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
-    byte_t *ptr_blindedElement = mput(env, blindedElement, ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
-    byte_t *ptr_pkS = mput(env, pkS, ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
-    byte_t *ptr_proof = mput(env, proof, ecc_oprf_ristretto255_sha512_PROOFSIZE);
-    byte_t *ptr_info = mput(env, info, infoLen);
-    const int fun_ret = ecc_oprf_ristretto255_sha512_VerifiableUnblind(
-        ptr_unblindedElement,
-        ptr_blind,
-        ptr_evaluatedElement,
-        ptr_blindedElement,
-        ptr_pkS,
-        ptr_proof,
-        ptr_info,
-        infoLen
-    );
-    mget(env, unblindedElement, ptr_unblindedElement, ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
-    mfree(ptr_unblindedElement, ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
-    mfree(ptr_blind, ecc_oprf_ristretto255_sha512_SCALARSIZE);
-    mfree(ptr_evaluatedElement, ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
-    mfree(ptr_blindedElement, ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
-    mfree(ptr_pkS, ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
-    mfree(ptr_proof, ecc_oprf_ristretto255_sha512_PROOFSIZE);
-    mfree(ptr_info, infoLen);
-    return fun_ret;
-}
-
-JNIEXPORT int JNICALL Java_org_ssohub_crypto_ecc_libecc_ecc_1oprf_1ristretto255_1sha512_1VerifiableFinalize(
+JNIEXPORT int JNICALL Java_org_ssohub_crypto_ecc_libecc_ecc_1voprf_1ristretto255_1sha512_1PartiallyFinalize(
     JNIEnv *env, jclass cls,
     jbyteArray output,
     jbyteArray input,
@@ -1765,44 +1977,73 @@ JNIEXPORT int JNICALL Java_org_ssohub_crypto_ecc_libecc_ecc_1oprf_1ristretto255_
     jbyteArray blind,
     jbyteArray evaluatedElement,
     jbyteArray blindedElement,
-    jbyteArray pkS,
     jbyteArray proof,
     jbyteArray info,
-    jint infoLen
+    jint infoLen,
+    jbyteArray tweakedKey
 ) {
-    byte_t *ptr_output = mput(env, output, ecc_oprf_ristretto255_sha512_Nh);
+    byte_t *ptr_output = mput(env, output, ecc_voprf_ristretto255_sha512_Nh);
     byte_t *ptr_input = mput(env, input, inputLen);
-    byte_t *ptr_blind = mput(env, blind, ecc_oprf_ristretto255_sha512_SCALARSIZE);
-    byte_t *ptr_evaluatedElement = mput(env, evaluatedElement, ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
-    byte_t *ptr_blindedElement = mput(env, blindedElement, ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
-    byte_t *ptr_pkS = mput(env, pkS, ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
-    byte_t *ptr_proof = mput(env, proof, ecc_oprf_ristretto255_sha512_PROOFSIZE);
+    byte_t *ptr_blind = mput(env, blind, ecc_voprf_ristretto255_sha512_SCALARSIZE);
+    byte_t *ptr_evaluatedElement = mput(env, evaluatedElement, ecc_voprf_ristretto255_sha512_ELEMENTSIZE);
+    byte_t *ptr_blindedElement = mput(env, blindedElement, ecc_voprf_ristretto255_sha512_ELEMENTSIZE);
+    byte_t *ptr_proof = mput(env, proof, ecc_voprf_ristretto255_sha512_PROOFSIZE);
     byte_t *ptr_info = mput(env, info, infoLen);
-    const int fun_ret = ecc_oprf_ristretto255_sha512_VerifiableFinalize(
+    byte_t *ptr_tweakedKey = mput(env, tweakedKey, ecc_voprf_ristretto255_sha512_ELEMENTSIZE);
+    const int fun_ret = ecc_voprf_ristretto255_sha512_PartiallyFinalize(
         ptr_output,
         ptr_input,
         inputLen,
         ptr_blind,
         ptr_evaluatedElement,
         ptr_blindedElement,
-        ptr_pkS,
         ptr_proof,
+        ptr_info,
+        infoLen,
+        ptr_tweakedKey
+    );
+    mget(env, output, ptr_output, ecc_voprf_ristretto255_sha512_Nh);
+    mfree(ptr_output, ecc_voprf_ristretto255_sha512_Nh);
+    mfree(ptr_input, inputLen);
+    mfree(ptr_blind, ecc_voprf_ristretto255_sha512_SCALARSIZE);
+    mfree(ptr_evaluatedElement, ecc_voprf_ristretto255_sha512_ELEMENTSIZE);
+    mfree(ptr_blindedElement, ecc_voprf_ristretto255_sha512_ELEMENTSIZE);
+    mfree(ptr_proof, ecc_voprf_ristretto255_sha512_PROOFSIZE);
+    mfree(ptr_info, infoLen);
+    mfree(ptr_tweakedKey, ecc_voprf_ristretto255_sha512_ELEMENTSIZE);
+    return fun_ret;
+}
+
+JNIEXPORT int JNICALL Java_org_ssohub_crypto_ecc_libecc_ecc_1voprf_1ristretto255_1sha512_1PartiallyEvaluate(
+    JNIEnv *env, jclass cls,
+    jbyteArray output,
+    jbyteArray skS,
+    jbyteArray input,
+    jint inputLen,
+    jbyteArray info,
+    jint infoLen
+) {
+    byte_t *ptr_output = mput(env, output, ecc_voprf_ristretto255_sha512_Nh);
+    byte_t *ptr_skS = mput(env, skS, ecc_voprf_ristretto255_sha512_SCALARSIZE);
+    byte_t *ptr_input = mput(env, input, inputLen);
+    byte_t *ptr_info = mput(env, info, infoLen);
+    const int fun_ret = ecc_voprf_ristretto255_sha512_PartiallyEvaluate(
+        ptr_output,
+        ptr_skS,
+        ptr_input,
+        inputLen,
         ptr_info,
         infoLen
     );
-    mget(env, output, ptr_output, ecc_oprf_ristretto255_sha512_Nh);
-    mfree(ptr_output, ecc_oprf_ristretto255_sha512_Nh);
+    mget(env, output, ptr_output, ecc_voprf_ristretto255_sha512_Nh);
+    mfree(ptr_output, ecc_voprf_ristretto255_sha512_Nh);
+    mfree(ptr_skS, ecc_voprf_ristretto255_sha512_SCALARSIZE);
     mfree(ptr_input, inputLen);
-    mfree(ptr_blind, ecc_oprf_ristretto255_sha512_SCALARSIZE);
-    mfree(ptr_evaluatedElement, ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
-    mfree(ptr_blindedElement, ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
-    mfree(ptr_pkS, ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
-    mfree(ptr_proof, ecc_oprf_ristretto255_sha512_PROOFSIZE);
     mfree(ptr_info, infoLen);
     return fun_ret;
 }
 
-JNIEXPORT void JNICALL Java_org_ssohub_crypto_ecc_libecc_ecc_1oprf_1ristretto255_1sha512_1HashToGroupWithDST(
+JNIEXPORT void JNICALL Java_org_ssohub_crypto_ecc_libecc_ecc_1voprf_1ristretto255_1sha512_1HashToGroupWithDST(
     JNIEnv *env, jclass cls,
     jbyteArray out,
     jbyteArray input,
@@ -1810,43 +2051,43 @@ JNIEXPORT void JNICALL Java_org_ssohub_crypto_ecc_libecc_ecc_1oprf_1ristretto255
     jbyteArray dst,
     jint dstLen
 ) {
-    byte_t *ptr_out = mput(env, out, ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
+    byte_t *ptr_out = mput(env, out, ecc_voprf_ristretto255_sha512_ELEMENTSIZE);
     byte_t *ptr_input = mput(env, input, inputLen);
     byte_t *ptr_dst = mput(env, dst, dstLen);
-    ecc_oprf_ristretto255_sha512_HashToGroupWithDST(
+    ecc_voprf_ristretto255_sha512_HashToGroupWithDST(
         ptr_out,
         ptr_input,
         inputLen,
         ptr_dst,
         dstLen
     );
-    mget(env, out, ptr_out, ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
-    mfree(ptr_out, ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
+    mget(env, out, ptr_out, ecc_voprf_ristretto255_sha512_ELEMENTSIZE);
+    mfree(ptr_out, ecc_voprf_ristretto255_sha512_ELEMENTSIZE);
     mfree(ptr_input, inputLen);
     mfree(ptr_dst, dstLen);
 }
 
-JNIEXPORT void JNICALL Java_org_ssohub_crypto_ecc_libecc_ecc_1oprf_1ristretto255_1sha512_1HashToGroup(
+JNIEXPORT void JNICALL Java_org_ssohub_crypto_ecc_libecc_ecc_1voprf_1ristretto255_1sha512_1HashToGroup(
     JNIEnv *env, jclass cls,
     jbyteArray out,
     jbyteArray input,
     jint inputLen,
     jint mode
 ) {
-    byte_t *ptr_out = mput(env, out, ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
+    byte_t *ptr_out = mput(env, out, ecc_voprf_ristretto255_sha512_ELEMENTSIZE);
     byte_t *ptr_input = mput(env, input, inputLen);
-    ecc_oprf_ristretto255_sha512_HashToGroup(
+    ecc_voprf_ristretto255_sha512_HashToGroup(
         ptr_out,
         ptr_input,
         inputLen,
         mode
     );
-    mget(env, out, ptr_out, ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
-    mfree(ptr_out, ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
+    mget(env, out, ptr_out, ecc_voprf_ristretto255_sha512_ELEMENTSIZE);
+    mfree(ptr_out, ecc_voprf_ristretto255_sha512_ELEMENTSIZE);
     mfree(ptr_input, inputLen);
 }
 
-JNIEXPORT void JNICALL Java_org_ssohub_crypto_ecc_libecc_ecc_1oprf_1ristretto255_1sha512_1HashToScalarWithDST(
+JNIEXPORT void JNICALL Java_org_ssohub_crypto_ecc_libecc_ecc_1voprf_1ristretto255_1sha512_1HashToScalarWithDST(
     JNIEnv *env, jclass cls,
     jbyteArray out,
     jbyteArray input,
@@ -1854,39 +2095,39 @@ JNIEXPORT void JNICALL Java_org_ssohub_crypto_ecc_libecc_ecc_1oprf_1ristretto255
     jbyteArray dst,
     jint dstLen
 ) {
-    byte_t *ptr_out = mput(env, out, ecc_oprf_ristretto255_sha512_SCALARSIZE);
+    byte_t *ptr_out = mput(env, out, ecc_voprf_ristretto255_sha512_SCALARSIZE);
     byte_t *ptr_input = mput(env, input, inputLen);
     byte_t *ptr_dst = mput(env, dst, dstLen);
-    ecc_oprf_ristretto255_sha512_HashToScalarWithDST(
+    ecc_voprf_ristretto255_sha512_HashToScalarWithDST(
         ptr_out,
         ptr_input,
         inputLen,
         ptr_dst,
         dstLen
     );
-    mget(env, out, ptr_out, ecc_oprf_ristretto255_sha512_SCALARSIZE);
-    mfree(ptr_out, ecc_oprf_ristretto255_sha512_SCALARSIZE);
+    mget(env, out, ptr_out, ecc_voprf_ristretto255_sha512_SCALARSIZE);
+    mfree(ptr_out, ecc_voprf_ristretto255_sha512_SCALARSIZE);
     mfree(ptr_input, inputLen);
     mfree(ptr_dst, dstLen);
 }
 
-JNIEXPORT void JNICALL Java_org_ssohub_crypto_ecc_libecc_ecc_1oprf_1ristretto255_1sha512_1HashToScalar(
+JNIEXPORT void JNICALL Java_org_ssohub_crypto_ecc_libecc_ecc_1voprf_1ristretto255_1sha512_1HashToScalar(
     JNIEnv *env, jclass cls,
     jbyteArray out,
     jbyteArray input,
     jint inputLen,
     jint mode
 ) {
-    byte_t *ptr_out = mput(env, out, ecc_oprf_ristretto255_sha512_SCALARSIZE);
+    byte_t *ptr_out = mput(env, out, ecc_voprf_ristretto255_sha512_SCALARSIZE);
     byte_t *ptr_input = mput(env, input, inputLen);
-    ecc_oprf_ristretto255_sha512_HashToScalar(
+    ecc_voprf_ristretto255_sha512_HashToScalar(
         ptr_out,
         ptr_input,
         inputLen,
         mode
     );
-    mget(env, out, ptr_out, ecc_oprf_ristretto255_sha512_SCALARSIZE);
-    mfree(ptr_out, ecc_oprf_ristretto255_sha512_SCALARSIZE);
+    mget(env, out, ptr_out, ecc_voprf_ristretto255_sha512_SCALARSIZE);
+    mfree(ptr_out, ecc_voprf_ristretto255_sha512_SCALARSIZE);
     mfree(ptr_input, inputLen);
 }
 
@@ -1896,23 +2137,21 @@ JNIEXPORT void JNICALL Java_org_ssohub_crypto_ecc_libecc_ecc_1opaque_1ristretto2
     JNIEnv *env, jclass cls,
     jbyteArray private_key,
     jbyteArray public_key,
-    jbyteArray seed,
-    jint seed_len
+    jbyteArray seed
 ) {
     byte_t *ptr_private_key = mput(env, private_key, ecc_opaque_ristretto255_sha512_Nsk);
     byte_t *ptr_public_key = mput(env, public_key, ecc_opaque_ristretto255_sha512_Npk);
-    byte_t *ptr_seed = mput(env, seed, seed_len);
+    byte_t *ptr_seed = mput(env, seed, ecc_opaque_ristretto255_sha512_Nok);
     ecc_opaque_ristretto255_sha512_DeriveKeyPair(
         ptr_private_key,
         ptr_public_key,
-        ptr_seed,
-        seed_len
+        ptr_seed
     );
     mget(env, private_key, ptr_private_key, ecc_opaque_ristretto255_sha512_Nsk);
     mget(env, public_key, ptr_public_key, ecc_opaque_ristretto255_sha512_Npk);
     mfree(ptr_private_key, ecc_opaque_ristretto255_sha512_Nsk);
     mfree(ptr_public_key, ecc_opaque_ristretto255_sha512_Npk);
-    mfree(ptr_seed, seed_len);
+    mfree(ptr_seed, ecc_opaque_ristretto255_sha512_Nok);
 }
 
 JNIEXPORT void JNICALL Java_org_ssohub_crypto_ecc_libecc_ecc_1opaque_1ristretto255_1sha512_1CreateCleartextCredentials(
@@ -2124,23 +2363,21 @@ JNIEXPORT void JNICALL Java_org_ssohub_crypto_ecc_libecc_ecc_1opaque_1ristretto2
     JNIEnv *env, jclass cls,
     jbyteArray private_key,
     jbyteArray public_key,
-    jbyteArray seed,
-    jint seed_len
+    jbyteArray seed
 ) {
     byte_t *ptr_private_key = mput(env, private_key, ecc_opaque_ristretto255_sha512_Nsk);
     byte_t *ptr_public_key = mput(env, public_key, ecc_opaque_ristretto255_sha512_Npk);
-    byte_t *ptr_seed = mput(env, seed, seed_len);
+    byte_t *ptr_seed = mput(env, seed, ecc_opaque_ristretto255_sha512_Nok);
     ecc_opaque_ristretto255_sha512_DeriveAuthKeyPair(
         ptr_private_key,
         ptr_public_key,
-        ptr_seed,
-        seed_len
+        ptr_seed
     );
     mget(env, private_key, ptr_private_key, ecc_opaque_ristretto255_sha512_Nsk);
     mget(env, public_key, ptr_public_key, ecc_opaque_ristretto255_sha512_Npk);
     mfree(ptr_private_key, ecc_opaque_ristretto255_sha512_Nsk);
     mfree(ptr_public_key, ecc_opaque_ristretto255_sha512_Npk);
-    mfree(ptr_seed, seed_len);
+    mfree(ptr_seed, ecc_opaque_ristretto255_sha512_Nok);
 }
 
 JNIEXPORT void JNICALL Java_org_ssohub_crypto_ecc_libecc_ecc_1opaque_1ristretto255_1sha512_1CreateRegistrationRequestWithBlind(
@@ -3474,6 +3711,782 @@ JNIEXPORT int JNICALL Java_org_ssohub_crypto_ecc_libecc_ecc_1sign_1eth_1bls_1Agg
     return fun_ret;
 }
 
+// frost
+
+JNIEXPORT void JNICALL Java_org_ssohub_crypto_ecc_libecc_ecc_1frost_1ristretto255_1sha512_1nonce_1generate_1with_1randomness(
+    JNIEnv *env, jclass cls,
+    jbyteArray nonce,
+    jbyteArray secret,
+    jbyteArray random_bytes
+) {
+    byte_t *ptr_nonce = mput(env, nonce, ecc_frost_ristretto255_sha512_SCALARSIZE);
+    byte_t *ptr_secret = mput(env, secret, ecc_frost_ristretto255_sha512_SCALARSIZE);
+    byte_t *ptr_random_bytes = mput(env, random_bytes, 32);
+    ecc_frost_ristretto255_sha512_nonce_generate_with_randomness(
+        ptr_nonce,
+        ptr_secret,
+        ptr_random_bytes
+    );
+    mget(env, nonce, ptr_nonce, ecc_frost_ristretto255_sha512_SCALARSIZE);
+    mfree(ptr_nonce, ecc_frost_ristretto255_sha512_SCALARSIZE);
+    mfree(ptr_secret, ecc_frost_ristretto255_sha512_SCALARSIZE);
+    mfree(ptr_random_bytes, 32);
+}
+
+JNIEXPORT void JNICALL Java_org_ssohub_crypto_ecc_libecc_ecc_1frost_1ristretto255_1sha512_1nonce_1generate(
+    JNIEnv *env, jclass cls,
+    jbyteArray nonce,
+    jbyteArray secret
+) {
+    byte_t *ptr_nonce = mput(env, nonce, ecc_frost_ristretto255_sha512_SCALARSIZE);
+    byte_t *ptr_secret = mput(env, secret, ecc_frost_ristretto255_sha512_SCALARSIZE);
+    ecc_frost_ristretto255_sha512_nonce_generate(
+        ptr_nonce,
+        ptr_secret
+    );
+    mget(env, nonce, ptr_nonce, ecc_frost_ristretto255_sha512_SCALARSIZE);
+    mfree(ptr_nonce, ecc_frost_ristretto255_sha512_SCALARSIZE);
+    mfree(ptr_secret, ecc_frost_ristretto255_sha512_SCALARSIZE);
+}
+
+JNIEXPORT void JNICALL Java_org_ssohub_crypto_ecc_libecc_ecc_1frost_1ristretto255_1sha512_1derive_1interpolating_1value(
+    JNIEnv *env, jclass cls,
+    jbyteArray L_i,
+    jbyteArray x_i,
+    jbyteArray L,
+    jint L_len
+) {
+    byte_t *ptr_L_i = mput(env, L_i, ecc_frost_ristretto255_sha512_SCALARSIZE);
+    byte_t *ptr_x_i = mput(env, x_i, ecc_frost_ristretto255_sha512_SCALARSIZE);
+    byte_t *ptr_L = mput(env, L, L_len*ecc_frost_ristretto255_sha512_SCALARSIZE);
+    ecc_frost_ristretto255_sha512_derive_interpolating_value(
+        ptr_L_i,
+        ptr_x_i,
+        ptr_L,
+        L_len
+    );
+    mget(env, L_i, ptr_L_i, ecc_frost_ristretto255_sha512_SCALARSIZE);
+    mfree(ptr_L_i, ecc_frost_ristretto255_sha512_SCALARSIZE);
+    mfree(ptr_x_i, ecc_frost_ristretto255_sha512_SCALARSIZE);
+    mfree(ptr_L, L_len*ecc_frost_ristretto255_sha512_SCALARSIZE);
+}
+
+JNIEXPORT void JNICALL Java_org_ssohub_crypto_ecc_libecc_ecc_1frost_1ristretto255_1sha512_1derive_1interpolating_1value_1with_1points(
+    JNIEnv *env, jclass cls,
+    jbyteArray L_i,
+    jbyteArray x_i,
+    jbyteArray L,
+    jint L_len
+) {
+    byte_t *ptr_L_i = mput(env, L_i, ecc_frost_ristretto255_sha512_SCALARSIZE);
+    byte_t *ptr_x_i = mput(env, x_i, ecc_frost_ristretto255_sha512_SCALARSIZE);
+    byte_t *ptr_L = mput(env, L, L_len*ecc_frost_ristretto255_sha512_POINTSIZE);
+    ecc_frost_ristretto255_sha512_derive_interpolating_value_with_points(
+        ptr_L_i,
+        ptr_x_i,
+        ptr_L,
+        L_len
+    );
+    mget(env, L_i, ptr_L_i, ecc_frost_ristretto255_sha512_SCALARSIZE);
+    mfree(ptr_L_i, ecc_frost_ristretto255_sha512_SCALARSIZE);
+    mfree(ptr_x_i, ecc_frost_ristretto255_sha512_SCALARSIZE);
+    mfree(ptr_L, L_len*ecc_frost_ristretto255_sha512_POINTSIZE);
+}
+
+JNIEXPORT void JNICALL Java_org_ssohub_crypto_ecc_libecc_ecc_1frost_1ristretto255_1sha512_1encode_1group_1commitment_1list(
+    JNIEnv *env, jclass cls,
+    jbyteArray out,
+    jbyteArray commitment_list,
+    jint commitment_list_len
+) {
+    byte_t *ptr_out = mput(env, out, commitment_list_len*ecc_frost_ristretto255_sha512_COMMITMENTSIZE);
+    byte_t *ptr_commitment_list = mput(env, commitment_list, commitment_list_len*ecc_frost_ristretto255_sha512_COMMITMENTSIZE);
+    ecc_frost_ristretto255_sha512_encode_group_commitment_list(
+        ptr_out,
+        ptr_commitment_list,
+        commitment_list_len
+    );
+    mget(env, out, ptr_out, commitment_list_len*ecc_frost_ristretto255_sha512_COMMITMENTSIZE);
+    mfree(ptr_out, commitment_list_len*ecc_frost_ristretto255_sha512_COMMITMENTSIZE);
+    mfree(ptr_commitment_list, commitment_list_len*ecc_frost_ristretto255_sha512_COMMITMENTSIZE);
+}
+
+JNIEXPORT void JNICALL Java_org_ssohub_crypto_ecc_libecc_ecc_1frost_1ristretto255_1sha512_1participants_1from_1commitment_1list(
+    JNIEnv *env, jclass cls,
+    jbyteArray identifiers,
+    jbyteArray commitment_list,
+    jint commitment_list_len
+) {
+    byte_t *ptr_identifiers = mput(env, identifiers, commitment_list_len*ecc_frost_ristretto255_sha512_SCALARSIZE);
+    byte_t *ptr_commitment_list = mput(env, commitment_list, commitment_list_len*ecc_frost_ristretto255_sha512_COMMITMENTSIZE);
+    ecc_frost_ristretto255_sha512_participants_from_commitment_list(
+        ptr_identifiers,
+        ptr_commitment_list,
+        commitment_list_len
+    );
+    mget(env, identifiers, ptr_identifiers, commitment_list_len*ecc_frost_ristretto255_sha512_SCALARSIZE);
+    mfree(ptr_identifiers, commitment_list_len*ecc_frost_ristretto255_sha512_SCALARSIZE);
+    mfree(ptr_commitment_list, commitment_list_len*ecc_frost_ristretto255_sha512_COMMITMENTSIZE);
+}
+
+JNIEXPORT int JNICALL Java_org_ssohub_crypto_ecc_libecc_ecc_1frost_1ristretto255_1sha512_1binding_1factor_1for_1participant(
+    JNIEnv *env, jclass cls,
+    jbyteArray binding_factor,
+    jbyteArray binding_factor_list,
+    jint binding_factor_list_len,
+    jbyteArray identifier
+) {
+    byte_t *ptr_binding_factor = mput(env, binding_factor, ecc_frost_ristretto255_sha512_SCALARSIZE);
+    byte_t *ptr_binding_factor_list = mput(env, binding_factor_list, binding_factor_list_len*ecc_frost_ristretto255_sha512_BINDINGFACTORSIZE);
+    byte_t *ptr_identifier = mput(env, identifier, ecc_frost_ristretto255_sha512_SCALARSIZE);
+    const int fun_ret = ecc_frost_ristretto255_sha512_binding_factor_for_participant(
+        ptr_binding_factor,
+        ptr_binding_factor_list,
+        binding_factor_list_len,
+        ptr_identifier
+    );
+    mget(env, binding_factor, ptr_binding_factor, ecc_frost_ristretto255_sha512_SCALARSIZE);
+    mfree(ptr_binding_factor, ecc_frost_ristretto255_sha512_SCALARSIZE);
+    mfree(ptr_binding_factor_list, binding_factor_list_len*ecc_frost_ristretto255_sha512_BINDINGFACTORSIZE);
+    mfree(ptr_identifier, ecc_frost_ristretto255_sha512_SCALARSIZE);
+    return fun_ret;
+}
+
+JNIEXPORT void JNICALL Java_org_ssohub_crypto_ecc_libecc_ecc_1frost_1ristretto255_1sha512_1compute_1binding_1factors(
+    JNIEnv *env, jclass cls,
+    jbyteArray binding_factor_list,
+    jbyteArray commitment_list,
+    jint commitment_list_len,
+    jbyteArray msg,
+    jint msg_len
+) {
+    byte_t *ptr_binding_factor_list = mput(env, binding_factor_list, commitment_list_len*ecc_frost_ristretto255_sha512_BINDINGFACTORSIZE);
+    byte_t *ptr_commitment_list = mput(env, commitment_list, commitment_list_len*ecc_frost_ristretto255_sha512_COMMITMENTSIZE);
+    byte_t *ptr_msg = mput(env, msg, msg_len);
+    ecc_frost_ristretto255_sha512_compute_binding_factors(
+        ptr_binding_factor_list,
+        ptr_commitment_list,
+        commitment_list_len,
+        ptr_msg,
+        msg_len
+    );
+    mget(env, binding_factor_list, ptr_binding_factor_list, commitment_list_len*ecc_frost_ristretto255_sha512_BINDINGFACTORSIZE);
+    mfree(ptr_binding_factor_list, commitment_list_len*ecc_frost_ristretto255_sha512_BINDINGFACTORSIZE);
+    mfree(ptr_commitment_list, commitment_list_len*ecc_frost_ristretto255_sha512_COMMITMENTSIZE);
+    mfree(ptr_msg, msg_len);
+}
+
+JNIEXPORT void JNICALL Java_org_ssohub_crypto_ecc_libecc_ecc_1frost_1ristretto255_1sha512_1compute_1group_1commitment(
+    JNIEnv *env, jclass cls,
+    jbyteArray group_comm,
+    jbyteArray commitment_list,
+    jint commitment_list_len,
+    jbyteArray binding_factor_list,
+    jint binding_factor_list_len
+) {
+    byte_t *ptr_group_comm = mput(env, group_comm, ecc_frost_ristretto255_sha512_ELEMENTSIZE);
+    byte_t *ptr_commitment_list = mput(env, commitment_list, commitment_list_len*ecc_frost_ristretto255_sha512_COMMITMENTSIZE);
+    byte_t *ptr_binding_factor_list = mput(env, binding_factor_list, ecc_frost_ristretto255_sha512_BINDINGFACTORSIZE);
+    ecc_frost_ristretto255_sha512_compute_group_commitment(
+        ptr_group_comm,
+        ptr_commitment_list,
+        commitment_list_len,
+        ptr_binding_factor_list,
+        binding_factor_list_len
+    );
+    mget(env, group_comm, ptr_group_comm, ecc_frost_ristretto255_sha512_ELEMENTSIZE);
+    mfree(ptr_group_comm, ecc_frost_ristretto255_sha512_ELEMENTSIZE);
+    mfree(ptr_commitment_list, commitment_list_len*ecc_frost_ristretto255_sha512_COMMITMENTSIZE);
+    mfree(ptr_binding_factor_list, ecc_frost_ristretto255_sha512_BINDINGFACTORSIZE);
+}
+
+JNIEXPORT void JNICALL Java_org_ssohub_crypto_ecc_libecc_ecc_1frost_1ristretto255_1sha512_1compute_1challenge(
+    JNIEnv *env, jclass cls,
+    jbyteArray challenge,
+    jbyteArray group_commitment,
+    jbyteArray group_public_key,
+    jbyteArray msg,
+    jint msg_len
+) {
+    byte_t *ptr_challenge = mput(env, challenge, ecc_frost_ristretto255_sha512_SCALARSIZE);
+    byte_t *ptr_group_commitment = mput(env, group_commitment, ecc_frost_ristretto255_sha512_ELEMENTSIZE);
+    byte_t *ptr_group_public_key = mput(env, group_public_key, ecc_frost_ristretto255_sha512_PUBLICKEYSIZE);
+    byte_t *ptr_msg = mput(env, msg, msg_len);
+    ecc_frost_ristretto255_sha512_compute_challenge(
+        ptr_challenge,
+        ptr_group_commitment,
+        ptr_group_public_key,
+        ptr_msg,
+        msg_len
+    );
+    mget(env, challenge, ptr_challenge, ecc_frost_ristretto255_sha512_SCALARSIZE);
+    mfree(ptr_challenge, ecc_frost_ristretto255_sha512_SCALARSIZE);
+    mfree(ptr_group_commitment, ecc_frost_ristretto255_sha512_ELEMENTSIZE);
+    mfree(ptr_group_public_key, ecc_frost_ristretto255_sha512_PUBLICKEYSIZE);
+    mfree(ptr_msg, msg_len);
+}
+
+JNIEXPORT void JNICALL Java_org_ssohub_crypto_ecc_libecc_ecc_1frost_1ristretto255_1sha512_1commit_1with_1randomness(
+    JNIEnv *env, jclass cls,
+    jbyteArray nonce,
+    jbyteArray comm,
+    jbyteArray sk_i,
+    jbyteArray hiding_nonce_randomness,
+    jbyteArray binding_nonce_randomness
+) {
+    byte_t *ptr_nonce = mput(env, nonce, ecc_frost_ristretto255_sha512_NONCEPAIRSIZE);
+    byte_t *ptr_comm = mput(env, comm, ecc_frost_ristretto255_sha512_NONCECOMMITMENTPAIRSIZE);
+    byte_t *ptr_sk_i = mput(env, sk_i, ecc_frost_ristretto255_sha512_SCALARSIZE);
+    byte_t *ptr_hiding_nonce_randomness = mput(env, hiding_nonce_randomness, 32);
+    byte_t *ptr_binding_nonce_randomness = mput(env, binding_nonce_randomness, 32);
+    ecc_frost_ristretto255_sha512_commit_with_randomness(
+        ptr_nonce,
+        ptr_comm,
+        ptr_sk_i,
+        ptr_hiding_nonce_randomness,
+        ptr_binding_nonce_randomness
+    );
+    mget(env, nonce, ptr_nonce, ecc_frost_ristretto255_sha512_NONCEPAIRSIZE);
+    mget(env, comm, ptr_comm, ecc_frost_ristretto255_sha512_NONCECOMMITMENTPAIRSIZE);
+    mfree(ptr_nonce, ecc_frost_ristretto255_sha512_NONCEPAIRSIZE);
+    mfree(ptr_comm, ecc_frost_ristretto255_sha512_NONCECOMMITMENTPAIRSIZE);
+    mfree(ptr_sk_i, ecc_frost_ristretto255_sha512_SCALARSIZE);
+    mfree(ptr_hiding_nonce_randomness, 32);
+    mfree(ptr_binding_nonce_randomness, 32);
+}
+
+JNIEXPORT void JNICALL Java_org_ssohub_crypto_ecc_libecc_ecc_1frost_1ristretto255_1sha512_1commit(
+    JNIEnv *env, jclass cls,
+    jbyteArray nonce,
+    jbyteArray comm,
+    jbyteArray sk_i
+) {
+    byte_t *ptr_nonce = mput(env, nonce, ecc_frost_ristretto255_sha512_NONCEPAIRSIZE);
+    byte_t *ptr_comm = mput(env, comm, ecc_frost_ristretto255_sha512_NONCECOMMITMENTPAIRSIZE);
+    byte_t *ptr_sk_i = mput(env, sk_i, ecc_frost_ristretto255_sha512_SCALARSIZE);
+    ecc_frost_ristretto255_sha512_commit(
+        ptr_nonce,
+        ptr_comm,
+        ptr_sk_i
+    );
+    mget(env, nonce, ptr_nonce, ecc_frost_ristretto255_sha512_NONCEPAIRSIZE);
+    mget(env, comm, ptr_comm, ecc_frost_ristretto255_sha512_NONCECOMMITMENTPAIRSIZE);
+    mfree(ptr_nonce, ecc_frost_ristretto255_sha512_NONCEPAIRSIZE);
+    mfree(ptr_comm, ecc_frost_ristretto255_sha512_NONCECOMMITMENTPAIRSIZE);
+    mfree(ptr_sk_i, ecc_frost_ristretto255_sha512_SCALARSIZE);
+}
+
+JNIEXPORT void JNICALL Java_org_ssohub_crypto_ecc_libecc_ecc_1frost_1ristretto255_1sha512_1sign(
+    JNIEnv *env, jclass cls,
+    jbyteArray sig_share,
+    jbyteArray identifier,
+    jbyteArray sk_i,
+    jbyteArray group_public_key,
+    jbyteArray nonce_i,
+    jbyteArray msg,
+    jint msg_len,
+    jbyteArray commitment_list,
+    jint commitment_list_len
+) {
+    byte_t *ptr_sig_share = mput(env, sig_share, ecc_frost_ristretto255_sha512_SCALARSIZE);
+    byte_t *ptr_identifier = mput(env, identifier, ecc_frost_ristretto255_sha512_SCALARSIZE);
+    byte_t *ptr_sk_i = mput(env, sk_i, ecc_frost_ristretto255_sha512_SECRETKEYSIZE);
+    byte_t *ptr_group_public_key = mput(env, group_public_key, ecc_frost_ristretto255_sha512_PUBLICKEYSIZE);
+    byte_t *ptr_nonce_i = mput(env, nonce_i, ecc_frost_ristretto255_sha512_NONCEPAIRSIZE);
+    byte_t *ptr_msg = mput(env, msg, msg_len);
+    byte_t *ptr_commitment_list = mput(env, commitment_list, commitment_list_len*ecc_frost_ristretto255_sha512_COMMITMENTSIZE);
+    ecc_frost_ristretto255_sha512_sign(
+        ptr_sig_share,
+        ptr_identifier,
+        ptr_sk_i,
+        ptr_group_public_key,
+        ptr_nonce_i,
+        ptr_msg,
+        msg_len,
+        ptr_commitment_list,
+        commitment_list_len
+    );
+    mget(env, sig_share, ptr_sig_share, ecc_frost_ristretto255_sha512_SCALARSIZE);
+    mfree(ptr_sig_share, ecc_frost_ristretto255_sha512_SCALARSIZE);
+    mfree(ptr_identifier, ecc_frost_ristretto255_sha512_SCALARSIZE);
+    mfree(ptr_sk_i, ecc_frost_ristretto255_sha512_SECRETKEYSIZE);
+    mfree(ptr_group_public_key, ecc_frost_ristretto255_sha512_PUBLICKEYSIZE);
+    mfree(ptr_nonce_i, ecc_frost_ristretto255_sha512_NONCEPAIRSIZE);
+    mfree(ptr_msg, msg_len);
+    mfree(ptr_commitment_list, commitment_list_len*ecc_frost_ristretto255_sha512_COMMITMENTSIZE);
+}
+
+JNIEXPORT void JNICALL Java_org_ssohub_crypto_ecc_libecc_ecc_1frost_1ristretto255_1sha512_1aggregate(
+    JNIEnv *env, jclass cls,
+    jbyteArray signature,
+    jbyteArray commitment_list,
+    jint commitment_list_len,
+    jbyteArray msg,
+    jint msg_len,
+    jbyteArray sig_shares,
+    jint sig_shares_len
+) {
+    byte_t *ptr_signature = mput(env, signature, ecc_frost_ristretto255_sha512_SIGNATURESIZE);
+    byte_t *ptr_commitment_list = mput(env, commitment_list, commitment_list_len*ecc_frost_ristretto255_sha512_PUBLICKEYSIZE);
+    byte_t *ptr_msg = mput(env, msg, msg_len);
+    byte_t *ptr_sig_shares = mput(env, sig_shares, sig_shares_len*ecc_frost_ristretto255_sha512_SCALARSIZE);
+    ecc_frost_ristretto255_sha512_aggregate(
+        ptr_signature,
+        ptr_commitment_list,
+        commitment_list_len,
+        ptr_msg,
+        msg_len,
+        ptr_sig_shares,
+        sig_shares_len
+    );
+    mget(env, signature, ptr_signature, ecc_frost_ristretto255_sha512_SIGNATURESIZE);
+    mfree(ptr_signature, ecc_frost_ristretto255_sha512_SIGNATURESIZE);
+    mfree(ptr_commitment_list, commitment_list_len*ecc_frost_ristretto255_sha512_PUBLICKEYSIZE);
+    mfree(ptr_msg, msg_len);
+    mfree(ptr_sig_shares, sig_shares_len*ecc_frost_ristretto255_sha512_SCALARSIZE);
+}
+
+JNIEXPORT int JNICALL Java_org_ssohub_crypto_ecc_libecc_ecc_1frost_1ristretto255_1sha512_1verify_1signature_1share(
+    JNIEnv *env, jclass cls,
+    jbyteArray identifier,
+    jbyteArray public_key_share_i,
+    jbyteArray comm_i,
+    jbyteArray sig_share_i,
+    jbyteArray commitment_list,
+    jint commitment_list_len,
+    jbyteArray group_public_key,
+    jbyteArray msg,
+    jint msg_len
+) {
+    byte_t *ptr_identifier = mput(env, identifier, ecc_frost_ristretto255_sha512_SCALARSIZE);
+    byte_t *ptr_public_key_share_i = mput(env, public_key_share_i, ecc_frost_ristretto255_sha512_PUBLICKEYSIZE);
+    byte_t *ptr_comm_i = mput(env, comm_i, ecc_frost_ristretto255_sha512_NONCECOMMITMENTPAIRSIZE);
+    byte_t *ptr_sig_share_i = mput(env, sig_share_i, ecc_frost_ristretto255_sha512_SCALARSIZE);
+    byte_t *ptr_commitment_list = mput(env, commitment_list, commitment_list_len*ecc_frost_ristretto255_sha512_COMMITMENTSIZE);
+    byte_t *ptr_group_public_key = mput(env, group_public_key, ecc_frost_ristretto255_sha512_PUBLICKEYSIZE);
+    byte_t *ptr_msg = mput(env, msg, msg_len);
+    const int fun_ret = ecc_frost_ristretto255_sha512_verify_signature_share(
+        ptr_identifier,
+        ptr_public_key_share_i,
+        ptr_comm_i,
+        ptr_sig_share_i,
+        ptr_commitment_list,
+        commitment_list_len,
+        ptr_group_public_key,
+        ptr_msg,
+        msg_len
+    );
+    mfree(ptr_identifier, ecc_frost_ristretto255_sha512_SCALARSIZE);
+    mfree(ptr_public_key_share_i, ecc_frost_ristretto255_sha512_PUBLICKEYSIZE);
+    mfree(ptr_comm_i, ecc_frost_ristretto255_sha512_NONCECOMMITMENTPAIRSIZE);
+    mfree(ptr_sig_share_i, ecc_frost_ristretto255_sha512_SCALARSIZE);
+    mfree(ptr_commitment_list, commitment_list_len*ecc_frost_ristretto255_sha512_COMMITMENTSIZE);
+    mfree(ptr_group_public_key, ecc_frost_ristretto255_sha512_PUBLICKEYSIZE);
+    mfree(ptr_msg, msg_len);
+    return fun_ret;
+}
+
+JNIEXPORT void JNICALL Java_org_ssohub_crypto_ecc_libecc_ecc_1frost_1ristretto255_1sha512_1H1(
+    JNIEnv *env, jclass cls,
+    jbyteArray h1,
+    jbyteArray m,
+    jint m_len
+) {
+    byte_t *ptr_h1 = mput(env, h1, ecc_frost_ristretto255_sha512_SCALARSIZE);
+    byte_t *ptr_m = mput(env, m, m_len);
+    ecc_frost_ristretto255_sha512_H1(
+        ptr_h1,
+        ptr_m,
+        m_len
+    );
+    mget(env, h1, ptr_h1, ecc_frost_ristretto255_sha512_SCALARSIZE);
+    mfree(ptr_h1, ecc_frost_ristretto255_sha512_SCALARSIZE);
+    mfree(ptr_m, m_len);
+}
+
+JNIEXPORT void JNICALL Java_org_ssohub_crypto_ecc_libecc_ecc_1frost_1ristretto255_1sha512_1H1_12(
+    JNIEnv *env, jclass cls,
+    jbyteArray h1,
+    jbyteArray m1,
+    jint m1_len,
+    jbyteArray m2,
+    jint m2_len
+) {
+    byte_t *ptr_h1 = mput(env, h1, ecc_frost_ristretto255_sha512_SCALARSIZE);
+    byte_t *ptr_m1 = mput(env, m1, m1_len);
+    byte_t *ptr_m2 = mput(env, m2, m2_len);
+    ecc_frost_ristretto255_sha512_H1_2(
+        ptr_h1,
+        ptr_m1,
+        m1_len,
+        ptr_m2,
+        m2_len
+    );
+    mget(env, h1, ptr_h1, ecc_frost_ristretto255_sha512_SCALARSIZE);
+    mfree(ptr_h1, ecc_frost_ristretto255_sha512_SCALARSIZE);
+    mfree(ptr_m1, m1_len);
+    mfree(ptr_m2, m2_len);
+}
+
+JNIEXPORT void JNICALL Java_org_ssohub_crypto_ecc_libecc_ecc_1frost_1ristretto255_1sha512_1H2(
+    JNIEnv *env, jclass cls,
+    jbyteArray h2,
+    jbyteArray m,
+    jint m_len
+) {
+    byte_t *ptr_h2 = mput(env, h2, ecc_frost_ristretto255_sha512_SCALARSIZE);
+    byte_t *ptr_m = mput(env, m, m_len);
+    ecc_frost_ristretto255_sha512_H2(
+        ptr_h2,
+        ptr_m,
+        m_len
+    );
+    mget(env, h2, ptr_h2, ecc_frost_ristretto255_sha512_SCALARSIZE);
+    mfree(ptr_h2, ecc_frost_ristretto255_sha512_SCALARSIZE);
+    mfree(ptr_m, m_len);
+}
+
+JNIEXPORT void JNICALL Java_org_ssohub_crypto_ecc_libecc_ecc_1frost_1ristretto255_1sha512_1H2_13(
+    JNIEnv *env, jclass cls,
+    jbyteArray h2,
+    jbyteArray m1,
+    jint m1_len,
+    jbyteArray m2,
+    jint m2_len,
+    jbyteArray m3,
+    jint m3_len
+) {
+    byte_t *ptr_h2 = mput(env, h2, ecc_frost_ristretto255_sha512_SCALARSIZE);
+    byte_t *ptr_m1 = mput(env, m1, m1_len);
+    byte_t *ptr_m2 = mput(env, m2, m2_len);
+    byte_t *ptr_m3 = mput(env, m3, m3_len);
+    ecc_frost_ristretto255_sha512_H2_3(
+        ptr_h2,
+        ptr_m1,
+        m1_len,
+        ptr_m2,
+        m2_len,
+        ptr_m3,
+        m3_len
+    );
+    mget(env, h2, ptr_h2, ecc_frost_ristretto255_sha512_SCALARSIZE);
+    mfree(ptr_h2, ecc_frost_ristretto255_sha512_SCALARSIZE);
+    mfree(ptr_m1, m1_len);
+    mfree(ptr_m2, m2_len);
+    mfree(ptr_m3, m3_len);
+}
+
+JNIEXPORT void JNICALL Java_org_ssohub_crypto_ecc_libecc_ecc_1frost_1ristretto255_1sha512_1H3(
+    JNIEnv *env, jclass cls,
+    jbyteArray h3,
+    jbyteArray m,
+    jint m_len
+) {
+    byte_t *ptr_h3 = mput(env, h3, ecc_frost_ristretto255_sha512_SCALARSIZE);
+    byte_t *ptr_m = mput(env, m, m_len);
+    ecc_frost_ristretto255_sha512_H3(
+        ptr_h3,
+        ptr_m,
+        m_len
+    );
+    mget(env, h3, ptr_h3, ecc_frost_ristretto255_sha512_SCALARSIZE);
+    mfree(ptr_h3, ecc_frost_ristretto255_sha512_SCALARSIZE);
+    mfree(ptr_m, m_len);
+}
+
+JNIEXPORT void JNICALL Java_org_ssohub_crypto_ecc_libecc_ecc_1frost_1ristretto255_1sha512_1H3_12(
+    JNIEnv *env, jclass cls,
+    jbyteArray h3,
+    jbyteArray m1,
+    jint m1_len,
+    jbyteArray m2,
+    jint m2_len
+) {
+    byte_t *ptr_h3 = mput(env, h3, ecc_frost_ristretto255_sha512_SCALARSIZE);
+    byte_t *ptr_m1 = mput(env, m1, m1_len);
+    byte_t *ptr_m2 = mput(env, m2, m2_len);
+    ecc_frost_ristretto255_sha512_H3_2(
+        ptr_h3,
+        ptr_m1,
+        m1_len,
+        ptr_m2,
+        m2_len
+    );
+    mget(env, h3, ptr_h3, ecc_frost_ristretto255_sha512_SCALARSIZE);
+    mfree(ptr_h3, ecc_frost_ristretto255_sha512_SCALARSIZE);
+    mfree(ptr_m1, m1_len);
+    mfree(ptr_m2, m2_len);
+}
+
+JNIEXPORT void JNICALL Java_org_ssohub_crypto_ecc_libecc_ecc_1frost_1ristretto255_1sha512_1H4(
+    JNIEnv *env, jclass cls,
+    jbyteArray h4,
+    jbyteArray m,
+    jint m_len
+) {
+    byte_t *ptr_h4 = mput(env, h4, 64);
+    byte_t *ptr_m = mput(env, m, m_len);
+    ecc_frost_ristretto255_sha512_H4(
+        ptr_h4,
+        ptr_m,
+        m_len
+    );
+    mget(env, h4, ptr_h4, 64);
+    mfree(ptr_h4, 64);
+    mfree(ptr_m, m_len);
+}
+
+JNIEXPORT void JNICALL Java_org_ssohub_crypto_ecc_libecc_ecc_1frost_1ristretto255_1sha512_1H5(
+    JNIEnv *env, jclass cls,
+    jbyteArray h5,
+    jbyteArray m,
+    jint m_len
+) {
+    byte_t *ptr_h5 = mput(env, h5, 64);
+    byte_t *ptr_m = mput(env, m, m_len);
+    ecc_frost_ristretto255_sha512_H5(
+        ptr_h5,
+        ptr_m,
+        m_len
+    );
+    mget(env, h5, ptr_h5, 64);
+    mfree(ptr_h5, 64);
+    mfree(ptr_m, m_len);
+}
+
+JNIEXPORT void JNICALL Java_org_ssohub_crypto_ecc_libecc_ecc_1frost_1ristretto255_1sha512_1prime_1order_1sign(
+    JNIEnv *env, jclass cls,
+    jbyteArray signature,
+    jbyteArray msg,
+    jint msg_len,
+    jbyteArray SK
+) {
+    byte_t *ptr_signature = mput(env, signature, ecc_frost_ristretto255_sha512_SIGNATURESIZE);
+    byte_t *ptr_msg = mput(env, msg, msg_len);
+    byte_t *ptr_SK = mput(env, SK, ecc_frost_ristretto255_sha512_SECRETKEYSIZE);
+    ecc_frost_ristretto255_sha512_prime_order_sign(
+        ptr_signature,
+        ptr_msg,
+        msg_len,
+        ptr_SK
+    );
+    mget(env, signature, ptr_signature, ecc_frost_ristretto255_sha512_SIGNATURESIZE);
+    mfree(ptr_signature, ecc_frost_ristretto255_sha512_SIGNATURESIZE);
+    mfree(ptr_msg, msg_len);
+    mfree(ptr_SK, ecc_frost_ristretto255_sha512_SECRETKEYSIZE);
+}
+
+JNIEXPORT int JNICALL Java_org_ssohub_crypto_ecc_libecc_ecc_1frost_1ristretto255_1sha512_1prime_1order_1verify(
+    JNIEnv *env, jclass cls,
+    jbyteArray msg,
+    jint msg_len,
+    jbyteArray signature,
+    jbyteArray PK
+) {
+    byte_t *ptr_msg = mput(env, msg, msg_len);
+    byte_t *ptr_signature = mput(env, signature, ecc_frost_ristretto255_sha512_SIGNATURESIZE);
+    byte_t *ptr_PK = mput(env, PK, ecc_frost_ristretto255_sha512_PUBLICKEYSIZE);
+    const int fun_ret = ecc_frost_ristretto255_sha512_prime_order_verify(
+        ptr_msg,
+        msg_len,
+        ptr_signature,
+        ptr_PK
+    );
+    mfree(ptr_msg, msg_len);
+    mfree(ptr_signature, ecc_frost_ristretto255_sha512_SIGNATURESIZE);
+    mfree(ptr_PK, ecc_frost_ristretto255_sha512_PUBLICKEYSIZE);
+    return fun_ret;
+}
+
+JNIEXPORT void JNICALL Java_org_ssohub_crypto_ecc_libecc_ecc_1frost_1ristretto255_1sha512_1trusted_1dealer_1keygen_1with_1coefficients(
+    JNIEnv *env, jclass cls,
+    jbyteArray participant_private_keys,
+    jbyteArray group_public_key,
+    jbyteArray vss_commitment,
+    jbyteArray polynomial_coefficients,
+    jbyteArray secret_key,
+    jint n,
+    jint t,
+    jbyteArray coefficients
+) {
+    byte_t *ptr_participant_private_keys = mput(env, participant_private_keys, n*ecc_frost_ristretto255_sha512_POINTSIZE);
+    byte_t *ptr_group_public_key = mput(env, group_public_key, ecc_frost_ristretto255_sha512_ELEMENTSIZE);
+    byte_t *ptr_vss_commitment = mput(env, vss_commitment, t*ecc_frost_ristretto255_sha512_ELEMENTSIZE);
+    byte_t *ptr_polynomial_coefficients = mput(env, polynomial_coefficients, t*ecc_frost_ristretto255_sha512_SCALARSIZE);
+    byte_t *ptr_secret_key = mput(env, secret_key, ecc_frost_ristretto255_sha512_SCALARSIZE);
+    byte_t *ptr_coefficients = mput(env, coefficients, (t-1)*ecc_frost_ristretto255_sha512_SCALARSIZE);
+    ecc_frost_ristretto255_sha512_trusted_dealer_keygen_with_coefficients(
+        ptr_participant_private_keys,
+        ptr_group_public_key,
+        ptr_vss_commitment,
+        ptr_polynomial_coefficients,
+        ptr_secret_key,
+        n,
+        t,
+        ptr_coefficients
+    );
+    mget(env, participant_private_keys, ptr_participant_private_keys, n*ecc_frost_ristretto255_sha512_POINTSIZE);
+    mget(env, group_public_key, ptr_group_public_key, ecc_frost_ristretto255_sha512_ELEMENTSIZE);
+    mget(env, vss_commitment, ptr_vss_commitment, t*ecc_frost_ristretto255_sha512_ELEMENTSIZE);
+    mget(env, polynomial_coefficients, ptr_polynomial_coefficients, t*ecc_frost_ristretto255_sha512_SCALARSIZE);
+    mfree(ptr_participant_private_keys, n*ecc_frost_ristretto255_sha512_POINTSIZE);
+    mfree(ptr_group_public_key, ecc_frost_ristretto255_sha512_ELEMENTSIZE);
+    mfree(ptr_vss_commitment, t*ecc_frost_ristretto255_sha512_ELEMENTSIZE);
+    mfree(ptr_polynomial_coefficients, t*ecc_frost_ristretto255_sha512_SCALARSIZE);
+    mfree(ptr_secret_key, ecc_frost_ristretto255_sha512_SCALARSIZE);
+    mfree(ptr_coefficients, (t-1)*ecc_frost_ristretto255_sha512_SCALARSIZE);
+}
+
+JNIEXPORT int JNICALL Java_org_ssohub_crypto_ecc_libecc_ecc_1frost_1ristretto255_1sha512_1secret_1share_1shard(
+    JNIEnv *env, jclass cls,
+    jbyteArray secret_key_shares,
+    jbyteArray polynomial_coefficients,
+    jbyteArray s,
+    jbyteArray coefficients,
+    jint n,
+    jint t
+) {
+    byte_t *ptr_secret_key_shares = mput(env, secret_key_shares, n*ecc_frost_ristretto255_sha512_POINTSIZE);
+    byte_t *ptr_polynomial_coefficients = mput(env, polynomial_coefficients, t*ecc_frost_ristretto255_sha512_SCALARSIZE);
+    byte_t *ptr_s = mput(env, s, ecc_frost_ristretto255_sha512_SCALARSIZE);
+    byte_t *ptr_coefficients = mput(env, coefficients, (t-1)*ecc_frost_ristretto255_sha512_SCALARSIZE);
+    const int fun_ret = ecc_frost_ristretto255_sha512_secret_share_shard(
+        ptr_secret_key_shares,
+        ptr_polynomial_coefficients,
+        ptr_s,
+        ptr_coefficients,
+        n,
+        t
+    );
+    mget(env, secret_key_shares, ptr_secret_key_shares, n*ecc_frost_ristretto255_sha512_POINTSIZE);
+    mget(env, polynomial_coefficients, ptr_polynomial_coefficients, t*ecc_frost_ristretto255_sha512_SCALARSIZE);
+    mfree(ptr_secret_key_shares, n*ecc_frost_ristretto255_sha512_POINTSIZE);
+    mfree(ptr_polynomial_coefficients, t*ecc_frost_ristretto255_sha512_SCALARSIZE);
+    mfree(ptr_s, ecc_frost_ristretto255_sha512_SCALARSIZE);
+    mfree(ptr_coefficients, (t-1)*ecc_frost_ristretto255_sha512_SCALARSIZE);
+    return fun_ret;
+}
+
+JNIEXPORT int JNICALL Java_org_ssohub_crypto_ecc_libecc_ecc_1frost_1ristretto255_1sha512_1secret_1share_1combine(
+    JNIEnv *env, jclass cls,
+    jbyteArray s,
+    jbyteArray shares,
+    jint shares_len
+) {
+    byte_t *ptr_s = mput(env, s, ecc_frost_ristretto255_sha512_SCALARSIZE);
+    byte_t *ptr_shares = mput(env, shares, shares_len*ecc_frost_ristretto255_sha512_POINTSIZE);
+    const int fun_ret = ecc_frost_ristretto255_sha512_secret_share_combine(
+        ptr_s,
+        ptr_shares,
+        shares_len
+    );
+    mget(env, s, ptr_s, ecc_frost_ristretto255_sha512_SCALARSIZE);
+    mfree(ptr_s, ecc_frost_ristretto255_sha512_SCALARSIZE);
+    mfree(ptr_shares, shares_len*ecc_frost_ristretto255_sha512_POINTSIZE);
+    return fun_ret;
+}
+
+JNIEXPORT void JNICALL Java_org_ssohub_crypto_ecc_libecc_ecc_1frost_1ristretto255_1sha512_1polynomial_1evaluate(
+    JNIEnv *env, jclass cls,
+    jbyteArray value,
+    jbyteArray x,
+    jbyteArray coeffs,
+    jint coeffs_len
+) {
+    byte_t *ptr_value = mput(env, value, ecc_frost_ristretto255_sha512_SCALARSIZE);
+    byte_t *ptr_x = mput(env, x, ecc_frost_ristretto255_sha512_SCALARSIZE);
+    byte_t *ptr_coeffs = mput(env, coeffs, coeffs_len*ecc_frost_ristretto255_sha512_SCALARSIZE);
+    ecc_frost_ristretto255_sha512_polynomial_evaluate(
+        ptr_value,
+        ptr_x,
+        ptr_coeffs,
+        coeffs_len
+    );
+    mget(env, value, ptr_value, ecc_frost_ristretto255_sha512_SCALARSIZE);
+    mfree(ptr_value, ecc_frost_ristretto255_sha512_SCALARSIZE);
+    mfree(ptr_x, ecc_frost_ristretto255_sha512_SCALARSIZE);
+    mfree(ptr_coeffs, coeffs_len*ecc_frost_ristretto255_sha512_SCALARSIZE);
+}
+
+JNIEXPORT void JNICALL Java_org_ssohub_crypto_ecc_libecc_ecc_1frost_1ristretto255_1sha512_1polynomial_1interpolate_1constant(
+    JNIEnv *env, jclass cls,
+    jbyteArray f_zero,
+    jbyteArray points,
+    jint points_len
+) {
+    byte_t *ptr_f_zero = mput(env, f_zero, ecc_frost_ristretto255_sha512_SCALARSIZE);
+    byte_t *ptr_points = mput(env, points, points_len*ecc_frost_ristretto255_sha512_POINTSIZE);
+    ecc_frost_ristretto255_sha512_polynomial_interpolate_constant(
+        ptr_f_zero,
+        ptr_points,
+        points_len
+    );
+    mget(env, f_zero, ptr_f_zero, ecc_frost_ristretto255_sha512_SCALARSIZE);
+    mfree(ptr_f_zero, ecc_frost_ristretto255_sha512_SCALARSIZE);
+    mfree(ptr_points, points_len*ecc_frost_ristretto255_sha512_POINTSIZE);
+}
+
+JNIEXPORT void JNICALL Java_org_ssohub_crypto_ecc_libecc_ecc_1frost_1ristretto255_1sha512_1vss_1commit(
+    JNIEnv *env, jclass cls,
+    jbyteArray vss_commitment,
+    jbyteArray coeffs,
+    jint coeffs_len
+) {
+    byte_t *ptr_vss_commitment = mput(env, vss_commitment, coeffs_len*ecc_frost_ristretto255_sha512_ELEMENTSIZE);
+    byte_t *ptr_coeffs = mput(env, coeffs, coeffs_len*ecc_frost_ristretto255_sha512_SCALARSIZE);
+    ecc_frost_ristretto255_sha512_vss_commit(
+        ptr_vss_commitment,
+        ptr_coeffs,
+        coeffs_len
+    );
+    mget(env, vss_commitment, ptr_vss_commitment, coeffs_len*ecc_frost_ristretto255_sha512_ELEMENTSIZE);
+    mfree(ptr_vss_commitment, coeffs_len*ecc_frost_ristretto255_sha512_ELEMENTSIZE);
+    mfree(ptr_coeffs, coeffs_len*ecc_frost_ristretto255_sha512_SCALARSIZE);
+}
+
+JNIEXPORT int JNICALL Java_org_ssohub_crypto_ecc_libecc_ecc_1frost_1ristretto255_1sha512_1vss_1verify(
+    JNIEnv *env, jclass cls,
+    jbyteArray share_i,
+    jbyteArray vss_commitment,
+    jint t
+) {
+    byte_t *ptr_share_i = mput(env, share_i, ecc_frost_ristretto255_sha512_POINTSIZE);
+    byte_t *ptr_vss_commitment = mput(env, vss_commitment, t*ecc_frost_ristretto255_sha512_ELEMENTSIZE);
+    const int fun_ret = ecc_frost_ristretto255_sha512_vss_verify(
+        ptr_share_i,
+        ptr_vss_commitment,
+        t
+    );
+    mfree(ptr_share_i, ecc_frost_ristretto255_sha512_POINTSIZE);
+    mfree(ptr_vss_commitment, t*ecc_frost_ristretto255_sha512_ELEMENTSIZE);
+    return fun_ret;
+}
+
+JNIEXPORT void JNICALL Java_org_ssohub_crypto_ecc_libecc_ecc_1frost_1ristretto255_1sha512_1derive_1group_1info(
+    JNIEnv *env, jclass cls,
+    jbyteArray PK,
+    jbyteArray participant_public_keys,
+    jint n,
+    jint t,
+    jbyteArray vss_commitment
+) {
+    byte_t *ptr_PK = mput(env, PK, ecc_frost_ristretto255_sha512_ELEMENTSIZE);
+    byte_t *ptr_participant_public_keys = mput(env, participant_public_keys, n*ecc_frost_ristretto255_sha512_ELEMENTSIZE);
+    byte_t *ptr_vss_commitment = mput(env, vss_commitment, t*ecc_frost_ristretto255_sha512_ELEMENTSIZE);
+    ecc_frost_ristretto255_sha512_derive_group_info(
+        ptr_PK,
+        ptr_participant_public_keys,
+        n,
+        t,
+        ptr_vss_commitment
+    );
+    mget(env, PK, ptr_PK, ecc_frost_ristretto255_sha512_ELEMENTSIZE);
+    mget(env, participant_public_keys, ptr_participant_public_keys, n*ecc_frost_ristretto255_sha512_ELEMENTSIZE);
+    mfree(ptr_PK, ecc_frost_ristretto255_sha512_ELEMENTSIZE);
+    mfree(ptr_participant_public_keys, n*ecc_frost_ristretto255_sha512_ELEMENTSIZE);
+    mfree(ptr_vss_commitment, t*ecc_frost_ristretto255_sha512_ELEMENTSIZE);
+}
+
 // pre
 
 JNIEXPORT void JNICALL Java_org_ssohub_crypto_ecc_libecc_ecc_1pre_1schema1_1MessageGen(
@@ -3737,561 +4750,6 @@ JNIEXPORT int JNICALL Java_org_ssohub_crypto_ecc_libecc_ecc_1pre_1schema1_1Decry
     mfree(ptr_sk_j, ecc_pre_schema1_PRIVATEKEYSIZE);
     mfree(ptr_spk, ecc_pre_schema1_SIGNINGPUBLICKEYSIZE);
     return fun_ret;
-}
-
-// frost
-
-JNIEXPORT void JNICALL Java_org_ssohub_crypto_ecc_libecc_ecc_1frost_1ristretto255_1sha512_1H1(
-    JNIEnv *env, jclass cls,
-    jbyteArray h1,
-    jbyteArray m,
-    jint m_len
-) {
-    byte_t *ptr_h1 = mput(env, h1, ecc_frost_ristretto255_sha512_SCALARSIZE);
-    byte_t *ptr_m = mput(env, m, m_len);
-    ecc_frost_ristretto255_sha512_H1(
-        ptr_h1,
-        ptr_m,
-        m_len
-    );
-    mget(env, h1, ptr_h1, ecc_frost_ristretto255_sha512_SCALARSIZE);
-    mfree(ptr_h1, ecc_frost_ristretto255_sha512_SCALARSIZE);
-    mfree(ptr_m, m_len);
-}
-
-JNIEXPORT void JNICALL Java_org_ssohub_crypto_ecc_libecc_ecc_1frost_1ristretto255_1sha512_1H1_12(
-    JNIEnv *env, jclass cls,
-    jbyteArray h1,
-    jbyteArray m1,
-    jint m1_len,
-    jbyteArray m2,
-    jint m2_len
-) {
-    byte_t *ptr_h1 = mput(env, h1, ecc_frost_ristretto255_sha512_SCALARSIZE);
-    byte_t *ptr_m1 = mput(env, m1, m1_len);
-    byte_t *ptr_m2 = mput(env, m2, m2_len);
-    ecc_frost_ristretto255_sha512_H1_2(
-        ptr_h1,
-        ptr_m1,
-        m1_len,
-        ptr_m2,
-        m2_len
-    );
-    mget(env, h1, ptr_h1, ecc_frost_ristretto255_sha512_SCALARSIZE);
-    mfree(ptr_h1, ecc_frost_ristretto255_sha512_SCALARSIZE);
-    mfree(ptr_m1, m1_len);
-    mfree(ptr_m2, m2_len);
-}
-
-JNIEXPORT void JNICALL Java_org_ssohub_crypto_ecc_libecc_ecc_1frost_1ristretto255_1sha512_1H2(
-    JNIEnv *env, jclass cls,
-    jbyteArray h2,
-    jbyteArray m,
-    jint m_len
-) {
-    byte_t *ptr_h2 = mput(env, h2, ecc_frost_ristretto255_sha512_SCALARSIZE);
-    byte_t *ptr_m = mput(env, m, m_len);
-    ecc_frost_ristretto255_sha512_H2(
-        ptr_h2,
-        ptr_m,
-        m_len
-    );
-    mget(env, h2, ptr_h2, ecc_frost_ristretto255_sha512_SCALARSIZE);
-    mfree(ptr_h2, ecc_frost_ristretto255_sha512_SCALARSIZE);
-    mfree(ptr_m, m_len);
-}
-
-JNIEXPORT void JNICALL Java_org_ssohub_crypto_ecc_libecc_ecc_1frost_1ristretto255_1sha512_1H2_13(
-    JNIEnv *env, jclass cls,
-    jbyteArray h2,
-    jbyteArray m1,
-    jint m1_len,
-    jbyteArray m2,
-    jint m2_len,
-    jbyteArray m3,
-    jint m3_len
-) {
-    byte_t *ptr_h2 = mput(env, h2, ecc_frost_ristretto255_sha512_SCALARSIZE);
-    byte_t *ptr_m1 = mput(env, m1, m1_len);
-    byte_t *ptr_m2 = mput(env, m2, m2_len);
-    byte_t *ptr_m3 = mput(env, m3, m3_len);
-    ecc_frost_ristretto255_sha512_H2_3(
-        ptr_h2,
-        ptr_m1,
-        m1_len,
-        ptr_m2,
-        m2_len,
-        ptr_m3,
-        m3_len
-    );
-    mget(env, h2, ptr_h2, ecc_frost_ristretto255_sha512_SCALARSIZE);
-    mfree(ptr_h2, ecc_frost_ristretto255_sha512_SCALARSIZE);
-    mfree(ptr_m1, m1_len);
-    mfree(ptr_m2, m2_len);
-    mfree(ptr_m3, m3_len);
-}
-
-JNIEXPORT void JNICALL Java_org_ssohub_crypto_ecc_libecc_ecc_1frost_1ristretto255_1sha512_1H3(
-    JNIEnv *env, jclass cls,
-    jbyteArray h3,
-    jbyteArray m,
-    jint m_len
-) {
-    byte_t *ptr_h3 = mput(env, h3, 64);
-    byte_t *ptr_m = mput(env, m, m_len);
-    ecc_frost_ristretto255_sha512_H3(
-        ptr_h3,
-        ptr_m,
-        m_len
-    );
-    mget(env, h3, ptr_h3, 64);
-    mfree(ptr_h3, 64);
-    mfree(ptr_m, m_len);
-}
-
-JNIEXPORT void JNICALL Java_org_ssohub_crypto_ecc_libecc_ecc_1frost_1ristretto255_1sha512_1schnorr_1signature_1generate(
-    JNIEnv *env, jclass cls,
-    jbyteArray signature,
-    jbyteArray msg,
-    jint msg_len,
-    jbyteArray SK
-) {
-    byte_t *ptr_signature = mput(env, signature, ecc_frost_ristretto255_sha512_SIGNATURESIZE);
-    byte_t *ptr_msg = mput(env, msg, msg_len);
-    byte_t *ptr_SK = mput(env, SK, ecc_frost_ristretto255_sha512_SECRETKEYSIZE);
-    ecc_frost_ristretto255_sha512_schnorr_signature_generate(
-        ptr_signature,
-        ptr_msg,
-        msg_len,
-        ptr_SK
-    );
-    mget(env, signature, ptr_signature, ecc_frost_ristretto255_sha512_SIGNATURESIZE);
-    mfree(ptr_signature, ecc_frost_ristretto255_sha512_SIGNATURESIZE);
-    mfree(ptr_msg, msg_len);
-    mfree(ptr_SK, ecc_frost_ristretto255_sha512_SECRETKEYSIZE);
-}
-
-JNIEXPORT int JNICALL Java_org_ssohub_crypto_ecc_libecc_ecc_1frost_1ristretto255_1sha512_1schnorr_1signature_1verify(
-    JNIEnv *env, jclass cls,
-    jbyteArray msg,
-    jint msg_len,
-    jbyteArray signature,
-    jbyteArray PK
-) {
-    byte_t *ptr_msg = mput(env, msg, msg_len);
-    byte_t *ptr_signature = mput(env, signature, ecc_frost_ristretto255_sha512_SIGNATURESIZE);
-    byte_t *ptr_PK = mput(env, PK, ecc_frost_ristretto255_sha512_PUBLICKEYSIZE);
-    const int fun_ret = ecc_frost_ristretto255_sha512_schnorr_signature_verify(
-        ptr_msg,
-        msg_len,
-        ptr_signature,
-        ptr_PK
-    );
-    mfree(ptr_msg, msg_len);
-    mfree(ptr_signature, ecc_frost_ristretto255_sha512_SIGNATURESIZE);
-    mfree(ptr_PK, ecc_frost_ristretto255_sha512_PUBLICKEYSIZE);
-    return fun_ret;
-}
-
-JNIEXPORT void JNICALL Java_org_ssohub_crypto_ecc_libecc_ecc_1frost_1ristretto255_1sha512_1polynomial_1evaluate(
-    JNIEnv *env, jclass cls,
-    jbyteArray value,
-    jbyteArray x,
-    jbyteArray coeffs,
-    jint coeffs_len
-) {
-    byte_t *ptr_value = mput(env, value, ecc_frost_ristretto255_sha512_SCALARSIZE);
-    byte_t *ptr_x = mput(env, x, ecc_frost_ristretto255_sha512_SCALARSIZE);
-    byte_t *ptr_coeffs = mput(env, coeffs, coeffs_len*ecc_frost_ristretto255_sha512_SCALARSIZE);
-    ecc_frost_ristretto255_sha512_polynomial_evaluate(
-        ptr_value,
-        ptr_x,
-        ptr_coeffs,
-        coeffs_len
-    );
-    mget(env, value, ptr_value, ecc_frost_ristretto255_sha512_SCALARSIZE);
-    mfree(ptr_value, ecc_frost_ristretto255_sha512_SCALARSIZE);
-    mfree(ptr_x, ecc_frost_ristretto255_sha512_SCALARSIZE);
-    mfree(ptr_coeffs, coeffs_len*ecc_frost_ristretto255_sha512_SCALARSIZE);
-}
-
-JNIEXPORT void JNICALL Java_org_ssohub_crypto_ecc_libecc_ecc_1frost_1ristretto255_1sha512_1derive_1lagrange_1coefficient(
-    JNIEnv *env, jclass cls,
-    jbyteArray L_i,
-    jbyteArray x_i,
-    jbyteArray L,
-    jint L_len
-) {
-    byte_t *ptr_L_i = mput(env, L_i, ecc_frost_ristretto255_sha512_SCALARSIZE);
-    byte_t *ptr_x_i = mput(env, x_i, ecc_frost_ristretto255_sha512_SCALARSIZE);
-    byte_t *ptr_L = mput(env, L, L_len*ecc_frost_ristretto255_sha512_SCALARSIZE);
-    ecc_frost_ristretto255_sha512_derive_lagrange_coefficient(
-        ptr_L_i,
-        ptr_x_i,
-        ptr_L,
-        L_len
-    );
-    mget(env, L_i, ptr_L_i, ecc_frost_ristretto255_sha512_SCALARSIZE);
-    mfree(ptr_L_i, ecc_frost_ristretto255_sha512_SCALARSIZE);
-    mfree(ptr_x_i, ecc_frost_ristretto255_sha512_SCALARSIZE);
-    mfree(ptr_L, L_len*ecc_frost_ristretto255_sha512_SCALARSIZE);
-}
-
-JNIEXPORT void JNICALL Java_org_ssohub_crypto_ecc_libecc_ecc_1frost_1ristretto255_1sha512_1derive_1lagrange_1coefficient_1with_1points(
-    JNIEnv *env, jclass cls,
-    jbyteArray L_i,
-    jbyteArray x_i,
-    jbyteArray L,
-    jint L_len
-) {
-    byte_t *ptr_L_i = mput(env, L_i, ecc_frost_ristretto255_sha512_SCALARSIZE);
-    byte_t *ptr_x_i = mput(env, x_i, ecc_frost_ristretto255_sha512_SCALARSIZE);
-    byte_t *ptr_L = mput(env, L, L_len*ecc_frost_ristretto255_sha512_POINTSIZE);
-    ecc_frost_ristretto255_sha512_derive_lagrange_coefficient_with_points(
-        ptr_L_i,
-        ptr_x_i,
-        ptr_L,
-        L_len
-    );
-    mget(env, L_i, ptr_L_i, ecc_frost_ristretto255_sha512_SCALARSIZE);
-    mfree(ptr_L_i, ecc_frost_ristretto255_sha512_SCALARSIZE);
-    mfree(ptr_x_i, ecc_frost_ristretto255_sha512_SCALARSIZE);
-    mfree(ptr_L, L_len*ecc_frost_ristretto255_sha512_POINTSIZE);
-}
-
-JNIEXPORT void JNICALL Java_org_ssohub_crypto_ecc_libecc_ecc_1frost_1ristretto255_1sha512_1polynomial_1interpolation(
-    JNIEnv *env, jclass cls,
-    jbyteArray constant_term,
-    jbyteArray points,
-    jint points_len
-) {
-    byte_t *ptr_constant_term = mput(env, constant_term, ecc_frost_ristretto255_sha512_SCALARSIZE);
-    byte_t *ptr_points = mput(env, points, points_len*ecc_frost_ristretto255_sha512_POINTSIZE);
-    ecc_frost_ristretto255_sha512_polynomial_interpolation(
-        ptr_constant_term,
-        ptr_points,
-        points_len
-    );
-    mget(env, constant_term, ptr_constant_term, ecc_frost_ristretto255_sha512_SCALARSIZE);
-    mfree(ptr_constant_term, ecc_frost_ristretto255_sha512_SCALARSIZE);
-    mfree(ptr_points, points_len*ecc_frost_ristretto255_sha512_POINTSIZE);
-}
-
-JNIEXPORT void JNICALL Java_org_ssohub_crypto_ecc_libecc_ecc_1frost_1ristretto255_1sha512_1compute_1binding_1factor(
-    JNIEnv *env, jclass cls,
-    jbyteArray binding_factor,
-    jbyteArray encoded_commitment_list,
-    jint encoded_commitment_list_len,
-    jbyteArray msg,
-    jint msg_len
-) {
-    byte_t *ptr_binding_factor = mput(env, binding_factor, ecc_frost_ristretto255_sha512_SCALARSIZE);
-    byte_t *ptr_encoded_commitment_list = mput(env, encoded_commitment_list, encoded_commitment_list_len*ecc_frost_ristretto255_sha512_SIGNINGCOMMITMENTSIZE);
-    byte_t *ptr_msg = mput(env, msg, msg_len);
-    ecc_frost_ristretto255_sha512_compute_binding_factor(
-        ptr_binding_factor,
-        ptr_encoded_commitment_list,
-        encoded_commitment_list_len,
-        ptr_msg,
-        msg_len
-    );
-    mget(env, binding_factor, ptr_binding_factor, ecc_frost_ristretto255_sha512_SCALARSIZE);
-    mfree(ptr_binding_factor, ecc_frost_ristretto255_sha512_SCALARSIZE);
-    mfree(ptr_encoded_commitment_list, encoded_commitment_list_len*ecc_frost_ristretto255_sha512_SIGNINGCOMMITMENTSIZE);
-    mfree(ptr_msg, msg_len);
-}
-
-JNIEXPORT void JNICALL Java_org_ssohub_crypto_ecc_libecc_ecc_1frost_1ristretto255_1sha512_1compute_1challenge(
-    JNIEnv *env, jclass cls,
-    jbyteArray challenge,
-    jbyteArray group_commitment,
-    jbyteArray group_public_key,
-    jbyteArray msg,
-    jint msg_len
-) {
-    byte_t *ptr_challenge = mput(env, challenge, ecc_frost_ristretto255_sha512_SCALARSIZE);
-    byte_t *ptr_group_commitment = mput(env, group_commitment, ecc_frost_ristretto255_sha512_ELEMENTSIZE);
-    byte_t *ptr_group_public_key = mput(env, group_public_key, ecc_frost_ristretto255_sha512_PUBLICKEYSIZE);
-    byte_t *ptr_msg = mput(env, msg, msg_len);
-    ecc_frost_ristretto255_sha512_compute_challenge(
-        ptr_challenge,
-        ptr_group_commitment,
-        ptr_group_public_key,
-        ptr_msg,
-        msg_len
-    );
-    mget(env, challenge, ptr_challenge, ecc_frost_ristretto255_sha512_SCALARSIZE);
-    mfree(ptr_challenge, ecc_frost_ristretto255_sha512_SCALARSIZE);
-    mfree(ptr_group_commitment, ecc_frost_ristretto255_sha512_ELEMENTSIZE);
-    mfree(ptr_group_public_key, ecc_frost_ristretto255_sha512_PUBLICKEYSIZE);
-    mfree(ptr_msg, msg_len);
-}
-
-JNIEXPORT void JNICALL Java_org_ssohub_crypto_ecc_libecc_ecc_1frost_1ristretto255_1sha512_1commit_1with_1nonce(
-    JNIEnv *env, jclass cls,
-    jbyteArray comm,
-    jbyteArray nonce
-) {
-    byte_t *ptr_comm = mput(env, comm, ecc_frost_ristretto255_sha512_NONCECOMMITMENTPAIRSIZE);
-    byte_t *ptr_nonce = mput(env, nonce, ecc_frost_ristretto255_sha512_NONCEPAIRSIZE);
-    ecc_frost_ristretto255_sha512_commit_with_nonce(
-        ptr_comm,
-        ptr_nonce
-    );
-    mget(env, comm, ptr_comm, ecc_frost_ristretto255_sha512_NONCECOMMITMENTPAIRSIZE);
-    mfree(ptr_comm, ecc_frost_ristretto255_sha512_NONCECOMMITMENTPAIRSIZE);
-    mfree(ptr_nonce, ecc_frost_ristretto255_sha512_NONCEPAIRSIZE);
-}
-
-JNIEXPORT void JNICALL Java_org_ssohub_crypto_ecc_libecc_ecc_1frost_1ristretto255_1sha512_1commit(
-    JNIEnv *env, jclass cls,
-    jbyteArray nonce,
-    jbyteArray comm
-) {
-    byte_t *ptr_nonce = mput(env, nonce, ecc_frost_ristretto255_sha512_NONCEPAIRSIZE);
-    byte_t *ptr_comm = mput(env, comm, ecc_frost_ristretto255_sha512_NONCECOMMITMENTPAIRSIZE);
-    ecc_frost_ristretto255_sha512_commit(
-        ptr_nonce,
-        ptr_comm
-    );
-    mget(env, nonce, ptr_nonce, ecc_frost_ristretto255_sha512_NONCEPAIRSIZE);
-    mget(env, comm, ptr_comm, ecc_frost_ristretto255_sha512_NONCECOMMITMENTPAIRSIZE);
-    mfree(ptr_nonce, ecc_frost_ristretto255_sha512_NONCEPAIRSIZE);
-    mfree(ptr_comm, ecc_frost_ristretto255_sha512_NONCECOMMITMENTPAIRSIZE);
-}
-
-JNIEXPORT void JNICALL Java_org_ssohub_crypto_ecc_libecc_ecc_1frost_1ristretto255_1sha512_1group_1commitment(
-    JNIEnv *env, jclass cls,
-    jbyteArray group_comm,
-    jbyteArray commitment_list,
-    jint commitment_list_len,
-    jbyteArray binding_factor
-) {
-    byte_t *ptr_group_comm = mput(env, group_comm, ecc_frost_ristretto255_sha512_ELEMENTSIZE);
-    byte_t *ptr_commitment_list = mput(env, commitment_list, commitment_list_len*ecc_frost_ristretto255_sha512_SIGNINGCOMMITMENTSIZE);
-    byte_t *ptr_binding_factor = mput(env, binding_factor, ecc_frost_ristretto255_sha512_SCALARSIZE);
-    ecc_frost_ristretto255_sha512_group_commitment(
-        ptr_group_comm,
-        ptr_commitment_list,
-        commitment_list_len,
-        ptr_binding_factor
-    );
-    mget(env, group_comm, ptr_group_comm, ecc_frost_ristretto255_sha512_ELEMENTSIZE);
-    mfree(ptr_group_comm, ecc_frost_ristretto255_sha512_ELEMENTSIZE);
-    mfree(ptr_commitment_list, commitment_list_len*ecc_frost_ristretto255_sha512_SIGNINGCOMMITMENTSIZE);
-    mfree(ptr_binding_factor, ecc_frost_ristretto255_sha512_SCALARSIZE);
-}
-
-JNIEXPORT void JNICALL Java_org_ssohub_crypto_ecc_libecc_ecc_1frost_1ristretto255_1sha512_1sign(
-    JNIEnv *env, jclass cls,
-    jbyteArray sig_share,
-    jbyteArray comm_share,
-    jint index,
-    jbyteArray sk_i,
-    jbyteArray group_public_key,
-    jbyteArray nonce_i,
-    jbyteArray comm_i,
-    jbyteArray msg,
-    jint msg_len,
-    jbyteArray commitment_list,
-    jint commitment_list_len,
-    jbyteArray participant_list,
-    jint participant_list_len
-) {
-    byte_t *ptr_sig_share = mput(env, sig_share, ecc_frost_ristretto255_sha512_SCALARSIZE);
-    byte_t *ptr_comm_share = mput(env, comm_share, ecc_frost_ristretto255_sha512_ELEMENTSIZE);
-    byte_t *ptr_sk_i = mput(env, sk_i, ecc_frost_ristretto255_sha512_SECRETKEYSIZE);
-    byte_t *ptr_group_public_key = mput(env, group_public_key, ecc_frost_ristretto255_sha512_PUBLICKEYSIZE);
-    byte_t *ptr_nonce_i = mput(env, nonce_i, ecc_frost_ristretto255_sha512_NONCEPAIRSIZE);
-    byte_t *ptr_comm_i = mput(env, comm_i, ecc_frost_ristretto255_sha512_NONCECOMMITMENTPAIRSIZE);
-    byte_t *ptr_msg = mput(env, msg, msg_len);
-    byte_t *ptr_commitment_list = mput(env, commitment_list, commitment_list_len*ecc_frost_ristretto255_sha512_SIGNINGCOMMITMENTSIZE);
-    byte_t *ptr_participant_list = mput(env, participant_list, participant_list_len);
-    ecc_frost_ristretto255_sha512_sign(
-        ptr_sig_share,
-        ptr_comm_share,
-        index,
-        ptr_sk_i,
-        ptr_group_public_key,
-        ptr_nonce_i,
-        ptr_comm_i,
-        ptr_msg,
-        msg_len,
-        ptr_commitment_list,
-        commitment_list_len,
-        ptr_participant_list,
-        participant_list_len
-    );
-    mget(env, sig_share, ptr_sig_share, ecc_frost_ristretto255_sha512_SCALARSIZE);
-    mget(env, comm_share, ptr_comm_share, ecc_frost_ristretto255_sha512_ELEMENTSIZE);
-    mfree(ptr_sig_share, ecc_frost_ristretto255_sha512_SCALARSIZE);
-    mfree(ptr_comm_share, ecc_frost_ristretto255_sha512_ELEMENTSIZE);
-    mfree(ptr_sk_i, ecc_frost_ristretto255_sha512_SECRETKEYSIZE);
-    mfree(ptr_group_public_key, ecc_frost_ristretto255_sha512_PUBLICKEYSIZE);
-    mfree(ptr_nonce_i, ecc_frost_ristretto255_sha512_NONCEPAIRSIZE);
-    mfree(ptr_comm_i, ecc_frost_ristretto255_sha512_NONCECOMMITMENTPAIRSIZE);
-    mfree(ptr_msg, msg_len);
-    mfree(ptr_commitment_list, commitment_list_len*ecc_frost_ristretto255_sha512_SIGNINGCOMMITMENTSIZE);
-    mfree(ptr_participant_list, participant_list_len);
-}
-
-JNIEXPORT int JNICALL Java_org_ssohub_crypto_ecc_libecc_ecc_1frost_1ristretto255_1sha512_1verify_1signature_1share(
-    JNIEnv *env, jclass cls,
-    jint index,
-    jbyteArray public_key_share_i,
-    jbyteArray comm_i,
-    jbyteArray sig_share_i,
-    jbyteArray commitment_list,
-    jint commitment_list_len,
-    jbyteArray participant_list,
-    jint participant_list_len,
-    jbyteArray group_public_key,
-    jbyteArray msg,
-    jint msg_len
-) {
-    byte_t *ptr_public_key_share_i = mput(env, public_key_share_i, ecc_frost_ristretto255_sha512_PUBLICKEYSIZE);
-    byte_t *ptr_comm_i = mput(env, comm_i, ecc_frost_ristretto255_sha512_NONCECOMMITMENTPAIRSIZE);
-    byte_t *ptr_sig_share_i = mput(env, sig_share_i, ecc_frost_ristretto255_sha512_SCALARSIZE);
-    byte_t *ptr_commitment_list = mput(env, commitment_list, commitment_list_len*ecc_frost_ristretto255_sha512_SIGNINGCOMMITMENTSIZE);
-    byte_t *ptr_participant_list = mput(env, participant_list, participant_list_len);
-    byte_t *ptr_group_public_key = mput(env, group_public_key, ecc_frost_ristretto255_sha512_PUBLICKEYSIZE);
-    byte_t *ptr_msg = mput(env, msg, msg_len);
-    const int fun_ret = ecc_frost_ristretto255_sha512_verify_signature_share(
-        index,
-        ptr_public_key_share_i,
-        ptr_comm_i,
-        ptr_sig_share_i,
-        ptr_commitment_list,
-        commitment_list_len,
-        ptr_participant_list,
-        participant_list_len,
-        ptr_group_public_key,
-        ptr_msg,
-        msg_len
-    );
-    mfree(ptr_public_key_share_i, ecc_frost_ristretto255_sha512_PUBLICKEYSIZE);
-    mfree(ptr_comm_i, ecc_frost_ristretto255_sha512_NONCECOMMITMENTPAIRSIZE);
-    mfree(ptr_sig_share_i, ecc_frost_ristretto255_sha512_SCALARSIZE);
-    mfree(ptr_commitment_list, commitment_list_len*ecc_frost_ristretto255_sha512_SIGNINGCOMMITMENTSIZE);
-    mfree(ptr_participant_list, participant_list_len);
-    mfree(ptr_group_public_key, ecc_frost_ristretto255_sha512_PUBLICKEYSIZE);
-    mfree(ptr_msg, msg_len);
-    return fun_ret;
-}
-
-JNIEXPORT void JNICALL Java_org_ssohub_crypto_ecc_libecc_ecc_1frost_1ristretto255_1sha512_1trusted_1dealer_1keygen_1with_1secret_1and_1coefficients(
-    JNIEnv *env, jclass cls,
-    jbyteArray public_key,
-    jbyteArray secret_key_shares,
-    jint n,
-    jint t,
-    jbyteArray secret_key,
-    jbyteArray coefficients
-) {
-    byte_t *ptr_public_key = mput(env, public_key, ecc_frost_ristretto255_sha512_PUBLICKEYSIZE);
-    byte_t *ptr_secret_key_shares = mput(env, secret_key_shares, n*ecc_frost_ristretto255_sha512_SCALARSIZE);
-    byte_t *ptr_secret_key = mput(env, secret_key, ecc_frost_ristretto255_sha512_SCALARSIZE);
-    byte_t *ptr_coefficients = mput(env, coefficients, t*ecc_frost_ristretto255_sha512_SCALARSIZE);
-    ecc_frost_ristretto255_sha512_trusted_dealer_keygen_with_secret_and_coefficients(
-        ptr_public_key,
-        ptr_secret_key_shares,
-        n,
-        t,
-        ptr_secret_key,
-        ptr_coefficients
-    );
-    mget(env, public_key, ptr_public_key, ecc_frost_ristretto255_sha512_PUBLICKEYSIZE);
-    mfree(ptr_public_key, ecc_frost_ristretto255_sha512_PUBLICKEYSIZE);
-    mfree(ptr_secret_key_shares, n*ecc_frost_ristretto255_sha512_SCALARSIZE);
-    mfree(ptr_secret_key, ecc_frost_ristretto255_sha512_SCALARSIZE);
-    mfree(ptr_coefficients, t*ecc_frost_ristretto255_sha512_SCALARSIZE);
-}
-
-JNIEXPORT void JNICALL Java_org_ssohub_crypto_ecc_libecc_ecc_1frost_1ristretto255_1sha512_1trusted_1dealer_1keygen(
-    JNIEnv *env, jclass cls,
-    jbyteArray secret_key,
-    jbyteArray public_key,
-    jbyteArray secret_key_shares,
-    jint n,
-    jint t
-) {
-    byte_t *ptr_secret_key = mput(env, secret_key, ecc_frost_ristretto255_sha512_SCALARSIZE);
-    byte_t *ptr_public_key = mput(env, public_key, ecc_frost_ristretto255_sha512_PUBLICKEYSIZE);
-    byte_t *ptr_secret_key_shares = mput(env, secret_key_shares, n*ecc_frost_ristretto255_sha512_SCALARSIZE);
-    ecc_frost_ristretto255_sha512_trusted_dealer_keygen(
-        ptr_secret_key,
-        ptr_public_key,
-        ptr_secret_key_shares,
-        n,
-        t
-    );
-    mget(env, secret_key, ptr_secret_key, ecc_frost_ristretto255_sha512_SCALARSIZE);
-    mget(env, public_key, ptr_public_key, ecc_frost_ristretto255_sha512_PUBLICKEYSIZE);
-    mget(env, secret_key_shares, ptr_secret_key_shares, n*ecc_frost_ristretto255_sha512_SCALARSIZE);
-    mfree(ptr_secret_key, ecc_frost_ristretto255_sha512_SCALARSIZE);
-    mfree(ptr_public_key, ecc_frost_ristretto255_sha512_PUBLICKEYSIZE);
-    mfree(ptr_secret_key_shares, n*ecc_frost_ristretto255_sha512_SCALARSIZE);
-}
-
-JNIEXPORT void JNICALL Java_org_ssohub_crypto_ecc_libecc_ecc_1frost_1ristretto255_1sha512_1secret_1share_1shard_1with_1coefficients(
-    JNIEnv *env, jclass cls,
-    jbyteArray points,
-    jint n,
-    jint t,
-    jbyteArray coefficients
-) {
-    byte_t *ptr_points = mput(env, points, n*ecc_frost_ristretto255_sha512_SCALARSIZE);
-    byte_t *ptr_coefficients = mput(env, coefficients, t*ecc_frost_ristretto255_sha512_SCALARSIZE);
-    ecc_frost_ristretto255_sha512_secret_share_shard_with_coefficients(
-        ptr_points,
-        n,
-        t,
-        ptr_coefficients
-    );
-    mfree(ptr_points, n*ecc_frost_ristretto255_sha512_SCALARSIZE);
-    mfree(ptr_coefficients, t*ecc_frost_ristretto255_sha512_SCALARSIZE);
-}
-
-JNIEXPORT void JNICALL Java_org_ssohub_crypto_ecc_libecc_ecc_1frost_1ristretto255_1sha512_1secret_1share_1shard(
-    JNIEnv *env, jclass cls,
-    jbyteArray points,
-    jbyteArray s,
-    jint n,
-    jint t
-) {
-    byte_t *ptr_points = mput(env, points, n*ecc_frost_ristretto255_sha512_SCALARSIZE);
-    byte_t *ptr_s = mput(env, s, ecc_frost_ristretto255_sha512_SCALARSIZE);
-    ecc_frost_ristretto255_sha512_secret_share_shard(
-        ptr_points,
-        ptr_s,
-        n,
-        t
-    );
-    mget(env, points, ptr_points, n*ecc_frost_ristretto255_sha512_SCALARSIZE);
-    mfree(ptr_points, n*ecc_frost_ristretto255_sha512_SCALARSIZE);
-    mfree(ptr_s, ecc_frost_ristretto255_sha512_SCALARSIZE);
-}
-
-JNIEXPORT void JNICALL Java_org_ssohub_crypto_ecc_libecc_ecc_1frost_1ristretto255_1sha512_1frost_1aggregate(
-    JNIEnv *env, jclass cls,
-    jbyteArray signature,
-    jbyteArray group_commitment,
-    jbyteArray sig_shares,
-    jint sig_shares_len
-) {
-    byte_t *ptr_signature = mput(env, signature, ecc_frost_ristretto255_sha512_SIGNATURESIZE);
-    byte_t *ptr_group_commitment = mput(env, group_commitment, ecc_frost_ristretto255_sha512_PUBLICKEYSIZE);
-    byte_t *ptr_sig_shares = mput(env, sig_shares, sig_shares_len*ecc_frost_ristretto255_sha512_SCALARSIZE);
-    ecc_frost_ristretto255_sha512_frost_aggregate(
-        ptr_signature,
-        ptr_group_commitment,
-        ptr_sig_shares,
-        sig_shares_len
-    );
-    mget(env, signature, ptr_signature, ecc_frost_ristretto255_sha512_SIGNATURESIZE);
-    mfree(ptr_signature, ecc_frost_ristretto255_sha512_SIGNATURESIZE);
-    mfree(ptr_group_commitment, ecc_frost_ristretto255_sha512_PUBLICKEYSIZE);
-    mfree(ptr_sig_shares, sig_shares_len*ecc_frost_ristretto255_sha512_SCALARSIZE);
 }
 
 #ifdef __cplusplus

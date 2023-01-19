@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022, Alden Torres
+ * Copyright (c) 2022-2023, Alden Torres
  *
  * Licensed under the terms of the MIT license.
  * Copy of the license at https://opensource.org/licenses/MIT
@@ -19,18 +19,14 @@ public final class Oprf {
 
     public static byte[] oprf_ristretto255_sha512_Evaluate(
         byte[] skS,
-        byte[] blindedElement,
-        byte[] info
+        byte[] blindedElement
     ) {
-        if (info == null)
-            info = new byte[0];
 
-        byte[] evaluatedElement = new byte[ecc_oprf_ristretto255_sha512_ELEMENTSIZE];
-        ecc_oprf_ristretto255_sha512_Evaluate(
+        byte[] evaluatedElement = new byte[ecc_voprf_ristretto255_sha512_ELEMENTSIZE];
+        ecc_voprf_ristretto255_sha512_BlindEvaluate(
             evaluatedElement,
             skS,
-            blindedElement,
-            info, info.length
+            blindedElement
         );
 
         return evaluatedElement;
@@ -40,12 +36,12 @@ public final class Oprf {
         byte[] input,
         byte[] blind
     ) {
-        byte[] blindedElement = new byte[ecc_oprf_ristretto255_sha512_ELEMENTSIZE];
-        ecc_oprf_ristretto255_sha512_BlindWithScalar(
+        byte[] blindedElement = new byte[ecc_voprf_ristretto255_sha512_ELEMENTSIZE];
+        ecc_voprf_ristretto255_sha512_BlindWithScalar(
             blindedElement,
             input, input.length,
             blind,
-            ecc_oprf_ristretto255_sha512_MODE_BASE
+            ecc_voprf_ristretto255_sha512_MODE_OPRF
         );
 
         return blindedElement;
@@ -54,19 +50,15 @@ public final class Oprf {
     public static byte[] oprf_ristretto255_sha512_Finalize(
         byte[] input,
         byte[] blind,
-        byte[] evaluatedElement,
-        byte[] info
+        byte[] evaluatedElement
     ) {
-        if (info == null)
-            info = new byte[0];
 
-        byte[] output = new byte[ecc_oprf_ristretto255_sha512_Nh];
-        ecc_oprf_ristretto255_sha512_Finalize(
+        byte[] output = new byte[ecc_voprf_ristretto255_sha512_Nh];
+        ecc_voprf_ristretto255_sha512_Finalize(
             output,
             input, input.length,
             blind,
-            evaluatedElement,
-            info, info.length
+            evaluatedElement
         );
 
         return output;

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2022, Alden Torres
+ * Copyright (c) 2021-2023, Alden Torres
  *
  * Licensed under the terms of the MIT license.
  * Copy of the license at https://opensource.org/licenses/MIT
@@ -123,6 +123,7 @@ void ecc_voprf_ristretto255_sha512_GenerateProof(
  * @param C size:m*ecc_voprf_ristretto255_sha512_ELEMENTSIZE
  * @param D size:m*ecc_voprf_ristretto255_sha512_ELEMENTSIZE
  * @param m the size of the `C` and `D` arrays
+ * @param mode the protocol mode VOPRF or POPRF
  */
 ECC_EXPORT
 void ecc_voprf_ristretto255_sha512_ComputeCompositesFast(
@@ -166,6 +167,7 @@ int ecc_voprf_ristretto255_sha512_VerifyProof(
  * @param C size:m*ecc_voprf_ristretto255_sha512_ELEMENTSIZE
  * @param D size:m*ecc_voprf_ristretto255_sha512_ELEMENTSIZE
  * @param m the size of the `C` and `D` arrays
+ * @param mode the protocol mode VOPRF or POPRF
  */
 ECC_EXPORT
 void ecc_voprf_ristretto255_sha512_ComputeComposites(
@@ -200,6 +202,7 @@ void ecc_voprf_ristretto255_sha512_GenerateKeyPair(
  * @param seed size:ecc_voprf_ristretto255_sha512_SCALARSIZE
  * @param info size:infoLen
  * @param infoLen the size of `info`, it should be <= ecc_voprf_ristretto255_sha512_MAXINFOSIZE
+ * @param mode the protocol mode VOPRF or POPRF
  * @return 0 on success, or -1 if an error
  */
 ECC_EXPORT
