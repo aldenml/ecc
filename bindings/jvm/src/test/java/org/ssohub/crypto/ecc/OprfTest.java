@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022, Alden Torres
+ * Copyright (c) 2022-2023, Alden Torres
  *
  * Licensed under the terms of the MIT license.
  * Copy of the license at https://opensource.org/licenses/MIT
@@ -22,7 +22,6 @@ public class OprfTest {
     void oprf_ristretto255_sha512_base_test1() {
         byte[] skSm = hex2bin("74db8e13d2c5148a1181d57cc06debd730da4df1978b72ac18bc48992a0d2c0f");
         byte[] input = hex2bin("00");
-        byte[] info = hex2bin("7465737420696e666f");
         byte[] blind = hex2bin("c604c785ada70d77a5256ae21767de8c3304115237d262134f5e46e512cf8e03");
 
         byte[] blindedElement = Oprf.oprf_ristretto255_sha512_BlindWithScalar(
@@ -30,31 +29,28 @@ public class OprfTest {
             blind
         );
 
-        assertEquals("744441a5d3ee12571a84d34812443eba2b6521a47265ad655f01e759b3dd7d35", bin2hex(blindedElement));
+        assertEquals("b617363ffc96d9dd2309d3f8bd7345b5226eb9c863912cd86b8f34cf754c1b4e", bin2hex(blindedElement));
 
         byte[] evaluationElement = Oprf.oprf_ristretto255_sha512_Evaluate(
             skSm,
-            blindedElement,
-            info
+            blindedElement
         );
 
-        assertEquals("4254c503ee2013262473eec926b109b018d699b8dd954ee878bc17b159696353", bin2hex(evaluationElement));
+        assertEquals("2a0c57e1dc889c729496670779647c56026fb0c1ce314c14f95726ff228c5461", bin2hex(evaluationElement));
 
         byte[] output = Oprf.oprf_ristretto255_sha512_Finalize(
             input,
             blind,
-            evaluationElement,
-            info
+            evaluationElement
         );
 
-        assertEquals("9aef8983b729baacb7ecf1be98d1276ca29e7d62dbf39bc595be018b66b199119f18579a9ae96a39d7d506c9e00f75b433a870d76ba755a3e7196911fff89ff3", bin2hex(output));
+        assertEquals("be060dfe78216ed06ab2b716896f9215da964ebeec2ac23cbb4c158e8b9cbbea968a8061b23c04f350750ad1e5102c60593d679b6dcb22badb68f396fb7f6cc0", bin2hex(output));
     }
 
     @Test
     void oprf_ristretto255_sha512_base_test2() {
         byte[] skSm = hex2bin("74db8e13d2c5148a1181d57cc06debd730da4df1978b72ac18bc48992a0d2c0f");
         byte[] input = hex2bin("5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a");
-        byte[] info = hex2bin("7465737420696e666f");
         byte[] blind = hex2bin("5ed895206bfc53316d307b23e46ecc6623afb3086da74189a416012be037e50b");
 
         byte[] blindedElement = Oprf.oprf_ristretto255_sha512_BlindWithScalar(
@@ -62,23 +58,21 @@ public class OprfTest {
             blind
         );
 
-        assertEquals("f4eeea4e1bcb2ec818ee2d5c1fcec56c24064a9ff4bea5b3dd6877800fc28e4d", bin2hex(blindedElement));
+        assertEquals("927e71dbbceecf21cd0631fcb7f15ca0143b9a15e587f84a35b8bd20bf2e0767", bin2hex(blindedElement));
 
         byte[] evaluationElement = Oprf.oprf_ristretto255_sha512_Evaluate(
             skSm,
-            blindedElement,
-            info
+            blindedElement
         );
 
-        assertEquals("185dae43b6209dacbc41a62fd4889700d11eeeff4e83ffbc72d54daee7e25659", bin2hex(evaluationElement));
+        assertEquals("505f2cd525a0ded45d41b9ae58e835beb0f25afcdf4de947ca5c5e4a73197910", bin2hex(evaluationElement));
 
         byte[] output = Oprf.oprf_ristretto255_sha512_Finalize(
             input,
             blind,
-            evaluationElement,
-            info
+            evaluationElement
         );
 
-        assertEquals("f556e2d83e576b4edc890472572d08f0d90d2ecc52a73b35b2a8416a72ff676549e3a83054fdf4fd16fe03e03bee7bb32cbd83c7ca212ea0d03b8996c2c268b2", bin2hex(output));
+        assertEquals("4e45a1b18f93d220b2570fe9e4a49ef4ec108c8c43c15c26bd743d994a1d68eaf27e9fc05651ddfa36186022d22a036cca03ad27daca359f4a3d044d32b26455", bin2hex(output));
     }
 }

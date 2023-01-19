@@ -62,10 +62,10 @@ jobs:
           ./build.sh -O2
           cd ../..
 
-      #          cp build/libecc-jvm.dll bindings/jvm/ TODO: restore
       - name: c build
         run: |
           cmake --build build --config Release --parallel 2
+          cp build/libecc-jvm.dll bindings/jvm/
           objdump -p build/libecc.dll | grep DLL
 
       - name: c tests
@@ -74,12 +74,12 @@ jobs:
           ctest -C "Release" --rerun-failed --output-on-failure
           cd ..
 
-#      - name: jvm tests
-#        run: |
-#          objdump -p build/libecc-jvm.dll | grep DLL
-#          cd bindings/jvm
-#          ./gradlew test
-#          cd ../..
+      - name: jvm tests
+        run: |
+          objdump -p build/libecc-jvm.dll | grep DLL
+          cd bindings/jvm
+          ./gradlew test
+          cd ../..
 
 #      - name: python wheel
 #        run: |
@@ -99,6 +99,6 @@ jobs:
           name: ecc-windows-x86_64
           path: |
             build/libecc.dll
-#            build/libecc-jvm.dll
+            build/libecc-jvm.dll
 #            bindings/python/src/libecc/_libecc_cffi.*.pyd
           retention-days: 5

@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2021-2022, Alden Torres
+# Copyright (c) 2021-2023, Alden Torres
 #
 # Licensed under the terms of the MIT license.
 # Copy of the license at https://opensource.org/licenses/MIT
@@ -88,7 +88,7 @@ class ParmVarDecl:
 
     def size(self):
         text = self.comment.comment_text()
-        match = re.search(r"\bsize:([A-Za-z0-9_+\-*/]+)", text)
+        match = re.search(r"\bsize:([A-Za-z0-9_+\-*/()]+)", text)
         if match is None:
             print("No size specified: " + text)
         return match.group(1)
@@ -467,7 +467,7 @@ def read_header(header):
 
 
 ecc_headers = ["util", "hash", "mac", "kdf", "ed25519", "ristretto255", "bls12_381",
-               "h2c", "oprf", "opaque", "sign", "pre", "frost"]
+               "h2c", "voprf", "opaque", "sign", "frost", "pre"]
 ecc_ignore = ["ecc_memzero", "ecc_bin2hex", "ecc_hex2bin", "ecc_malloc", "ecc_free", "ecc_log"]
 
 
@@ -523,7 +523,7 @@ def gen_js(headers, ignore):
 def gen_jni_c(headers, ignore):
     out = ""
     out += "/*\n"
-    out += " * Copyright (c) 2021-2022, Alden Torres\n"
+    out += " * Copyright (c) 2021-2023, Alden Torres\n"
     out += " *\n"
     out += " * Licensed under the terms of the MIT license.\n"
     out += " * Copy of the license at https://opensource.org/licenses/MIT\n"
@@ -568,7 +568,7 @@ def gen_jni_c(headers, ignore):
 def gen_jni_java(headers, ignore):
     out = ""
     out += "/*\n"
-    out += " * Copyright (c) 2021-2022, Alden Torres\n"
+    out += " * Copyright (c) 2021-2023, Alden Torres\n"
     out += " *\n"
     out += " * Licensed under the terms of the MIT license.\n"
     out += " * Copy of the license at https://opensource.org/licenses/MIT\n"
@@ -672,16 +672,16 @@ def gen_python(headers, ignore):
 
 
 def gen_code(headers, ignore):
-    with open("bindings/js/libecc-post.js", "w") as f:
-        f.write(gen_js(headers, ignore))
+    # with open("bindings/js/libecc-post.js", "w") as f:
+    #     f.write(gen_js(headers, ignore))
     with open("bindings/jvm/libecc.c", "w") as f:
         f.write(gen_jni_c(headers, ignore))
     with open("bindings/jvm/src/main/java/org/ssohub/crypto/ecc/libecc.java", "w") as f:
         f.write(gen_jni_java(headers, ignore))
-    with open("bindings/python/cffi_build.py", "w") as f:
-        f.write(gen_cffi_python(headers, ignore))
-    with open("bindings/python/src/libecc/libecc.py", "w") as f:
-        f.write(gen_python(headers, ignore))
+    # with open("bindings/python/cffi_build.py", "w") as f:
+    #     f.write(gen_cffi_python(headers, ignore))
+    # with open("bindings/python/src/libecc/libecc.py", "w") as f:
+    #     f.write(gen_python(headers, ignore))
 
 
 gen_code(ecc_headers, ecc_ignore)

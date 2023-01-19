@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2021-2022, Alden Torres
+# Copyright (c) 2021-2023, Alden Torres
 #
 # Licensed under the terms of the MIT license.
 # Copy of the license at https://opensource.org/licenses/MIT
@@ -197,14 +197,14 @@ if(NOT DEFINED EMSCRIPTEN)
     set_extra_compiler_flags(ecc_static)
 
     # jvm
-#    add_library(ecc-jvm SHARED
-#        bindings/jvm/jni.h
-#        bindings/jvm/libecc.c
-#    )
-#
-#    target_compile_features(ecc-jvm PUBLIC c_std_11)
-#    target_compile_options(ecc-jvm PRIVATE -O2)
-#    target_link_libraries(ecc-jvm PRIVATE ecc_static)
+    add_library(ecc_jvm SHARED
+        bindings/jvm/jni.h bindings/jvm/libecc.c
+    )
+    set_target_properties(ecc_jvm PROPERTIES OUTPUT_NAME "ecc-jvm")
+
+    target_compile_features(ecc_jvm PUBLIC c_std_11)
+    target_compile_options(ecc_jvm PRIVATE -O2)
+    target_link_libraries(ecc_jvm PRIVATE ecc_static)
 endif()
 
 # unit tests
@@ -240,6 +240,6 @@ if(NOT DEFINED EMSCRIPTEN)
     setup_target_test(voprf)
     setup_target_test(opaque)
     setup_target_test(sign)
-    setup_target_test(pre)
     setup_target_test(frost)
+    setup_target_test(pre)
 endif()
