@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2022, Alden Torres
+ * Copyright (c) 2021-2023, Alden Torres
  *
  * Licensed under the terms of the MIT license.
  * Copy of the license at https://opensource.org/licenses/MIT
@@ -22,11 +22,10 @@ export async function oprf_ristretto255_sha512_Evaluate(skS, blindedElement, inf
     const libecc = await libecc_module();
 
     let evaluatedElement = new Uint8Array(32);
-    libecc.ecc_oprf_ristretto255_sha512_Evaluate(
+    libecc.ecc_voprf_ristretto255_sha512_BlindEvaluate(
         evaluatedElement,
         skS,
         blindedElement,
-        info, info.length,
     );
 
     return evaluatedElement;
@@ -47,11 +46,11 @@ export async function oprf_ristretto255_sha512_BlindWithScalar(input, blind) {
 
     let blindedElement = new Uint8Array(32);
 
-    await libecc.ecc_oprf_ristretto255_sha512_BlindWithScalar(
+    await libecc.ecc_voprf_ristretto255_sha512_BlindWithScalar(
         blindedElement,
         input, input.length,
         blind,
-        libecc.ecc_oprf_ristretto255_sha512_MODE_BASE,
+        libecc.ecc_voprf_ristretto255_sha512_MODE_OPRF,
     );
 
     return blindedElement;
@@ -69,11 +68,11 @@ export async function oprf_ristretto255_sha512_Blind(input) {
     let blindedElement = new Uint8Array(32);
     let blind = new Uint8Array(32);
 
-    await libecc.ecc_oprf_ristretto255_sha512_Blind(
+    await libecc.ecc_voprf_ristretto255_sha512_Blind(
         blindedElement,
         blind,
         input, input.length,
-        libecc.ecc_oprf_ristretto255_sha512_MODE_BASE,
+        libecc.ecc_voprf_ristretto255_sha512_MODE_OPRF,
     );
 
     return {blind: blind, blindedElement: blindedElement};
@@ -91,7 +90,7 @@ export async function oprf_ristretto255_sha512_Finalize(input, blind, evaluatedE
     const libecc = await libecc_module();
 
     let output = new Uint8Array(64);
-    libecc.ecc_oprf_ristretto255_sha512_Finalize(
+    libecc.ecc_voprf_ristretto255_sha512_Finalize(
         output,
         input, input.length,
         blind,

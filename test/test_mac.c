@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022, Alden Torres
+ * Copyright (c) 2022-2023, Alden Torres
  *
  * Licensed under the terms of the MIT license.
  * Copy of the license at https://opensource.org/licenses/MIT
@@ -58,9 +58,47 @@ static void test_ecc_mac_hmac_sha2(void **state) {
     ecc_json_destroy(json);
 }
 
+// https://datatracker.ietf.org/doc/html/rfc4231#section-4.2
+static void test_ecc_mac_hmac_sha256_input1(void **state) {
+    ECC_UNUSED(state);
+
+    byte_t key[20];
+    ecc_hex2bin(key, "0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b", 40);
+
+    byte_t data[8];
+    ecc_hex2bin(data, "4869205468657265", 16);
+
+    byte_t digest[ecc_mac_hmac_sha256_HASHSIZE];
+    ecc_mac_hmac_sha256(digest, data, sizeof data, key, sizeof key);
+
+    char digest_hex[2 * ecc_mac_hmac_sha256_HASHSIZE + 1];
+    ecc_bin2hex(digest_hex, digest, sizeof digest);
+    assert_string_equal(digest_hex, "b0344c61d8db38535ca8afceaf0bf12b881dc200c9833da726e9376c2e32cff7");
+}
+
+// https://datatracker.ietf.org/doc/html/rfc4231#section-4.3
+static void test_ecc_mac_hmac_sha256_input2(void **state) {
+    ECC_UNUSED(state);
+
+    byte_t key[4];
+    ecc_hex2bin(key, "4a656665", 8);
+
+    byte_t data[28];
+    ecc_hex2bin(data, "7768617420646f2079612077616e7420666f72206e6f7468696e673f", 56);
+
+    byte_t digest[ecc_mac_hmac_sha256_HASHSIZE];
+    ecc_mac_hmac_sha256(digest, data, sizeof data, key, sizeof key);
+
+    char digest_hex[2 * ecc_mac_hmac_sha256_HASHSIZE + 1];
+    ecc_bin2hex(digest_hex, digest, sizeof digest);
+    assert_string_equal(digest_hex, "5bdcc146bf60754e6a042426089575c75a003f089d2739839dec58b964ec3843");
+}
+
 int main(void) {
     const struct CMUnitTest tests[] = {
         cmocka_unit_test(test_ecc_mac_hmac_sha2),
+        cmocka_unit_test(test_ecc_mac_hmac_sha256_input1),
+        cmocka_unit_test(test_ecc_mac_hmac_sha256_input2),
     };
 
     return cmocka_run_group_tests(tests, NULL, NULL);

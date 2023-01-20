@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021, Alden Torres
+ * Copyright (c) 2021-2023, Alden Torres
  *
  * Licensed under the terms of the MIT license.
  * Copy of the license at https://opensource.org/licenses/MIT
@@ -33,9 +33,9 @@ describe("OPRF(ristretto255, SHA-512)", () => {
         const evaluationElement = await oprf_ristretto255_sha512_Evaluate(skSm, blindedElement, info);
         const output = await oprf_ristretto255_sha512_Finalize(input, blind, evaluationElement, info);
 
-        assert.strictEqual(bin2hex(blindedElement), "744441a5d3ee12571a84d34812443eba2b6521a47265ad655f01e759b3dd7d35");
-        assert.strictEqual(bin2hex(evaluationElement), "4254c503ee2013262473eec926b109b018d699b8dd954ee878bc17b159696353");
-        assert.strictEqual(bin2hex(output), "9aef8983b729baacb7ecf1be98d1276ca29e7d62dbf39bc595be018b66b199119f18579a9ae96a39d7d506c9e00f75b433a870d76ba755a3e7196911fff89ff3");
+        assert.strictEqual(bin2hex(blindedElement), "b617363ffc96d9dd2309d3f8bd7345b5226eb9c863912cd86b8f34cf754c1b4e");
+        assert.strictEqual(bin2hex(evaluationElement), "2a0c57e1dc889c729496670779647c56026fb0c1ce314c14f95726ff228c5461");
+        assert.strictEqual(bin2hex(output), "be060dfe78216ed06ab2b716896f9215da964ebeec2ac23cbb4c158e8b9cbbea968a8061b23c04f350750ad1e5102c60593d679b6dcb22badb68f396fb7f6cc0");
     });
 
     // https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-voprf-08#appendix-A.1.1.2
@@ -48,8 +48,8 @@ describe("OPRF(ristretto255, SHA-512)", () => {
         const evaluationElement = await oprf_ristretto255_sha512_Evaluate(skSm, blindedElement, info);
         const output = await oprf_ristretto255_sha512_Finalize(input, blind, evaluationElement, info);
 
-        assert.strictEqual(bin2hex(blindedElement), "f4eeea4e1bcb2ec818ee2d5c1fcec56c24064a9ff4bea5b3dd6877800fc28e4d");
-        assert.strictEqual(bin2hex(evaluationElement), "185dae43b6209dacbc41a62fd4889700d11eeeff4e83ffbc72d54daee7e25659");
-        assert.strictEqual(bin2hex(output), "f556e2d83e576b4edc890472572d08f0d90d2ecc52a73b35b2a8416a72ff676549e3a83054fdf4fd16fe03e03bee7bb32cbd83c7ca212ea0d03b8996c2c268b2");
+        assert.strictEqual(bin2hex(blindedElement), "927e71dbbceecf21cd0631fcb7f15ca0143b9a15e587f84a35b8bd20bf2e0767");
+        assert.strictEqual(bin2hex(evaluationElement), "505f2cd525a0ded45d41b9ae58e835beb0f25afcdf4de947ca5c5e4a73197910");
+        assert.strictEqual(bin2hex(output), "4e45a1b18f93d220b2570fe9e4a49ef4ec108c8c43c15c26bd743d994a1d68eaf27e9fc05651ddfa36186022d22a036cca03ad27daca359f4a3d044d32b26455");
     });
 });
