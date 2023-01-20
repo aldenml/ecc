@@ -282,5 +282,5 @@ To build c shared and static libraries and jvm bindings:
 ```
 To build javascript bindings:
 ```shell
-./build-c.sh
+./build-js.sh
 ```
