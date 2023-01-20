@@ -64,7 +64,7 @@ set(BLST_DEPS_DIR ${CMAKE_CURRENT_SOURCE_DIR}/deps/blst)
 include(ExternalProject)
 if(EMSCRIPTEN)
     ExternalProject_Add(
-        libsodium-external
+        libsodium_external
         SOURCE_DIR ${LIBSODIUM_DEPS_DIR}
         CONFIGURE_COMMAND emconfigure ${LIBSODIUM_DEPS_DIR}/configure
             "CFLAGS=-DSODIUM_STATIC=1 -Oz -Wno-cpp"
@@ -79,7 +79,7 @@ if(EMSCRIPTEN)
         BUILD_IN_SOURCE 1
     )
     ExternalProject_Add(
-        blst-external
+        blst_external
         SOURCE_DIR ${BLST_DEPS_DIR}
         CONFIGURE_COMMAND ""
         BUILD_COMMAND AR=emar ./build.sh CC=emcc -D__BLST_PORTABLE__ -Oz
@@ -88,7 +88,7 @@ if(EMSCRIPTEN)
     )
 elseif(NOT WIN32)
     ExternalProject_Add(
-        libsodium-external
+        libsodium_external
         SOURCE_DIR ${LIBSODIUM_DEPS_DIR}
         CONFIGURE_COMMAND ${LIBSODIUM_DEPS_DIR}/configure
             "CFLAGS=-DSODIUM_STATIC=1 -O2 -Wno-cpp"
@@ -102,7 +102,7 @@ elseif(NOT WIN32)
         BUILD_BYPRODUCTS ${LIBSODIUM_BUILD_DIR}/lib/libsodium.a
     )
     ExternalProject_Add(
-        blst-external
+        blst_external
         SOURCE_DIR ${BLST_DEPS_DIR}
         CONFIGURE_COMMAND ""
         BUILD_COMMAND ./build.sh -O2
@@ -116,7 +116,7 @@ endif()
 if(NOT WIN32)
     # setup build configure for libsodium
     ExternalProject_Add_Step(
-        libsodium-external autogen
+        libsodium_external autogen
         COMMAND ./autogen.sh -s
         WORKING_DIRECTORY ${LIBSODIUM_DEPS_DIR}
         COMMENT "Running autogen.sh tool"
@@ -128,7 +128,7 @@ endif()
 file(MAKE_DIRECTORY ${LIBSODIUM_BUILD_DIR}/include)
 add_library(libsodium STATIC IMPORTED GLOBAL)
 if(NOT WIN32)
-    add_dependencies(libsodium libsodium-external)
+    add_dependencies(libsodium libsodium_external)
 endif()
 set_target_properties(libsodium PROPERTIES
     INTERFACE_INCLUDE_DIRECTORIES ${LIBSODIUM_BUILD_DIR}/include
@@ -138,7 +138,7 @@ set_target_properties(libsodium PROPERTIES
 # setup blst library
 add_library(blst STATIC IMPORTED GLOBAL)
 if(NOT WIN32)
-    add_dependencies(blst blst-external)
+    add_dependencies(blst blst_external)
 endif()
 set_target_properties(blst PROPERTIES
     INTERFACE_INCLUDE_DIRECTORIES ${BLST_DEPS_DIR}/bindings
@@ -185,7 +185,6 @@ target_include_directories(ecc PUBLIC
 if(NOT DEFINED EMSCRIPTEN)
     # ecc static
     add_library(ecc_static STATIC ${ecc_src_files})
-    set_target_properties(ecc_static PROPERTIES OUTPUT_NAME "ecc")
 
     target_compile_features(ecc_static PUBLIC c_std_11)
     target_compile_options(ecc_static PRIVATE -O2)

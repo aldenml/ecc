@@ -678,10 +678,10 @@ def gen_code(headers, ignore):
         f.write(gen_jni_c(headers, ignore))
     with open("bindings/jvm/src/main/java/org/ssohub/crypto/ecc/libecc.java", "w") as f:
         f.write(gen_jni_java(headers, ignore))
-    # with open("bindings/python/cffi_build.py", "w") as f:
-    #     f.write(gen_cffi_python(headers, ignore))
-    # with open("bindings/python/src/libecc/libecc.py", "w") as f:
-    #     f.write(gen_python(headers, ignore))
+    with open("bindings/python/cffi_build.py", "w") as f:
+        f.write(gen_cffi_python(headers, ignore))
+    with open("bindings/python/src/libecc/libecc.py", "w") as f:
+        f.write(gen_python(headers, ignore))
 
 
 gen_code(ecc_headers, ecc_ignore)
