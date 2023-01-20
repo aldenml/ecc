@@ -373,14 +373,6 @@ const ecc_mac_hmac_sha256_HASHSIZE = 32;
  */
 Module.ecc_mac_hmac_sha256_HASHSIZE = ecc_mac_hmac_sha256_HASHSIZE;
 
-const ecc_mac_hmac_sha256_KEYSIZE = 32;
-/**
- * Size of a HMAC-SHA-256 key.
- *
- * @type {number}
- */
-Module.ecc_mac_hmac_sha256_KEYSIZE = ecc_mac_hmac_sha256_KEYSIZE;
-
 const ecc_mac_hmac_sha512_HASHSIZE = 64;
 /**
  * Size of the HMAC-SHA-512 digest.
@@ -388,14 +380,6 @@ const ecc_mac_hmac_sha512_HASHSIZE = 64;
  * @type {number}
  */
 Module.ecc_mac_hmac_sha512_HASHSIZE = ecc_mac_hmac_sha512_HASHSIZE;
-
-const ecc_mac_hmac_sha512_KEYSIZE = 64;
-/**
- * Size of a HMAC-SHA-512 key.
- *
- * @type {number}
- */
-Module.ecc_mac_hmac_sha512_KEYSIZE = ecc_mac_hmac_sha512_KEYSIZE;
 
 /**
  * Computes the HMAC-SHA-256 of the input stream.
@@ -406,27 +390,30 @@ Module.ecc_mac_hmac_sha512_KEYSIZE = ecc_mac_hmac_sha512_KEYSIZE;
  * @param {Uint8Array} digest (output) the HMAC-SHA-256 of the input, size:ecc_mac_hmac_sha256_HASHSIZE
  * @param {Uint8Array} text the input message, size:text_len
  * @param {number} text_len the length of `input`
- * @param {Uint8Array} key authentication key, size:ecc_mac_hmac_sha256_KEYSIZE
+ * @param {Uint8Array} key authentication key, size:key_len
+ * @param {number} key_len the length of `key`
  */
 Module.ecc_mac_hmac_sha256 = (
     digest,
     text,
     text_len,
     key,
+    key_len,
 ) => {
     const ptr_digest = mput(digest, ecc_mac_hmac_sha256_HASHSIZE);
     const ptr_text = mput(text, text_len);
-    const ptr_key = mput(key, ecc_mac_hmac_sha256_KEYSIZE);
+    const ptr_key = mput(key, key_len);
     _ecc_mac_hmac_sha256(
         ptr_digest,
         ptr_text,
         text_len,
         ptr_key,
+        key_len,
     );
     mget(digest, ptr_digest, ecc_mac_hmac_sha256_HASHSIZE);
     mfree(ptr_digest, ecc_mac_hmac_sha256_HASHSIZE);
     mfree(ptr_text, text_len);
-    mfree(ptr_key, ecc_mac_hmac_sha256_KEYSIZE);
+    mfree(ptr_key, key_len);
 }
 
 /**
@@ -438,27 +425,30 @@ Module.ecc_mac_hmac_sha256 = (
  * @param {Uint8Array} digest (output) the HMAC-SHA-512 of the input, size:ecc_mac_hmac_sha512_HASHSIZE
  * @param {Uint8Array} text the input message, size:text_len
  * @param {number} text_len the length of `input`
- * @param {Uint8Array} key authentication key, size:ecc_mac_hmac_sha512_KEYSIZE
+ * @param {Uint8Array} key authentication key, size:key_len
+ * @param {number} key_len the length of `key`
  */
 Module.ecc_mac_hmac_sha512 = (
     digest,
     text,
     text_len,
     key,
+    key_len,
 ) => {
     const ptr_digest = mput(digest, ecc_mac_hmac_sha512_HASHSIZE);
     const ptr_text = mput(text, text_len);
-    const ptr_key = mput(key, ecc_mac_hmac_sha512_KEYSIZE);
+    const ptr_key = mput(key, key_len);
     _ecc_mac_hmac_sha512(
         ptr_digest,
         ptr_text,
         text_len,
         ptr_key,
+        key_len,
     );
     mget(digest, ptr_digest, ecc_mac_hmac_sha512_HASHSIZE);
     mfree(ptr_digest, ecc_mac_hmac_sha512_HASHSIZE);
     mfree(ptr_text, text_len);
-    mfree(ptr_key, ecc_mac_hmac_sha512_KEYSIZE);
+    mfree(ptr_key, key_len);
 }
 
 // kdf
@@ -627,6 +617,7 @@ Module.ecc_kdf_hkdf_sha512_expand = (
  * @param {number} block_size block size
  * @param {number} parallelization parallelization
  * @param {number} len intended output length
+ * @return {number} 0 on success and -1 if the computation didn't complete
  */
 Module.ecc_kdf_scrypt = (
     out,
@@ -766,6 +757,22 @@ Module.ecc_ed25519_sub = (
     mfree(ptr_p, ecc_ed25519_ELEMENTSIZE);
     mfree(ptr_q, ecc_ed25519_ELEMENTSIZE);
     return fun_ret;
+}
+
+/**
+ * Main group base point (x, 4/5), generator of the prime group.
+ *
+ * @param {Uint8Array} g (output) size:ecc_ed25519_ELEMENTSIZE
+ */
+Module.ecc_ed25519_generator = (
+    g,
+) => {
+    const ptr_g = mput(g, ecc_ed25519_ELEMENTSIZE);
+    _ecc_ed25519_generator(
+        ptr_g,
+    );
+    mget(g, ptr_g, ecc_ed25519_ELEMENTSIZE);
+    mfree(ptr_g, ecc_ed25519_ELEMENTSIZE);
 }
 
 /**
@@ -999,12 +1006,18 @@ Module.ecc_ed25519_scalar_reduce = (
 }
 
 /**
- * Multiplies a point p by a valid scalar n (without clamping) and puts
+ * Multiplies a point p by a valid scalar n (clamped) and puts
  * the Y coordinate of the resulting point into q.
  * 
  * This function returns 0 on success, or -1 if n is 0 or if p is not
  * on the curve, not on the main subgroup, is a point of small order,
  * or is not provided in canonical form.
+ * 
+ * Note that n is "clamped" (the 3 low bits are cleared to make it a
+ * multiple of the cofactor, bit 254 is set and bit 255 is cleared to
+ * respect the original design). This prevents attacks using small
+ * subgroups. If you want to implement protocols that involve blinding
+ * operations, use ristretto255.
  *
  * @param {Uint8Array} q (output) the result, size:ecc_ed25519_ELEMENTSIZE
  * @param {Uint8Array} n the valid input scalar, size:ecc_ed25519_SCALARSIZE
@@ -1032,8 +1045,14 @@ Module.ecc_ed25519_scalarmult = (
 }
 
 /**
- * Multiplies the base point (x, 4/5) by a scalar n (without clamping) and puts
+ * Multiplies the base point (x, 4/5) by a scalar n (clamped) and puts
  * the Y coordinate of the resulting point into q.
+ * 
+ * Note that n is "clamped" (the 3 low bits are cleared to make it a
+ * multiple of the cofactor, bit 254 is set and bit 255 is cleared to
+ * respect the original design). This prevents attacks using small
+ * subgroups. If you want to implement protocols that involve blinding
+ * operations, use ristretto255.
  *
  * @param {Uint8Array} q (output) the result, size:ecc_ed25519_ELEMENTSIZE
  * @param {Uint8Array} n the valid input scalar, size:ecc_ed25519_SCALARSIZE
@@ -1979,7 +1998,7 @@ Module.ecc_bls12_381_pairing_final_verify = (
 
 // h2c
 
-const ecc_h2c_expand_message_xmd_sha256_MAXSIZE = 256;
+const ecc_h2c_expand_message_xmd_sha256_MAXSIZE = 8160;
 /**
  * *
  *
@@ -1987,7 +2006,7 @@ const ecc_h2c_expand_message_xmd_sha256_MAXSIZE = 256;
  */
 Module.ecc_h2c_expand_message_xmd_sha256_MAXSIZE = ecc_h2c_expand_message_xmd_sha256_MAXSIZE;
 
-const ecc_h2c_expand_message_xmd_sha256_DSTMAXSIZE = 256;
+const ecc_h2c_expand_message_xmd_sha256_DSTMAXSIZE = 255;
 /**
  * *
  *
@@ -1995,7 +2014,7 @@ const ecc_h2c_expand_message_xmd_sha256_DSTMAXSIZE = 256;
  */
 Module.ecc_h2c_expand_message_xmd_sha256_DSTMAXSIZE = ecc_h2c_expand_message_xmd_sha256_DSTMAXSIZE;
 
-const ecc_h2c_expand_message_xmd_sha512_MAXSIZE = 256;
+const ecc_h2c_expand_message_xmd_sha512_MAXSIZE = 16320;
 /**
  * *
  *
@@ -2003,7 +2022,7 @@ const ecc_h2c_expand_message_xmd_sha512_MAXSIZE = 256;
  */
 Module.ecc_h2c_expand_message_xmd_sha512_MAXSIZE = ecc_h2c_expand_message_xmd_sha512_MAXSIZE;
 
-const ecc_h2c_expand_message_xmd_sha512_DSTMAXSIZE = 256;
+const ecc_h2c_expand_message_xmd_sha512_DSTMAXSIZE = 255;
 /**
  * *
  *
@@ -2013,19 +2032,18 @@ Module.ecc_h2c_expand_message_xmd_sha512_DSTMAXSIZE = ecc_h2c_expand_message_xmd
 
 /**
  * Produces a uniformly random byte string using SHA-256.
- * 
- * In order to make this method to use only the stack, len should be
- * <
- * = 256.
- * 
- * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-hash-to-curve-11#section-5.4.1
  *
  * @param {Uint8Array} out (output) a byte string, should be at least of size `len`, size:len
  * @param {Uint8Array} msg a byte string, size:msg_len
  * @param {number} msg_len the length of `msg`
  * @param {Uint8Array} dst a byte string of at most 255 bytes, size:dst_len
- * @param {number} dst_len the length of `dst`, should be less or equal to 256
- * @param {number} len the length of the requested output in bytes, should be less or equal to 256
+ * @param {number} dst_len the length of `dst`, should be
+ * <
+ * = ecc_h2c_expand_message_xmd_sha256_DSTMAXSIZE
+ * @param {number} len the length of the requested output in bytes, should be
+ * <
+ * = ecc_h2c_expand_message_xmd_sha256_MAXSIZE
+ * @return {number} 0 on success or -1 if arguments are out of range
  */
 Module.ecc_h2c_expand_message_xmd_sha256 = (
     out,
@@ -2038,7 +2056,7 @@ Module.ecc_h2c_expand_message_xmd_sha256 = (
     const ptr_out = mput(out, len);
     const ptr_msg = mput(msg, msg_len);
     const ptr_dst = mput(dst, dst_len);
-    _ecc_h2c_expand_message_xmd_sha256(
+    const fun_ret = _ecc_h2c_expand_message_xmd_sha256(
         ptr_out,
         ptr_msg,
         msg_len,
@@ -2050,16 +2068,11 @@ Module.ecc_h2c_expand_message_xmd_sha256 = (
     mfree(ptr_out, len);
     mfree(ptr_msg, msg_len);
     mfree(ptr_dst, dst_len);
+    return fun_ret;
 }
 
 /**
  * Produces a uniformly random byte string using SHA-512.
- * 
- * In order to make this method to use only the stack, len should be
- * <
- * = 256.
- * 
- * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-hash-to-curve-11#section-5.4.1
  *
  * @param {Uint8Array} out (output) a byte string, should be at least of size `len`, size:len
  * @param {Uint8Array} msg a byte string, size:msg_len
@@ -2067,10 +2080,11 @@ Module.ecc_h2c_expand_message_xmd_sha256 = (
  * @param {Uint8Array} dst a byte string of at most 255 bytes, size:dst_len
  * @param {number} dst_len the length of `dst`, should be
  * <
- * = 256
+ * = ecc_h2c_expand_message_xmd_sha512_DSTMAXSIZE
  * @param {number} len the length of the requested output in bytes, should be
  * <
- * = 256
+ * = ecc_h2c_expand_message_xmd_sha512_MAXSIZE
+ * @return {number} 0 on success or -1 if arguments are out of range
  */
 Module.ecc_h2c_expand_message_xmd_sha512 = (
     out,
@@ -2083,7 +2097,7 @@ Module.ecc_h2c_expand_message_xmd_sha512 = (
     const ptr_out = mput(out, len);
     const ptr_msg = mput(msg, msg_len);
     const ptr_dst = mput(dst, dst_len);
-    _ecc_h2c_expand_message_xmd_sha512(
+    const fun_ret = _ecc_h2c_expand_message_xmd_sha512(
         ptr_out,
         ptr_msg,
         msg_len,
@@ -2095,54 +2109,55 @@ Module.ecc_h2c_expand_message_xmd_sha512 = (
     mfree(ptr_out, len);
     mfree(ptr_msg, msg_len);
     mfree(ptr_dst, dst_len);
+    return fun_ret;
 }
 
-// oprf
+// voprf
 
-const ecc_oprf_ristretto255_sha512_ELEMENTSIZE = 32;
+const ecc_voprf_ristretto255_sha512_ELEMENTSIZE = 32;
 /**
  * Size of a serialized group element, since this is the ristretto255
  * curve the size is 32 bytes.
  *
  * @type {number}
  */
-Module.ecc_oprf_ristretto255_sha512_ELEMENTSIZE = ecc_oprf_ristretto255_sha512_ELEMENTSIZE;
+Module.ecc_voprf_ristretto255_sha512_ELEMENTSIZE = ecc_voprf_ristretto255_sha512_ELEMENTSIZE;
 
-const ecc_oprf_ristretto255_sha512_SCALARSIZE = 32;
+const ecc_voprf_ristretto255_sha512_SCALARSIZE = 32;
 /**
  * Size of a serialized scalar, since this is the ristretto255
  * curve the size is 32 bytes.
  *
  * @type {number}
  */
-Module.ecc_oprf_ristretto255_sha512_SCALARSIZE = ecc_oprf_ristretto255_sha512_SCALARSIZE;
+Module.ecc_voprf_ristretto255_sha512_SCALARSIZE = ecc_voprf_ristretto255_sha512_SCALARSIZE;
 
-const ecc_oprf_ristretto255_sha512_PROOFSIZE = 64;
+const ecc_voprf_ristretto255_sha512_PROOFSIZE = 64;
 /**
  * Size of a proof. Proof is a sequence of two scalars.
  *
  * @type {number}
  */
-Module.ecc_oprf_ristretto255_sha512_PROOFSIZE = ecc_oprf_ristretto255_sha512_PROOFSIZE;
+Module.ecc_voprf_ristretto255_sha512_PROOFSIZE = ecc_voprf_ristretto255_sha512_PROOFSIZE;
 
-const ecc_oprf_ristretto255_sha512_Nh = 64;
+const ecc_voprf_ristretto255_sha512_Nh = 64;
 /**
  * Size of the protocol output in the `Finalize` operations, since
  * this is ristretto255 with SHA-512, the size is 64 bytes.
  *
  * @type {number}
  */
-Module.ecc_oprf_ristretto255_sha512_Nh = ecc_oprf_ristretto255_sha512_Nh;
+Module.ecc_voprf_ristretto255_sha512_Nh = ecc_voprf_ristretto255_sha512_Nh;
 
-const ecc_oprf_ristretto255_sha512_MODE_BASE = 0;
+const ecc_voprf_ristretto255_sha512_MODE_OPRF = 0;
 /**
  * A client and server interact to compute output = F(skS, input, info).
  *
  * @type {number}
  */
-Module.ecc_oprf_ristretto255_sha512_MODE_BASE = ecc_oprf_ristretto255_sha512_MODE_BASE;
+Module.ecc_voprf_ristretto255_sha512_MODE_OPRF = ecc_voprf_ristretto255_sha512_MODE_OPRF;
 
-const ecc_oprf_ristretto255_sha512_MODE_VERIFIABLE = 1;
+const ecc_voprf_ristretto255_sha512_MODE_VOPRF = 1;
 /**
  * A client and server interact to compute output = F(skS, input, info) and
  * the client also receives proof that the server used skS in computing
@@ -2150,565 +2165,581 @@ const ecc_oprf_ristretto255_sha512_MODE_VERIFIABLE = 1;
  *
  * @type {number}
  */
-Module.ecc_oprf_ristretto255_sha512_MODE_VERIFIABLE = ecc_oprf_ristretto255_sha512_MODE_VERIFIABLE;
+Module.ecc_voprf_ristretto255_sha512_MODE_VOPRF = ecc_voprf_ristretto255_sha512_MODE_VOPRF;
+
+const ecc_voprf_ristretto255_sha512_MODE_POPRF = 2;
+/**
+ * A client and server interact to compute output = F(skS, input, info).
+ * Allows clients and servers to provide public input to the PRF computation.
+ *
+ * @type {number}
+ */
+Module.ecc_voprf_ristretto255_sha512_MODE_POPRF = ecc_voprf_ristretto255_sha512_MODE_POPRF;
+
+const ecc_voprf_ristretto255_sha512_MAXINFOSIZE = 2000;
+/**
+ * *
+ *
+ * @type {number}
+ */
+Module.ecc_voprf_ristretto255_sha512_MAXINFOSIZE = ecc_voprf_ristretto255_sha512_MAXINFOSIZE;
 
 /**
- * Evaluates serialized representations of blinded group elements from the
- * client as inputs.
  * 
- * This operation could fail if internally, there is an attempt to invert
- * the `0` scalar.
- * 
- * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-voprf-08#section-3.3.1.1
  *
- * @param {Uint8Array} evaluatedElement (output) evaluated element, size:ecc_oprf_ristretto255_sha512_ELEMENTSIZE
- * @param {Uint8Array} skS private key, size:ecc_oprf_ristretto255_sha512_SCALARSIZE
- * @param {Uint8Array} blindedElement blinded element, size:ecc_oprf_ristretto255_sha512_ELEMENTSIZE
- * @param {Uint8Array} info opaque byte string no larger than 200 bytes, size:infoLen
- * @param {number} infoLen the size of `info`
- * @return {number} 0 on success, or -1 if an error
+ * @param {Uint8Array} proof (output) size:ecc_voprf_ristretto255_sha512_PROOFSIZE
+ * @param {Uint8Array} k size:ecc_voprf_ristretto255_sha512_SCALARSIZE
+ * @param {Uint8Array} A size:ecc_voprf_ristretto255_sha512_ELEMENTSIZE
+ * @param {Uint8Array} B size:ecc_voprf_ristretto255_sha512_ELEMENTSIZE
+ * @param {Uint8Array} C size:m*ecc_voprf_ristretto255_sha512_ELEMENTSIZE
+ * @param {Uint8Array} D size:m*ecc_voprf_ristretto255_sha512_ELEMENTSIZE
+ * @param {number} m the size of the `C` and `D` arrays
+ * @param {number} mode the protocol mode VOPRF or POPRF
+ * @param {Uint8Array} r size:ecc_voprf_ristretto255_sha512_SCALARSIZE
  */
-Module.ecc_oprf_ristretto255_sha512_Evaluate = (
-    evaluatedElement,
-    skS,
-    blindedElement,
-    info,
-    infoLen,
-) => {
-    const ptr_evaluatedElement = mput(evaluatedElement, ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
-    const ptr_skS = mput(skS, ecc_oprf_ristretto255_sha512_SCALARSIZE);
-    const ptr_blindedElement = mput(blindedElement, ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
-    const ptr_info = mput(info, infoLen);
-    const fun_ret = _ecc_oprf_ristretto255_sha512_Evaluate(
-        ptr_evaluatedElement,
-        ptr_skS,
-        ptr_blindedElement,
-        ptr_info,
-        infoLen,
-    );
-    mget(evaluatedElement, ptr_evaluatedElement, ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
-    mfree(ptr_evaluatedElement, ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
-    mfree(ptr_skS, ecc_oprf_ristretto255_sha512_SCALARSIZE);
-    mfree(ptr_blindedElement, ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
-    mfree(ptr_info, infoLen);
-    return fun_ret;
-}
-
-/**
- * Evaluates serialized representations of blinded group elements from the
- * client as inputs and produces a proof that `skS` was used in computing
- * the result.
- * 
- * This operation could fail if internally, there is an attempt to invert
- * the `0` scalar.
- * 
- * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-voprf-08#section-3.3.2.1
- *
- * @param {Uint8Array} evaluatedElement (output) evaluated element, size:ecc_oprf_ristretto255_sha512_ELEMENTSIZE
- * @param {Uint8Array} proof (output) size:ecc_oprf_ristretto255_sha512_PROOFSIZE
- * @param {Uint8Array} skS private key, size:ecc_oprf_ristretto255_sha512_SCALARSIZE
- * @param {Uint8Array} blindedElement blinded element, size:ecc_oprf_ristretto255_sha512_ELEMENTSIZE
- * @param {Uint8Array} info opaque byte string no larger than 200 bytes, size:infoLen
- * @param {number} infoLen the size of `info`
- * @param {Uint8Array} r size:ecc_oprf_ristretto255_sha512_SCALARSIZE
- * @return {number} 0 on success, or -1 if an error
- */
-Module.ecc_oprf_ristretto255_sha512_VerifiableEvaluateWithScalar = (
-    evaluatedElement,
-    proof,
-    skS,
-    blindedElement,
-    info,
-    infoLen,
-    r,
-) => {
-    const ptr_evaluatedElement = mput(evaluatedElement, ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
-    const ptr_proof = mput(proof, ecc_oprf_ristretto255_sha512_PROOFSIZE);
-    const ptr_skS = mput(skS, ecc_oprf_ristretto255_sha512_SCALARSIZE);
-    const ptr_blindedElement = mput(blindedElement, ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
-    const ptr_info = mput(info, infoLen);
-    const ptr_r = mput(r, ecc_oprf_ristretto255_sha512_SCALARSIZE);
-    const fun_ret = _ecc_oprf_ristretto255_sha512_VerifiableEvaluateWithScalar(
-        ptr_evaluatedElement,
-        ptr_proof,
-        ptr_skS,
-        ptr_blindedElement,
-        ptr_info,
-        infoLen,
-        ptr_r,
-    );
-    mget(evaluatedElement, ptr_evaluatedElement, ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
-    mget(proof, ptr_proof, ecc_oprf_ristretto255_sha512_PROOFSIZE);
-    mfree(ptr_evaluatedElement, ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
-    mfree(ptr_proof, ecc_oprf_ristretto255_sha512_PROOFSIZE);
-    mfree(ptr_skS, ecc_oprf_ristretto255_sha512_SCALARSIZE);
-    mfree(ptr_blindedElement, ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
-    mfree(ptr_info, infoLen);
-    mfree(ptr_r, ecc_oprf_ristretto255_sha512_SCALARSIZE);
-    return fun_ret;
-}
-
-/**
- * Evaluates serialized representations of blinded group elements from the
- * client as inputs and produces a proof that `skS` was used in computing
- * the result.
- * 
- * This operation could fail if internally, there is an attempt to invert
- * the `0` scalar.
- * 
- * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-voprf-08#section-3.3.2.1
- *
- * @param {Uint8Array} evaluatedElement (output) evaluated element, size:ecc_oprf_ristretto255_sha512_ELEMENTSIZE
- * @param {Uint8Array} proof (output) size:ecc_oprf_ristretto255_sha512_PROOFSIZE
- * @param {Uint8Array} skS private key, size:ecc_oprf_ristretto255_sha512_SCALARSIZE
- * @param {Uint8Array} blindedElement blinded element, size:ecc_oprf_ristretto255_sha512_ELEMENTSIZE
- * @param {Uint8Array} info opaque byte string no larger than 200 bytes, size:infoLen
- * @param {number} infoLen the size of `info`
- * @return {number} 0 on success, or -1 if an error
- */
-Module.ecc_oprf_ristretto255_sha512_VerifiableEvaluate = (
-    evaluatedElement,
-    proof,
-    skS,
-    blindedElement,
-    info,
-    infoLen,
-) => {
-    const ptr_evaluatedElement = mput(evaluatedElement, ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
-    const ptr_proof = mput(proof, ecc_oprf_ristretto255_sha512_PROOFSIZE);
-    const ptr_skS = mput(skS, ecc_oprf_ristretto255_sha512_SCALARSIZE);
-    const ptr_blindedElement = mput(blindedElement, ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
-    const ptr_info = mput(info, infoLen);
-    const fun_ret = _ecc_oprf_ristretto255_sha512_VerifiableEvaluate(
-        ptr_evaluatedElement,
-        ptr_proof,
-        ptr_skS,
-        ptr_blindedElement,
-        ptr_info,
-        infoLen,
-    );
-    mget(evaluatedElement, ptr_evaluatedElement, ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
-    mget(proof, ptr_proof, ecc_oprf_ristretto255_sha512_PROOFSIZE);
-    mfree(ptr_evaluatedElement, ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
-    mfree(ptr_proof, ecc_oprf_ristretto255_sha512_PROOFSIZE);
-    mfree(ptr_skS, ecc_oprf_ristretto255_sha512_SCALARSIZE);
-    mfree(ptr_blindedElement, ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
-    mfree(ptr_info, infoLen);
-    return fun_ret;
-}
-
-/**
- * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-voprf-08#section-3.3.2.2
- *
- * @param {Uint8Array} proof (output) size:ecc_oprf_ristretto255_sha512_PROOFSIZE
- * @param {Uint8Array} k size:ecc_oprf_ristretto255_sha512_SCALARSIZE
- * @param {Uint8Array} A size:ecc_oprf_ristretto255_sha512_ELEMENTSIZE
- * @param {Uint8Array} B size:ecc_oprf_ristretto255_sha512_ELEMENTSIZE
- * @param {Uint8Array} C size:ecc_oprf_ristretto255_sha512_ELEMENTSIZE
- * @param {Uint8Array} D size:ecc_oprf_ristretto255_sha512_ELEMENTSIZE
- * @param {Uint8Array} r size:ecc_oprf_ristretto255_sha512_SCALARSIZE
- */
-Module.ecc_oprf_ristretto255_sha512_GenerateProofWithScalar = (
+Module.ecc_voprf_ristretto255_sha512_GenerateProofWithScalar = (
     proof,
     k,
     A,
     B,
     C,
     D,
+    m,
+    mode,
     r,
 ) => {
-    const ptr_proof = mput(proof, ecc_oprf_ristretto255_sha512_PROOFSIZE);
-    const ptr_k = mput(k, ecc_oprf_ristretto255_sha512_SCALARSIZE);
-    const ptr_A = mput(A, ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
-    const ptr_B = mput(B, ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
-    const ptr_C = mput(C, ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
-    const ptr_D = mput(D, ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
-    const ptr_r = mput(r, ecc_oprf_ristretto255_sha512_SCALARSIZE);
-    _ecc_oprf_ristretto255_sha512_GenerateProofWithScalar(
+    const ptr_proof = mput(proof, ecc_voprf_ristretto255_sha512_PROOFSIZE);
+    const ptr_k = mput(k, ecc_voprf_ristretto255_sha512_SCALARSIZE);
+    const ptr_A = mput(A, ecc_voprf_ristretto255_sha512_ELEMENTSIZE);
+    const ptr_B = mput(B, ecc_voprf_ristretto255_sha512_ELEMENTSIZE);
+    const ptr_C = mput(C, m*ecc_voprf_ristretto255_sha512_ELEMENTSIZE);
+    const ptr_D = mput(D, m*ecc_voprf_ristretto255_sha512_ELEMENTSIZE);
+    const ptr_r = mput(r, ecc_voprf_ristretto255_sha512_SCALARSIZE);
+    _ecc_voprf_ristretto255_sha512_GenerateProofWithScalar(
         ptr_proof,
         ptr_k,
         ptr_A,
         ptr_B,
         ptr_C,
         ptr_D,
+        m,
+        mode,
         ptr_r,
     );
-    mget(proof, ptr_proof, ecc_oprf_ristretto255_sha512_PROOFSIZE);
-    mfree(ptr_proof, ecc_oprf_ristretto255_sha512_PROOFSIZE);
-    mfree(ptr_k, ecc_oprf_ristretto255_sha512_SCALARSIZE);
-    mfree(ptr_A, ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
-    mfree(ptr_B, ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
-    mfree(ptr_C, ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
-    mfree(ptr_D, ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
-    mfree(ptr_r, ecc_oprf_ristretto255_sha512_SCALARSIZE);
+    mget(proof, ptr_proof, ecc_voprf_ristretto255_sha512_PROOFSIZE);
+    mfree(ptr_proof, ecc_voprf_ristretto255_sha512_PROOFSIZE);
+    mfree(ptr_k, ecc_voprf_ristretto255_sha512_SCALARSIZE);
+    mfree(ptr_A, ecc_voprf_ristretto255_sha512_ELEMENTSIZE);
+    mfree(ptr_B, ecc_voprf_ristretto255_sha512_ELEMENTSIZE);
+    mfree(ptr_C, m*ecc_voprf_ristretto255_sha512_ELEMENTSIZE);
+    mfree(ptr_D, m*ecc_voprf_ristretto255_sha512_ELEMENTSIZE);
+    mfree(ptr_r, ecc_voprf_ristretto255_sha512_SCALARSIZE);
 }
 
 /**
- * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-voprf-08#section-3.3.2.2
+ * 
  *
- * @param {Uint8Array} proof (output) size:ecc_oprf_ristretto255_sha512_PROOFSIZE
- * @param {Uint8Array} k size:ecc_oprf_ristretto255_sha512_SCALARSIZE
- * @param {Uint8Array} A size:ecc_oprf_ristretto255_sha512_ELEMENTSIZE
- * @param {Uint8Array} B size:ecc_oprf_ristretto255_sha512_ELEMENTSIZE
- * @param {Uint8Array} C size:ecc_oprf_ristretto255_sha512_ELEMENTSIZE
- * @param {Uint8Array} D size:ecc_oprf_ristretto255_sha512_ELEMENTSIZE
+ * @param {Uint8Array} proof (output) size:ecc_voprf_ristretto255_sha512_PROOFSIZE
+ * @param {Uint8Array} k size:ecc_voprf_ristretto255_sha512_SCALARSIZE
+ * @param {Uint8Array} A size:ecc_voprf_ristretto255_sha512_ELEMENTSIZE
+ * @param {Uint8Array} B size:ecc_voprf_ristretto255_sha512_ELEMENTSIZE
+ * @param {Uint8Array} C size:m*ecc_voprf_ristretto255_sha512_ELEMENTSIZE
+ * @param {Uint8Array} D size:m*ecc_voprf_ristretto255_sha512_ELEMENTSIZE
+ * @param {number} m the size of the `C` and `D` arrays
+ * @param {number} mode the protocol mode VOPRF or POPRF
  */
-Module.ecc_oprf_ristretto255_sha512_GenerateProof = (
+Module.ecc_voprf_ristretto255_sha512_GenerateProof = (
     proof,
     k,
     A,
     B,
     C,
     D,
+    m,
+    mode,
 ) => {
-    const ptr_proof = mput(proof, ecc_oprf_ristretto255_sha512_PROOFSIZE);
-    const ptr_k = mput(k, ecc_oprf_ristretto255_sha512_SCALARSIZE);
-    const ptr_A = mput(A, ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
-    const ptr_B = mput(B, ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
-    const ptr_C = mput(C, ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
-    const ptr_D = mput(D, ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
-    _ecc_oprf_ristretto255_sha512_GenerateProof(
+    const ptr_proof = mput(proof, ecc_voprf_ristretto255_sha512_PROOFSIZE);
+    const ptr_k = mput(k, ecc_voprf_ristretto255_sha512_SCALARSIZE);
+    const ptr_A = mput(A, ecc_voprf_ristretto255_sha512_ELEMENTSIZE);
+    const ptr_B = mput(B, ecc_voprf_ristretto255_sha512_ELEMENTSIZE);
+    const ptr_C = mput(C, m*ecc_voprf_ristretto255_sha512_ELEMENTSIZE);
+    const ptr_D = mput(D, m*ecc_voprf_ristretto255_sha512_ELEMENTSIZE);
+    _ecc_voprf_ristretto255_sha512_GenerateProof(
         ptr_proof,
         ptr_k,
         ptr_A,
         ptr_B,
         ptr_C,
         ptr_D,
-    );
-    mget(proof, ptr_proof, ecc_oprf_ristretto255_sha512_PROOFSIZE);
-    mfree(ptr_proof, ecc_oprf_ristretto255_sha512_PROOFSIZE);
-    mfree(ptr_k, ecc_oprf_ristretto255_sha512_SCALARSIZE);
-    mfree(ptr_A, ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
-    mfree(ptr_B, ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
-    mfree(ptr_C, ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
-    mfree(ptr_D, ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
-}
-
-/**
- * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-voprf-08#section-3.3.2.3
- *
- * @param {Uint8Array} M (output) size:ecc_oprf_ristretto255_sha512_ELEMENTSIZE
- * @param {Uint8Array} Z (output) size:ecc_oprf_ristretto255_sha512_ELEMENTSIZE
- * @param {Uint8Array} B size:ecc_oprf_ristretto255_sha512_ELEMENTSIZE
- * @param {Uint8Array} Cs size:m*ecc_oprf_ristretto255_sha512_ELEMENTSIZE
- * @param {Uint8Array} Ds size:m*ecc_oprf_ristretto255_sha512_ELEMENTSIZE
- * @param {number} m the size of the `Cs` and `Ds` arrays
- */
-Module.ecc_oprf_ristretto255_sha512_ComputeComposites = (
-    M,
-    Z,
-    B,
-    Cs,
-    Ds,
-    m,
-) => {
-    const ptr_M = mput(M, ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
-    const ptr_Z = mput(Z, ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
-    const ptr_B = mput(B, ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
-    const ptr_Cs = mput(Cs, m*ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
-    const ptr_Ds = mput(Ds, m*ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
-    _ecc_oprf_ristretto255_sha512_ComputeComposites(
-        ptr_M,
-        ptr_Z,
-        ptr_B,
-        ptr_Cs,
-        ptr_Ds,
         m,
+        mode,
     );
-    mget(M, ptr_M, ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
-    mget(Z, ptr_Z, ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
-    mfree(ptr_M, ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
-    mfree(ptr_Z, ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
-    mfree(ptr_B, ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
-    mfree(ptr_Cs, m*ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
-    mfree(ptr_Ds, m*ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
+    mget(proof, ptr_proof, ecc_voprf_ristretto255_sha512_PROOFSIZE);
+    mfree(ptr_proof, ecc_voprf_ristretto255_sha512_PROOFSIZE);
+    mfree(ptr_k, ecc_voprf_ristretto255_sha512_SCALARSIZE);
+    mfree(ptr_A, ecc_voprf_ristretto255_sha512_ELEMENTSIZE);
+    mfree(ptr_B, ecc_voprf_ristretto255_sha512_ELEMENTSIZE);
+    mfree(ptr_C, m*ecc_voprf_ristretto255_sha512_ELEMENTSIZE);
+    mfree(ptr_D, m*ecc_voprf_ristretto255_sha512_ELEMENTSIZE);
 }
 
 /**
- * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-voprf-08#section-3.3.2.3
+ * 
  *
- * @param {Uint8Array} M (output) size:ecc_oprf_ristretto255_sha512_ELEMENTSIZE
- * @param {Uint8Array} Z (output) size:ecc_oprf_ristretto255_sha512_ELEMENTSIZE
- * @param {Uint8Array} k size:ecc_oprf_ristretto255_sha512_SCALARSIZE
- * @param {Uint8Array} B size:ecc_oprf_ristretto255_sha512_ELEMENTSIZE
- * @param {Uint8Array} Cs size:m*ecc_oprf_ristretto255_sha512_ELEMENTSIZE
- * @param {Uint8Array} Ds size:m*ecc_oprf_ristretto255_sha512_ELEMENTSIZE
- * @param {number} m the size of the `Cs` and `Ds` arrays
+ * @param {Uint8Array} M (output) size:ecc_voprf_ristretto255_sha512_ELEMENTSIZE
+ * @param {Uint8Array} Z (output) size:ecc_voprf_ristretto255_sha512_ELEMENTSIZE
+ * @param {Uint8Array} k size:ecc_voprf_ristretto255_sha512_SCALARSIZE
+ * @param {Uint8Array} B size:ecc_voprf_ristretto255_sha512_ELEMENTSIZE
+ * @param {Uint8Array} C size:m*ecc_voprf_ristretto255_sha512_ELEMENTSIZE
+ * @param {Uint8Array} D size:m*ecc_voprf_ristretto255_sha512_ELEMENTSIZE
+ * @param {number} m the size of the `C` and `D` arrays
+ * @param {number} mode the protocol mode VOPRF or POPRF
  */
-Module.ecc_oprf_ristretto255_sha512_ComputeCompositesFast = (
+Module.ecc_voprf_ristretto255_sha512_ComputeCompositesFast = (
     M,
     Z,
     k,
     B,
-    Cs,
-    Ds,
+    C,
+    D,
     m,
+    mode,
 ) => {
-    const ptr_M = mput(M, ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
-    const ptr_Z = mput(Z, ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
-    const ptr_k = mput(k, ecc_oprf_ristretto255_sha512_SCALARSIZE);
-    const ptr_B = mput(B, ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
-    const ptr_Cs = mput(Cs, m*ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
-    const ptr_Ds = mput(Ds, m*ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
-    _ecc_oprf_ristretto255_sha512_ComputeCompositesFast(
+    const ptr_M = mput(M, ecc_voprf_ristretto255_sha512_ELEMENTSIZE);
+    const ptr_Z = mput(Z, ecc_voprf_ristretto255_sha512_ELEMENTSIZE);
+    const ptr_k = mput(k, ecc_voprf_ristretto255_sha512_SCALARSIZE);
+    const ptr_B = mput(B, ecc_voprf_ristretto255_sha512_ELEMENTSIZE);
+    const ptr_C = mput(C, m*ecc_voprf_ristretto255_sha512_ELEMENTSIZE);
+    const ptr_D = mput(D, m*ecc_voprf_ristretto255_sha512_ELEMENTSIZE);
+    _ecc_voprf_ristretto255_sha512_ComputeCompositesFast(
         ptr_M,
         ptr_Z,
         ptr_k,
         ptr_B,
-        ptr_Cs,
-        ptr_Ds,
+        ptr_C,
+        ptr_D,
         m,
+        mode,
     );
-    mget(M, ptr_M, ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
-    mget(Z, ptr_Z, ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
-    mfree(ptr_M, ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
-    mfree(ptr_Z, ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
-    mfree(ptr_k, ecc_oprf_ristretto255_sha512_SCALARSIZE);
-    mfree(ptr_B, ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
-    mfree(ptr_Cs, m*ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
-    mfree(ptr_Ds, m*ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
+    mget(M, ptr_M, ecc_voprf_ristretto255_sha512_ELEMENTSIZE);
+    mget(Z, ptr_Z, ecc_voprf_ristretto255_sha512_ELEMENTSIZE);
+    mfree(ptr_M, ecc_voprf_ristretto255_sha512_ELEMENTSIZE);
+    mfree(ptr_Z, ecc_voprf_ristretto255_sha512_ELEMENTSIZE);
+    mfree(ptr_k, ecc_voprf_ristretto255_sha512_SCALARSIZE);
+    mfree(ptr_B, ecc_voprf_ristretto255_sha512_ELEMENTSIZE);
+    mfree(ptr_C, m*ecc_voprf_ristretto255_sha512_ELEMENTSIZE);
+    mfree(ptr_D, m*ecc_voprf_ristretto255_sha512_ELEMENTSIZE);
 }
 
 /**
- * Same as calling `ecc_oprf_ristretto255_sha512_Blind` with an
- * specified scalar blind.
  * 
- * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-voprf-08#section-3.3.3.1
  *
- * @param {Uint8Array} blindedElement (output) blinded element, size:ecc_oprf_ristretto255_sha512_ELEMENTSIZE
- * @param {Uint8Array} input message to blind, size:inputLen
- * @param {number} inputLen length of `input`
- * @param {Uint8Array} blind scalar to use in the blind operation, size:ecc_oprf_ristretto255_sha512_SCALARSIZE
- * @param {number} mode oprf mode
- */
-Module.ecc_oprf_ristretto255_sha512_BlindWithScalar = (
-    blindedElement,
-    input,
-    inputLen,
-    blind,
-    mode,
-) => {
-    const ptr_blindedElement = mput(blindedElement, ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
-    const ptr_input = mput(input, inputLen);
-    const ptr_blind = mput(blind, ecc_oprf_ristretto255_sha512_SCALARSIZE);
-    _ecc_oprf_ristretto255_sha512_BlindWithScalar(
-        ptr_blindedElement,
-        ptr_input,
-        inputLen,
-        ptr_blind,
-        mode,
-    );
-    mget(blindedElement, ptr_blindedElement, ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
-    mfree(ptr_blindedElement, ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
-    mfree(ptr_input, inputLen);
-    mfree(ptr_blind, ecc_oprf_ristretto255_sha512_SCALARSIZE);
-}
-
-/**
- * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-voprf-08#section-3.3.3.1
- *
- * @param {Uint8Array} blindedElement (output) blinded element, size:ecc_oprf_ristretto255_sha512_ELEMENTSIZE
- * @param {Uint8Array} blind (output) scalar used in the blind operation, size:ecc_oprf_ristretto255_sha512_SCALARSIZE
- * @param {Uint8Array} input message to blind, size:inputLen
- * @param {number} inputLen length of `input`
- * @param {number} mode oprf mode
- */
-Module.ecc_oprf_ristretto255_sha512_Blind = (
-    blindedElement,
-    blind,
-    input,
-    inputLen,
-    mode,
-) => {
-    const ptr_blindedElement = mput(blindedElement, ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
-    const ptr_blind = mput(blind, ecc_oprf_ristretto255_sha512_SCALARSIZE);
-    const ptr_input = mput(input, inputLen);
-    _ecc_oprf_ristretto255_sha512_Blind(
-        ptr_blindedElement,
-        ptr_blind,
-        ptr_input,
-        inputLen,
-        mode,
-    );
-    mget(blindedElement, ptr_blindedElement, ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
-    mget(blind, ptr_blind, ecc_oprf_ristretto255_sha512_SCALARSIZE);
-    mfree(ptr_blindedElement, ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
-    mfree(ptr_blind, ecc_oprf_ristretto255_sha512_SCALARSIZE);
-    mfree(ptr_input, inputLen);
-}
-
-/**
- * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-voprf-08#section-3.3.3.1
- *
- * @param {Uint8Array} unblindedElement (output) size:ecc_oprf_ristretto255_sha512_ELEMENTSIZE
- * @param {Uint8Array} blind size:ecc_oprf_ristretto255_sha512_SCALARSIZE
- * @param {Uint8Array} evaluatedElement size:ecc_oprf_ristretto255_sha512_ELEMENTSIZE
- */
-Module.ecc_oprf_ristretto255_sha512_Unblind = (
-    unblindedElement,
-    blind,
-    evaluatedElement,
-) => {
-    const ptr_unblindedElement = mput(unblindedElement, ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
-    const ptr_blind = mput(blind, ecc_oprf_ristretto255_sha512_SCALARSIZE);
-    const ptr_evaluatedElement = mput(evaluatedElement, ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
-    _ecc_oprf_ristretto255_sha512_Unblind(
-        ptr_unblindedElement,
-        ptr_blind,
-        ptr_evaluatedElement,
-    );
-    mget(unblindedElement, ptr_unblindedElement, ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
-    mfree(ptr_unblindedElement, ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
-    mfree(ptr_blind, ecc_oprf_ristretto255_sha512_SCALARSIZE);
-    mfree(ptr_evaluatedElement, ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
-}
-
-/**
- * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-voprf-08#section-3.3.3.2
- *
- * @param {Uint8Array} output (output) size:ecc_oprf_ristretto255_sha512_Nh
- * @param {Uint8Array} input the input message, size:inputLen
- * @param {number} inputLen the length of `input`
- * @param {Uint8Array} blind size:ecc_oprf_ristretto255_sha512_SCALARSIZE
- * @param {Uint8Array} evaluatedElement size:ecc_oprf_ristretto255_sha512_ELEMENTSIZE
- * @param {Uint8Array} info size:infoLen
- * @param {number} infoLen the length of `info`
- */
-Module.ecc_oprf_ristretto255_sha512_Finalize = (
-    output,
-    input,
-    inputLen,
-    blind,
-    evaluatedElement,
-    info,
-    infoLen,
-) => {
-    const ptr_output = mput(output, ecc_oprf_ristretto255_sha512_Nh);
-    const ptr_input = mput(input, inputLen);
-    const ptr_blind = mput(blind, ecc_oprf_ristretto255_sha512_SCALARSIZE);
-    const ptr_evaluatedElement = mput(evaluatedElement, ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
-    const ptr_info = mput(info, infoLen);
-    _ecc_oprf_ristretto255_sha512_Finalize(
-        ptr_output,
-        ptr_input,
-        inputLen,
-        ptr_blind,
-        ptr_evaluatedElement,
-        ptr_info,
-        infoLen,
-    );
-    mget(output, ptr_output, ecc_oprf_ristretto255_sha512_Nh);
-    mfree(ptr_output, ecc_oprf_ristretto255_sha512_Nh);
-    mfree(ptr_input, inputLen);
-    mfree(ptr_blind, ecc_oprf_ristretto255_sha512_SCALARSIZE);
-    mfree(ptr_evaluatedElement, ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
-    mfree(ptr_info, infoLen);
-}
-
-/**
- * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-voprf-08#section-3.3.4.1
- *
- * @param {Uint8Array} A size:ecc_oprf_ristretto255_sha512_ELEMENTSIZE
- * @param {Uint8Array} B size:ecc_oprf_ristretto255_sha512_ELEMENTSIZE
- * @param {Uint8Array} C size:ecc_oprf_ristretto255_sha512_ELEMENTSIZE
- * @param {Uint8Array} D size:ecc_oprf_ristretto255_sha512_ELEMENTSIZE
- * @param {Uint8Array} proof size:ecc_oprf_ristretto255_sha512_PROOFSIZE
+ * @param {Uint8Array} A size:ecc_voprf_ristretto255_sha512_ELEMENTSIZE
+ * @param {Uint8Array} B size:ecc_voprf_ristretto255_sha512_ELEMENTSIZE
+ * @param {Uint8Array} C size:m*ecc_voprf_ristretto255_sha512_ELEMENTSIZE
+ * @param {Uint8Array} D size:m*ecc_voprf_ristretto255_sha512_ELEMENTSIZE
+ * @param {number} m the size of the `C` and `D` arrays
+ * @param {number} mode the protocol mode VOPRF or POPRF
+ * @param {Uint8Array} proof size:ecc_voprf_ristretto255_sha512_PROOFSIZE
  * @return {number} on success verification returns 1, else 0.
  */
-Module.ecc_oprf_ristretto255_sha512_VerifyProof = (
+Module.ecc_voprf_ristretto255_sha512_VerifyProof = (
     A,
     B,
     C,
     D,
+    m,
+    mode,
     proof,
 ) => {
-    const ptr_A = mput(A, ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
-    const ptr_B = mput(B, ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
-    const ptr_C = mput(C, ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
-    const ptr_D = mput(D, ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
-    const ptr_proof = mput(proof, ecc_oprf_ristretto255_sha512_PROOFSIZE);
-    const fun_ret = _ecc_oprf_ristretto255_sha512_VerifyProof(
+    const ptr_A = mput(A, ecc_voprf_ristretto255_sha512_ELEMENTSIZE);
+    const ptr_B = mput(B, ecc_voprf_ristretto255_sha512_ELEMENTSIZE);
+    const ptr_C = mput(C, m*ecc_voprf_ristretto255_sha512_ELEMENTSIZE);
+    const ptr_D = mput(D, m*ecc_voprf_ristretto255_sha512_ELEMENTSIZE);
+    const ptr_proof = mput(proof, ecc_voprf_ristretto255_sha512_PROOFSIZE);
+    const fun_ret = _ecc_voprf_ristretto255_sha512_VerifyProof(
         ptr_A,
         ptr_B,
         ptr_C,
         ptr_D,
+        m,
+        mode,
         ptr_proof,
     );
-    mfree(ptr_A, ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
-    mfree(ptr_B, ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
-    mfree(ptr_C, ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
-    mfree(ptr_D, ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
-    mfree(ptr_proof, ecc_oprf_ristretto255_sha512_PROOFSIZE);
+    mfree(ptr_A, ecc_voprf_ristretto255_sha512_ELEMENTSIZE);
+    mfree(ptr_B, ecc_voprf_ristretto255_sha512_ELEMENTSIZE);
+    mfree(ptr_C, m*ecc_voprf_ristretto255_sha512_ELEMENTSIZE);
+    mfree(ptr_D, m*ecc_voprf_ristretto255_sha512_ELEMENTSIZE);
+    mfree(ptr_proof, ecc_voprf_ristretto255_sha512_PROOFSIZE);
     return fun_ret;
 }
 
 /**
- * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-voprf-08#section-3.3.4.2
+ * 
  *
- * @param {Uint8Array} unblindedElement (output) size:ecc_oprf_ristretto255_sha512_ELEMENTSIZE
- * @param {Uint8Array} blind size:ecc_oprf_ristretto255_sha512_SCALARSIZE
- * @param {Uint8Array} evaluatedElement size:ecc_oprf_ristretto255_sha512_ELEMENTSIZE
- * @param {Uint8Array} blindedElement size:ecc_oprf_ristretto255_sha512_ELEMENTSIZE
- * @param {Uint8Array} pkS size:ecc_oprf_ristretto255_sha512_ELEMENTSIZE
- * @param {Uint8Array} proof size:ecc_oprf_ristretto255_sha512_PROOFSIZE
- * @param {Uint8Array} info size:infoLen
- * @param {number} infoLen the length of `info`
- * @return {number} on success verification returns 0, else -1.
+ * @param {Uint8Array} M (output) size:ecc_voprf_ristretto255_sha512_ELEMENTSIZE
+ * @param {Uint8Array} Z (output) size:ecc_voprf_ristretto255_sha512_ELEMENTSIZE
+ * @param {Uint8Array} B size:ecc_voprf_ristretto255_sha512_ELEMENTSIZE
+ * @param {Uint8Array} C size:m*ecc_voprf_ristretto255_sha512_ELEMENTSIZE
+ * @param {Uint8Array} D size:m*ecc_voprf_ristretto255_sha512_ELEMENTSIZE
+ * @param {number} m the size of the `C` and `D` arrays
+ * @param {number} mode the protocol mode VOPRF or POPRF
  */
-Module.ecc_oprf_ristretto255_sha512_VerifiableUnblind = (
-    unblindedElement,
-    blind,
-    evaluatedElement,
-    blindedElement,
+Module.ecc_voprf_ristretto255_sha512_ComputeComposites = (
+    M,
+    Z,
+    B,
+    C,
+    D,
+    m,
+    mode,
+) => {
+    const ptr_M = mput(M, ecc_voprf_ristretto255_sha512_ELEMENTSIZE);
+    const ptr_Z = mput(Z, ecc_voprf_ristretto255_sha512_ELEMENTSIZE);
+    const ptr_B = mput(B, ecc_voprf_ristretto255_sha512_ELEMENTSIZE);
+    const ptr_C = mput(C, m*ecc_voprf_ristretto255_sha512_ELEMENTSIZE);
+    const ptr_D = mput(D, m*ecc_voprf_ristretto255_sha512_ELEMENTSIZE);
+    _ecc_voprf_ristretto255_sha512_ComputeComposites(
+        ptr_M,
+        ptr_Z,
+        ptr_B,
+        ptr_C,
+        ptr_D,
+        m,
+        mode,
+    );
+    mget(M, ptr_M, ecc_voprf_ristretto255_sha512_ELEMENTSIZE);
+    mget(Z, ptr_Z, ecc_voprf_ristretto255_sha512_ELEMENTSIZE);
+    mfree(ptr_M, ecc_voprf_ristretto255_sha512_ELEMENTSIZE);
+    mfree(ptr_Z, ecc_voprf_ristretto255_sha512_ELEMENTSIZE);
+    mfree(ptr_B, ecc_voprf_ristretto255_sha512_ELEMENTSIZE);
+    mfree(ptr_C, m*ecc_voprf_ristretto255_sha512_ELEMENTSIZE);
+    mfree(ptr_D, m*ecc_voprf_ristretto255_sha512_ELEMENTSIZE);
+}
+
+/**
+ * In the offline setup phase, the server key pair (skS, pkS) is generated using
+ * this function, which produces a randomly generate private and public key pair.
+ *
+ * @param {Uint8Array} skS (output) size:ecc_voprf_ristretto255_sha512_SCALARSIZE
+ * @param {Uint8Array} pkS (output) size:ecc_voprf_ristretto255_sha512_ELEMENTSIZE
+ */
+Module.ecc_voprf_ristretto255_sha512_GenerateKeyPair = (
+    skS,
     pkS,
-    proof,
+) => {
+    const ptr_skS = mput(skS, ecc_voprf_ristretto255_sha512_SCALARSIZE);
+    const ptr_pkS = mput(pkS, ecc_voprf_ristretto255_sha512_ELEMENTSIZE);
+    _ecc_voprf_ristretto255_sha512_GenerateKeyPair(
+        ptr_skS,
+        ptr_pkS,
+    );
+    mget(skS, ptr_skS, ecc_voprf_ristretto255_sha512_SCALARSIZE);
+    mget(pkS, ptr_pkS, ecc_voprf_ristretto255_sha512_ELEMENTSIZE);
+    mfree(ptr_skS, ecc_voprf_ristretto255_sha512_SCALARSIZE);
+    mfree(ptr_pkS, ecc_voprf_ristretto255_sha512_ELEMENTSIZE);
+}
+
+/**
+ * Deterministically generate a key. It accepts a randomly generated seed of
+ * length Ns bytes and an optional (possibly empty) public info string.
+ *
+ * @param {Uint8Array} skS (output) size:ecc_voprf_ristretto255_sha512_SCALARSIZE
+ * @param {Uint8Array} pkS (output) size:ecc_voprf_ristretto255_sha512_ELEMENTSIZE
+ * @param {Uint8Array} seed size:ecc_voprf_ristretto255_sha512_SCALARSIZE
+ * @param {Uint8Array} info size:infoLen
+ * @param {number} infoLen the size of `info`, it should be
+ * <
+ * = ecc_voprf_ristretto255_sha512_MAXINFOSIZE
+ * @param {number} mode the protocol mode VOPRF or POPRF
+ * @return {number} 0 on success, or -1 if an error
+ */
+Module.ecc_voprf_ristretto255_sha512_DeriveKeyPair = (
+    skS,
+    pkS,
+    seed,
     info,
     infoLen,
+    mode,
 ) => {
-    const ptr_unblindedElement = mput(unblindedElement, ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
-    const ptr_blind = mput(blind, ecc_oprf_ristretto255_sha512_SCALARSIZE);
-    const ptr_evaluatedElement = mput(evaluatedElement, ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
-    const ptr_blindedElement = mput(blindedElement, ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
-    const ptr_pkS = mput(pkS, ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
-    const ptr_proof = mput(proof, ecc_oprf_ristretto255_sha512_PROOFSIZE);
+    const ptr_skS = mput(skS, ecc_voprf_ristretto255_sha512_SCALARSIZE);
+    const ptr_pkS = mput(pkS, ecc_voprf_ristretto255_sha512_ELEMENTSIZE);
+    const ptr_seed = mput(seed, ecc_voprf_ristretto255_sha512_SCALARSIZE);
     const ptr_info = mput(info, infoLen);
-    const fun_ret = _ecc_oprf_ristretto255_sha512_VerifiableUnblind(
-        ptr_unblindedElement,
-        ptr_blind,
-        ptr_evaluatedElement,
-        ptr_blindedElement,
+    const fun_ret = _ecc_voprf_ristretto255_sha512_DeriveKeyPair(
+        ptr_skS,
         ptr_pkS,
-        ptr_proof,
+        ptr_seed,
         ptr_info,
         infoLen,
+        mode,
     );
-    mget(unblindedElement, ptr_unblindedElement, ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
-    mfree(ptr_unblindedElement, ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
-    mfree(ptr_blind, ecc_oprf_ristretto255_sha512_SCALARSIZE);
-    mfree(ptr_evaluatedElement, ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
-    mfree(ptr_blindedElement, ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
-    mfree(ptr_pkS, ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
-    mfree(ptr_proof, ecc_oprf_ristretto255_sha512_PROOFSIZE);
+    mget(skS, ptr_skS, ecc_voprf_ristretto255_sha512_SCALARSIZE);
+    mget(pkS, ptr_pkS, ecc_voprf_ristretto255_sha512_ELEMENTSIZE);
+    mfree(ptr_skS, ecc_voprf_ristretto255_sha512_SCALARSIZE);
+    mfree(ptr_pkS, ecc_voprf_ristretto255_sha512_ELEMENTSIZE);
+    mfree(ptr_seed, ecc_voprf_ristretto255_sha512_SCALARSIZE);
     mfree(ptr_info, infoLen);
     return fun_ret;
 }
 
 /**
- * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-voprf-08#section-3.3.4.3
+ * Same as calling `ecc_voprf_ristretto255_sha512_Blind` with an
+ * specified scalar blind.
  *
- * @param {Uint8Array} output (output) size:ecc_oprf_ristretto255_sha512_Nh
- * @param {Uint8Array} input size:inputLen
- * @param {number} inputLen the length of `input`
- * @param {Uint8Array} blind size:ecc_oprf_ristretto255_sha512_SCALARSIZE
- * @param {Uint8Array} evaluatedElement size:ecc_oprf_ristretto255_sha512_ELEMENTSIZE
- * @param {Uint8Array} blindedElement size:ecc_oprf_ristretto255_sha512_ELEMENTSIZE
- * @param {Uint8Array} pkS size:ecc_oprf_ristretto255_sha512_ELEMENTSIZE
- * @param {Uint8Array} proof size:ecc_oprf_ristretto255_sha512_PROOFSIZE
- * @param {Uint8Array} info size:infoLen
- * @param {number} infoLen the length of `info`
- * @return {number} on success verification returns 0, else -1.
+ * @param {Uint8Array} blindedElement (output) blinded element, size:ecc_voprf_ristretto255_sha512_ELEMENTSIZE
+ * @param {Uint8Array} input message to blind, size:inputLen
+ * @param {number} inputLen length of `input`
+ * @param {Uint8Array} blind scalar to use in the blind operation, size:ecc_voprf_ristretto255_sha512_SCALARSIZE
+ * @param {number} mode oprf mode
+ * @return {number} 0 on success, or -1 if an error
  */
-Module.ecc_oprf_ristretto255_sha512_VerifiableFinalize = (
+Module.ecc_voprf_ristretto255_sha512_BlindWithScalar = (
+    blindedElement,
+    input,
+    inputLen,
+    blind,
+    mode,
+) => {
+    const ptr_blindedElement = mput(blindedElement, ecc_voprf_ristretto255_sha512_ELEMENTSIZE);
+    const ptr_input = mput(input, inputLen);
+    const ptr_blind = mput(blind, ecc_voprf_ristretto255_sha512_SCALARSIZE);
+    const fun_ret = _ecc_voprf_ristretto255_sha512_BlindWithScalar(
+        ptr_blindedElement,
+        ptr_input,
+        inputLen,
+        ptr_blind,
+        mode,
+    );
+    mget(blindedElement, ptr_blindedElement, ecc_voprf_ristretto255_sha512_ELEMENTSIZE);
+    mfree(ptr_blindedElement, ecc_voprf_ristretto255_sha512_ELEMENTSIZE);
+    mfree(ptr_input, inputLen);
+    mfree(ptr_blind, ecc_voprf_ristretto255_sha512_SCALARSIZE);
+    return fun_ret;
+}
+
+/**
+ * 
+ *
+ * @param {Uint8Array} blind (output) scalar used in the blind operation, size:ecc_voprf_ristretto255_sha512_SCALARSIZE
+ * @param {Uint8Array} blindedElement (output) blinded element, size:ecc_voprf_ristretto255_sha512_ELEMENTSIZE
+ * @param {Uint8Array} input message to blind, size:inputLen
+ * @param {number} inputLen length of `input`
+ * @param {number} mode oprf mode
+ * @return {number} 0 on success, or -1 if an error
+ */
+Module.ecc_voprf_ristretto255_sha512_Blind = (
+    blind,
+    blindedElement,
+    input,
+    inputLen,
+    mode,
+) => {
+    const ptr_blind = mput(blind, ecc_voprf_ristretto255_sha512_SCALARSIZE);
+    const ptr_blindedElement = mput(blindedElement, ecc_voprf_ristretto255_sha512_ELEMENTSIZE);
+    const ptr_input = mput(input, inputLen);
+    const fun_ret = _ecc_voprf_ristretto255_sha512_Blind(
+        ptr_blind,
+        ptr_blindedElement,
+        ptr_input,
+        inputLen,
+        mode,
+    );
+    mget(blind, ptr_blind, ecc_voprf_ristretto255_sha512_SCALARSIZE);
+    mget(blindedElement, ptr_blindedElement, ecc_voprf_ristretto255_sha512_ELEMENTSIZE);
+    mfree(ptr_blind, ecc_voprf_ristretto255_sha512_SCALARSIZE);
+    mfree(ptr_blindedElement, ecc_voprf_ristretto255_sha512_ELEMENTSIZE);
+    mfree(ptr_input, inputLen);
+    return fun_ret;
+}
+
+/**
+ * 
+ *
+ * @param {Uint8Array} evaluatedElement (output) blinded element, size:ecc_voprf_ristretto255_sha512_ELEMENTSIZE
+ * @param {Uint8Array} skS scalar used in the blind operation, size:ecc_voprf_ristretto255_sha512_SCALARSIZE
+ * @param {Uint8Array} blindedElement blinded element, size:ecc_voprf_ristretto255_sha512_ELEMENTSIZE
+ */
+Module.ecc_voprf_ristretto255_sha512_BlindEvaluate = (
+    evaluatedElement,
+    skS,
+    blindedElement,
+) => {
+    const ptr_evaluatedElement = mput(evaluatedElement, ecc_voprf_ristretto255_sha512_ELEMENTSIZE);
+    const ptr_skS = mput(skS, ecc_voprf_ristretto255_sha512_SCALARSIZE);
+    const ptr_blindedElement = mput(blindedElement, ecc_voprf_ristretto255_sha512_ELEMENTSIZE);
+    _ecc_voprf_ristretto255_sha512_BlindEvaluate(
+        ptr_evaluatedElement,
+        ptr_skS,
+        ptr_blindedElement,
+    );
+    mget(evaluatedElement, ptr_evaluatedElement, ecc_voprf_ristretto255_sha512_ELEMENTSIZE);
+    mfree(ptr_evaluatedElement, ecc_voprf_ristretto255_sha512_ELEMENTSIZE);
+    mfree(ptr_skS, ecc_voprf_ristretto255_sha512_SCALARSIZE);
+    mfree(ptr_blindedElement, ecc_voprf_ristretto255_sha512_ELEMENTSIZE);
+}
+
+/**
+ * 
+ *
+ * @param {Uint8Array} output (output) size:ecc_voprf_ristretto255_sha512_Nh
+ * @param {Uint8Array} input the input message, size:inputLen
+ * @param {number} inputLen the length of `input`
+ * @param {Uint8Array} blind size:ecc_voprf_ristretto255_sha512_SCALARSIZE
+ * @param {Uint8Array} evaluatedElement size:ecc_voprf_ristretto255_sha512_ELEMENTSIZE
+ */
+Module.ecc_voprf_ristretto255_sha512_Finalize = (
+    output,
+    input,
+    inputLen,
+    blind,
+    evaluatedElement,
+) => {
+    const ptr_output = mput(output, ecc_voprf_ristretto255_sha512_Nh);
+    const ptr_input = mput(input, inputLen);
+    const ptr_blind = mput(blind, ecc_voprf_ristretto255_sha512_SCALARSIZE);
+    const ptr_evaluatedElement = mput(evaluatedElement, ecc_voprf_ristretto255_sha512_ELEMENTSIZE);
+    _ecc_voprf_ristretto255_sha512_Finalize(
+        ptr_output,
+        ptr_input,
+        inputLen,
+        ptr_blind,
+        ptr_evaluatedElement,
+    );
+    mget(output, ptr_output, ecc_voprf_ristretto255_sha512_Nh);
+    mfree(ptr_output, ecc_voprf_ristretto255_sha512_Nh);
+    mfree(ptr_input, inputLen);
+    mfree(ptr_blind, ecc_voprf_ristretto255_sha512_SCALARSIZE);
+    mfree(ptr_evaluatedElement, ecc_voprf_ristretto255_sha512_ELEMENTSIZE);
+}
+
+/**
+ * 
+ *
+ * @param {Uint8Array} output (output) size:ecc_voprf_ristretto255_sha512_Nh
+ * @param {Uint8Array} skS size:ecc_voprf_ristretto255_sha512_SCALARSIZE
+ * @param {Uint8Array} input the input message, size:inputLen
+ * @param {number} inputLen the length of `input`
+ * @param {number} mode oprf mode
+ * @return {number} 0 on success, or -1 if an error
+ */
+Module.ecc_voprf_ristretto255_sha512_Evaluate = (
+    output,
+    skS,
+    input,
+    inputLen,
+    mode,
+) => {
+    const ptr_output = mput(output, ecc_voprf_ristretto255_sha512_Nh);
+    const ptr_skS = mput(skS, ecc_voprf_ristretto255_sha512_SCALARSIZE);
+    const ptr_input = mput(input, inputLen);
+    const fun_ret = _ecc_voprf_ristretto255_sha512_Evaluate(
+        ptr_output,
+        ptr_skS,
+        ptr_input,
+        inputLen,
+        mode,
+    );
+    mget(output, ptr_output, ecc_voprf_ristretto255_sha512_Nh);
+    mfree(ptr_output, ecc_voprf_ristretto255_sha512_Nh);
+    mfree(ptr_skS, ecc_voprf_ristretto255_sha512_SCALARSIZE);
+    mfree(ptr_input, inputLen);
+    return fun_ret;
+}
+
+/**
+ * 
+ *
+ * @param {Uint8Array} evaluatedElement (output) size:ecc_voprf_ristretto255_sha512_ELEMENTSIZE
+ * @param {Uint8Array} proof (output) size:ecc_voprf_ristretto255_sha512_PROOFSIZE
+ * @param {Uint8Array} skS size:ecc_voprf_ristretto255_sha512_SCALARSIZE
+ * @param {Uint8Array} pkS size:ecc_voprf_ristretto255_sha512_ELEMENTSIZE
+ * @param {Uint8Array} blindedElement size:ecc_voprf_ristretto255_sha512_ELEMENTSIZE
+ * @param {Uint8Array} r size:ecc_voprf_ristretto255_sha512_SCALARSIZE
+ */
+Module.ecc_voprf_ristretto255_sha512_VerifiableBlindEvaluateWithScalar = (
+    evaluatedElement,
+    proof,
+    skS,
+    pkS,
+    blindedElement,
+    r,
+) => {
+    const ptr_evaluatedElement = mput(evaluatedElement, ecc_voprf_ristretto255_sha512_ELEMENTSIZE);
+    const ptr_proof = mput(proof, ecc_voprf_ristretto255_sha512_PROOFSIZE);
+    const ptr_skS = mput(skS, ecc_voprf_ristretto255_sha512_SCALARSIZE);
+    const ptr_pkS = mput(pkS, ecc_voprf_ristretto255_sha512_ELEMENTSIZE);
+    const ptr_blindedElement = mput(blindedElement, ecc_voprf_ristretto255_sha512_ELEMENTSIZE);
+    const ptr_r = mput(r, ecc_voprf_ristretto255_sha512_SCALARSIZE);
+    _ecc_voprf_ristretto255_sha512_VerifiableBlindEvaluateWithScalar(
+        ptr_evaluatedElement,
+        ptr_proof,
+        ptr_skS,
+        ptr_pkS,
+        ptr_blindedElement,
+        ptr_r,
+    );
+    mget(evaluatedElement, ptr_evaluatedElement, ecc_voprf_ristretto255_sha512_ELEMENTSIZE);
+    mget(proof, ptr_proof, ecc_voprf_ristretto255_sha512_PROOFSIZE);
+    mfree(ptr_evaluatedElement, ecc_voprf_ristretto255_sha512_ELEMENTSIZE);
+    mfree(ptr_proof, ecc_voprf_ristretto255_sha512_PROOFSIZE);
+    mfree(ptr_skS, ecc_voprf_ristretto255_sha512_SCALARSIZE);
+    mfree(ptr_pkS, ecc_voprf_ristretto255_sha512_ELEMENTSIZE);
+    mfree(ptr_blindedElement, ecc_voprf_ristretto255_sha512_ELEMENTSIZE);
+    mfree(ptr_r, ecc_voprf_ristretto255_sha512_SCALARSIZE);
+}
+
+/**
+ * 
+ *
+ * @param {Uint8Array} evaluatedElement (output) size:ecc_voprf_ristretto255_sha512_ELEMENTSIZE
+ * @param {Uint8Array} proof (output) size:ecc_voprf_ristretto255_sha512_PROOFSIZE
+ * @param {Uint8Array} skS size:ecc_voprf_ristretto255_sha512_SCALARSIZE
+ * @param {Uint8Array} pkS size:ecc_voprf_ristretto255_sha512_ELEMENTSIZE
+ * @param {Uint8Array} blindedElement size:ecc_voprf_ristretto255_sha512_ELEMENTSIZE
+ */
+Module.ecc_voprf_ristretto255_sha512_VerifiableBlindEvaluate = (
+    evaluatedElement,
+    proof,
+    skS,
+    pkS,
+    blindedElement,
+) => {
+    const ptr_evaluatedElement = mput(evaluatedElement, ecc_voprf_ristretto255_sha512_ELEMENTSIZE);
+    const ptr_proof = mput(proof, ecc_voprf_ristretto255_sha512_PROOFSIZE);
+    const ptr_skS = mput(skS, ecc_voprf_ristretto255_sha512_SCALARSIZE);
+    const ptr_pkS = mput(pkS, ecc_voprf_ristretto255_sha512_ELEMENTSIZE);
+    const ptr_blindedElement = mput(blindedElement, ecc_voprf_ristretto255_sha512_ELEMENTSIZE);
+    _ecc_voprf_ristretto255_sha512_VerifiableBlindEvaluate(
+        ptr_evaluatedElement,
+        ptr_proof,
+        ptr_skS,
+        ptr_pkS,
+        ptr_blindedElement,
+    );
+    mget(evaluatedElement, ptr_evaluatedElement, ecc_voprf_ristretto255_sha512_ELEMENTSIZE);
+    mget(proof, ptr_proof, ecc_voprf_ristretto255_sha512_PROOFSIZE);
+    mfree(ptr_evaluatedElement, ecc_voprf_ristretto255_sha512_ELEMENTSIZE);
+    mfree(ptr_proof, ecc_voprf_ristretto255_sha512_PROOFSIZE);
+    mfree(ptr_skS, ecc_voprf_ristretto255_sha512_SCALARSIZE);
+    mfree(ptr_pkS, ecc_voprf_ristretto255_sha512_ELEMENTSIZE);
+    mfree(ptr_blindedElement, ecc_voprf_ristretto255_sha512_ELEMENTSIZE);
+}
+
+/**
+ * 
+ *
+ * @param {Uint8Array} output (output) size:ecc_voprf_ristretto255_sha512_Nh
+ * @param {Uint8Array} input the input message, size:inputLen
+ * @param {number} inputLen the length of `input`
+ * @param {Uint8Array} blind size:ecc_voprf_ristretto255_sha512_SCALARSIZE
+ * @param {Uint8Array} evaluatedElement size:ecc_voprf_ristretto255_sha512_ELEMENTSIZE
+ * @param {Uint8Array} blindedElement size:ecc_voprf_ristretto255_sha512_ELEMENTSIZE
+ * @param {Uint8Array} pkS size:ecc_voprf_ristretto255_sha512_ELEMENTSIZE
+ * @param {Uint8Array} proof size:ecc_voprf_ristretto255_sha512_PROOFSIZE
+ * @return {number} 0 on success, or -1 if an error
+ */
+Module.ecc_voprf_ristretto255_sha512_VerifiableFinalize = (
     output,
     input,
     inputLen,
@@ -2717,18 +2748,15 @@ Module.ecc_oprf_ristretto255_sha512_VerifiableFinalize = (
     blindedElement,
     pkS,
     proof,
-    info,
-    infoLen,
 ) => {
-    const ptr_output = mput(output, ecc_oprf_ristretto255_sha512_Nh);
+    const ptr_output = mput(output, ecc_voprf_ristretto255_sha512_Nh);
     const ptr_input = mput(input, inputLen);
-    const ptr_blind = mput(blind, ecc_oprf_ristretto255_sha512_SCALARSIZE);
-    const ptr_evaluatedElement = mput(evaluatedElement, ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
-    const ptr_blindedElement = mput(blindedElement, ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
-    const ptr_pkS = mput(pkS, ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
-    const ptr_proof = mput(proof, ecc_oprf_ristretto255_sha512_PROOFSIZE);
-    const ptr_info = mput(info, infoLen);
-    const fun_ret = _ecc_oprf_ristretto255_sha512_VerifiableFinalize(
+    const ptr_blind = mput(blind, ecc_voprf_ristretto255_sha512_SCALARSIZE);
+    const ptr_evaluatedElement = mput(evaluatedElement, ecc_voprf_ristretto255_sha512_ELEMENTSIZE);
+    const ptr_blindedElement = mput(blindedElement, ecc_voprf_ristretto255_sha512_ELEMENTSIZE);
+    const ptr_pkS = mput(pkS, ecc_voprf_ristretto255_sha512_ELEMENTSIZE);
+    const ptr_proof = mput(proof, ecc_voprf_ristretto255_sha512_PROOFSIZE);
+    const fun_ret = _ecc_voprf_ristretto255_sha512_VerifiableFinalize(
         ptr_output,
         ptr_input,
         inputLen,
@@ -2737,118 +2765,408 @@ Module.ecc_oprf_ristretto255_sha512_VerifiableFinalize = (
         ptr_blindedElement,
         ptr_pkS,
         ptr_proof,
+    );
+    mget(output, ptr_output, ecc_voprf_ristretto255_sha512_Nh);
+    mfree(ptr_output, ecc_voprf_ristretto255_sha512_Nh);
+    mfree(ptr_input, inputLen);
+    mfree(ptr_blind, ecc_voprf_ristretto255_sha512_SCALARSIZE);
+    mfree(ptr_evaluatedElement, ecc_voprf_ristretto255_sha512_ELEMENTSIZE);
+    mfree(ptr_blindedElement, ecc_voprf_ristretto255_sha512_ELEMENTSIZE);
+    mfree(ptr_pkS, ecc_voprf_ristretto255_sha512_ELEMENTSIZE);
+    mfree(ptr_proof, ecc_voprf_ristretto255_sha512_PROOFSIZE);
+    return fun_ret;
+}
+
+/**
+ * 
+ *
+ * @param {Uint8Array} blindedElement (output) blinded element, size:ecc_voprf_ristretto255_sha512_ELEMENTSIZE
+ * @param {Uint8Array} tweakedKey (output) blinded element, size:ecc_voprf_ristretto255_sha512_ELEMENTSIZE
+ * @param {Uint8Array} input message to blind, size:inputLen
+ * @param {number} inputLen length of `input`
+ * @param {Uint8Array} info message to blind, size:infoLen
+ * @param {number} infoLen length of `info`, it should be
+ * <
+ * = ecc_voprf_ristretto255_sha512_MAXINFOSIZE
+ * @param {Uint8Array} pkS size:ecc_voprf_ristretto255_sha512_ELEMENTSIZE
+ * @param {Uint8Array} blind size:ecc_voprf_ristretto255_sha512_SCALARSIZE
+ * @return {number} 0 on success, or -1 if an error
+ */
+Module.ecc_voprf_ristretto255_sha512_PartiallyBlindWithScalar = (
+    blindedElement,
+    tweakedKey,
+    input,
+    inputLen,
+    info,
+    infoLen,
+    pkS,
+    blind,
+) => {
+    const ptr_blindedElement = mput(blindedElement, ecc_voprf_ristretto255_sha512_ELEMENTSIZE);
+    const ptr_tweakedKey = mput(tweakedKey, ecc_voprf_ristretto255_sha512_ELEMENTSIZE);
+    const ptr_input = mput(input, inputLen);
+    const ptr_info = mput(info, infoLen);
+    const ptr_pkS = mput(pkS, ecc_voprf_ristretto255_sha512_ELEMENTSIZE);
+    const ptr_blind = mput(blind, ecc_voprf_ristretto255_sha512_SCALARSIZE);
+    const fun_ret = _ecc_voprf_ristretto255_sha512_PartiallyBlindWithScalar(
+        ptr_blindedElement,
+        ptr_tweakedKey,
+        ptr_input,
+        inputLen,
+        ptr_info,
+        infoLen,
+        ptr_pkS,
+        ptr_blind,
+    );
+    mget(blindedElement, ptr_blindedElement, ecc_voprf_ristretto255_sha512_ELEMENTSIZE);
+    mget(tweakedKey, ptr_tweakedKey, ecc_voprf_ristretto255_sha512_ELEMENTSIZE);
+    mfree(ptr_blindedElement, ecc_voprf_ristretto255_sha512_ELEMENTSIZE);
+    mfree(ptr_tweakedKey, ecc_voprf_ristretto255_sha512_ELEMENTSIZE);
+    mfree(ptr_input, inputLen);
+    mfree(ptr_info, infoLen);
+    mfree(ptr_pkS, ecc_voprf_ristretto255_sha512_ELEMENTSIZE);
+    mfree(ptr_blind, ecc_voprf_ristretto255_sha512_SCALARSIZE);
+    return fun_ret;
+}
+
+/**
+ * 
+ *
+ * @param {Uint8Array} blind (output) scalar used in the blind operation, size:ecc_voprf_ristretto255_sha512_SCALARSIZE
+ * @param {Uint8Array} blindedElement (output) blinded element, size:ecc_voprf_ristretto255_sha512_ELEMENTSIZE
+ * @param {Uint8Array} tweakedKey (output) blinded element, size:ecc_voprf_ristretto255_sha512_ELEMENTSIZE
+ * @param {Uint8Array} input message to blind, size:inputLen
+ * @param {number} inputLen length of `input`
+ * @param {Uint8Array} info message to blind, size:infoLen
+ * @param {number} infoLen length of `info`, it should be
+ * <
+ * = ecc_voprf_ristretto255_sha512_MAXINFOSIZE
+ * @param {Uint8Array} pkS size:ecc_voprf_ristretto255_sha512_ELEMENTSIZE
+ * @return {number} 0 on success, or -1 if an error
+ */
+Module.ecc_voprf_ristretto255_sha512_PartiallyBlind = (
+    blind,
+    blindedElement,
+    tweakedKey,
+    input,
+    inputLen,
+    info,
+    infoLen,
+    pkS,
+) => {
+    const ptr_blind = mput(blind, ecc_voprf_ristretto255_sha512_SCALARSIZE);
+    const ptr_blindedElement = mput(blindedElement, ecc_voprf_ristretto255_sha512_ELEMENTSIZE);
+    const ptr_tweakedKey = mput(tweakedKey, ecc_voprf_ristretto255_sha512_ELEMENTSIZE);
+    const ptr_input = mput(input, inputLen);
+    const ptr_info = mput(info, infoLen);
+    const ptr_pkS = mput(pkS, ecc_voprf_ristretto255_sha512_ELEMENTSIZE);
+    const fun_ret = _ecc_voprf_ristretto255_sha512_PartiallyBlind(
+        ptr_blind,
+        ptr_blindedElement,
+        ptr_tweakedKey,
+        ptr_input,
+        inputLen,
+        ptr_info,
+        infoLen,
+        ptr_pkS,
+    );
+    mget(blind, ptr_blind, ecc_voprf_ristretto255_sha512_SCALARSIZE);
+    mget(blindedElement, ptr_blindedElement, ecc_voprf_ristretto255_sha512_ELEMENTSIZE);
+    mget(tweakedKey, ptr_tweakedKey, ecc_voprf_ristretto255_sha512_ELEMENTSIZE);
+    mfree(ptr_blind, ecc_voprf_ristretto255_sha512_SCALARSIZE);
+    mfree(ptr_blindedElement, ecc_voprf_ristretto255_sha512_ELEMENTSIZE);
+    mfree(ptr_tweakedKey, ecc_voprf_ristretto255_sha512_ELEMENTSIZE);
+    mfree(ptr_input, inputLen);
+    mfree(ptr_info, infoLen);
+    mfree(ptr_pkS, ecc_voprf_ristretto255_sha512_ELEMENTSIZE);
+    return fun_ret;
+}
+
+/**
+ * 
+ *
+ * @param {Uint8Array} evaluatedElement (output) size:ecc_voprf_ristretto255_sha512_ELEMENTSIZE
+ * @param {Uint8Array} proof (output) size:ecc_voprf_ristretto255_sha512_PROOFSIZE
+ * @param {Uint8Array} skS size:ecc_voprf_ristretto255_sha512_SCALARSIZE
+ * @param {Uint8Array} blindedElement size:ecc_voprf_ristretto255_sha512_ELEMENTSIZE
+ * @param {Uint8Array} info message to blind, size:infoLen
+ * @param {number} infoLen length of `info`, it should be
+ * <
+ * = ecc_voprf_ristretto255_sha512_MAXINFOSIZE
+ * @param {Uint8Array} r size:ecc_voprf_ristretto255_sha512_SCALARSIZE
+ * @return {number} 0 on success, or -1 if an error
+ */
+Module.ecc_voprf_ristretto255_sha512_PartiallyBlindEvaluateWithScalar = (
+    evaluatedElement,
+    proof,
+    skS,
+    blindedElement,
+    info,
+    infoLen,
+    r,
+) => {
+    const ptr_evaluatedElement = mput(evaluatedElement, ecc_voprf_ristretto255_sha512_ELEMENTSIZE);
+    const ptr_proof = mput(proof, ecc_voprf_ristretto255_sha512_PROOFSIZE);
+    const ptr_skS = mput(skS, ecc_voprf_ristretto255_sha512_SCALARSIZE);
+    const ptr_blindedElement = mput(blindedElement, ecc_voprf_ristretto255_sha512_ELEMENTSIZE);
+    const ptr_info = mput(info, infoLen);
+    const ptr_r = mput(r, ecc_voprf_ristretto255_sha512_SCALARSIZE);
+    const fun_ret = _ecc_voprf_ristretto255_sha512_PartiallyBlindEvaluateWithScalar(
+        ptr_evaluatedElement,
+        ptr_proof,
+        ptr_skS,
+        ptr_blindedElement,
+        ptr_info,
+        infoLen,
+        ptr_r,
+    );
+    mget(evaluatedElement, ptr_evaluatedElement, ecc_voprf_ristretto255_sha512_ELEMENTSIZE);
+    mget(proof, ptr_proof, ecc_voprf_ristretto255_sha512_PROOFSIZE);
+    mfree(ptr_evaluatedElement, ecc_voprf_ristretto255_sha512_ELEMENTSIZE);
+    mfree(ptr_proof, ecc_voprf_ristretto255_sha512_PROOFSIZE);
+    mfree(ptr_skS, ecc_voprf_ristretto255_sha512_SCALARSIZE);
+    mfree(ptr_blindedElement, ecc_voprf_ristretto255_sha512_ELEMENTSIZE);
+    mfree(ptr_info, infoLen);
+    mfree(ptr_r, ecc_voprf_ristretto255_sha512_SCALARSIZE);
+    return fun_ret;
+}
+
+/**
+ * 
+ *
+ * @param {Uint8Array} evaluatedElement (output) size:ecc_voprf_ristretto255_sha512_ELEMENTSIZE
+ * @param {Uint8Array} proof (output) size:ecc_voprf_ristretto255_sha512_PROOFSIZE
+ * @param {Uint8Array} skS size:ecc_voprf_ristretto255_sha512_SCALARSIZE
+ * @param {Uint8Array} blindedElement size:ecc_voprf_ristretto255_sha512_ELEMENTSIZE
+ * @param {Uint8Array} info message to blind, size:infoLen
+ * @param {number} infoLen length of `info`, it should be
+ * <
+ * = ecc_voprf_ristretto255_sha512_MAXINFOSIZE
+ * @return {number} 0 on success, or -1 if an error
+ */
+Module.ecc_voprf_ristretto255_sha512_PartiallyBlindEvaluate = (
+    evaluatedElement,
+    proof,
+    skS,
+    blindedElement,
+    info,
+    infoLen,
+) => {
+    const ptr_evaluatedElement = mput(evaluatedElement, ecc_voprf_ristretto255_sha512_ELEMENTSIZE);
+    const ptr_proof = mput(proof, ecc_voprf_ristretto255_sha512_PROOFSIZE);
+    const ptr_skS = mput(skS, ecc_voprf_ristretto255_sha512_SCALARSIZE);
+    const ptr_blindedElement = mput(blindedElement, ecc_voprf_ristretto255_sha512_ELEMENTSIZE);
+    const ptr_info = mput(info, infoLen);
+    const fun_ret = _ecc_voprf_ristretto255_sha512_PartiallyBlindEvaluate(
+        ptr_evaluatedElement,
+        ptr_proof,
+        ptr_skS,
+        ptr_blindedElement,
         ptr_info,
         infoLen,
     );
-    mget(output, ptr_output, ecc_oprf_ristretto255_sha512_Nh);
-    mfree(ptr_output, ecc_oprf_ristretto255_sha512_Nh);
-    mfree(ptr_input, inputLen);
-    mfree(ptr_blind, ecc_oprf_ristretto255_sha512_SCALARSIZE);
-    mfree(ptr_evaluatedElement, ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
-    mfree(ptr_blindedElement, ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
-    mfree(ptr_pkS, ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
-    mfree(ptr_proof, ecc_oprf_ristretto255_sha512_PROOFSIZE);
+    mget(evaluatedElement, ptr_evaluatedElement, ecc_voprf_ristretto255_sha512_ELEMENTSIZE);
+    mget(proof, ptr_proof, ecc_voprf_ristretto255_sha512_PROOFSIZE);
+    mfree(ptr_evaluatedElement, ecc_voprf_ristretto255_sha512_ELEMENTSIZE);
+    mfree(ptr_proof, ecc_voprf_ristretto255_sha512_PROOFSIZE);
+    mfree(ptr_skS, ecc_voprf_ristretto255_sha512_SCALARSIZE);
+    mfree(ptr_blindedElement, ecc_voprf_ristretto255_sha512_ELEMENTSIZE);
     mfree(ptr_info, infoLen);
     return fun_ret;
 }
 
 /**
- * Same as calling `ecc_oprf_ristretto255_sha512_HashToGroup` with an
- * specified DST string.
  * 
- * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-voprf-08#section-2.1
- * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-voprf-08#section-4.1
  *
- * @param {Uint8Array} out (output) element of the group, size:ecc_oprf_ristretto255_sha512_ELEMENTSIZE
+ * @param {Uint8Array} output (output) size:ecc_voprf_ristretto255_sha512_Nh
+ * @param {Uint8Array} input the input message, size:inputLen
+ * @param {number} inputLen the length of `input`
+ * @param {Uint8Array} blind size:ecc_voprf_ristretto255_sha512_SCALARSIZE
+ * @param {Uint8Array} evaluatedElement size:ecc_voprf_ristretto255_sha512_ELEMENTSIZE
+ * @param {Uint8Array} blindedElement size:ecc_voprf_ristretto255_sha512_ELEMENTSIZE
+ * @param {Uint8Array} proof size:ecc_voprf_ristretto255_sha512_PROOFSIZE
+ * @param {Uint8Array} info message to blind, size:infoLen
+ * @param {number} infoLen length of `info`, it should be
+ * <
+ * = ecc_voprf_ristretto255_sha512_MAXINFOSIZE
+ * @param {Uint8Array} tweakedKey blinded element, size:ecc_voprf_ristretto255_sha512_ELEMENTSIZE
+ * @return {number} 0 on success, or -1 if an error
+ */
+Module.ecc_voprf_ristretto255_sha512_PartiallyFinalize = (
+    output,
+    input,
+    inputLen,
+    blind,
+    evaluatedElement,
+    blindedElement,
+    proof,
+    info,
+    infoLen,
+    tweakedKey,
+) => {
+    const ptr_output = mput(output, ecc_voprf_ristretto255_sha512_Nh);
+    const ptr_input = mput(input, inputLen);
+    const ptr_blind = mput(blind, ecc_voprf_ristretto255_sha512_SCALARSIZE);
+    const ptr_evaluatedElement = mput(evaluatedElement, ecc_voprf_ristretto255_sha512_ELEMENTSIZE);
+    const ptr_blindedElement = mput(blindedElement, ecc_voprf_ristretto255_sha512_ELEMENTSIZE);
+    const ptr_proof = mput(proof, ecc_voprf_ristretto255_sha512_PROOFSIZE);
+    const ptr_info = mput(info, infoLen);
+    const ptr_tweakedKey = mput(tweakedKey, ecc_voprf_ristretto255_sha512_ELEMENTSIZE);
+    const fun_ret = _ecc_voprf_ristretto255_sha512_PartiallyFinalize(
+        ptr_output,
+        ptr_input,
+        inputLen,
+        ptr_blind,
+        ptr_evaluatedElement,
+        ptr_blindedElement,
+        ptr_proof,
+        ptr_info,
+        infoLen,
+        ptr_tweakedKey,
+    );
+    mget(output, ptr_output, ecc_voprf_ristretto255_sha512_Nh);
+    mfree(ptr_output, ecc_voprf_ristretto255_sha512_Nh);
+    mfree(ptr_input, inputLen);
+    mfree(ptr_blind, ecc_voprf_ristretto255_sha512_SCALARSIZE);
+    mfree(ptr_evaluatedElement, ecc_voprf_ristretto255_sha512_ELEMENTSIZE);
+    mfree(ptr_blindedElement, ecc_voprf_ristretto255_sha512_ELEMENTSIZE);
+    mfree(ptr_proof, ecc_voprf_ristretto255_sha512_PROOFSIZE);
+    mfree(ptr_info, infoLen);
+    mfree(ptr_tweakedKey, ecc_voprf_ristretto255_sha512_ELEMENTSIZE);
+    return fun_ret;
+}
+
+/**
+ * An entity which knows both the secret key and the input can compute the PRF
+ * result using this function.
+ *
+ * @param {Uint8Array} output (output) size:ecc_voprf_ristretto255_sha512_Nh
+ * @param {Uint8Array} skS size:ecc_voprf_ristretto255_sha512_SCALARSIZE
+ * @param {Uint8Array} input the input message, size:inputLen
+ * @param {number} inputLen the length of `input`
+ * @param {Uint8Array} info message to blind, size:infoLen
+ * @param {number} infoLen length of `info`, it should be
+ * <
+ * = ecc_voprf_ristretto255_sha512_MAXINFOSIZE
+ * @return {number} 0 on success, or -1 if an error
+ */
+Module.ecc_voprf_ristretto255_sha512_PartiallyEvaluate = (
+    output,
+    skS,
+    input,
+    inputLen,
+    info,
+    infoLen,
+) => {
+    const ptr_output = mput(output, ecc_voprf_ristretto255_sha512_Nh);
+    const ptr_skS = mput(skS, ecc_voprf_ristretto255_sha512_SCALARSIZE);
+    const ptr_input = mput(input, inputLen);
+    const ptr_info = mput(info, infoLen);
+    const fun_ret = _ecc_voprf_ristretto255_sha512_PartiallyEvaluate(
+        ptr_output,
+        ptr_skS,
+        ptr_input,
+        inputLen,
+        ptr_info,
+        infoLen,
+    );
+    mget(output, ptr_output, ecc_voprf_ristretto255_sha512_Nh);
+    mfree(ptr_output, ecc_voprf_ristretto255_sha512_Nh);
+    mfree(ptr_skS, ecc_voprf_ristretto255_sha512_SCALARSIZE);
+    mfree(ptr_input, inputLen);
+    mfree(ptr_info, infoLen);
+    return fun_ret;
+}
+
+/**
+ * Same as calling `ecc_voprf_ristretto255_sha512_HashToGroup` with an
+ * specified DST string.
+ *
+ * @param {Uint8Array} out (output) element of the group, size:ecc_voprf_ristretto255_sha512_ELEMENTSIZE
  * @param {Uint8Array} input input string to map, size:inputLen
  * @param {number} inputLen length of `input`
  * @param {Uint8Array} dst domain separation tag (DST), size:dstLen
  * @param {number} dstLen length of `dst`
  */
-Module.ecc_oprf_ristretto255_sha512_HashToGroupWithDST = (
+Module.ecc_voprf_ristretto255_sha512_HashToGroupWithDST = (
     out,
     input,
     inputLen,
     dst,
     dstLen,
 ) => {
-    const ptr_out = mput(out, ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
+    const ptr_out = mput(out, ecc_voprf_ristretto255_sha512_ELEMENTSIZE);
     const ptr_input = mput(input, inputLen);
     const ptr_dst = mput(dst, dstLen);
-    _ecc_oprf_ristretto255_sha512_HashToGroupWithDST(
+    _ecc_voprf_ristretto255_sha512_HashToGroupWithDST(
         ptr_out,
         ptr_input,
         inputLen,
         ptr_dst,
         dstLen,
     );
-    mget(out, ptr_out, ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
-    mfree(ptr_out, ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
+    mget(out, ptr_out, ecc_voprf_ristretto255_sha512_ELEMENTSIZE);
+    mfree(ptr_out, ecc_voprf_ristretto255_sha512_ELEMENTSIZE);
     mfree(ptr_input, inputLen);
     mfree(ptr_dst, dstLen);
 }
 
 /**
- * Deterministically maps an array of bytes "x" to an element of "GG" in
+ * Deterministically maps an array of bytes "x" to an element of "G" in
  * the ristretto255 curve.
- * 
- * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-voprf-08#section-2.1
- * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-voprf-08#section-4.1
- * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-hash-to-curve-13#section-2.2.5
- * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-voprf-08#section-3
  *
- * @param {Uint8Array} out (output) element of the group, size:ecc_oprf_ristretto255_sha512_ELEMENTSIZE
+ * @param {Uint8Array} out (output) element of the group, size:ecc_voprf_ristretto255_sha512_ELEMENTSIZE
  * @param {Uint8Array} input input string to map, size:inputLen
  * @param {number} inputLen length of `input`
- * @param {number} mode mode to build the internal DST string (modeBase=0x00, modeVerifiable=0x01)
+ * @param {number} mode mode to build the internal DST string (OPRF, VOPRF, POPRF)
  */
-Module.ecc_oprf_ristretto255_sha512_HashToGroup = (
+Module.ecc_voprf_ristretto255_sha512_HashToGroup = (
     out,
     input,
     inputLen,
     mode,
 ) => {
-    const ptr_out = mput(out, ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
+    const ptr_out = mput(out, ecc_voprf_ristretto255_sha512_ELEMENTSIZE);
     const ptr_input = mput(input, inputLen);
-    _ecc_oprf_ristretto255_sha512_HashToGroup(
+    _ecc_voprf_ristretto255_sha512_HashToGroup(
         ptr_out,
         ptr_input,
         inputLen,
         mode,
     );
-    mget(out, ptr_out, ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
-    mfree(ptr_out, ecc_oprf_ristretto255_sha512_ELEMENTSIZE);
+    mget(out, ptr_out, ecc_voprf_ristretto255_sha512_ELEMENTSIZE);
+    mfree(ptr_out, ecc_voprf_ristretto255_sha512_ELEMENTSIZE);
     mfree(ptr_input, inputLen);
 }
 
 /**
  * 
  *
- * @param {Uint8Array} out (output) size:ecc_oprf_ristretto255_sha512_SCALARSIZE
+ * @param {Uint8Array} out (output) size:ecc_voprf_ristretto255_sha512_SCALARSIZE
  * @param {Uint8Array} input size:inputLen
  * @param {number} inputLen the length of `input`
  * @param {Uint8Array} dst size:dstLen
  * @param {number} dstLen the length of `dst`
  */
-Module.ecc_oprf_ristretto255_sha512_HashToScalarWithDST = (
+Module.ecc_voprf_ristretto255_sha512_HashToScalarWithDST = (
     out,
     input,
     inputLen,
     dst,
     dstLen,
 ) => {
-    const ptr_out = mput(out, ecc_oprf_ristretto255_sha512_SCALARSIZE);
+    const ptr_out = mput(out, ecc_voprf_ristretto255_sha512_SCALARSIZE);
     const ptr_input = mput(input, inputLen);
     const ptr_dst = mput(dst, dstLen);
-    _ecc_oprf_ristretto255_sha512_HashToScalarWithDST(
+    _ecc_voprf_ristretto255_sha512_HashToScalarWithDST(
         ptr_out,
         ptr_input,
         inputLen,
         ptr_dst,
         dstLen,
     );
-    mget(out, ptr_out, ecc_oprf_ristretto255_sha512_SCALARSIZE);
-    mfree(ptr_out, ecc_oprf_ristretto255_sha512_SCALARSIZE);
+    mget(out, ptr_out, ecc_voprf_ristretto255_sha512_SCALARSIZE);
+    mfree(ptr_out, ecc_voprf_ristretto255_sha512_SCALARSIZE);
     mfree(ptr_input, inputLen);
     mfree(ptr_dst, dstLen);
 }
@@ -2856,27 +3174,27 @@ Module.ecc_oprf_ristretto255_sha512_HashToScalarWithDST = (
 /**
  * 
  *
- * @param {Uint8Array} out (output) size:ecc_oprf_ristretto255_sha512_SCALARSIZE
+ * @param {Uint8Array} out (output) size:ecc_voprf_ristretto255_sha512_SCALARSIZE
  * @param {Uint8Array} input size:inputLen
  * @param {number} inputLen the length of `input`
  * @param {number} mode oprf mode
  */
-Module.ecc_oprf_ristretto255_sha512_HashToScalar = (
+Module.ecc_voprf_ristretto255_sha512_HashToScalar = (
     out,
     input,
     inputLen,
     mode,
 ) => {
-    const ptr_out = mput(out, ecc_oprf_ristretto255_sha512_SCALARSIZE);
+    const ptr_out = mput(out, ecc_voprf_ristretto255_sha512_SCALARSIZE);
     const ptr_input = mput(input, inputLen);
-    _ecc_oprf_ristretto255_sha512_HashToScalar(
+    _ecc_voprf_ristretto255_sha512_HashToScalar(
         ptr_out,
         ptr_input,
         inputLen,
         mode,
     );
-    mget(out, ptr_out, ecc_oprf_ristretto255_sha512_SCALARSIZE);
-    mfree(ptr_out, ecc_oprf_ristretto255_sha512_SCALARSIZE);
+    mget(out, ptr_out, ecc_voprf_ristretto255_sha512_SCALARSIZE);
+    mfree(ptr_out, ecc_voprf_ristretto255_sha512_SCALARSIZE);
     mfree(ptr_input, inputLen);
 }
 
@@ -3068,41 +3386,34 @@ Module.ecc_opaque_ristretto255_sha512_MHF_SCRYPT = ecc_opaque_ristretto255_sha51
 
 /**
  * Derive a private and public key pair deterministically from a seed.
- * 
- * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-07#section-2.1
  *
  * @param {Uint8Array} private_key (output) a private key, size:ecc_opaque_ristretto255_sha512_Nsk
  * @param {Uint8Array} public_key (output) the associated public key, size:ecc_opaque_ristretto255_sha512_Npk
- * @param {Uint8Array} seed pseudo-random byte sequence used as a seed, size:seed_len
- * @param {number} seed_len the length of `seed`
+ * @param {Uint8Array} seed pseudo-random byte sequence used as a seed, size:ecc_opaque_ristretto255_sha512_Nok
  */
 Module.ecc_opaque_ristretto255_sha512_DeriveKeyPair = (
     private_key,
     public_key,
     seed,
-    seed_len,
 ) => {
     const ptr_private_key = mput(private_key, ecc_opaque_ristretto255_sha512_Nsk);
     const ptr_public_key = mput(public_key, ecc_opaque_ristretto255_sha512_Npk);
-    const ptr_seed = mput(seed, seed_len);
+    const ptr_seed = mput(seed, ecc_opaque_ristretto255_sha512_Nok);
     _ecc_opaque_ristretto255_sha512_DeriveKeyPair(
         ptr_private_key,
         ptr_public_key,
         ptr_seed,
-        seed_len,
     );
     mget(private_key, ptr_private_key, ecc_opaque_ristretto255_sha512_Nsk);
     mget(public_key, ptr_public_key, ecc_opaque_ristretto255_sha512_Npk);
     mfree(ptr_private_key, ecc_opaque_ristretto255_sha512_Nsk);
     mfree(ptr_public_key, ecc_opaque_ristretto255_sha512_Npk);
-    mfree(ptr_seed, seed_len);
+    mfree(ptr_seed, ecc_opaque_ristretto255_sha512_Nok);
 }
 
 /**
  * Constructs a "CleartextCredentials" structure given application
  * credential information.
- * 
- * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-07#section-4
  *
  * @param {Uint8Array} cleartext_credentials (output) a CleartextCredentials structure, size:ecc_opaque_ristretto255_sha512_CLEARTEXTCREDENTIALSSIZE
  * @param {Uint8Array} server_public_key the encoded server public key for the AKE protocol, size:ecc_opaque_ristretto255_sha512_Npk
@@ -3146,8 +3457,6 @@ Module.ecc_opaque_ristretto255_sha512_CreateCleartextCredentials = (
 /**
  * Same as calling `ecc_opaque_ristretto255_sha512_EnvelopeStore` with an
  * specified `nonce`.
- * 
- * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-07#section-4.2
  *
  * @param {Uint8Array} envelope (output) size:ecc_opaque_ristretto255_sha512_Ne
  * @param {Uint8Array} client_public_key (output) size:ecc_opaque_ristretto255_sha512_Npk
@@ -3217,8 +3526,6 @@ Module.ecc_opaque_ristretto255_sha512_EnvelopeStoreWithNonce = (
  * In order to work with stack allocated memory (i.e. fixed and not dynamic
  * allocation), it's necessary to add the restriction on length of the
  * identities to less than 200 bytes.
- * 
- * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-07#section-4.2
  *
  * @param {Uint8Array} envelope (output) size:ecc_opaque_ristretto255_sha512_Ne
  * @param {Uint8Array} client_public_key (output) size:ecc_opaque_ristretto255_sha512_Npk
@@ -3280,8 +3587,6 @@ Module.ecc_opaque_ristretto255_sha512_EnvelopeStore = (
 /**
  * This functions attempts to recover the credentials from the input. On
  * success returns 0, else -1.
- * 
- * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-07#section-4.2
  *
  * @param {Uint8Array} client_private_key (output) size:ecc_opaque_ristretto255_sha512_Nsk
  * @param {Uint8Array} export_key (output) size:ecc_opaque_ristretto255_sha512_Nh
@@ -3337,8 +3642,6 @@ Module.ecc_opaque_ristretto255_sha512_EnvelopeRecover = (
 
 /**
  * Recover the public key related to the input "private_key".
- * 
- * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-07#section-2
  *
  * @param {Uint8Array} public_key (output) size:ecc_opaque_ristretto255_sha512_Npk
  * @param {Uint8Array} private_key size:ecc_opaque_ristretto255_sha512_Nsk
@@ -3363,8 +3666,6 @@ Module.ecc_opaque_ristretto255_sha512_RecoverPublicKey = (
  * 
  * This is implemented by generating a random "seed", then
  * calling internally DeriveAuthKeyPair.
- * 
- * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-07#section-2
  *
  * @param {Uint8Array} private_key (output) a private key, size:ecc_opaque_ristretto255_sha512_Nsk
  * @param {Uint8Array} public_key (output) the associated public key, size:ecc_opaque_ristretto255_sha512_Npk
@@ -3388,41 +3689,33 @@ Module.ecc_opaque_ristretto255_sha512_GenerateAuthKeyPair = (
 /**
  * Derive a private and public authentication key pair deterministically
  * from the input "seed".
- * 
- * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-07#section-4.3.1
- * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-07#section-2
  *
  * @param {Uint8Array} private_key (output) a private key, size:ecc_opaque_ristretto255_sha512_Nsk
  * @param {Uint8Array} public_key (output) the associated public key, size:ecc_opaque_ristretto255_sha512_Npk
- * @param {Uint8Array} seed pseudo-random byte sequence used as a seed, size:seed_len
- * @param {number} seed_len the length of `seed`
+ * @param {Uint8Array} seed pseudo-random byte sequence used as a seed, size:ecc_opaque_ristretto255_sha512_Nok
  */
 Module.ecc_opaque_ristretto255_sha512_DeriveAuthKeyPair = (
     private_key,
     public_key,
     seed,
-    seed_len,
 ) => {
     const ptr_private_key = mput(private_key, ecc_opaque_ristretto255_sha512_Nsk);
     const ptr_public_key = mput(public_key, ecc_opaque_ristretto255_sha512_Npk);
-    const ptr_seed = mput(seed, seed_len);
+    const ptr_seed = mput(seed, ecc_opaque_ristretto255_sha512_Nok);
     _ecc_opaque_ristretto255_sha512_DeriveAuthKeyPair(
         ptr_private_key,
         ptr_public_key,
         ptr_seed,
-        seed_len,
     );
     mget(private_key, ptr_private_key, ecc_opaque_ristretto255_sha512_Nsk);
     mget(public_key, ptr_public_key, ecc_opaque_ristretto255_sha512_Npk);
     mfree(ptr_private_key, ecc_opaque_ristretto255_sha512_Nsk);
     mfree(ptr_public_key, ecc_opaque_ristretto255_sha512_Npk);
-    mfree(ptr_seed, seed_len);
+    mfree(ptr_seed, ecc_opaque_ristretto255_sha512_Nok);
 }
 
 /**
  * Same as calling CreateRegistrationRequest with a specified blind.
- * 
- * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-07#section-5.1.1.1
  *
  * @param {Uint8Array} request (output) a RegistrationRequest structure, size:ecc_opaque_ristretto255_sha512_REGISTRATIONREQUESTSIZE
  * @param {Uint8Array} password an opaque byte string containing the client's password, size:password_len
@@ -3451,7 +3744,7 @@ Module.ecc_opaque_ristretto255_sha512_CreateRegistrationRequestWithBlind = (
 }
 
 /**
- * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-07#section-5.1.1.1
+ * 
  *
  * @param {Uint8Array} request (output) a RegistrationRequest structure, size:ecc_opaque_ristretto255_sha512_REGISTRATIONREQUESTSIZE
  * @param {Uint8Array} blind (output) an OPRF scalar value, size:ecc_opaque_ristretto255_sha512_Noe
@@ -3487,8 +3780,6 @@ Module.ecc_opaque_ristretto255_sha512_CreateRegistrationRequest = (
  * limit of credential_identifier_len
  * <
  * = 200.
- * 
- * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-07#section-5.1.1.2
  *
  * @param {Uint8Array} response (output) size:ecc_opaque_ristretto255_sha512_REGISTRATIONRESPONSESIZE
  * @param {Uint8Array} request size:ecc_opaque_ristretto255_sha512_REGISTRATIONREQUESTSIZE
@@ -3531,8 +3822,6 @@ Module.ecc_opaque_ristretto255_sha512_CreateRegistrationResponseWithOprfKey = (
  * limit of credential_identifier_len
  * <
  * = 200.
- * 
- * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-07#section-5.1.1.2
  *
  * @param {Uint8Array} response (output) a RegistrationResponse structure, size:ecc_opaque_ristretto255_sha512_REGISTRATIONRESPONSESIZE
  * @param {Uint8Array} oprf_key (output) the per-client OPRF key known only to the server, size:ecc_opaque_ristretto255_sha512_Nsk
@@ -3707,7 +3996,7 @@ Module.ecc_opaque_ristretto255_sha512_FinalizeRequest = (
 }
 
 /**
- * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-07#section-6.1.2.1
+ * 
  *
  * @param {Uint8Array} request (output) a CredentialRequest structure, size:ecc_opaque_ristretto255_sha512_CREDENTIALREQUESTSIZE
  * @param {Uint8Array} password an opaque byte string containing the client's password, size:password_len
@@ -3736,7 +4025,7 @@ Module.ecc_opaque_ristretto255_sha512_CreateCredentialRequestWithBlind = (
 }
 
 /**
- * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-07#section-6.1.2.1
+ * 
  *
  * @param {Uint8Array} request (output) a CredentialRequest structure, size:ecc_opaque_ristretto255_sha512_CREDENTIALREQUESTSIZE
  * @param {Uint8Array} blind (output) an OPRF scalar value, size:ecc_opaque_ristretto255_sha512_Noe
@@ -4106,8 +4395,6 @@ Module.ecc_opaque_ristretto255_sha512_3DH_Preamble = (
 /**
  * Computes the OPAQUE-3DH shared secret derived during the key
  * exchange protocol.
- * 
- * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-07#section-6.2.2.2
  *
  * @param {Uint8Array} ikm (output) size:96
  * @param {Uint8Array} sk1 size:32
@@ -4197,7 +4484,7 @@ Module.ecc_opaque_ristretto255_sha512_3DH_DeriveKeys = (
 }
 
 /**
- * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-07#section-6.2.3
+ * 
  *
  * @param {Uint8Array} ke1 (output) a KE1 message structure, size:ecc_opaque_ristretto255_sha512_KE1SIZE
  * @param {Uint8Array} state (input, output) a ClientState structure, size:ecc_opaque_ristretto255_sha512_CLIENTSTATESIZE
@@ -4247,7 +4534,7 @@ Module.ecc_opaque_ristretto255_sha512_3DH_ClientInitWithSecrets = (
 }
 
 /**
- * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-07#section-6.2.3
+ * 
  *
  * @param {Uint8Array} ke1 (output) a KE1 message structure, size:ecc_opaque_ristretto255_sha512_KE1SIZE
  * @param {Uint8Array} state (input, output) a ClientState structure, size:ecc_opaque_ristretto255_sha512_CLIENTSTATESIZE
@@ -4355,7 +4642,7 @@ Module.ecc_opaque_ristretto255_sha512_3DH_ClientFinish = (
 }
 
 /**
- * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-07#section-6.2.3.1
+ * 
  *
  * @param {Uint8Array} ke1 (output) size:ecc_opaque_ristretto255_sha512_KE1SIZE
  * @param {Uint8Array} state (input, output) size:ecc_opaque_ristretto255_sha512_CLIENTSTATESIZE
@@ -4397,7 +4684,7 @@ Module.ecc_opaque_ristretto255_sha512_3DH_StartWithSecrets = (
 }
 
 /**
- * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-07#section-6.2.3.1
+ * 
  *
  * @param {Uint8Array} ke1 (output) size:ecc_opaque_ristretto255_sha512_KE1SIZE
  * @param {Uint8Array} state (input, output) size:ecc_opaque_ristretto255_sha512_CLIENTSTATESIZE
@@ -4493,7 +4780,7 @@ Module.ecc_opaque_ristretto255_sha512_3DH_ClientFinalize = (
 }
 
 /**
- * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-07#section-6.2.4
+ * 
  *
  * @param {Uint8Array} ke2_raw (output) a KE2 structure, size:ecc_opaque_ristretto255_sha512_KE2SIZE
  * @param {Uint8Array} state_raw (input, output) a ServerState structure, size:ecc_opaque_ristretto255_sha512_SERVERSTATESIZE
@@ -4595,7 +4882,7 @@ Module.ecc_opaque_ristretto255_sha512_3DH_ServerInitWithSecrets = (
 }
 
 /**
- * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-07#section-6.2.4
+ * 
  *
  * @param {Uint8Array} ke2_raw (output) a KE2 structure, size:ecc_opaque_ristretto255_sha512_KE2SIZE
  * @param {Uint8Array} state_raw (input, output) a ServerState structure, size:ecc_opaque_ristretto255_sha512_SERVERSTATESIZE
@@ -4677,7 +4964,7 @@ Module.ecc_opaque_ristretto255_sha512_3DH_ServerInit = (
 }
 
 /**
- * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-07#section-6.2.4
+ * 
  *
  * @param {Uint8Array} session_key (output) the shared session secret if and only if KE3 is valid, size:64
  * @param {Uint8Array} state_raw (input, output) a ServerState structure, size:ecc_opaque_ristretto255_sha512_SERVERSTATESIZE
@@ -5296,6 +5583,1138 @@ Module.ecc_sign_eth_bls_AggregateVerify = (
     return fun_ret;
 }
 
+// frost
+
+const ecc_frost_ristretto255_sha512_SCALARSIZE = 32;
+/**
+ * Size of a scalar, since this is using the ristretto255
+ * curve the size is 32 bytes.
+ *
+ * @type {number}
+ */
+Module.ecc_frost_ristretto255_sha512_SCALARSIZE = ecc_frost_ristretto255_sha512_SCALARSIZE;
+
+const ecc_frost_ristretto255_sha512_ELEMENTSIZE = 32;
+/**
+ * Size of an element, since this is using the ristretto255
+ * curve the size is 32 bytes.
+ *
+ * @type {number}
+ */
+Module.ecc_frost_ristretto255_sha512_ELEMENTSIZE = ecc_frost_ristretto255_sha512_ELEMENTSIZE;
+
+const ecc_frost_ristretto255_sha512_POINTSIZE = 64;
+/**
+ * Size of a scalar point for polynomial evaluation (x, y).
+ *
+ * @type {number}
+ */
+Module.ecc_frost_ristretto255_sha512_POINTSIZE = ecc_frost_ristretto255_sha512_POINTSIZE;
+
+const ecc_frost_ristretto255_sha512_COMMITMENTSIZE = 96;
+/**
+ * *
+ *
+ * @type {number}
+ */
+Module.ecc_frost_ristretto255_sha512_COMMITMENTSIZE = ecc_frost_ristretto255_sha512_COMMITMENTSIZE;
+
+const ecc_frost_ristretto255_sha512_BINDINGFACTORSIZE = 64;
+/**
+ * *
+ *
+ * @type {number}
+ */
+Module.ecc_frost_ristretto255_sha512_BINDINGFACTORSIZE = ecc_frost_ristretto255_sha512_BINDINGFACTORSIZE;
+
+const ecc_frost_ristretto255_sha512_SECRETKEYSIZE = 32;
+/**
+ * Size of a private key, since this is using the ristretto255
+ * curve the size is 32 bytes, the size of an scalar.
+ *
+ * @type {number}
+ */
+Module.ecc_frost_ristretto255_sha512_SECRETKEYSIZE = ecc_frost_ristretto255_sha512_SECRETKEYSIZE;
+
+const ecc_frost_ristretto255_sha512_PUBLICKEYSIZE = 32;
+/**
+ * Size of a public key, since this is using the ristretto255
+ * curve the size is 32 bytes, the size of a group element.
+ *
+ * @type {number}
+ */
+Module.ecc_frost_ristretto255_sha512_PUBLICKEYSIZE = ecc_frost_ristretto255_sha512_PUBLICKEYSIZE;
+
+const ecc_frost_ristretto255_sha512_SIGNATURESIZE = 64;
+/**
+ * Size of a schnorr signature, a pair of a scalar and an element.
+ *
+ * @type {number}
+ */
+Module.ecc_frost_ristretto255_sha512_SIGNATURESIZE = ecc_frost_ristretto255_sha512_SIGNATURESIZE;
+
+const ecc_frost_ristretto255_sha512_NONCEPAIRSIZE = 64;
+/**
+ * Size of a nonce tuple.
+ *
+ * @type {number}
+ */
+Module.ecc_frost_ristretto255_sha512_NONCEPAIRSIZE = ecc_frost_ristretto255_sha512_NONCEPAIRSIZE;
+
+const ecc_frost_ristretto255_sha512_NONCECOMMITMENTPAIRSIZE = 64;
+/**
+ * Size of a nonce commitment tuple.
+ *
+ * @type {number}
+ */
+Module.ecc_frost_ristretto255_sha512_NONCECOMMITMENTPAIRSIZE = ecc_frost_ristretto255_sha512_NONCECOMMITMENTPAIRSIZE;
+
+/**
+ * 
+ *
+ * @param {Uint8Array} nonce (output) size:ecc_frost_ristretto255_sha512_SCALARSIZE
+ * @param {Uint8Array} secret size:ecc_frost_ristretto255_sha512_SCALARSIZE
+ * @param {Uint8Array} random_bytes size:32
+ */
+Module.ecc_frost_ristretto255_sha512_nonce_generate_with_randomness = (
+    nonce,
+    secret,
+    random_bytes,
+) => {
+    const ptr_nonce = mput(nonce, ecc_frost_ristretto255_sha512_SCALARSIZE);
+    const ptr_secret = mput(secret, ecc_frost_ristretto255_sha512_SCALARSIZE);
+    const ptr_random_bytes = mput(random_bytes, 32);
+    _ecc_frost_ristretto255_sha512_nonce_generate_with_randomness(
+        ptr_nonce,
+        ptr_secret,
+        ptr_random_bytes,
+    );
+    mget(nonce, ptr_nonce, ecc_frost_ristretto255_sha512_SCALARSIZE);
+    mfree(ptr_nonce, ecc_frost_ristretto255_sha512_SCALARSIZE);
+    mfree(ptr_secret, ecc_frost_ristretto255_sha512_SCALARSIZE);
+    mfree(ptr_random_bytes, 32);
+}
+
+/**
+ * 
+ *
+ * @param {Uint8Array} nonce (output) size:ecc_frost_ristretto255_sha512_SCALARSIZE
+ * @param {Uint8Array} secret size:ecc_frost_ristretto255_sha512_SCALARSIZE
+ */
+Module.ecc_frost_ristretto255_sha512_nonce_generate = (
+    nonce,
+    secret,
+) => {
+    const ptr_nonce = mput(nonce, ecc_frost_ristretto255_sha512_SCALARSIZE);
+    const ptr_secret = mput(secret, ecc_frost_ristretto255_sha512_SCALARSIZE);
+    _ecc_frost_ristretto255_sha512_nonce_generate(
+        ptr_nonce,
+        ptr_secret,
+    );
+    mget(nonce, ptr_nonce, ecc_frost_ristretto255_sha512_SCALARSIZE);
+    mfree(ptr_nonce, ecc_frost_ristretto255_sha512_SCALARSIZE);
+    mfree(ptr_secret, ecc_frost_ristretto255_sha512_SCALARSIZE);
+}
+
+/**
+ * Lagrange coefficients are used in FROST to evaluate a polynomial f at f(0),
+ * given a set of t other points, where f is represented as a set of coefficients.
+ *
+ * @param {Uint8Array} L_i (output) the i-th Lagrange coefficient, size:ecc_frost_ristretto255_sha512_SCALARSIZE
+ * @param {Uint8Array} x_i an x-coordinate contained in L, a scalar, size:ecc_frost_ristretto255_sha512_SCALARSIZE
+ * @param {Uint8Array} L the set of x-coordinates, each a scalar, size:L_len*ecc_frost_ristretto255_sha512_SCALARSIZE
+ * @param {number} L_len the number of x-coordinates in `L`
+ */
+Module.ecc_frost_ristretto255_sha512_derive_interpolating_value = (
+    L_i,
+    x_i,
+    L,
+    L_len,
+) => {
+    const ptr_L_i = mput(L_i, ecc_frost_ristretto255_sha512_SCALARSIZE);
+    const ptr_x_i = mput(x_i, ecc_frost_ristretto255_sha512_SCALARSIZE);
+    const ptr_L = mput(L, L_len*ecc_frost_ristretto255_sha512_SCALARSIZE);
+    _ecc_frost_ristretto255_sha512_derive_interpolating_value(
+        ptr_L_i,
+        ptr_x_i,
+        ptr_L,
+        L_len,
+    );
+    mget(L_i, ptr_L_i, ecc_frost_ristretto255_sha512_SCALARSIZE);
+    mfree(ptr_L_i, ecc_frost_ristretto255_sha512_SCALARSIZE);
+    mfree(ptr_x_i, ecc_frost_ristretto255_sha512_SCALARSIZE);
+    mfree(ptr_L, L_len*ecc_frost_ristretto255_sha512_SCALARSIZE);
+}
+
+/**
+ * This is an optimization that works like `ecc_frost_ristretto255_sha512_derive_interpolating_value`
+ * but with a set of points (x, y).
+ *
+ * @param {Uint8Array} L_i (output) the i-th Lagrange coefficient, size:ecc_frost_ristretto255_sha512_SCALARSIZE
+ * @param {Uint8Array} x_i an x-coordinate contained in L, a scalar, size:ecc_frost_ristretto255_sha512_SCALARSIZE
+ * @param {Uint8Array} L the set of (x, y)-points, size:L_len*ecc_frost_ristretto255_sha512_POINTSIZE
+ * @param {number} L_len the number of (x, y)-points in `L`
+ */
+Module.ecc_frost_ristretto255_sha512_derive_interpolating_value_with_points = (
+    L_i,
+    x_i,
+    L,
+    L_len,
+) => {
+    const ptr_L_i = mput(L_i, ecc_frost_ristretto255_sha512_SCALARSIZE);
+    const ptr_x_i = mput(x_i, ecc_frost_ristretto255_sha512_SCALARSIZE);
+    const ptr_L = mput(L, L_len*ecc_frost_ristretto255_sha512_POINTSIZE);
+    _ecc_frost_ristretto255_sha512_derive_interpolating_value_with_points(
+        ptr_L_i,
+        ptr_x_i,
+        ptr_L,
+        L_len,
+    );
+    mget(L_i, ptr_L_i, ecc_frost_ristretto255_sha512_SCALARSIZE);
+    mfree(ptr_L_i, ecc_frost_ristretto255_sha512_SCALARSIZE);
+    mfree(ptr_x_i, ecc_frost_ristretto255_sha512_SCALARSIZE);
+    mfree(ptr_L, L_len*ecc_frost_ristretto255_sha512_POINTSIZE);
+}
+
+/**
+ * Encodes a list of participant commitments into a bytestring for use in the
+ * FROST protocol.
+ *
+ * @param {Uint8Array} out (output) size:commitment_list_len*ecc_frost_ristretto255_sha512_COMMITMENTSIZE
+ * @param {Uint8Array} commitment_list a list of commitments issued by each signer, MUST be sorted in ascending order by signer index, size:commitment_list_len*ecc_frost_ristretto255_sha512_COMMITMENTSIZE
+ * @param {number} commitment_list_len the number of elements in `commitment_list`
+ */
+Module.ecc_frost_ristretto255_sha512_encode_group_commitment_list = (
+    out,
+    commitment_list,
+    commitment_list_len,
+) => {
+    const ptr_out = mput(out, commitment_list_len*ecc_frost_ristretto255_sha512_COMMITMENTSIZE);
+    const ptr_commitment_list = mput(commitment_list, commitment_list_len*ecc_frost_ristretto255_sha512_COMMITMENTSIZE);
+    _ecc_frost_ristretto255_sha512_encode_group_commitment_list(
+        ptr_out,
+        ptr_commitment_list,
+        commitment_list_len,
+    );
+    mget(out, ptr_out, commitment_list_len*ecc_frost_ristretto255_sha512_COMMITMENTSIZE);
+    mfree(ptr_out, commitment_list_len*ecc_frost_ristretto255_sha512_COMMITMENTSIZE);
+    mfree(ptr_commitment_list, commitment_list_len*ecc_frost_ristretto255_sha512_COMMITMENTSIZE);
+}
+
+/**
+ * Extracts participant identifiers from a commitment list.
+ *
+ * @param {Uint8Array} identifiers (output) size:commitment_list_len*ecc_frost_ristretto255_sha512_SCALARSIZE
+ * @param {Uint8Array} commitment_list a list of commitments issued by each signer, MUST be sorted in ascending order by signer index, size:commitment_list_len*ecc_frost_ristretto255_sha512_COMMITMENTSIZE
+ * @param {number} commitment_list_len the number of elements in `commitment_list`
+ */
+Module.ecc_frost_ristretto255_sha512_participants_from_commitment_list = (
+    identifiers,
+    commitment_list,
+    commitment_list_len,
+) => {
+    const ptr_identifiers = mput(identifiers, commitment_list_len*ecc_frost_ristretto255_sha512_SCALARSIZE);
+    const ptr_commitment_list = mput(commitment_list, commitment_list_len*ecc_frost_ristretto255_sha512_COMMITMENTSIZE);
+    _ecc_frost_ristretto255_sha512_participants_from_commitment_list(
+        ptr_identifiers,
+        ptr_commitment_list,
+        commitment_list_len,
+    );
+    mget(identifiers, ptr_identifiers, commitment_list_len*ecc_frost_ristretto255_sha512_SCALARSIZE);
+    mfree(ptr_identifiers, commitment_list_len*ecc_frost_ristretto255_sha512_SCALARSIZE);
+    mfree(ptr_commitment_list, commitment_list_len*ecc_frost_ristretto255_sha512_COMMITMENTSIZE);
+}
+
+/**
+ * Extracts a binding factor from a list of binding factors.
+ *
+ * @param {Uint8Array} binding_factor (output) size:ecc_frost_ristretto255_sha512_SCALARSIZE
+ * @param {Uint8Array} binding_factor_list a list of binding factors for each participant, MUST be sorted in ascending order by signer index, size:binding_factor_list_len*ecc_frost_ristretto255_sha512_BINDINGFACTORSIZE
+ * @param {number} binding_factor_list_len the number of elements in `binding_factor_list`
+ * @param {Uint8Array} identifier participant identifier, size:ecc_frost_ristretto255_sha512_SCALARSIZE
+ * @return {number} 0 on success, or -1 if the designated participant is not known
+ */
+Module.ecc_frost_ristretto255_sha512_binding_factor_for_participant = (
+    binding_factor,
+    binding_factor_list,
+    binding_factor_list_len,
+    identifier,
+) => {
+    const ptr_binding_factor = mput(binding_factor, ecc_frost_ristretto255_sha512_SCALARSIZE);
+    const ptr_binding_factor_list = mput(binding_factor_list, binding_factor_list_len*ecc_frost_ristretto255_sha512_BINDINGFACTORSIZE);
+    const ptr_identifier = mput(identifier, ecc_frost_ristretto255_sha512_SCALARSIZE);
+    const fun_ret = _ecc_frost_ristretto255_sha512_binding_factor_for_participant(
+        ptr_binding_factor,
+        ptr_binding_factor_list,
+        binding_factor_list_len,
+        ptr_identifier,
+    );
+    mget(binding_factor, ptr_binding_factor, ecc_frost_ristretto255_sha512_SCALARSIZE);
+    mfree(ptr_binding_factor, ecc_frost_ristretto255_sha512_SCALARSIZE);
+    mfree(ptr_binding_factor_list, binding_factor_list_len*ecc_frost_ristretto255_sha512_BINDINGFACTORSIZE);
+    mfree(ptr_identifier, ecc_frost_ristretto255_sha512_SCALARSIZE);
+    return fun_ret;
+}
+
+/**
+ * Compute binding factors based on the participant commitment list and message
+ * to be signed.
+ *
+ * @param {Uint8Array} binding_factor_list (output) list of binding factors (identifier, Scalar) tuples representing the binding factors, size:commitment_list_len*ecc_frost_ristretto255_sha512_BINDINGFACTORSIZE
+ * @param {Uint8Array} commitment_list a list of commitments issued by each signer, MUST be sorted in ascending order by signer index, size:commitment_list_len*ecc_frost_ristretto255_sha512_COMMITMENTSIZE
+ * @param {number} commitment_list_len the number of elements in `commitment_list`
+ * @param {Uint8Array} msg the message to be signed, size:msg_len
+ * @param {number} msg_len the length of `msg`
+ */
+Module.ecc_frost_ristretto255_sha512_compute_binding_factors = (
+    binding_factor_list,
+    commitment_list,
+    commitment_list_len,
+    msg,
+    msg_len,
+) => {
+    const ptr_binding_factor_list = mput(binding_factor_list, commitment_list_len*ecc_frost_ristretto255_sha512_BINDINGFACTORSIZE);
+    const ptr_commitment_list = mput(commitment_list, commitment_list_len*ecc_frost_ristretto255_sha512_COMMITMENTSIZE);
+    const ptr_msg = mput(msg, msg_len);
+    _ecc_frost_ristretto255_sha512_compute_binding_factors(
+        ptr_binding_factor_list,
+        ptr_commitment_list,
+        commitment_list_len,
+        ptr_msg,
+        msg_len,
+    );
+    mget(binding_factor_list, ptr_binding_factor_list, commitment_list_len*ecc_frost_ristretto255_sha512_BINDINGFACTORSIZE);
+    mfree(ptr_binding_factor_list, commitment_list_len*ecc_frost_ristretto255_sha512_BINDINGFACTORSIZE);
+    mfree(ptr_commitment_list, commitment_list_len*ecc_frost_ristretto255_sha512_COMMITMENTSIZE);
+    mfree(ptr_msg, msg_len);
+}
+
+/**
+ * Create the group commitment from a commitment list.
+ *
+ * @param {Uint8Array} group_comm (output) size:ecc_frost_ristretto255_sha512_ELEMENTSIZE
+ * @param {Uint8Array} commitment_list a list of commitments issued by each signer, MUST be sorted in ascending order by signer index, size:commitment_list_len*ecc_frost_ristretto255_sha512_COMMITMENTSIZE
+ * @param {number} commitment_list_len the number of elements in `commitment_list`
+ * @param {Uint8Array} binding_factor_list size:ecc_frost_ristretto255_sha512_BINDINGFACTORSIZE
+ * @param {number} binding_factor_list_len the number of elements in `binding_factor_list`
+ */
+Module.ecc_frost_ristretto255_sha512_compute_group_commitment = (
+    group_comm,
+    commitment_list,
+    commitment_list_len,
+    binding_factor_list,
+    binding_factor_list_len,
+) => {
+    const ptr_group_comm = mput(group_comm, ecc_frost_ristretto255_sha512_ELEMENTSIZE);
+    const ptr_commitment_list = mput(commitment_list, commitment_list_len*ecc_frost_ristretto255_sha512_COMMITMENTSIZE);
+    const ptr_binding_factor_list = mput(binding_factor_list, ecc_frost_ristretto255_sha512_BINDINGFACTORSIZE);
+    _ecc_frost_ristretto255_sha512_compute_group_commitment(
+        ptr_group_comm,
+        ptr_commitment_list,
+        commitment_list_len,
+        ptr_binding_factor_list,
+        binding_factor_list_len,
+    );
+    mget(group_comm, ptr_group_comm, ecc_frost_ristretto255_sha512_ELEMENTSIZE);
+    mfree(ptr_group_comm, ecc_frost_ristretto255_sha512_ELEMENTSIZE);
+    mfree(ptr_commitment_list, commitment_list_len*ecc_frost_ristretto255_sha512_COMMITMENTSIZE);
+    mfree(ptr_binding_factor_list, ecc_frost_ristretto255_sha512_BINDINGFACTORSIZE);
+}
+
+/**
+ * Create the per-message challenge.
+ *
+ * @param {Uint8Array} challenge (output) a challenge Scalar value, size:ecc_frost_ristretto255_sha512_SCALARSIZE
+ * @param {Uint8Array} group_commitment an Element representing the group commitment, size:ecc_frost_ristretto255_sha512_ELEMENTSIZE
+ * @param {Uint8Array} group_public_key public key corresponding to the signer secret key share, size:ecc_frost_ristretto255_sha512_PUBLICKEYSIZE
+ * @param {Uint8Array} msg the message to be signed (sent by the Coordinator), size:msg_len
+ * @param {number} msg_len the length of `msg`
+ */
+Module.ecc_frost_ristretto255_sha512_compute_challenge = (
+    challenge,
+    group_commitment,
+    group_public_key,
+    msg,
+    msg_len,
+) => {
+    const ptr_challenge = mput(challenge, ecc_frost_ristretto255_sha512_SCALARSIZE);
+    const ptr_group_commitment = mput(group_commitment, ecc_frost_ristretto255_sha512_ELEMENTSIZE);
+    const ptr_group_public_key = mput(group_public_key, ecc_frost_ristretto255_sha512_PUBLICKEYSIZE);
+    const ptr_msg = mput(msg, msg_len);
+    _ecc_frost_ristretto255_sha512_compute_challenge(
+        ptr_challenge,
+        ptr_group_commitment,
+        ptr_group_public_key,
+        ptr_msg,
+        msg_len,
+    );
+    mget(challenge, ptr_challenge, ecc_frost_ristretto255_sha512_SCALARSIZE);
+    mfree(ptr_challenge, ecc_frost_ristretto255_sha512_SCALARSIZE);
+    mfree(ptr_group_commitment, ecc_frost_ristretto255_sha512_ELEMENTSIZE);
+    mfree(ptr_group_public_key, ecc_frost_ristretto255_sha512_PUBLICKEYSIZE);
+    mfree(ptr_msg, msg_len);
+}
+
+/**
+ * 
+ *
+ * @param {Uint8Array} nonce (output) a nonce pair, size:ecc_frost_ristretto255_sha512_NONCEPAIRSIZE
+ * @param {Uint8Array} comm (output) a nonce commitment pair, size:ecc_frost_ristretto255_sha512_NONCECOMMITMENTPAIRSIZE
+ * @param {Uint8Array} sk_i the secret key share, size:ecc_frost_ristretto255_sha512_SCALARSIZE
+ * @param {Uint8Array} hiding_nonce_randomness size:32
+ * @param {Uint8Array} binding_nonce_randomness size:32
+ */
+Module.ecc_frost_ristretto255_sha512_commit_with_randomness = (
+    nonce,
+    comm,
+    sk_i,
+    hiding_nonce_randomness,
+    binding_nonce_randomness,
+) => {
+    const ptr_nonce = mput(nonce, ecc_frost_ristretto255_sha512_NONCEPAIRSIZE);
+    const ptr_comm = mput(comm, ecc_frost_ristretto255_sha512_NONCECOMMITMENTPAIRSIZE);
+    const ptr_sk_i = mput(sk_i, ecc_frost_ristretto255_sha512_SCALARSIZE);
+    const ptr_hiding_nonce_randomness = mput(hiding_nonce_randomness, 32);
+    const ptr_binding_nonce_randomness = mput(binding_nonce_randomness, 32);
+    _ecc_frost_ristretto255_sha512_commit_with_randomness(
+        ptr_nonce,
+        ptr_comm,
+        ptr_sk_i,
+        ptr_hiding_nonce_randomness,
+        ptr_binding_nonce_randomness,
+    );
+    mget(nonce, ptr_nonce, ecc_frost_ristretto255_sha512_NONCEPAIRSIZE);
+    mget(comm, ptr_comm, ecc_frost_ristretto255_sha512_NONCECOMMITMENTPAIRSIZE);
+    mfree(ptr_nonce, ecc_frost_ristretto255_sha512_NONCEPAIRSIZE);
+    mfree(ptr_comm, ecc_frost_ristretto255_sha512_NONCECOMMITMENTPAIRSIZE);
+    mfree(ptr_sk_i, ecc_frost_ristretto255_sha512_SCALARSIZE);
+    mfree(ptr_hiding_nonce_randomness, 32);
+    mfree(ptr_binding_nonce_randomness, 32);
+}
+
+/**
+ * 
+ *
+ * @param {Uint8Array} nonce (output) a nonce pair, size:ecc_frost_ristretto255_sha512_NONCEPAIRSIZE
+ * @param {Uint8Array} comm (output) a nonce commitment pair, size:ecc_frost_ristretto255_sha512_NONCECOMMITMENTPAIRSIZE
+ * @param {Uint8Array} sk_i the secret key share, size:ecc_frost_ristretto255_sha512_SCALARSIZE
+ */
+Module.ecc_frost_ristretto255_sha512_commit = (
+    nonce,
+    comm,
+    sk_i,
+) => {
+    const ptr_nonce = mput(nonce, ecc_frost_ristretto255_sha512_NONCEPAIRSIZE);
+    const ptr_comm = mput(comm, ecc_frost_ristretto255_sha512_NONCECOMMITMENTPAIRSIZE);
+    const ptr_sk_i = mput(sk_i, ecc_frost_ristretto255_sha512_SCALARSIZE);
+    _ecc_frost_ristretto255_sha512_commit(
+        ptr_nonce,
+        ptr_comm,
+        ptr_sk_i,
+    );
+    mget(nonce, ptr_nonce, ecc_frost_ristretto255_sha512_NONCEPAIRSIZE);
+    mget(comm, ptr_comm, ecc_frost_ristretto255_sha512_NONCECOMMITMENTPAIRSIZE);
+    mfree(ptr_nonce, ecc_frost_ristretto255_sha512_NONCEPAIRSIZE);
+    mfree(ptr_comm, ecc_frost_ristretto255_sha512_NONCECOMMITMENTPAIRSIZE);
+    mfree(ptr_sk_i, ecc_frost_ristretto255_sha512_SCALARSIZE);
+}
+
+/**
+ * To produce a signature share.
+ *
+ * @param {Uint8Array} sig_share (output) signature share, size:ecc_frost_ristretto255_sha512_SCALARSIZE
+ * @param {Uint8Array} identifier identifier of the signer. Note identifier will never equal 0, size:ecc_frost_ristretto255_sha512_SCALARSIZE
+ * @param {Uint8Array} sk_i signer secret key share, size:ecc_frost_ristretto255_sha512_SECRETKEYSIZE
+ * @param {Uint8Array} group_public_key public key corresponding to the signer secret key share, size:ecc_frost_ristretto255_sha512_PUBLICKEYSIZE
+ * @param {Uint8Array} nonce_i pair of scalar values generated in round one, size:ecc_frost_ristretto255_sha512_NONCEPAIRSIZE
+ * @param {Uint8Array} msg the message to be signed (sent by the Coordinator), size:msg_len
+ * @param {number} msg_len the length of `msg`
+ * @param {Uint8Array} commitment_list a list of commitments issued by each signer, MUST be sorted in ascending order by signer index, size:commitment_list_len*ecc_frost_ristretto255_sha512_COMMITMENTSIZE
+ * @param {number} commitment_list_len the number of elements in `commitment_list`
+ */
+Module.ecc_frost_ristretto255_sha512_sign = (
+    sig_share,
+    identifier,
+    sk_i,
+    group_public_key,
+    nonce_i,
+    msg,
+    msg_len,
+    commitment_list,
+    commitment_list_len,
+) => {
+    const ptr_sig_share = mput(sig_share, ecc_frost_ristretto255_sha512_SCALARSIZE);
+    const ptr_identifier = mput(identifier, ecc_frost_ristretto255_sha512_SCALARSIZE);
+    const ptr_sk_i = mput(sk_i, ecc_frost_ristretto255_sha512_SECRETKEYSIZE);
+    const ptr_group_public_key = mput(group_public_key, ecc_frost_ristretto255_sha512_PUBLICKEYSIZE);
+    const ptr_nonce_i = mput(nonce_i, ecc_frost_ristretto255_sha512_NONCEPAIRSIZE);
+    const ptr_msg = mput(msg, msg_len);
+    const ptr_commitment_list = mput(commitment_list, commitment_list_len*ecc_frost_ristretto255_sha512_COMMITMENTSIZE);
+    _ecc_frost_ristretto255_sha512_sign(
+        ptr_sig_share,
+        ptr_identifier,
+        ptr_sk_i,
+        ptr_group_public_key,
+        ptr_nonce_i,
+        ptr_msg,
+        msg_len,
+        ptr_commitment_list,
+        commitment_list_len,
+    );
+    mget(sig_share, ptr_sig_share, ecc_frost_ristretto255_sha512_SCALARSIZE);
+    mfree(ptr_sig_share, ecc_frost_ristretto255_sha512_SCALARSIZE);
+    mfree(ptr_identifier, ecc_frost_ristretto255_sha512_SCALARSIZE);
+    mfree(ptr_sk_i, ecc_frost_ristretto255_sha512_SECRETKEYSIZE);
+    mfree(ptr_group_public_key, ecc_frost_ristretto255_sha512_PUBLICKEYSIZE);
+    mfree(ptr_nonce_i, ecc_frost_ristretto255_sha512_NONCEPAIRSIZE);
+    mfree(ptr_msg, msg_len);
+    mfree(ptr_commitment_list, commitment_list_len*ecc_frost_ristretto255_sha512_COMMITMENTSIZE);
+}
+
+/**
+ * Performs the aggregate operation to obtain the resulting signature.
+ *
+ * @param {Uint8Array} signature (output) a Schnorr signature consisting of an Element and Scalar value, size:ecc_frost_ristretto255_sha512_SIGNATURESIZE
+ * @param {Uint8Array} commitment_list the group commitment returned by compute_group_commitment, size:commitment_list_len*ecc_frost_ristretto255_sha512_PUBLICKEYSIZE
+ * @param {number} commitment_list_len the group commitment returned by compute_group_commitment, size:ecc_frost_ristretto255_sha512_PUBLICKEYSIZE
+ * @param {Uint8Array} msg the message to be signed (sent by the Coordinator), size:msg_len
+ * @param {number} msg_len the length of `msg`
+ * @param {Uint8Array} sig_shares a set of signature shares z_i for each signer, size:sig_shares_len*ecc_frost_ristretto255_sha512_SCALARSIZE
+ * @param {number} sig_shares_len the number of elements in `sig_shares`, must satisfy THRESHOLD_LIMIT
+ * <
+ * = sig_shares_len
+ * <
+ * = MAX_SIGNERS
+ */
+Module.ecc_frost_ristretto255_sha512_aggregate = (
+    signature,
+    commitment_list,
+    commitment_list_len,
+    msg,
+    msg_len,
+    sig_shares,
+    sig_shares_len,
+) => {
+    const ptr_signature = mput(signature, ecc_frost_ristretto255_sha512_SIGNATURESIZE);
+    const ptr_commitment_list = mput(commitment_list, commitment_list_len*ecc_frost_ristretto255_sha512_PUBLICKEYSIZE);
+    const ptr_msg = mput(msg, msg_len);
+    const ptr_sig_shares = mput(sig_shares, sig_shares_len*ecc_frost_ristretto255_sha512_SCALARSIZE);
+    _ecc_frost_ristretto255_sha512_aggregate(
+        ptr_signature,
+        ptr_commitment_list,
+        commitment_list_len,
+        ptr_msg,
+        msg_len,
+        ptr_sig_shares,
+        sig_shares_len,
+    );
+    mget(signature, ptr_signature, ecc_frost_ristretto255_sha512_SIGNATURESIZE);
+    mfree(ptr_signature, ecc_frost_ristretto255_sha512_SIGNATURESIZE);
+    mfree(ptr_commitment_list, commitment_list_len*ecc_frost_ristretto255_sha512_PUBLICKEYSIZE);
+    mfree(ptr_msg, msg_len);
+    mfree(ptr_sig_shares, sig_shares_len*ecc_frost_ristretto255_sha512_SCALARSIZE);
+}
+
+/**
+ * Check that the signature share is valid.
+ *
+ * @param {Uint8Array} identifier identifier of the signer. Note identifier will never equal 0, size:ecc_frost_ristretto255_sha512_SCALARSIZE
+ * @param {Uint8Array} public_key_share_i the public key for the ith signer, size:ecc_frost_ristretto255_sha512_PUBLICKEYSIZE
+ * @param {Uint8Array} comm_i pair of Element values (hiding_nonce_commitment, binding_nonce_commitment) generated in round one from the ith signer, size:ecc_frost_ristretto255_sha512_NONCECOMMITMENTPAIRSIZE
+ * @param {Uint8Array} sig_share_i a Scalar value indicating the signature share as produced in round two from the ith signer, size:ecc_frost_ristretto255_sha512_SCALARSIZE
+ * @param {Uint8Array} commitment_list a list of commitments issued by each signer, MUST be sorted in ascending order by signer index, size:commitment_list_len*ecc_frost_ristretto255_sha512_COMMITMENTSIZE
+ * @param {number} commitment_list_len the number of elements in `commitment_list`
+ * @param {Uint8Array} group_public_key the public key for the group, size:ecc_frost_ristretto255_sha512_PUBLICKEYSIZE
+ * @param {Uint8Array} msg the message to be signed (sent by the Coordinator), size:msg_len
+ * @param {number} msg_len the length of `msg`
+ * @return {number} 1 if the signature share is valid, and 0 otherwise.
+ */
+Module.ecc_frost_ristretto255_sha512_verify_signature_share = (
+    identifier,
+    public_key_share_i,
+    comm_i,
+    sig_share_i,
+    commitment_list,
+    commitment_list_len,
+    group_public_key,
+    msg,
+    msg_len,
+) => {
+    const ptr_identifier = mput(identifier, ecc_frost_ristretto255_sha512_SCALARSIZE);
+    const ptr_public_key_share_i = mput(public_key_share_i, ecc_frost_ristretto255_sha512_PUBLICKEYSIZE);
+    const ptr_comm_i = mput(comm_i, ecc_frost_ristretto255_sha512_NONCECOMMITMENTPAIRSIZE);
+    const ptr_sig_share_i = mput(sig_share_i, ecc_frost_ristretto255_sha512_SCALARSIZE);
+    const ptr_commitment_list = mput(commitment_list, commitment_list_len*ecc_frost_ristretto255_sha512_COMMITMENTSIZE);
+    const ptr_group_public_key = mput(group_public_key, ecc_frost_ristretto255_sha512_PUBLICKEYSIZE);
+    const ptr_msg = mput(msg, msg_len);
+    const fun_ret = _ecc_frost_ristretto255_sha512_verify_signature_share(
+        ptr_identifier,
+        ptr_public_key_share_i,
+        ptr_comm_i,
+        ptr_sig_share_i,
+        ptr_commitment_list,
+        commitment_list_len,
+        ptr_group_public_key,
+        ptr_msg,
+        msg_len,
+    );
+    mfree(ptr_identifier, ecc_frost_ristretto255_sha512_SCALARSIZE);
+    mfree(ptr_public_key_share_i, ecc_frost_ristretto255_sha512_PUBLICKEYSIZE);
+    mfree(ptr_comm_i, ecc_frost_ristretto255_sha512_NONCECOMMITMENTPAIRSIZE);
+    mfree(ptr_sig_share_i, ecc_frost_ristretto255_sha512_SCALARSIZE);
+    mfree(ptr_commitment_list, commitment_list_len*ecc_frost_ristretto255_sha512_COMMITMENTSIZE);
+    mfree(ptr_group_public_key, ecc_frost_ristretto255_sha512_PUBLICKEYSIZE);
+    mfree(ptr_msg, msg_len);
+    return fun_ret;
+}
+
+/**
+ * Map arbitrary inputs to non-zero Scalar elements of the prime-order group scalar field.
+ *
+ * @param {Uint8Array} h1 (output) size:ecc_frost_ristretto255_sha512_SCALARSIZE
+ * @param {Uint8Array} m size:m_len
+ * @param {number} m_len the length of `m`
+ */
+Module.ecc_frost_ristretto255_sha512_H1 = (
+    h1,
+    m,
+    m_len,
+) => {
+    const ptr_h1 = mput(h1, ecc_frost_ristretto255_sha512_SCALARSIZE);
+    const ptr_m = mput(m, m_len);
+    _ecc_frost_ristretto255_sha512_H1(
+        ptr_h1,
+        ptr_m,
+        m_len,
+    );
+    mget(h1, ptr_h1, ecc_frost_ristretto255_sha512_SCALARSIZE);
+    mfree(ptr_h1, ecc_frost_ristretto255_sha512_SCALARSIZE);
+    mfree(ptr_m, m_len);
+}
+
+/**
+ * Map arbitrary inputs to non-zero Scalar elements of the prime-order group scalar field.
+ * 
+ * This is a variant of H2 that folds internally all inputs in the same
+ * hash calculation.
+ *
+ * @param {Uint8Array} h1 (output) size:ecc_frost_ristretto255_sha512_SCALARSIZE
+ * @param {Uint8Array} m1 size:m1_len
+ * @param {number} m1_len the length of `m1`
+ * @param {Uint8Array} m2 size:m2_len
+ * @param {number} m2_len the length of `m2`
+ */
+Module.ecc_frost_ristretto255_sha512_H1_2 = (
+    h1,
+    m1,
+    m1_len,
+    m2,
+    m2_len,
+) => {
+    const ptr_h1 = mput(h1, ecc_frost_ristretto255_sha512_SCALARSIZE);
+    const ptr_m1 = mput(m1, m1_len);
+    const ptr_m2 = mput(m2, m2_len);
+    _ecc_frost_ristretto255_sha512_H1_2(
+        ptr_h1,
+        ptr_m1,
+        m1_len,
+        ptr_m2,
+        m2_len,
+    );
+    mget(h1, ptr_h1, ecc_frost_ristretto255_sha512_SCALARSIZE);
+    mfree(ptr_h1, ecc_frost_ristretto255_sha512_SCALARSIZE);
+    mfree(ptr_m1, m1_len);
+    mfree(ptr_m2, m2_len);
+}
+
+/**
+ * Map arbitrary inputs to non-zero Scalar elements of the prime-order group scalar field.
+ *
+ * @param {Uint8Array} h2 (output) size:ecc_frost_ristretto255_sha512_SCALARSIZE
+ * @param {Uint8Array} m size:m_len
+ * @param {number} m_len the length of `m`
+ */
+Module.ecc_frost_ristretto255_sha512_H2 = (
+    h2,
+    m,
+    m_len,
+) => {
+    const ptr_h2 = mput(h2, ecc_frost_ristretto255_sha512_SCALARSIZE);
+    const ptr_m = mput(m, m_len);
+    _ecc_frost_ristretto255_sha512_H2(
+        ptr_h2,
+        ptr_m,
+        m_len,
+    );
+    mget(h2, ptr_h2, ecc_frost_ristretto255_sha512_SCALARSIZE);
+    mfree(ptr_h2, ecc_frost_ristretto255_sha512_SCALARSIZE);
+    mfree(ptr_m, m_len);
+}
+
+/**
+ * Map arbitrary inputs to non-zero Scalar elements of the prime-order group scalar field.
+ * 
+ * This is a variant of H2 that folds internally all inputs in the same
+ * hash calculation.
+ *
+ * @param {Uint8Array} h2 (output) size:ecc_frost_ristretto255_sha512_SCALARSIZE
+ * @param {Uint8Array} m1 size:m1_len
+ * @param {number} m1_len the length of `m1`
+ * @param {Uint8Array} m2 size:m2_len
+ * @param {number} m2_len the length of `m2`
+ * @param {Uint8Array} m3 size:m3_len
+ * @param {number} m3_len the length of `m3`
+ */
+Module.ecc_frost_ristretto255_sha512_H2_3 = (
+    h2,
+    m1,
+    m1_len,
+    m2,
+    m2_len,
+    m3,
+    m3_len,
+) => {
+    const ptr_h2 = mput(h2, ecc_frost_ristretto255_sha512_SCALARSIZE);
+    const ptr_m1 = mput(m1, m1_len);
+    const ptr_m2 = mput(m2, m2_len);
+    const ptr_m3 = mput(m3, m3_len);
+    _ecc_frost_ristretto255_sha512_H2_3(
+        ptr_h2,
+        ptr_m1,
+        m1_len,
+        ptr_m2,
+        m2_len,
+        ptr_m3,
+        m3_len,
+    );
+    mget(h2, ptr_h2, ecc_frost_ristretto255_sha512_SCALARSIZE);
+    mfree(ptr_h2, ecc_frost_ristretto255_sha512_SCALARSIZE);
+    mfree(ptr_m1, m1_len);
+    mfree(ptr_m2, m2_len);
+    mfree(ptr_m3, m3_len);
+}
+
+/**
+ * This is an alias for the ciphersuite hash function with
+ * domain separation applied.
+ *
+ * @param {Uint8Array} h3 (output) size:ecc_frost_ristretto255_sha512_SCALARSIZE
+ * @param {Uint8Array} m size:m_len
+ * @param {number} m_len the length of `m`
+ */
+Module.ecc_frost_ristretto255_sha512_H3 = (
+    h3,
+    m,
+    m_len,
+) => {
+    const ptr_h3 = mput(h3, ecc_frost_ristretto255_sha512_SCALARSIZE);
+    const ptr_m = mput(m, m_len);
+    _ecc_frost_ristretto255_sha512_H3(
+        ptr_h3,
+        ptr_m,
+        m_len,
+    );
+    mget(h3, ptr_h3, ecc_frost_ristretto255_sha512_SCALARSIZE);
+    mfree(ptr_h3, ecc_frost_ristretto255_sha512_SCALARSIZE);
+    mfree(ptr_m, m_len);
+}
+
+/**
+ * This is an alias for the ciphersuite hash function with
+ * domain separation applied.
+ * 
+ * This is a variant of H3 that folds internally all inputs in the same
+ * hash calculation.
+ *
+ * @param {Uint8Array} h3 (output) size:ecc_frost_ristretto255_sha512_SCALARSIZE
+ * @param {Uint8Array} m1 size:m1_len
+ * @param {number} m1_len the length of `m1`
+ * @param {Uint8Array} m2 size:m2_len
+ * @param {number} m2_len the length of `m2`
+ */
+Module.ecc_frost_ristretto255_sha512_H3_2 = (
+    h3,
+    m1,
+    m1_len,
+    m2,
+    m2_len,
+) => {
+    const ptr_h3 = mput(h3, ecc_frost_ristretto255_sha512_SCALARSIZE);
+    const ptr_m1 = mput(m1, m1_len);
+    const ptr_m2 = mput(m2, m2_len);
+    _ecc_frost_ristretto255_sha512_H3_2(
+        ptr_h3,
+        ptr_m1,
+        m1_len,
+        ptr_m2,
+        m2_len,
+    );
+    mget(h3, ptr_h3, ecc_frost_ristretto255_sha512_SCALARSIZE);
+    mfree(ptr_h3, ecc_frost_ristretto255_sha512_SCALARSIZE);
+    mfree(ptr_m1, m1_len);
+    mfree(ptr_m2, m2_len);
+}
+
+/**
+ * Implemented by computing H(contextString || "msg" || m).
+ *
+ * @param {Uint8Array} h4 (output) size:64
+ * @param {Uint8Array} m size:m_len
+ * @param {number} m_len the length of `m`
+ */
+Module.ecc_frost_ristretto255_sha512_H4 = (
+    h4,
+    m,
+    m_len,
+) => {
+    const ptr_h4 = mput(h4, 64);
+    const ptr_m = mput(m, m_len);
+    _ecc_frost_ristretto255_sha512_H4(
+        ptr_h4,
+        ptr_m,
+        m_len,
+    );
+    mget(h4, ptr_h4, 64);
+    mfree(ptr_h4, 64);
+    mfree(ptr_m, m_len);
+}
+
+/**
+ * Implemented by computing H(contextString || "com" || m).
+ *
+ * @param {Uint8Array} h5 (output) size:64
+ * @param {Uint8Array} m size:m_len
+ * @param {number} m_len the length of `m`
+ */
+Module.ecc_frost_ristretto255_sha512_H5 = (
+    h5,
+    m,
+    m_len,
+) => {
+    const ptr_h5 = mput(h5, 64);
+    const ptr_m = mput(m, m_len);
+    _ecc_frost_ristretto255_sha512_H5(
+        ptr_h5,
+        ptr_m,
+        m_len,
+    );
+    mget(h5, ptr_h5, 64);
+    mfree(ptr_h5, 64);
+    mfree(ptr_m, m_len);
+}
+
+/**
+ * Generate a single-party setting Schnorr signature.
+ *
+ * @param {Uint8Array} signature (output) signature, size:ecc_frost_ristretto255_sha512_SIGNATURESIZE
+ * @param {Uint8Array} msg message to be signed, size:msg_len
+ * @param {number} msg_len the length of `msg`
+ * @param {Uint8Array} SK private key, a scalar, size:ecc_frost_ristretto255_sha512_SECRETKEYSIZE
+ */
+Module.ecc_frost_ristretto255_sha512_prime_order_sign = (
+    signature,
+    msg,
+    msg_len,
+    SK,
+) => {
+    const ptr_signature = mput(signature, ecc_frost_ristretto255_sha512_SIGNATURESIZE);
+    const ptr_msg = mput(msg, msg_len);
+    const ptr_SK = mput(SK, ecc_frost_ristretto255_sha512_SECRETKEYSIZE);
+    _ecc_frost_ristretto255_sha512_prime_order_sign(
+        ptr_signature,
+        ptr_msg,
+        msg_len,
+        ptr_SK,
+    );
+    mget(signature, ptr_signature, ecc_frost_ristretto255_sha512_SIGNATURESIZE);
+    mfree(ptr_signature, ecc_frost_ristretto255_sha512_SIGNATURESIZE);
+    mfree(ptr_msg, msg_len);
+    mfree(ptr_SK, ecc_frost_ristretto255_sha512_SECRETKEYSIZE);
+}
+
+/**
+ * Verify a Schnorr signature.
+ *
+ * @param {Uint8Array} msg signed message, size:msg_len
+ * @param {number} msg_len the length of `msg`
+ * @param {Uint8Array} signature signature, size:ecc_frost_ristretto255_sha512_SIGNATURESIZE
+ * @param {Uint8Array} PK public key, a group element, size:ecc_frost_ristretto255_sha512_PUBLICKEYSIZE
+ * @return {number} 1 if signature is valid, and 0 otherwise
+ */
+Module.ecc_frost_ristretto255_sha512_prime_order_verify = (
+    msg,
+    msg_len,
+    signature,
+    PK,
+) => {
+    const ptr_msg = mput(msg, msg_len);
+    const ptr_signature = mput(signature, ecc_frost_ristretto255_sha512_SIGNATURESIZE);
+    const ptr_PK = mput(PK, ecc_frost_ristretto255_sha512_PUBLICKEYSIZE);
+    const fun_ret = _ecc_frost_ristretto255_sha512_prime_order_verify(
+        ptr_msg,
+        msg_len,
+        ptr_signature,
+        ptr_PK,
+    );
+    mfree(ptr_msg, msg_len);
+    mfree(ptr_signature, ecc_frost_ristretto255_sha512_SIGNATURESIZE);
+    mfree(ptr_PK, ecc_frost_ristretto255_sha512_PUBLICKEYSIZE);
+    return fun_ret;
+}
+
+/**
+ * 
+ *
+ * @param {Uint8Array} participant_private_keys (output) MAX_PARTICIPANTS shares of the secret key s, each a tuple consisting of the participant identifier (a NonZeroScalar) and the key share (a Scalar), size:n*ecc_frost_ristretto255_sha512_POINTSIZE
+ * @param {Uint8Array} group_public_key (output) public key corresponding to the group signing key, an Element, size:ecc_frost_ristretto255_sha512_ELEMENTSIZE
+ * @param {Uint8Array} vss_commitment (output) a vector commitment of Elements in G, to each of the coefficients in the polynomial defined by secret_key_shares and whose first element is G.ScalarBaseMult(s), size:t*ecc_frost_ristretto255_sha512_ELEMENTSIZE
+ * @param {Uint8Array} polynomial_coefficients (output) size:t*ecc_frost_ristretto255_sha512_SCALARSIZE
+ * @param {Uint8Array} secret_key a group secret, a Scalar, that MUST be derived from at least Ns bytes of entropy, size:ecc_frost_ristretto255_sha512_SCALARSIZE
+ * @param {number} n the number of shares to generate
+ * @param {number} t the threshold of the secret sharing scheme
+ * @param {Uint8Array} coefficients size:(t-1)*ecc_frost_ristretto255_sha512_SCALARSIZE
+ */
+Module.ecc_frost_ristretto255_sha512_trusted_dealer_keygen_with_coefficients = (
+    participant_private_keys,
+    group_public_key,
+    vss_commitment,
+    polynomial_coefficients,
+    secret_key,
+    n,
+    t,
+    coefficients,
+) => {
+    const ptr_participant_private_keys = mput(participant_private_keys, n*ecc_frost_ristretto255_sha512_POINTSIZE);
+    const ptr_group_public_key = mput(group_public_key, ecc_frost_ristretto255_sha512_ELEMENTSIZE);
+    const ptr_vss_commitment = mput(vss_commitment, t*ecc_frost_ristretto255_sha512_ELEMENTSIZE);
+    const ptr_polynomial_coefficients = mput(polynomial_coefficients, t*ecc_frost_ristretto255_sha512_SCALARSIZE);
+    const ptr_secret_key = mput(secret_key, ecc_frost_ristretto255_sha512_SCALARSIZE);
+    const ptr_coefficients = mput(coefficients, (t-1)*ecc_frost_ristretto255_sha512_SCALARSIZE);
+    _ecc_frost_ristretto255_sha512_trusted_dealer_keygen_with_coefficients(
+        ptr_participant_private_keys,
+        ptr_group_public_key,
+        ptr_vss_commitment,
+        ptr_polynomial_coefficients,
+        ptr_secret_key,
+        n,
+        t,
+        ptr_coefficients,
+    );
+    mget(participant_private_keys, ptr_participant_private_keys, n*ecc_frost_ristretto255_sha512_POINTSIZE);
+    mget(group_public_key, ptr_group_public_key, ecc_frost_ristretto255_sha512_ELEMENTSIZE);
+    mget(vss_commitment, ptr_vss_commitment, t*ecc_frost_ristretto255_sha512_ELEMENTSIZE);
+    mget(polynomial_coefficients, ptr_polynomial_coefficients, t*ecc_frost_ristretto255_sha512_SCALARSIZE);
+    mfree(ptr_participant_private_keys, n*ecc_frost_ristretto255_sha512_POINTSIZE);
+    mfree(ptr_group_public_key, ecc_frost_ristretto255_sha512_ELEMENTSIZE);
+    mfree(ptr_vss_commitment, t*ecc_frost_ristretto255_sha512_ELEMENTSIZE);
+    mfree(ptr_polynomial_coefficients, t*ecc_frost_ristretto255_sha512_SCALARSIZE);
+    mfree(ptr_secret_key, ecc_frost_ristretto255_sha512_SCALARSIZE);
+    mfree(ptr_coefficients, (t-1)*ecc_frost_ristretto255_sha512_SCALARSIZE);
+}
+
+/**
+ * Split a secret into shares.
+ *
+ * @param {Uint8Array} secret_key_shares (output) A list of n secret shares, each of which is an element of F, size:n*ecc_frost_ristretto255_sha512_POINTSIZE
+ * @param {Uint8Array} polynomial_coefficients (output) a vector of t coefficients which uniquely determine a polynomial f, size:t*ecc_frost_ristretto255_sha512_SCALARSIZE
+ * @param {Uint8Array} s secret value to be shared, a scalar, size:ecc_frost_ristretto255_sha512_SCALARSIZE
+ * @param {Uint8Array} coefficients an array of size t - 1 with randomly generated scalars, not including the 0th coefficient of the polynomial, size:(t-1)*ecc_frost_ristretto255_sha512_SCALARSIZE
+ * @param {number} n the number of shares to generate, an integer less than 2^16
+ * @param {number} t the threshold of the secret sharing scheme, an integer greater than 0
+ * @return {number} 0 if no errors, else -1
+ */
+Module.ecc_frost_ristretto255_sha512_secret_share_shard = (
+    secret_key_shares,
+    polynomial_coefficients,
+    s,
+    coefficients,
+    n,
+    t,
+) => {
+    const ptr_secret_key_shares = mput(secret_key_shares, n*ecc_frost_ristretto255_sha512_POINTSIZE);
+    const ptr_polynomial_coefficients = mput(polynomial_coefficients, t*ecc_frost_ristretto255_sha512_SCALARSIZE);
+    const ptr_s = mput(s, ecc_frost_ristretto255_sha512_SCALARSIZE);
+    const ptr_coefficients = mput(coefficients, (t-1)*ecc_frost_ristretto255_sha512_SCALARSIZE);
+    const fun_ret = _ecc_frost_ristretto255_sha512_secret_share_shard(
+        ptr_secret_key_shares,
+        ptr_polynomial_coefficients,
+        ptr_s,
+        ptr_coefficients,
+        n,
+        t,
+    );
+    mget(secret_key_shares, ptr_secret_key_shares, n*ecc_frost_ristretto255_sha512_POINTSIZE);
+    mget(polynomial_coefficients, ptr_polynomial_coefficients, t*ecc_frost_ristretto255_sha512_SCALARSIZE);
+    mfree(ptr_secret_key_shares, n*ecc_frost_ristretto255_sha512_POINTSIZE);
+    mfree(ptr_polynomial_coefficients, t*ecc_frost_ristretto255_sha512_SCALARSIZE);
+    mfree(ptr_s, ecc_frost_ristretto255_sha512_SCALARSIZE);
+    mfree(ptr_coefficients, (t-1)*ecc_frost_ristretto255_sha512_SCALARSIZE);
+    return fun_ret;
+}
+
+/**
+ * Combines a shares list of length MIN_PARTICIPANTS to recover the secret.
+ *
+ * @param {Uint8Array} s (output) the resulting secret s that was previously split into shares, size:ecc_frost_ristretto255_sha512_SCALARSIZE
+ * @param {Uint8Array} shares a list of at minimum MIN_PARTICIPANTS secret shares, each a tuple (i, f(i)) where i and f(i) are Scalars, size:shares_len*ecc_frost_ristretto255_sha512_POINTSIZE
+ * @param {number} shares_len the number of shares in `shares`
+ * @return {number} 0 if no errors, else -1
+ */
+Module.ecc_frost_ristretto255_sha512_secret_share_combine = (
+    s,
+    shares,
+    shares_len,
+) => {
+    const ptr_s = mput(s, ecc_frost_ristretto255_sha512_SCALARSIZE);
+    const ptr_shares = mput(shares, shares_len*ecc_frost_ristretto255_sha512_POINTSIZE);
+    const fun_ret = _ecc_frost_ristretto255_sha512_secret_share_combine(
+        ptr_s,
+        ptr_shares,
+        shares_len,
+    );
+    mget(s, ptr_s, ecc_frost_ristretto255_sha512_SCALARSIZE);
+    mfree(ptr_s, ecc_frost_ristretto255_sha512_SCALARSIZE);
+    mfree(ptr_shares, shares_len*ecc_frost_ristretto255_sha512_POINTSIZE);
+    return fun_ret;
+}
+
+/**
+ * Evaluate a polynomial f at a particular input x, i.e., y = f(x)
+ * using Horner's method.
+ *
+ * @param {Uint8Array} value (output) scalar result of the polynomial evaluated at input x, size:ecc_frost_ristretto255_sha512_SCALARSIZE
+ * @param {Uint8Array} x input at which to evaluate the polynomial, a scalar, size:ecc_frost_ristretto255_sha512_SCALARSIZE
+ * @param {Uint8Array} coeffs the polynomial coefficients, a list of scalars, size:coeffs_len*ecc_frost_ristretto255_sha512_SCALARSIZE
+ * @param {number} coeffs_len the number of coefficients in `coeffs`
+ */
+Module.ecc_frost_ristretto255_sha512_polynomial_evaluate = (
+    value,
+    x,
+    coeffs,
+    coeffs_len,
+) => {
+    const ptr_value = mput(value, ecc_frost_ristretto255_sha512_SCALARSIZE);
+    const ptr_x = mput(x, ecc_frost_ristretto255_sha512_SCALARSIZE);
+    const ptr_coeffs = mput(coeffs, coeffs_len*ecc_frost_ristretto255_sha512_SCALARSIZE);
+    _ecc_frost_ristretto255_sha512_polynomial_evaluate(
+        ptr_value,
+        ptr_x,
+        ptr_coeffs,
+        coeffs_len,
+    );
+    mget(value, ptr_value, ecc_frost_ristretto255_sha512_SCALARSIZE);
+    mfree(ptr_value, ecc_frost_ristretto255_sha512_SCALARSIZE);
+    mfree(ptr_x, ecc_frost_ristretto255_sha512_SCALARSIZE);
+    mfree(ptr_coeffs, coeffs_len*ecc_frost_ristretto255_sha512_SCALARSIZE);
+}
+
+/**
+ * Recover the constant term of an interpolating polynomial defined by a set
+ * of points.
+ *
+ * @param {Uint8Array} f_zero (output) the constant term of f, i.e., f(0), a scalar, size:ecc_frost_ristretto255_sha512_SCALARSIZE
+ * @param {Uint8Array} points a set of t points with distinct x coordinates on a polynomial f, each a tuple of two Scalar values representing the x and y coordinates, size:points_len*ecc_frost_ristretto255_sha512_POINTSIZE
+ * @param {number} points_len the number of elements in `points`
+ */
+Module.ecc_frost_ristretto255_sha512_polynomial_interpolate_constant = (
+    f_zero,
+    points,
+    points_len,
+) => {
+    const ptr_f_zero = mput(f_zero, ecc_frost_ristretto255_sha512_SCALARSIZE);
+    const ptr_points = mput(points, points_len*ecc_frost_ristretto255_sha512_POINTSIZE);
+    _ecc_frost_ristretto255_sha512_polynomial_interpolate_constant(
+        ptr_f_zero,
+        ptr_points,
+        points_len,
+    );
+    mget(f_zero, ptr_f_zero, ecc_frost_ristretto255_sha512_SCALARSIZE);
+    mfree(ptr_f_zero, ecc_frost_ristretto255_sha512_SCALARSIZE);
+    mfree(ptr_points, points_len*ecc_frost_ristretto255_sha512_POINTSIZE);
+}
+
+/**
+ * Compute the commitment using a polynomial f of degree at most MIN_PARTICIPANTS-1.
+ *
+ * @param {Uint8Array} vss_commitment (output) a vector commitment to each of the coefficients in coeffs, where each item of the vector commitment is an Element, size:coeffs_len*ecc_frost_ristretto255_sha512_ELEMENTSIZE
+ * @param {Uint8Array} coeffs a vector of the MIN_PARTICIPANTS coefficients which uniquely determine a polynomial f, size:coeffs_len*ecc_frost_ristretto255_sha512_SCALARSIZE
+ * @param {number} coeffs_len the length of `coeffs`
+ */
+Module.ecc_frost_ristretto255_sha512_vss_commit = (
+    vss_commitment,
+    coeffs,
+    coeffs_len,
+) => {
+    const ptr_vss_commitment = mput(vss_commitment, coeffs_len*ecc_frost_ristretto255_sha512_ELEMENTSIZE);
+    const ptr_coeffs = mput(coeffs, coeffs_len*ecc_frost_ristretto255_sha512_SCALARSIZE);
+    _ecc_frost_ristretto255_sha512_vss_commit(
+        ptr_vss_commitment,
+        ptr_coeffs,
+        coeffs_len,
+    );
+    mget(vss_commitment, ptr_vss_commitment, coeffs_len*ecc_frost_ristretto255_sha512_ELEMENTSIZE);
+    mfree(ptr_vss_commitment, coeffs_len*ecc_frost_ristretto255_sha512_ELEMENTSIZE);
+    mfree(ptr_coeffs, coeffs_len*ecc_frost_ristretto255_sha512_SCALARSIZE);
+}
+
+/**
+ * For verification of a participant's share.
+ *
+ * @param {Uint8Array} share_i a tuple of the form (i, sk_i), size:ecc_frost_ristretto255_sha512_POINTSIZE
+ * @param {Uint8Array} vss_commitment a vector commitment to each of the coefficients in coeffs, where each item of the vector commitment is an Element, size:t*ecc_frost_ristretto255_sha512_ELEMENTSIZE
+ * @param {number} t the threshold of the secret sharing scheme
+ * @return {number} 1 if sk_i is valid, and 0 otherwise.
+ */
+Module.ecc_frost_ristretto255_sha512_vss_verify = (
+    share_i,
+    vss_commitment,
+    t,
+) => {
+    const ptr_share_i = mput(share_i, ecc_frost_ristretto255_sha512_POINTSIZE);
+    const ptr_vss_commitment = mput(vss_commitment, t*ecc_frost_ristretto255_sha512_ELEMENTSIZE);
+    const fun_ret = _ecc_frost_ristretto255_sha512_vss_verify(
+        ptr_share_i,
+        ptr_vss_commitment,
+        t,
+    );
+    mfree(ptr_share_i, ecc_frost_ristretto255_sha512_POINTSIZE);
+    mfree(ptr_vss_commitment, t*ecc_frost_ristretto255_sha512_ELEMENTSIZE);
+    return fun_ret;
+}
+
+/**
+ * Derive group info.
+ *
+ * @param {Uint8Array} PK (output) the public key representing the group, an Element, size:ecc_frost_ristretto255_sha512_ELEMENTSIZE
+ * @param {Uint8Array} participant_public_keys (output) a list of MAX_PARTICIPANTS public keys PK_i for i=1,...,MAX_PARTICIPANTS, where each PK_i is the public key, an Element, for participant i., size:n*ecc_frost_ristretto255_sha512_ELEMENTSIZE
+ * @param {number} n the number of shares to generate
+ * @param {number} t the threshold of the secret sharing scheme
+ * @param {Uint8Array} vss_commitment a VSS commitment to a secret polynomial f, a vector commitment to each of the coefficients in coeffs, where each element of the vector commitment is an Element, size:t*ecc_frost_ristretto255_sha512_ELEMENTSIZE
+ */
+Module.ecc_frost_ristretto255_sha512_derive_group_info = (
+    PK,
+    participant_public_keys,
+    n,
+    t,
+    vss_commitment,
+) => {
+    const ptr_PK = mput(PK, ecc_frost_ristretto255_sha512_ELEMENTSIZE);
+    const ptr_participant_public_keys = mput(participant_public_keys, n*ecc_frost_ristretto255_sha512_ELEMENTSIZE);
+    const ptr_vss_commitment = mput(vss_commitment, t*ecc_frost_ristretto255_sha512_ELEMENTSIZE);
+    _ecc_frost_ristretto255_sha512_derive_group_info(
+        ptr_PK,
+        ptr_participant_public_keys,
+        n,
+        t,
+        ptr_vss_commitment,
+    );
+    mget(PK, ptr_PK, ecc_frost_ristretto255_sha512_ELEMENTSIZE);
+    mget(participant_public_keys, ptr_participant_public_keys, n*ecc_frost_ristretto255_sha512_ELEMENTSIZE);
+    mfree(ptr_PK, ecc_frost_ristretto255_sha512_ELEMENTSIZE);
+    mfree(ptr_participant_public_keys, n*ecc_frost_ristretto255_sha512_ELEMENTSIZE);
+    mfree(ptr_vss_commitment, t*ecc_frost_ristretto255_sha512_ELEMENTSIZE);
+}
+
 // pre
 
 const ecc_pre_schema1_MESSAGESIZE = 576;
@@ -5754,835 +7173,4 @@ Module.ecc_pre_schema1_DecryptLevel2 = (
     mfree(ptr_sk_j, ecc_pre_schema1_PRIVATEKEYSIZE);
     mfree(ptr_spk, ecc_pre_schema1_SIGNINGPUBLICKEYSIZE);
     return fun_ret;
-}
-
-// frost
-
-const ecc_frost_ristretto255_sha512_SCALARSIZE = 32;
-/**
- * Size of a scalar, since this is using the ristretto255
- * curve the size is 32 bytes.
- *
- * @type {number}
- */
-Module.ecc_frost_ristretto255_sha512_SCALARSIZE = ecc_frost_ristretto255_sha512_SCALARSIZE;
-
-const ecc_frost_ristretto255_sha512_ELEMENTSIZE = 32;
-/**
- * Size of an element, since this is using the ristretto255
- * curve the size is 32 bytes.
- *
- * @type {number}
- */
-Module.ecc_frost_ristretto255_sha512_ELEMENTSIZE = ecc_frost_ristretto255_sha512_ELEMENTSIZE;
-
-const ecc_frost_ristretto255_sha512_SECRETKEYSIZE = 32;
-/**
- * Size of a private key, since this is using the ristretto255
- * curve the size is 32 bytes, the size of an scalar.
- *
- * @type {number}
- */
-Module.ecc_frost_ristretto255_sha512_SECRETKEYSIZE = ecc_frost_ristretto255_sha512_SECRETKEYSIZE;
-
-const ecc_frost_ristretto255_sha512_PUBLICKEYSIZE = 32;
-/**
- * Size of a public key, since this is using the ristretto255
- * curve the size is 32 bytes, the size of a group element.
- *
- * @type {number}
- */
-Module.ecc_frost_ristretto255_sha512_PUBLICKEYSIZE = ecc_frost_ristretto255_sha512_PUBLICKEYSIZE;
-
-const ecc_frost_ristretto255_sha512_SIGNATURESIZE = 64;
-/**
- * Size of a schnorr signature, a pair of a scalar and an element.
- *
- * @type {number}
- */
-Module.ecc_frost_ristretto255_sha512_SIGNATURESIZE = ecc_frost_ristretto255_sha512_SIGNATURESIZE;
-
-const ecc_frost_ristretto255_sha512_POINTSIZE = 64;
-/**
- * Size of a scalar point for polynomial evaluation (x, y).
- *
- * @type {number}
- */
-Module.ecc_frost_ristretto255_sha512_POINTSIZE = ecc_frost_ristretto255_sha512_POINTSIZE;
-
-const ecc_frost_ristretto255_sha512_NONCEPAIRSIZE = 64;
-/**
- * Size of a nonce tuple.
- *
- * @type {number}
- */
-Module.ecc_frost_ristretto255_sha512_NONCEPAIRSIZE = ecc_frost_ristretto255_sha512_NONCEPAIRSIZE;
-
-const ecc_frost_ristretto255_sha512_NONCECOMMITMENTPAIRSIZE = 64;
-/**
- * Size of a nonce commitment tuple.
- *
- * @type {number}
- */
-Module.ecc_frost_ristretto255_sha512_NONCECOMMITMENTPAIRSIZE = ecc_frost_ristretto255_sha512_NONCECOMMITMENTPAIRSIZE;
-
-const ecc_frost_ristretto255_sha512_SIGNINGCOMMITMENTSIZE = 66;
-/**
- * Size of a signing commitment structure.
- *
- * @type {number}
- */
-Module.ecc_frost_ristretto255_sha512_SIGNINGCOMMITMENTSIZE = ecc_frost_ristretto255_sha512_SIGNINGCOMMITMENTSIZE;
-
-/**
- * Map arbitrary inputs to non-zero Scalar elements of the prime-order group scalar field.
- *
- * @param {Uint8Array} h1 (output) size:ecc_frost_ristretto255_sha512_SCALARSIZE
- * @param {Uint8Array} m size:m_len
- * @param {number} m_len the length of `m`
- */
-Module.ecc_frost_ristretto255_sha512_H1 = (
-    h1,
-    m,
-    m_len,
-) => {
-    const ptr_h1 = mput(h1, ecc_frost_ristretto255_sha512_SCALARSIZE);
-    const ptr_m = mput(m, m_len);
-    _ecc_frost_ristretto255_sha512_H1(
-        ptr_h1,
-        ptr_m,
-        m_len,
-    );
-    mget(h1, ptr_h1, ecc_frost_ristretto255_sha512_SCALARSIZE);
-    mfree(ptr_h1, ecc_frost_ristretto255_sha512_SCALARSIZE);
-    mfree(ptr_m, m_len);
-}
-
-/**
- * Map arbitrary inputs to non-zero Scalar elements of the prime-order group scalar field.
- * 
- * This is a variant of H2 that folds internally all inputs in the same
- * hash calculation.
- *
- * @param {Uint8Array} h1 (output) size:ecc_frost_ristretto255_sha512_SCALARSIZE
- * @param {Uint8Array} m1 size:m1_len
- * @param {number} m1_len the length of `m1`
- * @param {Uint8Array} m2 size:m2_len
- * @param {number} m2_len the length of `m2`
- */
-Module.ecc_frost_ristretto255_sha512_H1_2 = (
-    h1,
-    m1,
-    m1_len,
-    m2,
-    m2_len,
-) => {
-    const ptr_h1 = mput(h1, ecc_frost_ristretto255_sha512_SCALARSIZE);
-    const ptr_m1 = mput(m1, m1_len);
-    const ptr_m2 = mput(m2, m2_len);
-    _ecc_frost_ristretto255_sha512_H1_2(
-        ptr_h1,
-        ptr_m1,
-        m1_len,
-        ptr_m2,
-        m2_len,
-    );
-    mget(h1, ptr_h1, ecc_frost_ristretto255_sha512_SCALARSIZE);
-    mfree(ptr_h1, ecc_frost_ristretto255_sha512_SCALARSIZE);
-    mfree(ptr_m1, m1_len);
-    mfree(ptr_m2, m2_len);
-}
-
-/**
- * Map arbitrary inputs to non-zero Scalar elements of the prime-order group scalar field.
- *
- * @param {Uint8Array} h2 (output) size:ecc_frost_ristretto255_sha512_SCALARSIZE
- * @param {Uint8Array} m size:m_len
- * @param {number} m_len the length of `m`
- */
-Module.ecc_frost_ristretto255_sha512_H2 = (
-    h2,
-    m,
-    m_len,
-) => {
-    const ptr_h2 = mput(h2, ecc_frost_ristretto255_sha512_SCALARSIZE);
-    const ptr_m = mput(m, m_len);
-    _ecc_frost_ristretto255_sha512_H2(
-        ptr_h2,
-        ptr_m,
-        m_len,
-    );
-    mget(h2, ptr_h2, ecc_frost_ristretto255_sha512_SCALARSIZE);
-    mfree(ptr_h2, ecc_frost_ristretto255_sha512_SCALARSIZE);
-    mfree(ptr_m, m_len);
-}
-
-/**
- * Map arbitrary inputs to non-zero Scalar elements of the prime-order group scalar field.
- * 
- * This is a variant of H2 that folds internally all inputs in the same
- * hash calculation.
- *
- * @param {Uint8Array} h2 (output) size:ecc_frost_ristretto255_sha512_SCALARSIZE
- * @param {Uint8Array} m1 size:m1_len
- * @param {number} m1_len the length of `m1`
- * @param {Uint8Array} m2 size:m2_len
- * @param {number} m2_len the length of `m2`
- * @param {Uint8Array} m3 size:m3_len
- * @param {number} m3_len the length of `m3`
- */
-Module.ecc_frost_ristretto255_sha512_H2_3 = (
-    h2,
-    m1,
-    m1_len,
-    m2,
-    m2_len,
-    m3,
-    m3_len,
-) => {
-    const ptr_h2 = mput(h2, ecc_frost_ristretto255_sha512_SCALARSIZE);
-    const ptr_m1 = mput(m1, m1_len);
-    const ptr_m2 = mput(m2, m2_len);
-    const ptr_m3 = mput(m3, m3_len);
-    _ecc_frost_ristretto255_sha512_H2_3(
-        ptr_h2,
-        ptr_m1,
-        m1_len,
-        ptr_m2,
-        m2_len,
-        ptr_m3,
-        m3_len,
-    );
-    mget(h2, ptr_h2, ecc_frost_ristretto255_sha512_SCALARSIZE);
-    mfree(ptr_h2, ecc_frost_ristretto255_sha512_SCALARSIZE);
-    mfree(ptr_m1, m1_len);
-    mfree(ptr_m2, m2_len);
-    mfree(ptr_m3, m3_len);
-}
-
-/**
- * This is an alias for the ciphersuite hash function with
- * domain separation applied.
- *
- * @param {Uint8Array} h3 (output) size:64
- * @param {Uint8Array} m size:m_len
- * @param {number} m_len the length of `m`
- */
-Module.ecc_frost_ristretto255_sha512_H3 = (
-    h3,
-    m,
-    m_len,
-) => {
-    const ptr_h3 = mput(h3, 64);
-    const ptr_m = mput(m, m_len);
-    _ecc_frost_ristretto255_sha512_H3(
-        ptr_h3,
-        ptr_m,
-        m_len,
-    );
-    mget(h3, ptr_h3, 64);
-    mfree(ptr_h3, 64);
-    mfree(ptr_m, m_len);
-}
-
-/**
- * Generate a single-party setting Schnorr signature.
- *
- * @param {Uint8Array} signature (output) signature, size:ecc_frost_ristretto255_sha512_SIGNATURESIZE
- * @param {Uint8Array} msg message to be signed, size:msg_len
- * @param {number} msg_len the length of `msg`
- * @param {Uint8Array} SK private key, a scalar, size:ecc_frost_ristretto255_sha512_SECRETKEYSIZE
- */
-Module.ecc_frost_ristretto255_sha512_schnorr_signature_generate = (
-    signature,
-    msg,
-    msg_len,
-    SK,
-) => {
-    const ptr_signature = mput(signature, ecc_frost_ristretto255_sha512_SIGNATURESIZE);
-    const ptr_msg = mput(msg, msg_len);
-    const ptr_SK = mput(SK, ecc_frost_ristretto255_sha512_SECRETKEYSIZE);
-    _ecc_frost_ristretto255_sha512_schnorr_signature_generate(
-        ptr_signature,
-        ptr_msg,
-        msg_len,
-        ptr_SK,
-    );
-    mget(signature, ptr_signature, ecc_frost_ristretto255_sha512_SIGNATURESIZE);
-    mfree(ptr_signature, ecc_frost_ristretto255_sha512_SIGNATURESIZE);
-    mfree(ptr_msg, msg_len);
-    mfree(ptr_SK, ecc_frost_ristretto255_sha512_SECRETKEYSIZE);
-}
-
-/**
- * Verify a Schnorr signature.
- *
- * @param {Uint8Array} msg signed message, size:msg_len
- * @param {number} msg_len the length of `msg`
- * @param {Uint8Array} signature signature, size:ecc_frost_ristretto255_sha512_SIGNATURESIZE
- * @param {Uint8Array} PK public key, a group element, size:ecc_frost_ristretto255_sha512_PUBLICKEYSIZE
- * @return {number} 1 if signature is valid, and 0 otherwise
- */
-Module.ecc_frost_ristretto255_sha512_schnorr_signature_verify = (
-    msg,
-    msg_len,
-    signature,
-    PK,
-) => {
-    const ptr_msg = mput(msg, msg_len);
-    const ptr_signature = mput(signature, ecc_frost_ristretto255_sha512_SIGNATURESIZE);
-    const ptr_PK = mput(PK, ecc_frost_ristretto255_sha512_PUBLICKEYSIZE);
-    const fun_ret = _ecc_frost_ristretto255_sha512_schnorr_signature_verify(
-        ptr_msg,
-        msg_len,
-        ptr_signature,
-        ptr_PK,
-    );
-    mfree(ptr_msg, msg_len);
-    mfree(ptr_signature, ecc_frost_ristretto255_sha512_SIGNATURESIZE);
-    mfree(ptr_PK, ecc_frost_ristretto255_sha512_PUBLICKEYSIZE);
-    return fun_ret;
-}
-
-/**
- * Evaluate a polynomial f at a particular input x, i.e., y = f(x)
- * using Horner's method.
- *
- * @param {Uint8Array} value (output) scalar result of the polynomial evaluated at input x, size:ecc_frost_ristretto255_sha512_SCALARSIZE
- * @param {Uint8Array} x input at which to evaluate the polynomial, a scalar, size:ecc_frost_ristretto255_sha512_SCALARSIZE
- * @param {Uint8Array} coeffs the polynomial coefficients, a list of scalars, size:coeffs_len*ecc_frost_ristretto255_sha512_SCALARSIZE
- * @param {number} coeffs_len the number of coefficients in `coeffs`
- */
-Module.ecc_frost_ristretto255_sha512_polynomial_evaluate = (
-    value,
-    x,
-    coeffs,
-    coeffs_len,
-) => {
-    const ptr_value = mput(value, ecc_frost_ristretto255_sha512_SCALARSIZE);
-    const ptr_x = mput(x, ecc_frost_ristretto255_sha512_SCALARSIZE);
-    const ptr_coeffs = mput(coeffs, coeffs_len*ecc_frost_ristretto255_sha512_SCALARSIZE);
-    _ecc_frost_ristretto255_sha512_polynomial_evaluate(
-        ptr_value,
-        ptr_x,
-        ptr_coeffs,
-        coeffs_len,
-    );
-    mget(value, ptr_value, ecc_frost_ristretto255_sha512_SCALARSIZE);
-    mfree(ptr_value, ecc_frost_ristretto255_sha512_SCALARSIZE);
-    mfree(ptr_x, ecc_frost_ristretto255_sha512_SCALARSIZE);
-    mfree(ptr_coeffs, coeffs_len*ecc_frost_ristretto255_sha512_SCALARSIZE);
-}
-
-/**
- * Lagrange coefficients are used in FROST to evaluate a polynomial f at f(0),
- * given a set of t other points, where f is represented as a set of coefficients.
- *
- * @param {Uint8Array} L_i (output) the i-th Lagrange coefficient, size:ecc_frost_ristretto255_sha512_SCALARSIZE
- * @param {Uint8Array} x_i an x-coordinate contained in L, a scalar, size:ecc_frost_ristretto255_sha512_SCALARSIZE
- * @param {Uint8Array} L the set of x-coordinates, each a scalar, size:L_len*ecc_frost_ristretto255_sha512_SCALARSIZE
- * @param {number} L_len the number of x-coordinates in `L`
- */
-Module.ecc_frost_ristretto255_sha512_derive_lagrange_coefficient = (
-    L_i,
-    x_i,
-    L,
-    L_len,
-) => {
-    const ptr_L_i = mput(L_i, ecc_frost_ristretto255_sha512_SCALARSIZE);
-    const ptr_x_i = mput(x_i, ecc_frost_ristretto255_sha512_SCALARSIZE);
-    const ptr_L = mput(L, L_len*ecc_frost_ristretto255_sha512_SCALARSIZE);
-    _ecc_frost_ristretto255_sha512_derive_lagrange_coefficient(
-        ptr_L_i,
-        ptr_x_i,
-        ptr_L,
-        L_len,
-    );
-    mget(L_i, ptr_L_i, ecc_frost_ristretto255_sha512_SCALARSIZE);
-    mfree(ptr_L_i, ecc_frost_ristretto255_sha512_SCALARSIZE);
-    mfree(ptr_x_i, ecc_frost_ristretto255_sha512_SCALARSIZE);
-    mfree(ptr_L, L_len*ecc_frost_ristretto255_sha512_SCALARSIZE);
-}
-
-/**
- * This is an optimization that works like `ecc_frost_ristretto255_sha512_derive_lagrange_coefficient`
- * but with a set of points (x, y).
- *
- * @param {Uint8Array} L_i (output) the i-th Lagrange coefficient, size:ecc_frost_ristretto255_sha512_SCALARSIZE
- * @param {Uint8Array} x_i an x-coordinate contained in L, a scalar, size:ecc_frost_ristretto255_sha512_SCALARSIZE
- * @param {Uint8Array} L the set of (x, y)-points, size:L_len*ecc_frost_ristretto255_sha512_POINTSIZE
- * @param {number} L_len the number of (x, y)-points in `L`
- */
-Module.ecc_frost_ristretto255_sha512_derive_lagrange_coefficient_with_points = (
-    L_i,
-    x_i,
-    L,
-    L_len,
-) => {
-    const ptr_L_i = mput(L_i, ecc_frost_ristretto255_sha512_SCALARSIZE);
-    const ptr_x_i = mput(x_i, ecc_frost_ristretto255_sha512_SCALARSIZE);
-    const ptr_L = mput(L, L_len*ecc_frost_ristretto255_sha512_POINTSIZE);
-    _ecc_frost_ristretto255_sha512_derive_lagrange_coefficient_with_points(
-        ptr_L_i,
-        ptr_x_i,
-        ptr_L,
-        L_len,
-    );
-    mget(L_i, ptr_L_i, ecc_frost_ristretto255_sha512_SCALARSIZE);
-    mfree(ptr_L_i, ecc_frost_ristretto255_sha512_SCALARSIZE);
-    mfree(ptr_x_i, ecc_frost_ristretto255_sha512_SCALARSIZE);
-    mfree(ptr_L, L_len*ecc_frost_ristretto255_sha512_POINTSIZE);
-}
-
-/**
- * Secret sharing requires "splitting" a secret, which is represented
- * as a constant term of some polynomial f of degree t. Recovering the
- * constant term occurs with a set of t points using polynomial interpolation.
- *
- * @param {Uint8Array} constant_term (output) the constant term of f, i.e., f(0), size:ecc_frost_ristretto255_sha512_SCALARSIZE
- * @param {Uint8Array} points a set of `t` points on a polynomial f, each a tuple of two scalar values representing the x and y coordinates, size:points_len*ecc_frost_ristretto255_sha512_POINTSIZE
- * @param {number} points_len the number of points in `points`
- */
-Module.ecc_frost_ristretto255_sha512_polynomial_interpolation = (
-    constant_term,
-    points,
-    points_len,
-) => {
-    const ptr_constant_term = mput(constant_term, ecc_frost_ristretto255_sha512_SCALARSIZE);
-    const ptr_points = mput(points, points_len*ecc_frost_ristretto255_sha512_POINTSIZE);
-    _ecc_frost_ristretto255_sha512_polynomial_interpolation(
-        ptr_constant_term,
-        ptr_points,
-        points_len,
-    );
-    mget(constant_term, ptr_constant_term, ecc_frost_ristretto255_sha512_SCALARSIZE);
-    mfree(ptr_constant_term, ecc_frost_ristretto255_sha512_SCALARSIZE);
-    mfree(ptr_points, points_len*ecc_frost_ristretto255_sha512_POINTSIZE);
-}
-
-/**
- * Compute the binding factor based on the signer commitment list and a message to be signed.
- *
- * @param {Uint8Array} binding_factor (output) a Scalar representing the binding factor, size:ecc_frost_ristretto255_sha512_SCALARSIZE
- * @param {Uint8Array} encoded_commitment_list an encoded commitment list, size:encoded_commitment_list_len*ecc_frost_ristretto255_sha512_SIGNINGCOMMITMENTSIZE
- * @param {number} encoded_commitment_list_len the number of elements in `encoded_commitment_list`
- * @param {Uint8Array} msg the message to be signed (sent by the Coordinator), size:msg_len
- * @param {number} msg_len the length of `msg`
- */
-Module.ecc_frost_ristretto255_sha512_compute_binding_factor = (
-    binding_factor,
-    encoded_commitment_list,
-    encoded_commitment_list_len,
-    msg,
-    msg_len,
-) => {
-    const ptr_binding_factor = mput(binding_factor, ecc_frost_ristretto255_sha512_SCALARSIZE);
-    const ptr_encoded_commitment_list = mput(encoded_commitment_list, encoded_commitment_list_len*ecc_frost_ristretto255_sha512_SIGNINGCOMMITMENTSIZE);
-    const ptr_msg = mput(msg, msg_len);
-    _ecc_frost_ristretto255_sha512_compute_binding_factor(
-        ptr_binding_factor,
-        ptr_encoded_commitment_list,
-        encoded_commitment_list_len,
-        ptr_msg,
-        msg_len,
-    );
-    mget(binding_factor, ptr_binding_factor, ecc_frost_ristretto255_sha512_SCALARSIZE);
-    mfree(ptr_binding_factor, ecc_frost_ristretto255_sha512_SCALARSIZE);
-    mfree(ptr_encoded_commitment_list, encoded_commitment_list_len*ecc_frost_ristretto255_sha512_SIGNINGCOMMITMENTSIZE);
-    mfree(ptr_msg, msg_len);
-}
-
-/**
- * Create the per-message challenge.
- *
- * @param {Uint8Array} challenge (output) a challenge Scalar value, size:ecc_frost_ristretto255_sha512_SCALARSIZE
- * @param {Uint8Array} group_commitment an Element representing the group commitment, size:ecc_frost_ristretto255_sha512_ELEMENTSIZE
- * @param {Uint8Array} group_public_key public key corresponding to the signer secret key share, size:ecc_frost_ristretto255_sha512_PUBLICKEYSIZE
- * @param {Uint8Array} msg the message to be signed (sent by the Coordinator), size:msg_len
- * @param {number} msg_len the length of `msg`
- */
-Module.ecc_frost_ristretto255_sha512_compute_challenge = (
-    challenge,
-    group_commitment,
-    group_public_key,
-    msg,
-    msg_len,
-) => {
-    const ptr_challenge = mput(challenge, ecc_frost_ristretto255_sha512_SCALARSIZE);
-    const ptr_group_commitment = mput(group_commitment, ecc_frost_ristretto255_sha512_ELEMENTSIZE);
-    const ptr_group_public_key = mput(group_public_key, ecc_frost_ristretto255_sha512_PUBLICKEYSIZE);
-    const ptr_msg = mput(msg, msg_len);
-    _ecc_frost_ristretto255_sha512_compute_challenge(
-        ptr_challenge,
-        ptr_group_commitment,
-        ptr_group_public_key,
-        ptr_msg,
-        msg_len,
-    );
-    mget(challenge, ptr_challenge, ecc_frost_ristretto255_sha512_SCALARSIZE);
-    mfree(ptr_challenge, ecc_frost_ristretto255_sha512_SCALARSIZE);
-    mfree(ptr_group_commitment, ecc_frost_ristretto255_sha512_ELEMENTSIZE);
-    mfree(ptr_group_public_key, ecc_frost_ristretto255_sha512_PUBLICKEYSIZE);
-    mfree(ptr_msg, msg_len);
-}
-
-/**
- * Generate a pair of public commitments corresponding to the nonce pair.
- *
- * @param {Uint8Array} comm (output) a nonce commitment pair, size:ecc_frost_ristretto255_sha512_NONCECOMMITMENTPAIRSIZE
- * @param {Uint8Array} nonce a nonce pair, size:ecc_frost_ristretto255_sha512_NONCEPAIRSIZE
- */
-Module.ecc_frost_ristretto255_sha512_commit_with_nonce = (
-    comm,
-    nonce,
-) => {
-    const ptr_comm = mput(comm, ecc_frost_ristretto255_sha512_NONCECOMMITMENTPAIRSIZE);
-    const ptr_nonce = mput(nonce, ecc_frost_ristretto255_sha512_NONCEPAIRSIZE);
-    _ecc_frost_ristretto255_sha512_commit_with_nonce(
-        ptr_comm,
-        ptr_nonce,
-    );
-    mget(comm, ptr_comm, ecc_frost_ristretto255_sha512_NONCECOMMITMENTPAIRSIZE);
-    mfree(ptr_comm, ecc_frost_ristretto255_sha512_NONCECOMMITMENTPAIRSIZE);
-    mfree(ptr_nonce, ecc_frost_ristretto255_sha512_NONCEPAIRSIZE);
-}
-
-/**
- * Generate a pair of nonces and their corresponding public commitments.
- *
- * @param {Uint8Array} nonce (output) a nonce pair, size:ecc_frost_ristretto255_sha512_NONCEPAIRSIZE
- * @param {Uint8Array} comm (output) a nonce commitment pair, size:ecc_frost_ristretto255_sha512_NONCECOMMITMENTPAIRSIZE
- */
-Module.ecc_frost_ristretto255_sha512_commit = (
-    nonce,
-    comm,
-) => {
-    const ptr_nonce = mput(nonce, ecc_frost_ristretto255_sha512_NONCEPAIRSIZE);
-    const ptr_comm = mput(comm, ecc_frost_ristretto255_sha512_NONCECOMMITMENTPAIRSIZE);
-    _ecc_frost_ristretto255_sha512_commit(
-        ptr_nonce,
-        ptr_comm,
-    );
-    mget(nonce, ptr_nonce, ecc_frost_ristretto255_sha512_NONCEPAIRSIZE);
-    mget(comm, ptr_comm, ecc_frost_ristretto255_sha512_NONCECOMMITMENTPAIRSIZE);
-    mfree(ptr_nonce, ecc_frost_ristretto255_sha512_NONCEPAIRSIZE);
-    mfree(ptr_comm, ecc_frost_ristretto255_sha512_NONCECOMMITMENTPAIRSIZE);
-}
-
-/**
- * Create the group commitment from a commitment list.
- *
- * @param {Uint8Array} group_comm (output) size:ecc_frost_ristretto255_sha512_ELEMENTSIZE
- * @param {Uint8Array} commitment_list a list of commitments issued by each signer, MUST be sorted in ascending order by signer index, size:commitment_list_len*ecc_frost_ristretto255_sha512_SIGNINGCOMMITMENTSIZE
- * @param {number} commitment_list_len the number of elements in `commitment_list`
- * @param {Uint8Array} binding_factor size:ecc_frost_ristretto255_sha512_SCALARSIZE
- */
-Module.ecc_frost_ristretto255_sha512_group_commitment = (
-    group_comm,
-    commitment_list,
-    commitment_list_len,
-    binding_factor,
-) => {
-    const ptr_group_comm = mput(group_comm, ecc_frost_ristretto255_sha512_ELEMENTSIZE);
-    const ptr_commitment_list = mput(commitment_list, commitment_list_len*ecc_frost_ristretto255_sha512_SIGNINGCOMMITMENTSIZE);
-    const ptr_binding_factor = mput(binding_factor, ecc_frost_ristretto255_sha512_SCALARSIZE);
-    _ecc_frost_ristretto255_sha512_group_commitment(
-        ptr_group_comm,
-        ptr_commitment_list,
-        commitment_list_len,
-        ptr_binding_factor,
-    );
-    mget(group_comm, ptr_group_comm, ecc_frost_ristretto255_sha512_ELEMENTSIZE);
-    mfree(ptr_group_comm, ecc_frost_ristretto255_sha512_ELEMENTSIZE);
-    mfree(ptr_commitment_list, commitment_list_len*ecc_frost_ristretto255_sha512_SIGNINGCOMMITMENTSIZE);
-    mfree(ptr_binding_factor, ecc_frost_ristretto255_sha512_SCALARSIZE);
-}
-
-/**
- * To produce a signature share.
- *
- * @param {Uint8Array} sig_share (output) signature share, size:ecc_frost_ristretto255_sha512_SCALARSIZE
- * @param {Uint8Array} comm_share (output) commitment share, size:ecc_frost_ristretto255_sha512_ELEMENTSIZE
- * @param {number} index index `i` of the signer. Note index will never equal `0` and must be less thant 256
- * @param {Uint8Array} sk_i signer secret key share, size:ecc_frost_ristretto255_sha512_SECRETKEYSIZE
- * @param {Uint8Array} group_public_key public key corresponding to the signer secret key share, size:ecc_frost_ristretto255_sha512_PUBLICKEYSIZE
- * @param {Uint8Array} nonce_i pair of scalar values generated in round one, size:ecc_frost_ristretto255_sha512_NONCEPAIRSIZE
- * @param {Uint8Array} comm_i pair of element values generated in round one, size:ecc_frost_ristretto255_sha512_NONCECOMMITMENTPAIRSIZE
- * @param {Uint8Array} msg the message to be signed (sent by the Coordinator), size:msg_len
- * @param {number} msg_len the length of `msg`
- * @param {Uint8Array} commitment_list a list of commitments issued by each signer, MUST be sorted in ascending order by signer index, size:commitment_list_len*ecc_frost_ristretto255_sha512_SIGNINGCOMMITMENTSIZE
- * @param {number} commitment_list_len the number of elements in `commitment_list`
- * @param {Uint8Array} participant_list a set containing identifiers for each signer, size:participant_list_len
- * @param {number} participant_list_len the number of elements in `participant_list`
- */
-Module.ecc_frost_ristretto255_sha512_sign = (
-    sig_share,
-    comm_share,
-    index,
-    sk_i,
-    group_public_key,
-    nonce_i,
-    comm_i,
-    msg,
-    msg_len,
-    commitment_list,
-    commitment_list_len,
-    participant_list,
-    participant_list_len,
-) => {
-    const ptr_sig_share = mput(sig_share, ecc_frost_ristretto255_sha512_SCALARSIZE);
-    const ptr_comm_share = mput(comm_share, ecc_frost_ristretto255_sha512_ELEMENTSIZE);
-    const ptr_sk_i = mput(sk_i, ecc_frost_ristretto255_sha512_SECRETKEYSIZE);
-    const ptr_group_public_key = mput(group_public_key, ecc_frost_ristretto255_sha512_PUBLICKEYSIZE);
-    const ptr_nonce_i = mput(nonce_i, ecc_frost_ristretto255_sha512_NONCEPAIRSIZE);
-    const ptr_comm_i = mput(comm_i, ecc_frost_ristretto255_sha512_NONCECOMMITMENTPAIRSIZE);
-    const ptr_msg = mput(msg, msg_len);
-    const ptr_commitment_list = mput(commitment_list, commitment_list_len*ecc_frost_ristretto255_sha512_SIGNINGCOMMITMENTSIZE);
-    const ptr_participant_list = mput(participant_list, participant_list_len);
-    _ecc_frost_ristretto255_sha512_sign(
-        ptr_sig_share,
-        ptr_comm_share,
-        index,
-        ptr_sk_i,
-        ptr_group_public_key,
-        ptr_nonce_i,
-        ptr_comm_i,
-        ptr_msg,
-        msg_len,
-        ptr_commitment_list,
-        commitment_list_len,
-        ptr_participant_list,
-        participant_list_len,
-    );
-    mget(sig_share, ptr_sig_share, ecc_frost_ristretto255_sha512_SCALARSIZE);
-    mget(comm_share, ptr_comm_share, ecc_frost_ristretto255_sha512_ELEMENTSIZE);
-    mfree(ptr_sig_share, ecc_frost_ristretto255_sha512_SCALARSIZE);
-    mfree(ptr_comm_share, ecc_frost_ristretto255_sha512_ELEMENTSIZE);
-    mfree(ptr_sk_i, ecc_frost_ristretto255_sha512_SECRETKEYSIZE);
-    mfree(ptr_group_public_key, ecc_frost_ristretto255_sha512_PUBLICKEYSIZE);
-    mfree(ptr_nonce_i, ecc_frost_ristretto255_sha512_NONCEPAIRSIZE);
-    mfree(ptr_comm_i, ecc_frost_ristretto255_sha512_NONCECOMMITMENTPAIRSIZE);
-    mfree(ptr_msg, msg_len);
-    mfree(ptr_commitment_list, commitment_list_len*ecc_frost_ristretto255_sha512_SIGNINGCOMMITMENTSIZE);
-    mfree(ptr_participant_list, participant_list_len);
-}
-
-/**
- * Check that the signature share is valid.
- *
- * @param {number} index Index `i` of the signer. Note index will never equal `0`.
- * @param {Uint8Array} public_key_share_i the public key for the ith signer, size:ecc_frost_ristretto255_sha512_PUBLICKEYSIZE
- * @param {Uint8Array} comm_i pair of Element values (hiding_nonce_commitment, binding_nonce_commitment) generated in round one from the ith signer, size:ecc_frost_ristretto255_sha512_NONCECOMMITMENTPAIRSIZE
- * @param {Uint8Array} sig_share_i a Scalar value indicating the signature share as produced in round two from the ith signer, size:ecc_frost_ristretto255_sha512_SCALARSIZE
- * @param {Uint8Array} commitment_list a list of commitments issued by each signer, MUST be sorted in ascending order by signer index, size:commitment_list_len*ecc_frost_ristretto255_sha512_SIGNINGCOMMITMENTSIZE
- * @param {number} commitment_list_len the number of elements in `commitment_list`
- * @param {Uint8Array} participant_list a set containing identifiers for each signer, size:participant_list_len
- * @param {number} participant_list_len the number of elements in `participant_list`
- * @param {Uint8Array} group_public_key the public key for the group, size:ecc_frost_ristretto255_sha512_PUBLICKEYSIZE
- * @param {Uint8Array} msg the message to be signed (sent by the Coordinator), size:msg_len
- * @param {number} msg_len the length of `msg`
- * @return {number} 1 if the signature share is valid, and 0 otherwise.
- */
-Module.ecc_frost_ristretto255_sha512_verify_signature_share = (
-    index,
-    public_key_share_i,
-    comm_i,
-    sig_share_i,
-    commitment_list,
-    commitment_list_len,
-    participant_list,
-    participant_list_len,
-    group_public_key,
-    msg,
-    msg_len,
-) => {
-    const ptr_public_key_share_i = mput(public_key_share_i, ecc_frost_ristretto255_sha512_PUBLICKEYSIZE);
-    const ptr_comm_i = mput(comm_i, ecc_frost_ristretto255_sha512_NONCECOMMITMENTPAIRSIZE);
-    const ptr_sig_share_i = mput(sig_share_i, ecc_frost_ristretto255_sha512_SCALARSIZE);
-    const ptr_commitment_list = mput(commitment_list, commitment_list_len*ecc_frost_ristretto255_sha512_SIGNINGCOMMITMENTSIZE);
-    const ptr_participant_list = mput(participant_list, participant_list_len);
-    const ptr_group_public_key = mput(group_public_key, ecc_frost_ristretto255_sha512_PUBLICKEYSIZE);
-    const ptr_msg = mput(msg, msg_len);
-    const fun_ret = _ecc_frost_ristretto255_sha512_verify_signature_share(
-        index,
-        ptr_public_key_share_i,
-        ptr_comm_i,
-        ptr_sig_share_i,
-        ptr_commitment_list,
-        commitment_list_len,
-        ptr_participant_list,
-        participant_list_len,
-        ptr_group_public_key,
-        ptr_msg,
-        msg_len,
-    );
-    mfree(ptr_public_key_share_i, ecc_frost_ristretto255_sha512_PUBLICKEYSIZE);
-    mfree(ptr_comm_i, ecc_frost_ristretto255_sha512_NONCECOMMITMENTPAIRSIZE);
-    mfree(ptr_sig_share_i, ecc_frost_ristretto255_sha512_SCALARSIZE);
-    mfree(ptr_commitment_list, commitment_list_len*ecc_frost_ristretto255_sha512_SIGNINGCOMMITMENTSIZE);
-    mfree(ptr_participant_list, participant_list_len);
-    mfree(ptr_group_public_key, ecc_frost_ristretto255_sha512_PUBLICKEYSIZE);
-    mfree(ptr_msg, msg_len);
-    return fun_ret;
-}
-
-/**
- * Generates a group secret s uniformly at random and uses
- * Shamir and Verifiable Secret Sharing to create secret shares
- * of s to be sent to all other participants.
- *
- * @param {Uint8Array} public_key (output) public key Element, size:ecc_frost_ristretto255_sha512_PUBLICKEYSIZE
- * @param {Uint8Array} secret_key_shares shares of the secret key, each a Scalar value, size:n*ecc_frost_ristretto255_sha512_SCALARSIZE
- * @param {number} n the number of shares to generate
- * @param {number} t the threshold of the secret sharing scheme
- * @param {Uint8Array} secret_key a secret key Scalar, size:ecc_frost_ristretto255_sha512_SCALARSIZE
- * @param {Uint8Array} coefficients size:t*ecc_frost_ristretto255_sha512_SCALARSIZE
- */
-Module.ecc_frost_ristretto255_sha512_trusted_dealer_keygen_with_secret_and_coefficients = (
-    public_key,
-    secret_key_shares,
-    n,
-    t,
-    secret_key,
-    coefficients,
-) => {
-    const ptr_public_key = mput(public_key, ecc_frost_ristretto255_sha512_PUBLICKEYSIZE);
-    const ptr_secret_key_shares = mput(secret_key_shares, n*ecc_frost_ristretto255_sha512_SCALARSIZE);
-    const ptr_secret_key = mput(secret_key, ecc_frost_ristretto255_sha512_SCALARSIZE);
-    const ptr_coefficients = mput(coefficients, t*ecc_frost_ristretto255_sha512_SCALARSIZE);
-    _ecc_frost_ristretto255_sha512_trusted_dealer_keygen_with_secret_and_coefficients(
-        ptr_public_key,
-        ptr_secret_key_shares,
-        n,
-        t,
-        ptr_secret_key,
-        ptr_coefficients,
-    );
-    mget(public_key, ptr_public_key, ecc_frost_ristretto255_sha512_PUBLICKEYSIZE);
-    mfree(ptr_public_key, ecc_frost_ristretto255_sha512_PUBLICKEYSIZE);
-    mfree(ptr_secret_key_shares, n*ecc_frost_ristretto255_sha512_SCALARSIZE);
-    mfree(ptr_secret_key, ecc_frost_ristretto255_sha512_SCALARSIZE);
-    mfree(ptr_coefficients, t*ecc_frost_ristretto255_sha512_SCALARSIZE);
-}
-
-/**
- * Generates a group secret s uniformly at random and uses
- * Shamir and Verifiable Secret Sharing to create secret shares
- * of s to be sent to all other participants.
- *
- * @param {Uint8Array} secret_key (output) a secret key Scalar, size:ecc_frost_ristretto255_sha512_SCALARSIZE
- * @param {Uint8Array} public_key (output) public key Element, size:ecc_frost_ristretto255_sha512_PUBLICKEYSIZE
- * @param {Uint8Array} secret_key_shares (output) shares of the secret key, each a Scalar value, size:n*ecc_frost_ristretto255_sha512_SCALARSIZE
- * @param {number} n the number of shares to generate
- * @param {number} t the threshold of the secret sharing scheme
- */
-Module.ecc_frost_ristretto255_sha512_trusted_dealer_keygen = (
-    secret_key,
-    public_key,
-    secret_key_shares,
-    n,
-    t,
-) => {
-    const ptr_secret_key = mput(secret_key, ecc_frost_ristretto255_sha512_SCALARSIZE);
-    const ptr_public_key = mput(public_key, ecc_frost_ristretto255_sha512_PUBLICKEYSIZE);
-    const ptr_secret_key_shares = mput(secret_key_shares, n*ecc_frost_ristretto255_sha512_SCALARSIZE);
-    _ecc_frost_ristretto255_sha512_trusted_dealer_keygen(
-        ptr_secret_key,
-        ptr_public_key,
-        ptr_secret_key_shares,
-        n,
-        t,
-    );
-    mget(secret_key, ptr_secret_key, ecc_frost_ristretto255_sha512_SCALARSIZE);
-    mget(public_key, ptr_public_key, ecc_frost_ristretto255_sha512_PUBLICKEYSIZE);
-    mget(secret_key_shares, ptr_secret_key_shares, n*ecc_frost_ristretto255_sha512_SCALARSIZE);
-    mfree(ptr_secret_key, ecc_frost_ristretto255_sha512_SCALARSIZE);
-    mfree(ptr_public_key, ecc_frost_ristretto255_sha512_PUBLICKEYSIZE);
-    mfree(ptr_secret_key_shares, n*ecc_frost_ristretto255_sha512_SCALARSIZE);
-}
-
-/**
- * Split a secret into shares.
- *
- * @param {Uint8Array} points A list of n secret shares, each of which is an element of F, size:n*ecc_frost_ristretto255_sha512_SCALARSIZE
- * @param {number} n the number of shares to generate
- * @param {number} t the threshold of the secret sharing scheme
- * @param {Uint8Array} coefficients size:t*ecc_frost_ristretto255_sha512_SCALARSIZE
- */
-Module.ecc_frost_ristretto255_sha512_secret_share_shard_with_coefficients = (
-    points,
-    n,
-    t,
-    coefficients,
-) => {
-    const ptr_points = mput(points, n*ecc_frost_ristretto255_sha512_SCALARSIZE);
-    const ptr_coefficients = mput(coefficients, t*ecc_frost_ristretto255_sha512_SCALARSIZE);
-    _ecc_frost_ristretto255_sha512_secret_share_shard_with_coefficients(
-        ptr_points,
-        n,
-        t,
-        ptr_coefficients,
-    );
-    mfree(ptr_points, n*ecc_frost_ristretto255_sha512_SCALARSIZE);
-    mfree(ptr_coefficients, t*ecc_frost_ristretto255_sha512_SCALARSIZE);
-}
-
-/**
- * Split a secret into shares.
- *
- * @param {Uint8Array} points (output) A list of n secret shares, each of which is an element of F, size:n*ecc_frost_ristretto255_sha512_SCALARSIZE
- * @param {Uint8Array} s secret to be shared, an element of F, size:ecc_frost_ristretto255_sha512_SCALARSIZE
- * @param {number} n the number of shares to generate
- * @param {number} t the threshold of the secret sharing scheme
- */
-Module.ecc_frost_ristretto255_sha512_secret_share_shard = (
-    points,
-    s,
-    n,
-    t,
-) => {
-    const ptr_points = mput(points, n*ecc_frost_ristretto255_sha512_SCALARSIZE);
-    const ptr_s = mput(s, ecc_frost_ristretto255_sha512_SCALARSIZE);
-    _ecc_frost_ristretto255_sha512_secret_share_shard(
-        ptr_points,
-        ptr_s,
-        n,
-        t,
-    );
-    mget(points, ptr_points, n*ecc_frost_ristretto255_sha512_SCALARSIZE);
-    mfree(ptr_points, n*ecc_frost_ristretto255_sha512_SCALARSIZE);
-    mfree(ptr_s, ecc_frost_ristretto255_sha512_SCALARSIZE);
-}
-
-/**
- * Performs the aggregate operation to obtain the resulting signature.
- *
- * @param {Uint8Array} signature (output) a Schnorr signature consisting of an Element and Scalar value, size:ecc_frost_ristretto255_sha512_SIGNATURESIZE
- * @param {Uint8Array} group_commitment the group commitment returned by compute_group_commitment, size:ecc_frost_ristretto255_sha512_PUBLICKEYSIZE
- * @param {Uint8Array} sig_shares a set of signature shares z_i for each signer, size:sig_shares_len*ecc_frost_ristretto255_sha512_SCALARSIZE
- * @param {number} sig_shares_len the number of elements in `sig_shares`, must satisfy THRESHOLD_LIMIT
- * <
- * = sig_shares_len
- * <
- * = MAX_SIGNERS
- */
-Module.ecc_frost_ristretto255_sha512_frost_aggregate = (
-    signature,
-    group_commitment,
-    sig_shares,
-    sig_shares_len,
-) => {
-    const ptr_signature = mput(signature, ecc_frost_ristretto255_sha512_SIGNATURESIZE);
-    const ptr_group_commitment = mput(group_commitment, ecc_frost_ristretto255_sha512_PUBLICKEYSIZE);
-    const ptr_sig_shares = mput(sig_shares, sig_shares_len*ecc_frost_ristretto255_sha512_SCALARSIZE);
-    _ecc_frost_ristretto255_sha512_frost_aggregate(
-        ptr_signature,
-        ptr_group_commitment,
-        ptr_sig_shares,
-        sig_shares_len,
-    );
-    mget(signature, ptr_signature, ecc_frost_ristretto255_sha512_SIGNATURESIZE);
-    mfree(ptr_signature, ecc_frost_ristretto255_sha512_SIGNATURESIZE);
-    mfree(ptr_group_commitment, ecc_frost_ristretto255_sha512_PUBLICKEYSIZE);
-    mfree(ptr_sig_shares, sig_shares_len*ecc_frost_ristretto255_sha512_SCALARSIZE);
 }

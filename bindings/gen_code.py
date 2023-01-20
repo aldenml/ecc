@@ -617,7 +617,7 @@ def gen_jni_java(headers, ignore):
 def gen_cffi_python(headers, ignore):
     out = ""
     out += "#\n"
-    out += "# Copyright (c) 2021-2022, Alden Torres\n"
+    out += "# Copyright (c) 2021-2023, Alden Torres\n"
     out += "#\n"
     out += "# Licensed under the terms of the MIT license.\n"
     out += "# Copy of the license at https://opensource.org/licenses/MIT\n"
@@ -657,7 +657,7 @@ def gen_cffi_python(headers, ignore):
 def gen_python(headers, ignore):
     out = ""
     out += "#\n"
-    out += "# Copyright (c) 2021-2022, Alden Torres\n"
+    out += "# Copyright (c) 2021-2023, Alden Torres\n"
     out += "#\n"
     out += "# Licensed under the terms of the MIT license.\n"
     out += "# Copy of the license at https://opensource.org/licenses/MIT\n"
@@ -672,8 +672,8 @@ def gen_python(headers, ignore):
 
 
 def gen_code(headers, ignore):
-    # with open("bindings/js/libecc-post.js", "w") as f:
-    #     f.write(gen_js(headers, ignore))
+    with open("bindings/js/libecc-post.js", "w") as f:
+        f.write(gen_js(headers, ignore))
     with open("bindings/jvm/libecc.c", "w") as f:
         f.write(gen_jni_c(headers, ignore))
     with open("bindings/jvm/src/main/java/org/ssohub/crypto/ecc/libecc.java", "w") as f:
