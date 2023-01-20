@@ -51,18 +51,18 @@ jobs:
           ./gradlew test
           cd ../..
 
-#      - name: python wheel
-#        run: |
-#          cd bindings/python
-#          python3 cffi_build.py
-#          python3 -m build --wheel
-#          cd ../..
-#
-#      - name: python tests
-#        run: |
-#          cd bindings/python
-#          python3 -m unittest
-#          cd ../..
+      - name: python wheel
+        run: |
+          cd bindings/python
+          python3 cffi_build.py
+          python3 -m build --wheel
+          cd ../..
+
+      - name: python tests
+        run: |
+          cd bindings/python
+          python3 -m unittest
+          cd ../..
 
       - uses: actions/upload-artifact@v2
         with:
@@ -70,5 +70,5 @@ jobs:
           path: |
             build/libecc.dylib
             build/libecc-jvm.dylib
-#            bindings/python/src/libecc/_libecc_cffi.*.so
+            bindings/python/src/libecc/_libecc_cffi.*.so
           retention-days: 5

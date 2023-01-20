@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2021-2022, Alden Torres
+# Copyright (c) 2021-2023, Alden Torres
 #
 # Licensed under the terms of the MIT license.
 # Copy of the license at https://opensource.org/licenses/MIT
@@ -309,26 +309,17 @@ ecc_mac_hmac_sha256_HASHSIZE = 32
 Size of the HMAC-SHA-256 digest.
 """
 
-ecc_mac_hmac_sha256_KEYSIZE = 32
-"""
-Size of a HMAC-SHA-256 key.
-"""
-
 ecc_mac_hmac_sha512_HASHSIZE = 64
 """
 Size of the HMAC-SHA-512 digest.
-"""
-
-ecc_mac_hmac_sha512_KEYSIZE = 64
-"""
-Size of a HMAC-SHA-512 key.
 """
 
 def ecc_mac_hmac_sha256(
     digest: bytearray,
     text: bytes,
     text_len: int,
-    key: bytes
+    key: bytes,
+    key_len: int
 ) -> None:
     """
     Computes the HMAC-SHA-256 of the input stream.
@@ -339,7 +330,8 @@ def ecc_mac_hmac_sha256(
     digest -- (output) the HMAC-SHA-256 of the input, size:ecc_mac_hmac_sha256_HASHSIZE
     text -- the input message, size:text_len
     text_len -- the length of `input`
-    key -- authentication key, size:ecc_mac_hmac_sha256_KEYSIZE
+    key -- authentication key, size:key_len
+    key_len -- the length of `key`
     """
     ptr_digest = ffi.from_buffer(digest)
     ptr_text = ffi.from_buffer(text)
@@ -348,7 +340,8 @@ def ecc_mac_hmac_sha256(
         ptr_digest,
         ptr_text,
         text_len,
-        ptr_key
+        ptr_key,
+        key_len
     )
     return None
 
@@ -357,7 +350,8 @@ def ecc_mac_hmac_sha512(
     digest: bytearray,
     text: bytes,
     text_len: int,
-    key: bytes
+    key: bytes,
+    key_len: int
 ) -> None:
     """
     Computes the HMAC-SHA-512 of the input stream.
@@ -368,7 +362,8 @@ def ecc_mac_hmac_sha512(
     digest -- (output) the HMAC-SHA-512 of the input, size:ecc_mac_hmac_sha512_HASHSIZE
     text -- the input message, size:text_len
     text_len -- the length of `input`
-    key -- authentication key, size:ecc_mac_hmac_sha512_KEYSIZE
+    key -- authentication key, size:key_len
+    key_len -- the length of `key`
     """
     ptr_digest = ffi.from_buffer(digest)
     ptr_text = ffi.from_buffer(text)
@@ -377,7 +372,8 @@ def ecc_mac_hmac_sha512(
         ptr_digest,
         ptr_text,
         text_len,
-        ptr_key
+        ptr_key,
+        key_len
     )
     return None
 
@@ -541,6 +537,7 @@ def ecc_kdf_scrypt(
     block_size -- block size
     parallelization -- parallelization
     len -- intended output length
+    return 0 on success and -1 if the computation didn't complete
     """
     ptr_out = ffi.from_buffer(out)
     ptr_passphrase = ffi.from_buffer(passphrase)
@@ -644,6 +641,21 @@ def ecc_ed25519_sub(
         ptr_q
     )
     return fun_ret
+
+
+def ecc_ed25519_generator(
+    g: bytearray
+) -> None:
+    """
+    Main group base point (x, 4/5), generator of the prime group.
+    
+    g -- (output) size:ecc_ed25519_ELEMENTSIZE
+    """
+    ptr_g = ffi.from_buffer(g)
+    lib.ecc_ed25519_generator(
+        ptr_g
+    )
+    return None
 
 
 def ecc_ed25519_from_uniform(
@@ -860,12 +872,18 @@ def ecc_ed25519_scalarmult(
     p: bytes
 ) -> int:
     """
-    Multiplies a point p by a valid scalar n (without clamping) and puts
+    Multiplies a point p by a valid scalar n (clamped) and puts
     the Y coordinate of the resulting point into q.
     
     This function returns 0 on success, or -1 if n is 0 or if p is not
     on the curve, not on the main subgroup, is a point of small order,
     or is not provided in canonical form.
+    
+    Note that n is "clamped" (the 3 low bits are cleared to make it a
+    multiple of the cofactor, bit 254 is set and bit 255 is cleared to
+    respect the original design). This prevents attacks using small
+    subgroups. If you want to implement protocols that involve blinding
+    operations, use ristretto255.
     
     q -- (output) the result, size:ecc_ed25519_ELEMENTSIZE
     n -- the valid input scalar, size:ecc_ed25519_SCALARSIZE
@@ -888,8 +906,14 @@ def ecc_ed25519_scalarmult_base(
     n: bytes
 ) -> int:
     """
-    Multiplies the base point (x, 4/5) by a scalar n (without clamping) and puts
+    Multiplies the base point (x, 4/5) by a scalar n (clamped) and puts
     the Y coordinate of the resulting point into q.
+    
+    Note that n is "clamped" (the 3 low bits are cleared to make it a
+    multiple of the cofactor, bit 254 is set and bit 255 is cleared to
+    respect the original design). This prevents attacks using small
+    subgroups. If you want to implement protocols that involve blinding
+    operations, use ristretto255.
     
     q -- (output) the result, size:ecc_ed25519_ELEMENTSIZE
     n -- the valid input scalar, size:ecc_ed25519_SCALARSIZE
@@ -1719,22 +1743,22 @@ def ecc_bls12_381_pairing_final_verify(
 
 # h2c
 
-ecc_h2c_expand_message_xmd_sha256_MAXSIZE = 256
+ecc_h2c_expand_message_xmd_sha256_MAXSIZE = 8160
 """
 *
 """
 
-ecc_h2c_expand_message_xmd_sha256_DSTMAXSIZE = 256
+ecc_h2c_expand_message_xmd_sha256_DSTMAXSIZE = 255
 """
 *
 """
 
-ecc_h2c_expand_message_xmd_sha512_MAXSIZE = 256
+ecc_h2c_expand_message_xmd_sha512_MAXSIZE = 16320
 """
 *
 """
 
-ecc_h2c_expand_message_xmd_sha512_DSTMAXSIZE = 256
+ecc_h2c_expand_message_xmd_sha512_DSTMAXSIZE = 255
 """
 *
 """
@@ -1746,27 +1770,26 @@ def ecc_h2c_expand_message_xmd_sha256(
     dst: bytes,
     dst_len: int,
     len: int
-) -> None:
+) -> int:
     """
     Produces a uniformly random byte string using SHA-256.
-    
-    In order to make this method to use only the stack, len should be
-    <
-    = 256.
-    
-    See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-hash-to-curve-11#section-5.4.1
     
     out -- (output) a byte string, should be at least of size `len`, size:len
     msg -- a byte string, size:msg_len
     msg_len -- the length of `msg`
     dst -- a byte string of at most 255 bytes, size:dst_len
-    dst_len -- the length of `dst`, should be less or equal to 256
-    len -- the length of the requested output in bytes, should be less or equal to 256
+    dst_len -- the length of `dst`, should be
+    <
+    = ecc_h2c_expand_message_xmd_sha256_DSTMAXSIZE
+    len -- the length of the requested output in bytes, should be
+    <
+    = ecc_h2c_expand_message_xmd_sha256_MAXSIZE
+    return 0 on success or -1 if arguments are out of range
     """
     ptr_out = ffi.from_buffer(out)
     ptr_msg = ffi.from_buffer(msg)
     ptr_dst = ffi.from_buffer(dst)
-    lib.ecc_h2c_expand_message_xmd_sha256(
+    fun_ret = lib.ecc_h2c_expand_message_xmd_sha256(
         ptr_out,
         ptr_msg,
         msg_len,
@@ -1774,7 +1797,7 @@ def ecc_h2c_expand_message_xmd_sha256(
         dst_len,
         len
     )
-    return None
+    return fun_ret
 
 
 def ecc_h2c_expand_message_xmd_sha512(
@@ -1784,15 +1807,9 @@ def ecc_h2c_expand_message_xmd_sha512(
     dst: bytes,
     dst_len: int,
     len: int
-) -> None:
+) -> int:
     """
     Produces a uniformly random byte string using SHA-512.
-    
-    In order to make this method to use only the stack, len should be
-    <
-    = 256.
-    
-    See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-hash-to-curve-11#section-5.4.1
     
     out -- (output) a byte string, should be at least of size `len`, size:len
     msg -- a byte string, size:msg_len
@@ -1800,15 +1817,16 @@ def ecc_h2c_expand_message_xmd_sha512(
     dst -- a byte string of at most 255 bytes, size:dst_len
     dst_len -- the length of `dst`, should be
     <
-    = 256
+    = ecc_h2c_expand_message_xmd_sha512_DSTMAXSIZE
     len -- the length of the requested output in bytes, should be
     <
-    = 256
+    = ecc_h2c_expand_message_xmd_sha512_MAXSIZE
+    return 0 on success or -1 if arguments are out of range
     """
     ptr_out = ffi.from_buffer(out)
     ptr_msg = ffi.from_buffer(msg)
     ptr_dst = ffi.from_buffer(dst)
-    lib.ecc_h2c_expand_message_xmd_sha512(
+    fun_ret = lib.ecc_h2c_expand_message_xmd_sha512(
         ptr_out,
         ptr_msg,
         msg_len,
@@ -1816,84 +1834,658 @@ def ecc_h2c_expand_message_xmd_sha512(
         dst_len,
         len
     )
-    return None
+    return fun_ret
 
 
-# oprf
+# voprf
 
-ecc_oprf_ristretto255_sha512_ELEMENTSIZE = 32
+ecc_voprf_ristretto255_sha512_ELEMENTSIZE = 32
 """
 Size of a serialized group element, since this is the ristretto255
 curve the size is 32 bytes.
 """
 
-ecc_oprf_ristretto255_sha512_SCALARSIZE = 32
+ecc_voprf_ristretto255_sha512_SCALARSIZE = 32
 """
 Size of a serialized scalar, since this is the ristretto255
 curve the size is 32 bytes.
 """
 
-ecc_oprf_ristretto255_sha512_PROOFSIZE = 64
+ecc_voprf_ristretto255_sha512_PROOFSIZE = 64
 """
 Size of a proof. Proof is a sequence of two scalars.
 """
 
-ecc_oprf_ristretto255_sha512_Nh = 64
+ecc_voprf_ristretto255_sha512_Nh = 64
 """
 Size of the protocol output in the `Finalize` operations, since
 this is ristretto255 with SHA-512, the size is 64 bytes.
 """
 
-ecc_oprf_ristretto255_sha512_MODE_BASE = 0
+ecc_voprf_ristretto255_sha512_MODE_OPRF = 0
 """
 A client and server interact to compute output = F(skS, input, info).
 """
 
-ecc_oprf_ristretto255_sha512_MODE_VERIFIABLE = 1
+ecc_voprf_ristretto255_sha512_MODE_VOPRF = 1
 """
 A client and server interact to compute output = F(skS, input, info) and
 the client also receives proof that the server used skS in computing
 the function.
 """
 
-def ecc_oprf_ristretto255_sha512_Evaluate(
-    evaluatedElement: bytearray,
-    skS: bytes,
-    blindedElement: bytes,
-    info: bytes,
-    infoLen: int
+ecc_voprf_ristretto255_sha512_MODE_POPRF = 2
+"""
+A client and server interact to compute output = F(skS, input, info).
+Allows clients and servers to provide public input to the PRF computation.
+"""
+
+ecc_voprf_ristretto255_sha512_MAXINFOSIZE = 2000
+"""
+*
+"""
+
+def ecc_voprf_ristretto255_sha512_GenerateProofWithScalar(
+    proof: bytearray,
+    k: bytes,
+    A: bytes,
+    B: bytes,
+    C: bytes,
+    D: bytes,
+    m: int,
+    mode: int,
+    r: bytes
+) -> None:
+    """
+    
+    
+    proof -- (output) size:ecc_voprf_ristretto255_sha512_PROOFSIZE
+    k -- size:ecc_voprf_ristretto255_sha512_SCALARSIZE
+    A -- size:ecc_voprf_ristretto255_sha512_ELEMENTSIZE
+    B -- size:ecc_voprf_ristretto255_sha512_ELEMENTSIZE
+    C -- size:m*ecc_voprf_ristretto255_sha512_ELEMENTSIZE
+    D -- size:m*ecc_voprf_ristretto255_sha512_ELEMENTSIZE
+    m -- the size of the `C` and `D` arrays
+    mode -- the protocol mode VOPRF or POPRF
+    r -- size:ecc_voprf_ristretto255_sha512_SCALARSIZE
+    """
+    ptr_proof = ffi.from_buffer(proof)
+    ptr_k = ffi.from_buffer(k)
+    ptr_A = ffi.from_buffer(A)
+    ptr_B = ffi.from_buffer(B)
+    ptr_C = ffi.from_buffer(C)
+    ptr_D = ffi.from_buffer(D)
+    ptr_r = ffi.from_buffer(r)
+    lib.ecc_voprf_ristretto255_sha512_GenerateProofWithScalar(
+        ptr_proof,
+        ptr_k,
+        ptr_A,
+        ptr_B,
+        ptr_C,
+        ptr_D,
+        m,
+        mode,
+        ptr_r
+    )
+    return None
+
+
+def ecc_voprf_ristretto255_sha512_GenerateProof(
+    proof: bytearray,
+    k: bytes,
+    A: bytes,
+    B: bytes,
+    C: bytes,
+    D: bytes,
+    m: int,
+    mode: int
+) -> None:
+    """
+    
+    
+    proof -- (output) size:ecc_voprf_ristretto255_sha512_PROOFSIZE
+    k -- size:ecc_voprf_ristretto255_sha512_SCALARSIZE
+    A -- size:ecc_voprf_ristretto255_sha512_ELEMENTSIZE
+    B -- size:ecc_voprf_ristretto255_sha512_ELEMENTSIZE
+    C -- size:m*ecc_voprf_ristretto255_sha512_ELEMENTSIZE
+    D -- size:m*ecc_voprf_ristretto255_sha512_ELEMENTSIZE
+    m -- the size of the `C` and `D` arrays
+    mode -- the protocol mode VOPRF or POPRF
+    """
+    ptr_proof = ffi.from_buffer(proof)
+    ptr_k = ffi.from_buffer(k)
+    ptr_A = ffi.from_buffer(A)
+    ptr_B = ffi.from_buffer(B)
+    ptr_C = ffi.from_buffer(C)
+    ptr_D = ffi.from_buffer(D)
+    lib.ecc_voprf_ristretto255_sha512_GenerateProof(
+        ptr_proof,
+        ptr_k,
+        ptr_A,
+        ptr_B,
+        ptr_C,
+        ptr_D,
+        m,
+        mode
+    )
+    return None
+
+
+def ecc_voprf_ristretto255_sha512_ComputeCompositesFast(
+    M: bytearray,
+    Z: bytearray,
+    k: bytes,
+    B: bytes,
+    C: bytes,
+    D: bytes,
+    m: int,
+    mode: int
+) -> None:
+    """
+    
+    
+    M -- (output) size:ecc_voprf_ristretto255_sha512_ELEMENTSIZE
+    Z -- (output) size:ecc_voprf_ristretto255_sha512_ELEMENTSIZE
+    k -- size:ecc_voprf_ristretto255_sha512_SCALARSIZE
+    B -- size:ecc_voprf_ristretto255_sha512_ELEMENTSIZE
+    C -- size:m*ecc_voprf_ristretto255_sha512_ELEMENTSIZE
+    D -- size:m*ecc_voprf_ristretto255_sha512_ELEMENTSIZE
+    m -- the size of the `C` and `D` arrays
+    mode -- the protocol mode VOPRF or POPRF
+    """
+    ptr_M = ffi.from_buffer(M)
+    ptr_Z = ffi.from_buffer(Z)
+    ptr_k = ffi.from_buffer(k)
+    ptr_B = ffi.from_buffer(B)
+    ptr_C = ffi.from_buffer(C)
+    ptr_D = ffi.from_buffer(D)
+    lib.ecc_voprf_ristretto255_sha512_ComputeCompositesFast(
+        ptr_M,
+        ptr_Z,
+        ptr_k,
+        ptr_B,
+        ptr_C,
+        ptr_D,
+        m,
+        mode
+    )
+    return None
+
+
+def ecc_voprf_ristretto255_sha512_VerifyProof(
+    A: bytes,
+    B: bytes,
+    C: bytes,
+    D: bytes,
+    m: int,
+    mode: int,
+    proof: bytes
 ) -> int:
     """
-    Evaluates serialized representations of blinded group elements from the
-    client as inputs.
     
-    This operation could fail if internally, there is an attempt to invert
-    the `0` scalar.
     
-    See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-voprf-08#section-3.3.1.1
-    
-    evaluatedElement -- (output) evaluated element, size:ecc_oprf_ristretto255_sha512_ELEMENTSIZE
-    skS -- private key, size:ecc_oprf_ristretto255_sha512_SCALARSIZE
-    blindedElement -- blinded element, size:ecc_oprf_ristretto255_sha512_ELEMENTSIZE
-    info -- opaque byte string no larger than 200 bytes, size:infoLen
-    infoLen -- the size of `info`
-    return 0 on success, or -1 if an error
+    A -- size:ecc_voprf_ristretto255_sha512_ELEMENTSIZE
+    B -- size:ecc_voprf_ristretto255_sha512_ELEMENTSIZE
+    C -- size:m*ecc_voprf_ristretto255_sha512_ELEMENTSIZE
+    D -- size:m*ecc_voprf_ristretto255_sha512_ELEMENTSIZE
+    m -- the size of the `C` and `D` arrays
+    mode -- the protocol mode VOPRF or POPRF
+    proof -- size:ecc_voprf_ristretto255_sha512_PROOFSIZE
+    return on success verification returns 1, else 0.
     """
-    ptr_evaluatedElement = ffi.from_buffer(evaluatedElement)
-    ptr_skS = ffi.from_buffer(skS)
-    ptr_blindedElement = ffi.from_buffer(blindedElement)
-    ptr_info = ffi.from_buffer(info)
-    fun_ret = lib.ecc_oprf_ristretto255_sha512_Evaluate(
-        ptr_evaluatedElement,
-        ptr_skS,
-        ptr_blindedElement,
-        ptr_info,
-        infoLen
+    ptr_A = ffi.from_buffer(A)
+    ptr_B = ffi.from_buffer(B)
+    ptr_C = ffi.from_buffer(C)
+    ptr_D = ffi.from_buffer(D)
+    ptr_proof = ffi.from_buffer(proof)
+    fun_ret = lib.ecc_voprf_ristretto255_sha512_VerifyProof(
+        ptr_A,
+        ptr_B,
+        ptr_C,
+        ptr_D,
+        m,
+        mode,
+        ptr_proof
     )
     return fun_ret
 
 
-def ecc_oprf_ristretto255_sha512_VerifiableEvaluateWithScalar(
+def ecc_voprf_ristretto255_sha512_ComputeComposites(
+    M: bytearray,
+    Z: bytearray,
+    B: bytes,
+    C: bytes,
+    D: bytes,
+    m: int,
+    mode: int
+) -> None:
+    """
+    
+    
+    M -- (output) size:ecc_voprf_ristretto255_sha512_ELEMENTSIZE
+    Z -- (output) size:ecc_voprf_ristretto255_sha512_ELEMENTSIZE
+    B -- size:ecc_voprf_ristretto255_sha512_ELEMENTSIZE
+    C -- size:m*ecc_voprf_ristretto255_sha512_ELEMENTSIZE
+    D -- size:m*ecc_voprf_ristretto255_sha512_ELEMENTSIZE
+    m -- the size of the `C` and `D` arrays
+    mode -- the protocol mode VOPRF or POPRF
+    """
+    ptr_M = ffi.from_buffer(M)
+    ptr_Z = ffi.from_buffer(Z)
+    ptr_B = ffi.from_buffer(B)
+    ptr_C = ffi.from_buffer(C)
+    ptr_D = ffi.from_buffer(D)
+    lib.ecc_voprf_ristretto255_sha512_ComputeComposites(
+        ptr_M,
+        ptr_Z,
+        ptr_B,
+        ptr_C,
+        ptr_D,
+        m,
+        mode
+    )
+    return None
+
+
+def ecc_voprf_ristretto255_sha512_GenerateKeyPair(
+    skS: bytearray,
+    pkS: bytearray
+) -> None:
+    """
+    In the offline setup phase, the server key pair (skS, pkS) is generated using
+    this function, which produces a randomly generate private and public key pair.
+    
+    skS -- (output) size:ecc_voprf_ristretto255_sha512_SCALARSIZE
+    pkS -- (output) size:ecc_voprf_ristretto255_sha512_ELEMENTSIZE
+    """
+    ptr_skS = ffi.from_buffer(skS)
+    ptr_pkS = ffi.from_buffer(pkS)
+    lib.ecc_voprf_ristretto255_sha512_GenerateKeyPair(
+        ptr_skS,
+        ptr_pkS
+    )
+    return None
+
+
+def ecc_voprf_ristretto255_sha512_DeriveKeyPair(
+    skS: bytearray,
+    pkS: bytearray,
+    seed: bytes,
+    info: bytes,
+    infoLen: int,
+    mode: int
+) -> int:
+    """
+    Deterministically generate a key. It accepts a randomly generated seed of
+    length Ns bytes and an optional (possibly empty) public info string.
+    
+    skS -- (output) size:ecc_voprf_ristretto255_sha512_SCALARSIZE
+    pkS -- (output) size:ecc_voprf_ristretto255_sha512_ELEMENTSIZE
+    seed -- size:ecc_voprf_ristretto255_sha512_SCALARSIZE
+    info -- size:infoLen
+    infoLen -- the size of `info`, it should be
+    <
+    = ecc_voprf_ristretto255_sha512_MAXINFOSIZE
+    mode -- the protocol mode VOPRF or POPRF
+    return 0 on success, or -1 if an error
+    """
+    ptr_skS = ffi.from_buffer(skS)
+    ptr_pkS = ffi.from_buffer(pkS)
+    ptr_seed = ffi.from_buffer(seed)
+    ptr_info = ffi.from_buffer(info)
+    fun_ret = lib.ecc_voprf_ristretto255_sha512_DeriveKeyPair(
+        ptr_skS,
+        ptr_pkS,
+        ptr_seed,
+        ptr_info,
+        infoLen,
+        mode
+    )
+    return fun_ret
+
+
+def ecc_voprf_ristretto255_sha512_BlindWithScalar(
+    blindedElement: bytearray,
+    input: bytes,
+    inputLen: int,
+    blind: bytes,
+    mode: int
+) -> int:
+    """
+    Same as calling `ecc_voprf_ristretto255_sha512_Blind` with an
+    specified scalar blind.
+    
+    blindedElement -- (output) blinded element, size:ecc_voprf_ristretto255_sha512_ELEMENTSIZE
+    input -- message to blind, size:inputLen
+    inputLen -- length of `input`
+    blind -- scalar to use in the blind operation, size:ecc_voprf_ristretto255_sha512_SCALARSIZE
+    mode -- oprf mode
+    return 0 on success, or -1 if an error
+    """
+    ptr_blindedElement = ffi.from_buffer(blindedElement)
+    ptr_input = ffi.from_buffer(input)
+    ptr_blind = ffi.from_buffer(blind)
+    fun_ret = lib.ecc_voprf_ristretto255_sha512_BlindWithScalar(
+        ptr_blindedElement,
+        ptr_input,
+        inputLen,
+        ptr_blind,
+        mode
+    )
+    return fun_ret
+
+
+def ecc_voprf_ristretto255_sha512_Blind(
+    blind: bytearray,
+    blindedElement: bytearray,
+    input: bytes,
+    inputLen: int,
+    mode: int
+) -> int:
+    """
+    
+    
+    blind -- (output) scalar used in the blind operation, size:ecc_voprf_ristretto255_sha512_SCALARSIZE
+    blindedElement -- (output) blinded element, size:ecc_voprf_ristretto255_sha512_ELEMENTSIZE
+    input -- message to blind, size:inputLen
+    inputLen -- length of `input`
+    mode -- oprf mode
+    return 0 on success, or -1 if an error
+    """
+    ptr_blind = ffi.from_buffer(blind)
+    ptr_blindedElement = ffi.from_buffer(blindedElement)
+    ptr_input = ffi.from_buffer(input)
+    fun_ret = lib.ecc_voprf_ristretto255_sha512_Blind(
+        ptr_blind,
+        ptr_blindedElement,
+        ptr_input,
+        inputLen,
+        mode
+    )
+    return fun_ret
+
+
+def ecc_voprf_ristretto255_sha512_BlindEvaluate(
+    evaluatedElement: bytearray,
+    skS: bytes,
+    blindedElement: bytes
+) -> None:
+    """
+    
+    
+    evaluatedElement -- (output) blinded element, size:ecc_voprf_ristretto255_sha512_ELEMENTSIZE
+    skS -- scalar used in the blind operation, size:ecc_voprf_ristretto255_sha512_SCALARSIZE
+    blindedElement -- blinded element, size:ecc_voprf_ristretto255_sha512_ELEMENTSIZE
+    """
+    ptr_evaluatedElement = ffi.from_buffer(evaluatedElement)
+    ptr_skS = ffi.from_buffer(skS)
+    ptr_blindedElement = ffi.from_buffer(blindedElement)
+    lib.ecc_voprf_ristretto255_sha512_BlindEvaluate(
+        ptr_evaluatedElement,
+        ptr_skS,
+        ptr_blindedElement
+    )
+    return None
+
+
+def ecc_voprf_ristretto255_sha512_Finalize(
+    output: bytearray,
+    input: bytes,
+    inputLen: int,
+    blind: bytes,
+    evaluatedElement: bytes
+) -> None:
+    """
+    
+    
+    output -- (output) size:ecc_voprf_ristretto255_sha512_Nh
+    input -- the input message, size:inputLen
+    inputLen -- the length of `input`
+    blind -- size:ecc_voprf_ristretto255_sha512_SCALARSIZE
+    evaluatedElement -- size:ecc_voprf_ristretto255_sha512_ELEMENTSIZE
+    """
+    ptr_output = ffi.from_buffer(output)
+    ptr_input = ffi.from_buffer(input)
+    ptr_blind = ffi.from_buffer(blind)
+    ptr_evaluatedElement = ffi.from_buffer(evaluatedElement)
+    lib.ecc_voprf_ristretto255_sha512_Finalize(
+        ptr_output,
+        ptr_input,
+        inputLen,
+        ptr_blind,
+        ptr_evaluatedElement
+    )
+    return None
+
+
+def ecc_voprf_ristretto255_sha512_Evaluate(
+    output: bytearray,
+    skS: bytes,
+    input: bytes,
+    inputLen: int,
+    mode: int
+) -> int:
+    """
+    
+    
+    output -- (output) size:ecc_voprf_ristretto255_sha512_Nh
+    skS -- size:ecc_voprf_ristretto255_sha512_SCALARSIZE
+    input -- the input message, size:inputLen
+    inputLen -- the length of `input`
+    mode -- oprf mode
+    return 0 on success, or -1 if an error
+    """
+    ptr_output = ffi.from_buffer(output)
+    ptr_skS = ffi.from_buffer(skS)
+    ptr_input = ffi.from_buffer(input)
+    fun_ret = lib.ecc_voprf_ristretto255_sha512_Evaluate(
+        ptr_output,
+        ptr_skS,
+        ptr_input,
+        inputLen,
+        mode
+    )
+    return fun_ret
+
+
+def ecc_voprf_ristretto255_sha512_VerifiableBlindEvaluateWithScalar(
+    evaluatedElement: bytearray,
+    proof: bytearray,
+    skS: bytes,
+    pkS: bytes,
+    blindedElement: bytes,
+    r: bytes
+) -> None:
+    """
+    
+    
+    evaluatedElement -- (output) size:ecc_voprf_ristretto255_sha512_ELEMENTSIZE
+    proof -- (output) size:ecc_voprf_ristretto255_sha512_PROOFSIZE
+    skS -- size:ecc_voprf_ristretto255_sha512_SCALARSIZE
+    pkS -- size:ecc_voprf_ristretto255_sha512_ELEMENTSIZE
+    blindedElement -- size:ecc_voprf_ristretto255_sha512_ELEMENTSIZE
+    r -- size:ecc_voprf_ristretto255_sha512_SCALARSIZE
+    """
+    ptr_evaluatedElement = ffi.from_buffer(evaluatedElement)
+    ptr_proof = ffi.from_buffer(proof)
+    ptr_skS = ffi.from_buffer(skS)
+    ptr_pkS = ffi.from_buffer(pkS)
+    ptr_blindedElement = ffi.from_buffer(blindedElement)
+    ptr_r = ffi.from_buffer(r)
+    lib.ecc_voprf_ristretto255_sha512_VerifiableBlindEvaluateWithScalar(
+        ptr_evaluatedElement,
+        ptr_proof,
+        ptr_skS,
+        ptr_pkS,
+        ptr_blindedElement,
+        ptr_r
+    )
+    return None
+
+
+def ecc_voprf_ristretto255_sha512_VerifiableBlindEvaluate(
+    evaluatedElement: bytearray,
+    proof: bytearray,
+    skS: bytes,
+    pkS: bytes,
+    blindedElement: bytes
+) -> None:
+    """
+    
+    
+    evaluatedElement -- (output) size:ecc_voprf_ristretto255_sha512_ELEMENTSIZE
+    proof -- (output) size:ecc_voprf_ristretto255_sha512_PROOFSIZE
+    skS -- size:ecc_voprf_ristretto255_sha512_SCALARSIZE
+    pkS -- size:ecc_voprf_ristretto255_sha512_ELEMENTSIZE
+    blindedElement -- size:ecc_voprf_ristretto255_sha512_ELEMENTSIZE
+    """
+    ptr_evaluatedElement = ffi.from_buffer(evaluatedElement)
+    ptr_proof = ffi.from_buffer(proof)
+    ptr_skS = ffi.from_buffer(skS)
+    ptr_pkS = ffi.from_buffer(pkS)
+    ptr_blindedElement = ffi.from_buffer(blindedElement)
+    lib.ecc_voprf_ristretto255_sha512_VerifiableBlindEvaluate(
+        ptr_evaluatedElement,
+        ptr_proof,
+        ptr_skS,
+        ptr_pkS,
+        ptr_blindedElement
+    )
+    return None
+
+
+def ecc_voprf_ristretto255_sha512_VerifiableFinalize(
+    output: bytearray,
+    input: bytes,
+    inputLen: int,
+    blind: bytes,
+    evaluatedElement: bytes,
+    blindedElement: bytes,
+    pkS: bytes,
+    proof: bytes
+) -> int:
+    """
+    
+    
+    output -- (output) size:ecc_voprf_ristretto255_sha512_Nh
+    input -- the input message, size:inputLen
+    inputLen -- the length of `input`
+    blind -- size:ecc_voprf_ristretto255_sha512_SCALARSIZE
+    evaluatedElement -- size:ecc_voprf_ristretto255_sha512_ELEMENTSIZE
+    blindedElement -- size:ecc_voprf_ristretto255_sha512_ELEMENTSIZE
+    pkS -- size:ecc_voprf_ristretto255_sha512_ELEMENTSIZE
+    proof -- size:ecc_voprf_ristretto255_sha512_PROOFSIZE
+    return 0 on success, or -1 if an error
+    """
+    ptr_output = ffi.from_buffer(output)
+    ptr_input = ffi.from_buffer(input)
+    ptr_blind = ffi.from_buffer(blind)
+    ptr_evaluatedElement = ffi.from_buffer(evaluatedElement)
+    ptr_blindedElement = ffi.from_buffer(blindedElement)
+    ptr_pkS = ffi.from_buffer(pkS)
+    ptr_proof = ffi.from_buffer(proof)
+    fun_ret = lib.ecc_voprf_ristretto255_sha512_VerifiableFinalize(
+        ptr_output,
+        ptr_input,
+        inputLen,
+        ptr_blind,
+        ptr_evaluatedElement,
+        ptr_blindedElement,
+        ptr_pkS,
+        ptr_proof
+    )
+    return fun_ret
+
+
+def ecc_voprf_ristretto255_sha512_PartiallyBlindWithScalar(
+    blindedElement: bytearray,
+    tweakedKey: bytearray,
+    input: bytes,
+    inputLen: int,
+    info: bytes,
+    infoLen: int,
+    pkS: bytes,
+    blind: bytes
+) -> int:
+    """
+    
+    
+    blindedElement -- (output) blinded element, size:ecc_voprf_ristretto255_sha512_ELEMENTSIZE
+    tweakedKey -- (output) blinded element, size:ecc_voprf_ristretto255_sha512_ELEMENTSIZE
+    input -- message to blind, size:inputLen
+    inputLen -- length of `input`
+    info -- message to blind, size:infoLen
+    infoLen -- length of `info`, it should be
+    <
+    = ecc_voprf_ristretto255_sha512_MAXINFOSIZE
+    pkS -- size:ecc_voprf_ristretto255_sha512_ELEMENTSIZE
+    blind -- size:ecc_voprf_ristretto255_sha512_SCALARSIZE
+    return 0 on success, or -1 if an error
+    """
+    ptr_blindedElement = ffi.from_buffer(blindedElement)
+    ptr_tweakedKey = ffi.from_buffer(tweakedKey)
+    ptr_input = ffi.from_buffer(input)
+    ptr_info = ffi.from_buffer(info)
+    ptr_pkS = ffi.from_buffer(pkS)
+    ptr_blind = ffi.from_buffer(blind)
+    fun_ret = lib.ecc_voprf_ristretto255_sha512_PartiallyBlindWithScalar(
+        ptr_blindedElement,
+        ptr_tweakedKey,
+        ptr_input,
+        inputLen,
+        ptr_info,
+        infoLen,
+        ptr_pkS,
+        ptr_blind
+    )
+    return fun_ret
+
+
+def ecc_voprf_ristretto255_sha512_PartiallyBlind(
+    blind: bytearray,
+    blindedElement: bytearray,
+    tweakedKey: bytearray,
+    input: bytes,
+    inputLen: int,
+    info: bytes,
+    infoLen: int,
+    pkS: bytes
+) -> int:
+    """
+    
+    
+    blind -- (output) scalar used in the blind operation, size:ecc_voprf_ristretto255_sha512_SCALARSIZE
+    blindedElement -- (output) blinded element, size:ecc_voprf_ristretto255_sha512_ELEMENTSIZE
+    tweakedKey -- (output) blinded element, size:ecc_voprf_ristretto255_sha512_ELEMENTSIZE
+    input -- message to blind, size:inputLen
+    inputLen -- length of `input`
+    info -- message to blind, size:infoLen
+    infoLen -- length of `info`, it should be
+    <
+    = ecc_voprf_ristretto255_sha512_MAXINFOSIZE
+    pkS -- size:ecc_voprf_ristretto255_sha512_ELEMENTSIZE
+    return 0 on success, or -1 if an error
+    """
+    ptr_blind = ffi.from_buffer(blind)
+    ptr_blindedElement = ffi.from_buffer(blindedElement)
+    ptr_tweakedKey = ffi.from_buffer(tweakedKey)
+    ptr_input = ffi.from_buffer(input)
+    ptr_info = ffi.from_buffer(info)
+    ptr_pkS = ffi.from_buffer(pkS)
+    fun_ret = lib.ecc_voprf_ristretto255_sha512_PartiallyBlind(
+        ptr_blind,
+        ptr_blindedElement,
+        ptr_tweakedKey,
+        ptr_input,
+        inputLen,
+        ptr_info,
+        infoLen,
+        ptr_pkS
+    )
+    return fun_ret
+
+
+def ecc_voprf_ristretto255_sha512_PartiallyBlindEvaluateWithScalar(
     evaluatedElement: bytearray,
     proof: bytearray,
     skS: bytes,
@@ -1903,22 +2495,17 @@ def ecc_oprf_ristretto255_sha512_VerifiableEvaluateWithScalar(
     r: bytes
 ) -> int:
     """
-    Evaluates serialized representations of blinded group elements from the
-    client as inputs and produces a proof that `skS` was used in computing
-    the result.
     
-    This operation could fail if internally, there is an attempt to invert
-    the `0` scalar.
     
-    See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-voprf-08#section-3.3.2.1
-    
-    evaluatedElement -- (output) evaluated element, size:ecc_oprf_ristretto255_sha512_ELEMENTSIZE
-    proof -- (output) size:ecc_oprf_ristretto255_sha512_PROOFSIZE
-    skS -- private key, size:ecc_oprf_ristretto255_sha512_SCALARSIZE
-    blindedElement -- blinded element, size:ecc_oprf_ristretto255_sha512_ELEMENTSIZE
-    info -- opaque byte string no larger than 200 bytes, size:infoLen
-    infoLen -- the size of `info`
-    r -- size:ecc_oprf_ristretto255_sha512_SCALARSIZE
+    evaluatedElement -- (output) size:ecc_voprf_ristretto255_sha512_ELEMENTSIZE
+    proof -- (output) size:ecc_voprf_ristretto255_sha512_PROOFSIZE
+    skS -- size:ecc_voprf_ristretto255_sha512_SCALARSIZE
+    blindedElement -- size:ecc_voprf_ristretto255_sha512_ELEMENTSIZE
+    info -- message to blind, size:infoLen
+    infoLen -- length of `info`, it should be
+    <
+    = ecc_voprf_ristretto255_sha512_MAXINFOSIZE
+    r -- size:ecc_voprf_ristretto255_sha512_SCALARSIZE
     return 0 on success, or -1 if an error
     """
     ptr_evaluatedElement = ffi.from_buffer(evaluatedElement)
@@ -1927,7 +2514,7 @@ def ecc_oprf_ristretto255_sha512_VerifiableEvaluateWithScalar(
     ptr_blindedElement = ffi.from_buffer(blindedElement)
     ptr_info = ffi.from_buffer(info)
     ptr_r = ffi.from_buffer(r)
-    fun_ret = lib.ecc_oprf_ristretto255_sha512_VerifiableEvaluateWithScalar(
+    fun_ret = lib.ecc_voprf_ristretto255_sha512_PartiallyBlindEvaluateWithScalar(
         ptr_evaluatedElement,
         ptr_proof,
         ptr_skS,
@@ -1939,7 +2526,7 @@ def ecc_oprf_ristretto255_sha512_VerifiableEvaluateWithScalar(
     return fun_ret
 
 
-def ecc_oprf_ristretto255_sha512_VerifiableEvaluate(
+def ecc_voprf_ristretto255_sha512_PartiallyBlindEvaluate(
     evaluatedElement: bytearray,
     proof: bytearray,
     skS: bytes,
@@ -1948,21 +2535,16 @@ def ecc_oprf_ristretto255_sha512_VerifiableEvaluate(
     infoLen: int
 ) -> int:
     """
-    Evaluates serialized representations of blinded group elements from the
-    client as inputs and produces a proof that `skS` was used in computing
-    the result.
     
-    This operation could fail if internally, there is an attempt to invert
-    the `0` scalar.
     
-    See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-voprf-08#section-3.3.2.1
-    
-    evaluatedElement -- (output) evaluated element, size:ecc_oprf_ristretto255_sha512_ELEMENTSIZE
-    proof -- (output) size:ecc_oprf_ristretto255_sha512_PROOFSIZE
-    skS -- private key, size:ecc_oprf_ristretto255_sha512_SCALARSIZE
-    blindedElement -- blinded element, size:ecc_oprf_ristretto255_sha512_ELEMENTSIZE
-    info -- opaque byte string no larger than 200 bytes, size:infoLen
-    infoLen -- the size of `info`
+    evaluatedElement -- (output) size:ecc_voprf_ristretto255_sha512_ELEMENTSIZE
+    proof -- (output) size:ecc_voprf_ristretto255_sha512_PROOFSIZE
+    skS -- size:ecc_voprf_ristretto255_sha512_SCALARSIZE
+    blindedElement -- size:ecc_voprf_ristretto255_sha512_ELEMENTSIZE
+    info -- message to blind, size:infoLen
+    infoLen -- length of `info`, it should be
+    <
+    = ecc_voprf_ristretto255_sha512_MAXINFOSIZE
     return 0 on success, or -1 if an error
     """
     ptr_evaluatedElement = ffi.from_buffer(evaluatedElement)
@@ -1970,7 +2552,7 @@ def ecc_oprf_ristretto255_sha512_VerifiableEvaluate(
     ptr_skS = ffi.from_buffer(skS)
     ptr_blindedElement = ffi.from_buffer(blindedElement)
     ptr_info = ffi.from_buffer(info)
-    fun_ret = lib.ecc_oprf_ristretto255_sha512_VerifiableEvaluate(
+    fun_ret = lib.ecc_voprf_ristretto255_sha512_PartiallyBlindEvaluate(
         ptr_evaluatedElement,
         ptr_proof,
         ptr_skS,
@@ -1981,399 +2563,96 @@ def ecc_oprf_ristretto255_sha512_VerifiableEvaluate(
     return fun_ret
 
 
-def ecc_oprf_ristretto255_sha512_GenerateProofWithScalar(
-    proof: bytearray,
-    k: bytes,
-    A: bytes,
-    B: bytes,
-    C: bytes,
-    D: bytes,
-    r: bytes
-) -> None:
-    """
-    See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-voprf-08#section-3.3.2.2
-    
-    proof -- (output) size:ecc_oprf_ristretto255_sha512_PROOFSIZE
-    k -- size:ecc_oprf_ristretto255_sha512_SCALARSIZE
-    A -- size:ecc_oprf_ristretto255_sha512_ELEMENTSIZE
-    B -- size:ecc_oprf_ristretto255_sha512_ELEMENTSIZE
-    C -- size:ecc_oprf_ristretto255_sha512_ELEMENTSIZE
-    D -- size:ecc_oprf_ristretto255_sha512_ELEMENTSIZE
-    r -- size:ecc_oprf_ristretto255_sha512_SCALARSIZE
-    """
-    ptr_proof = ffi.from_buffer(proof)
-    ptr_k = ffi.from_buffer(k)
-    ptr_A = ffi.from_buffer(A)
-    ptr_B = ffi.from_buffer(B)
-    ptr_C = ffi.from_buffer(C)
-    ptr_D = ffi.from_buffer(D)
-    ptr_r = ffi.from_buffer(r)
-    lib.ecc_oprf_ristretto255_sha512_GenerateProofWithScalar(
-        ptr_proof,
-        ptr_k,
-        ptr_A,
-        ptr_B,
-        ptr_C,
-        ptr_D,
-        ptr_r
-    )
-    return None
-
-
-def ecc_oprf_ristretto255_sha512_GenerateProof(
-    proof: bytearray,
-    k: bytes,
-    A: bytes,
-    B: bytes,
-    C: bytes,
-    D: bytes
-) -> None:
-    """
-    See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-voprf-08#section-3.3.2.2
-    
-    proof -- (output) size:ecc_oprf_ristretto255_sha512_PROOFSIZE
-    k -- size:ecc_oprf_ristretto255_sha512_SCALARSIZE
-    A -- size:ecc_oprf_ristretto255_sha512_ELEMENTSIZE
-    B -- size:ecc_oprf_ristretto255_sha512_ELEMENTSIZE
-    C -- size:ecc_oprf_ristretto255_sha512_ELEMENTSIZE
-    D -- size:ecc_oprf_ristretto255_sha512_ELEMENTSIZE
-    """
-    ptr_proof = ffi.from_buffer(proof)
-    ptr_k = ffi.from_buffer(k)
-    ptr_A = ffi.from_buffer(A)
-    ptr_B = ffi.from_buffer(B)
-    ptr_C = ffi.from_buffer(C)
-    ptr_D = ffi.from_buffer(D)
-    lib.ecc_oprf_ristretto255_sha512_GenerateProof(
-        ptr_proof,
-        ptr_k,
-        ptr_A,
-        ptr_B,
-        ptr_C,
-        ptr_D
-    )
-    return None
-
-
-def ecc_oprf_ristretto255_sha512_ComputeComposites(
-    M: bytearray,
-    Z: bytearray,
-    B: bytes,
-    Cs: bytes,
-    Ds: bytes,
-    m: int
-) -> None:
-    """
-    See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-voprf-08#section-3.3.2.3
-    
-    M -- (output) size:ecc_oprf_ristretto255_sha512_ELEMENTSIZE
-    Z -- (output) size:ecc_oprf_ristretto255_sha512_ELEMENTSIZE
-    B -- size:ecc_oprf_ristretto255_sha512_ELEMENTSIZE
-    Cs -- size:m*ecc_oprf_ristretto255_sha512_ELEMENTSIZE
-    Ds -- size:m*ecc_oprf_ristretto255_sha512_ELEMENTSIZE
-    m -- the size of the `Cs` and `Ds` arrays
-    """
-    ptr_M = ffi.from_buffer(M)
-    ptr_Z = ffi.from_buffer(Z)
-    ptr_B = ffi.from_buffer(B)
-    ptr_Cs = ffi.from_buffer(Cs)
-    ptr_Ds = ffi.from_buffer(Ds)
-    lib.ecc_oprf_ristretto255_sha512_ComputeComposites(
-        ptr_M,
-        ptr_Z,
-        ptr_B,
-        ptr_Cs,
-        ptr_Ds,
-        m
-    )
-    return None
-
-
-def ecc_oprf_ristretto255_sha512_ComputeCompositesFast(
-    M: bytearray,
-    Z: bytearray,
-    k: bytes,
-    B: bytes,
-    Cs: bytes,
-    Ds: bytes,
-    m: int
-) -> None:
-    """
-    See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-voprf-08#section-3.3.2.3
-    
-    M -- (output) size:ecc_oprf_ristretto255_sha512_ELEMENTSIZE
-    Z -- (output) size:ecc_oprf_ristretto255_sha512_ELEMENTSIZE
-    k -- size:ecc_oprf_ristretto255_sha512_SCALARSIZE
-    B -- size:ecc_oprf_ristretto255_sha512_ELEMENTSIZE
-    Cs -- size:m*ecc_oprf_ristretto255_sha512_ELEMENTSIZE
-    Ds -- size:m*ecc_oprf_ristretto255_sha512_ELEMENTSIZE
-    m -- the size of the `Cs` and `Ds` arrays
-    """
-    ptr_M = ffi.from_buffer(M)
-    ptr_Z = ffi.from_buffer(Z)
-    ptr_k = ffi.from_buffer(k)
-    ptr_B = ffi.from_buffer(B)
-    ptr_Cs = ffi.from_buffer(Cs)
-    ptr_Ds = ffi.from_buffer(Ds)
-    lib.ecc_oprf_ristretto255_sha512_ComputeCompositesFast(
-        ptr_M,
-        ptr_Z,
-        ptr_k,
-        ptr_B,
-        ptr_Cs,
-        ptr_Ds,
-        m
-    )
-    return None
-
-
-def ecc_oprf_ristretto255_sha512_BlindWithScalar(
-    blindedElement: bytearray,
-    input: bytes,
-    inputLen: int,
-    blind: bytes,
-    mode: int
-) -> None:
-    """
-    Same as calling `ecc_oprf_ristretto255_sha512_Blind` with an
-    specified scalar blind.
-    
-    See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-voprf-08#section-3.3.3.1
-    
-    blindedElement -- (output) blinded element, size:ecc_oprf_ristretto255_sha512_ELEMENTSIZE
-    input -- message to blind, size:inputLen
-    inputLen -- length of `input`
-    blind -- scalar to use in the blind operation, size:ecc_oprf_ristretto255_sha512_SCALARSIZE
-    mode -- oprf mode
-    """
-    ptr_blindedElement = ffi.from_buffer(blindedElement)
-    ptr_input = ffi.from_buffer(input)
-    ptr_blind = ffi.from_buffer(blind)
-    lib.ecc_oprf_ristretto255_sha512_BlindWithScalar(
-        ptr_blindedElement,
-        ptr_input,
-        inputLen,
-        ptr_blind,
-        mode
-    )
-    return None
-
-
-def ecc_oprf_ristretto255_sha512_Blind(
-    blindedElement: bytearray,
-    blind: bytearray,
-    input: bytes,
-    inputLen: int,
-    mode: int
-) -> None:
-    """
-    See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-voprf-08#section-3.3.3.1
-    
-    blindedElement -- (output) blinded element, size:ecc_oprf_ristretto255_sha512_ELEMENTSIZE
-    blind -- (output) scalar used in the blind operation, size:ecc_oprf_ristretto255_sha512_SCALARSIZE
-    input -- message to blind, size:inputLen
-    inputLen -- length of `input`
-    mode -- oprf mode
-    """
-    ptr_blindedElement = ffi.from_buffer(blindedElement)
-    ptr_blind = ffi.from_buffer(blind)
-    ptr_input = ffi.from_buffer(input)
-    lib.ecc_oprf_ristretto255_sha512_Blind(
-        ptr_blindedElement,
-        ptr_blind,
-        ptr_input,
-        inputLen,
-        mode
-    )
-    return None
-
-
-def ecc_oprf_ristretto255_sha512_Unblind(
-    unblindedElement: bytearray,
-    blind: bytes,
-    evaluatedElement: bytes
-) -> None:
-    """
-    See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-voprf-08#section-3.3.3.1
-    
-    unblindedElement -- (output) size:ecc_oprf_ristretto255_sha512_ELEMENTSIZE
-    blind -- size:ecc_oprf_ristretto255_sha512_SCALARSIZE
-    evaluatedElement -- size:ecc_oprf_ristretto255_sha512_ELEMENTSIZE
-    """
-    ptr_unblindedElement = ffi.from_buffer(unblindedElement)
-    ptr_blind = ffi.from_buffer(blind)
-    ptr_evaluatedElement = ffi.from_buffer(evaluatedElement)
-    lib.ecc_oprf_ristretto255_sha512_Unblind(
-        ptr_unblindedElement,
-        ptr_blind,
-        ptr_evaluatedElement
-    )
-    return None
-
-
-def ecc_oprf_ristretto255_sha512_Finalize(
+def ecc_voprf_ristretto255_sha512_PartiallyFinalize(
     output: bytearray,
     input: bytes,
     inputLen: int,
     blind: bytes,
     evaluatedElement: bytes,
+    blindedElement: bytes,
+    proof: bytes,
     info: bytes,
-    infoLen: int
-) -> None:
+    infoLen: int,
+    tweakedKey: bytes
+) -> int:
     """
-    See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-voprf-08#section-3.3.3.2
     
-    output -- (output) size:ecc_oprf_ristretto255_sha512_Nh
+    
+    output -- (output) size:ecc_voprf_ristretto255_sha512_Nh
     input -- the input message, size:inputLen
     inputLen -- the length of `input`
-    blind -- size:ecc_oprf_ristretto255_sha512_SCALARSIZE
-    evaluatedElement -- size:ecc_oprf_ristretto255_sha512_ELEMENTSIZE
-    info -- size:infoLen
-    infoLen -- the length of `info`
+    blind -- size:ecc_voprf_ristretto255_sha512_SCALARSIZE
+    evaluatedElement -- size:ecc_voprf_ristretto255_sha512_ELEMENTSIZE
+    blindedElement -- size:ecc_voprf_ristretto255_sha512_ELEMENTSIZE
+    proof -- size:ecc_voprf_ristretto255_sha512_PROOFSIZE
+    info -- message to blind, size:infoLen
+    infoLen -- length of `info`, it should be
+    <
+    = ecc_voprf_ristretto255_sha512_MAXINFOSIZE
+    tweakedKey -- blinded element, size:ecc_voprf_ristretto255_sha512_ELEMENTSIZE
+    return 0 on success, or -1 if an error
     """
     ptr_output = ffi.from_buffer(output)
     ptr_input = ffi.from_buffer(input)
     ptr_blind = ffi.from_buffer(blind)
     ptr_evaluatedElement = ffi.from_buffer(evaluatedElement)
+    ptr_blindedElement = ffi.from_buffer(blindedElement)
+    ptr_proof = ffi.from_buffer(proof)
     ptr_info = ffi.from_buffer(info)
-    lib.ecc_oprf_ristretto255_sha512_Finalize(
+    ptr_tweakedKey = ffi.from_buffer(tweakedKey)
+    fun_ret = lib.ecc_voprf_ristretto255_sha512_PartiallyFinalize(
         ptr_output,
         ptr_input,
         inputLen,
         ptr_blind,
         ptr_evaluatedElement,
-        ptr_info,
-        infoLen
-    )
-    return None
-
-
-def ecc_oprf_ristretto255_sha512_VerifyProof(
-    A: bytes,
-    B: bytes,
-    C: bytes,
-    D: bytes,
-    proof: bytes
-) -> int:
-    """
-    See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-voprf-08#section-3.3.4.1
-    
-    A -- size:ecc_oprf_ristretto255_sha512_ELEMENTSIZE
-    B -- size:ecc_oprf_ristretto255_sha512_ELEMENTSIZE
-    C -- size:ecc_oprf_ristretto255_sha512_ELEMENTSIZE
-    D -- size:ecc_oprf_ristretto255_sha512_ELEMENTSIZE
-    proof -- size:ecc_oprf_ristretto255_sha512_PROOFSIZE
-    return on success verification returns 1, else 0.
-    """
-    ptr_A = ffi.from_buffer(A)
-    ptr_B = ffi.from_buffer(B)
-    ptr_C = ffi.from_buffer(C)
-    ptr_D = ffi.from_buffer(D)
-    ptr_proof = ffi.from_buffer(proof)
-    fun_ret = lib.ecc_oprf_ristretto255_sha512_VerifyProof(
-        ptr_A,
-        ptr_B,
-        ptr_C,
-        ptr_D,
-        ptr_proof
-    )
-    return fun_ret
-
-
-def ecc_oprf_ristretto255_sha512_VerifiableUnblind(
-    unblindedElement: bytearray,
-    blind: bytes,
-    evaluatedElement: bytes,
-    blindedElement: bytes,
-    pkS: bytes,
-    proof: bytes,
-    info: bytes,
-    infoLen: int
-) -> int:
-    """
-    See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-voprf-08#section-3.3.4.2
-    
-    unblindedElement -- (output) size:ecc_oprf_ristretto255_sha512_ELEMENTSIZE
-    blind -- size:ecc_oprf_ristretto255_sha512_SCALARSIZE
-    evaluatedElement -- size:ecc_oprf_ristretto255_sha512_ELEMENTSIZE
-    blindedElement -- size:ecc_oprf_ristretto255_sha512_ELEMENTSIZE
-    pkS -- size:ecc_oprf_ristretto255_sha512_ELEMENTSIZE
-    proof -- size:ecc_oprf_ristretto255_sha512_PROOFSIZE
-    info -- size:infoLen
-    infoLen -- the length of `info`
-    return on success verification returns 0, else -1.
-    """
-    ptr_unblindedElement = ffi.from_buffer(unblindedElement)
-    ptr_blind = ffi.from_buffer(blind)
-    ptr_evaluatedElement = ffi.from_buffer(evaluatedElement)
-    ptr_blindedElement = ffi.from_buffer(blindedElement)
-    ptr_pkS = ffi.from_buffer(pkS)
-    ptr_proof = ffi.from_buffer(proof)
-    ptr_info = ffi.from_buffer(info)
-    fun_ret = lib.ecc_oprf_ristretto255_sha512_VerifiableUnblind(
-        ptr_unblindedElement,
-        ptr_blind,
-        ptr_evaluatedElement,
         ptr_blindedElement,
-        ptr_pkS,
         ptr_proof,
         ptr_info,
-        infoLen
+        infoLen,
+        ptr_tweakedKey
     )
     return fun_ret
 
 
-def ecc_oprf_ristretto255_sha512_VerifiableFinalize(
+def ecc_voprf_ristretto255_sha512_PartiallyEvaluate(
     output: bytearray,
+    skS: bytes,
     input: bytes,
     inputLen: int,
-    blind: bytes,
-    evaluatedElement: bytes,
-    blindedElement: bytes,
-    pkS: bytes,
-    proof: bytes,
     info: bytes,
     infoLen: int
 ) -> int:
     """
-    See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-voprf-08#section-3.3.4.3
+    An entity which knows both the secret key and the input can compute the PRF
+    result using this function.
     
-    output -- (output) size:ecc_oprf_ristretto255_sha512_Nh
-    input -- size:inputLen
+    output -- (output) size:ecc_voprf_ristretto255_sha512_Nh
+    skS -- size:ecc_voprf_ristretto255_sha512_SCALARSIZE
+    input -- the input message, size:inputLen
     inputLen -- the length of `input`
-    blind -- size:ecc_oprf_ristretto255_sha512_SCALARSIZE
-    evaluatedElement -- size:ecc_oprf_ristretto255_sha512_ELEMENTSIZE
-    blindedElement -- size:ecc_oprf_ristretto255_sha512_ELEMENTSIZE
-    pkS -- size:ecc_oprf_ristretto255_sha512_ELEMENTSIZE
-    proof -- size:ecc_oprf_ristretto255_sha512_PROOFSIZE
-    info -- size:infoLen
-    infoLen -- the length of `info`
-    return on success verification returns 0, else -1.
+    info -- message to blind, size:infoLen
+    infoLen -- length of `info`, it should be
+    <
+    = ecc_voprf_ristretto255_sha512_MAXINFOSIZE
+    return 0 on success, or -1 if an error
     """
     ptr_output = ffi.from_buffer(output)
+    ptr_skS = ffi.from_buffer(skS)
     ptr_input = ffi.from_buffer(input)
-    ptr_blind = ffi.from_buffer(blind)
-    ptr_evaluatedElement = ffi.from_buffer(evaluatedElement)
-    ptr_blindedElement = ffi.from_buffer(blindedElement)
-    ptr_pkS = ffi.from_buffer(pkS)
-    ptr_proof = ffi.from_buffer(proof)
     ptr_info = ffi.from_buffer(info)
-    fun_ret = lib.ecc_oprf_ristretto255_sha512_VerifiableFinalize(
+    fun_ret = lib.ecc_voprf_ristretto255_sha512_PartiallyEvaluate(
         ptr_output,
+        ptr_skS,
         ptr_input,
         inputLen,
-        ptr_blind,
-        ptr_evaluatedElement,
-        ptr_blindedElement,
-        ptr_pkS,
-        ptr_proof,
         ptr_info,
         infoLen
     )
     return fun_ret
 
 
-def ecc_oprf_ristretto255_sha512_HashToGroupWithDST(
+def ecc_voprf_ristretto255_sha512_HashToGroupWithDST(
     out: bytearray,
     input: bytes,
     inputLen: int,
@@ -2381,13 +2660,10 @@ def ecc_oprf_ristretto255_sha512_HashToGroupWithDST(
     dstLen: int
 ) -> None:
     """
-    Same as calling `ecc_oprf_ristretto255_sha512_HashToGroup` with an
+    Same as calling `ecc_voprf_ristretto255_sha512_HashToGroup` with an
     specified DST string.
     
-    See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-voprf-08#section-2.1
-    See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-voprf-08#section-4.1
-    
-    out -- (output) element of the group, size:ecc_oprf_ristretto255_sha512_ELEMENTSIZE
+    out -- (output) element of the group, size:ecc_voprf_ristretto255_sha512_ELEMENTSIZE
     input -- input string to map, size:inputLen
     inputLen -- length of `input`
     dst -- domain separation tag (DST), size:dstLen
@@ -2396,7 +2672,7 @@ def ecc_oprf_ristretto255_sha512_HashToGroupWithDST(
     ptr_out = ffi.from_buffer(out)
     ptr_input = ffi.from_buffer(input)
     ptr_dst = ffi.from_buffer(dst)
-    lib.ecc_oprf_ristretto255_sha512_HashToGroupWithDST(
+    lib.ecc_voprf_ristretto255_sha512_HashToGroupWithDST(
         ptr_out,
         ptr_input,
         inputLen,
@@ -2406,29 +2682,24 @@ def ecc_oprf_ristretto255_sha512_HashToGroupWithDST(
     return None
 
 
-def ecc_oprf_ristretto255_sha512_HashToGroup(
+def ecc_voprf_ristretto255_sha512_HashToGroup(
     out: bytearray,
     input: bytes,
     inputLen: int,
     mode: int
 ) -> None:
     """
-    Deterministically maps an array of bytes "x" to an element of "GG" in
+    Deterministically maps an array of bytes "x" to an element of "G" in
     the ristretto255 curve.
     
-    See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-voprf-08#section-2.1
-    See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-voprf-08#section-4.1
-    See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-hash-to-curve-13#section-2.2.5
-    See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-voprf-08#section-3
-    
-    out -- (output) element of the group, size:ecc_oprf_ristretto255_sha512_ELEMENTSIZE
+    out -- (output) element of the group, size:ecc_voprf_ristretto255_sha512_ELEMENTSIZE
     input -- input string to map, size:inputLen
     inputLen -- length of `input`
-    mode -- mode to build the internal DST string (modeBase=0x00, modeVerifiable=0x01)
+    mode -- mode to build the internal DST string (OPRF, VOPRF, POPRF)
     """
     ptr_out = ffi.from_buffer(out)
     ptr_input = ffi.from_buffer(input)
-    lib.ecc_oprf_ristretto255_sha512_HashToGroup(
+    lib.ecc_voprf_ristretto255_sha512_HashToGroup(
         ptr_out,
         ptr_input,
         inputLen,
@@ -2437,7 +2708,7 @@ def ecc_oprf_ristretto255_sha512_HashToGroup(
     return None
 
 
-def ecc_oprf_ristretto255_sha512_HashToScalarWithDST(
+def ecc_voprf_ristretto255_sha512_HashToScalarWithDST(
     out: bytearray,
     input: bytes,
     inputLen: int,
@@ -2447,7 +2718,7 @@ def ecc_oprf_ristretto255_sha512_HashToScalarWithDST(
     """
     
     
-    out -- (output) size:ecc_oprf_ristretto255_sha512_SCALARSIZE
+    out -- (output) size:ecc_voprf_ristretto255_sha512_SCALARSIZE
     input -- size:inputLen
     inputLen -- the length of `input`
     dst -- size:dstLen
@@ -2456,7 +2727,7 @@ def ecc_oprf_ristretto255_sha512_HashToScalarWithDST(
     ptr_out = ffi.from_buffer(out)
     ptr_input = ffi.from_buffer(input)
     ptr_dst = ffi.from_buffer(dst)
-    lib.ecc_oprf_ristretto255_sha512_HashToScalarWithDST(
+    lib.ecc_voprf_ristretto255_sha512_HashToScalarWithDST(
         ptr_out,
         ptr_input,
         inputLen,
@@ -2466,7 +2737,7 @@ def ecc_oprf_ristretto255_sha512_HashToScalarWithDST(
     return None
 
 
-def ecc_oprf_ristretto255_sha512_HashToScalar(
+def ecc_voprf_ristretto255_sha512_HashToScalar(
     out: bytearray,
     input: bytes,
     inputLen: int,
@@ -2475,14 +2746,14 @@ def ecc_oprf_ristretto255_sha512_HashToScalar(
     """
     
     
-    out -- (output) size:ecc_oprf_ristretto255_sha512_SCALARSIZE
+    out -- (output) size:ecc_voprf_ristretto255_sha512_SCALARSIZE
     input -- size:inputLen
     inputLen -- the length of `input`
     mode -- oprf mode
     """
     ptr_out = ffi.from_buffer(out)
     ptr_input = ffi.from_buffer(input)
-    lib.ecc_oprf_ristretto255_sha512_HashToScalar(
+    lib.ecc_voprf_ristretto255_sha512_HashToScalar(
         ptr_out,
         ptr_input,
         inputLen,
@@ -2611,18 +2882,14 @@ Use Scrypt(32768,8,1) for the Memory Hard Function (MHF).
 def ecc_opaque_ristretto255_sha512_DeriveKeyPair(
     private_key: bytearray,
     public_key: bytearray,
-    seed: bytes,
-    seed_len: int
+    seed: bytes
 ) -> None:
     """
     Derive a private and public key pair deterministically from a seed.
     
-    See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-07#section-2.1
-    
     private_key -- (output) a private key, size:ecc_opaque_ristretto255_sha512_Nsk
     public_key -- (output) the associated public key, size:ecc_opaque_ristretto255_sha512_Npk
-    seed -- pseudo-random byte sequence used as a seed, size:seed_len
-    seed_len -- the length of `seed`
+    seed -- pseudo-random byte sequence used as a seed, size:ecc_opaque_ristretto255_sha512_Nok
     """
     ptr_private_key = ffi.from_buffer(private_key)
     ptr_public_key = ffi.from_buffer(public_key)
@@ -2630,8 +2897,7 @@ def ecc_opaque_ristretto255_sha512_DeriveKeyPair(
     lib.ecc_opaque_ristretto255_sha512_DeriveKeyPair(
         ptr_private_key,
         ptr_public_key,
-        ptr_seed,
-        seed_len
+        ptr_seed
     )
     return None
 
@@ -2648,8 +2914,6 @@ def ecc_opaque_ristretto255_sha512_CreateCleartextCredentials(
     """
     Constructs a "CleartextCredentials" structure given application
     credential information.
-    
-    See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-07#section-4
     
     cleartext_credentials -- (output) a CleartextCredentials structure, size:ecc_opaque_ristretto255_sha512_CLEARTEXTCREDENTIALSSIZE
     server_public_key -- the encoded server public key for the AKE protocol, size:ecc_opaque_ristretto255_sha512_Npk
@@ -2692,8 +2956,6 @@ def ecc_opaque_ristretto255_sha512_EnvelopeStoreWithNonce(
     """
     Same as calling `ecc_opaque_ristretto255_sha512_EnvelopeStore` with an
     specified `nonce`.
-    
-    See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-07#section-4.2
     
     envelope -- (output) size:ecc_opaque_ristretto255_sha512_Ne
     client_public_key -- (output) size:ecc_opaque_ristretto255_sha512_Npk
@@ -2751,8 +3013,6 @@ def ecc_opaque_ristretto255_sha512_EnvelopeStore(
     allocation), it's necessary to add the restriction on length of the
     identities to less than 200 bytes.
     
-    See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-07#section-4.2
-    
     envelope -- (output) size:ecc_opaque_ristretto255_sha512_Ne
     client_public_key -- (output) size:ecc_opaque_ristretto255_sha512_Npk
     masking_key -- (output) size:ecc_opaque_ristretto255_sha512_Nh
@@ -2802,8 +3062,6 @@ def ecc_opaque_ristretto255_sha512_EnvelopeRecover(
     This functions attempts to recover the credentials from the input. On
     success returns 0, else -1.
     
-    See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-07#section-4.2
-    
     client_private_key -- (output) size:ecc_opaque_ristretto255_sha512_Nsk
     export_key -- (output) size:ecc_opaque_ristretto255_sha512_Nh
     randomized_pwd -- size:64
@@ -2843,8 +3101,6 @@ def ecc_opaque_ristretto255_sha512_RecoverPublicKey(
     """
     Recover the public key related to the input "private_key".
     
-    See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-07#section-2
-    
     public_key -- (output) size:ecc_opaque_ristretto255_sha512_Npk
     private_key -- size:ecc_opaque_ristretto255_sha512_Nsk
     """
@@ -2867,8 +3123,6 @@ def ecc_opaque_ristretto255_sha512_GenerateAuthKeyPair(
     This is implemented by generating a random "seed", then
     calling internally DeriveAuthKeyPair.
     
-    See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-07#section-2
-    
     private_key -- (output) a private key, size:ecc_opaque_ristretto255_sha512_Nsk
     public_key -- (output) the associated public key, size:ecc_opaque_ristretto255_sha512_Npk
     """
@@ -2884,20 +3138,15 @@ def ecc_opaque_ristretto255_sha512_GenerateAuthKeyPair(
 def ecc_opaque_ristretto255_sha512_DeriveAuthKeyPair(
     private_key: bytearray,
     public_key: bytearray,
-    seed: bytes,
-    seed_len: int
+    seed: bytes
 ) -> None:
     """
     Derive a private and public authentication key pair deterministically
     from the input "seed".
     
-    See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-07#section-4.3.1
-    See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-07#section-2
-    
     private_key -- (output) a private key, size:ecc_opaque_ristretto255_sha512_Nsk
     public_key -- (output) the associated public key, size:ecc_opaque_ristretto255_sha512_Npk
-    seed -- pseudo-random byte sequence used as a seed, size:seed_len
-    seed_len -- the length of `seed`
+    seed -- pseudo-random byte sequence used as a seed, size:ecc_opaque_ristretto255_sha512_Nok
     """
     ptr_private_key = ffi.from_buffer(private_key)
     ptr_public_key = ffi.from_buffer(public_key)
@@ -2905,8 +3154,7 @@ def ecc_opaque_ristretto255_sha512_DeriveAuthKeyPair(
     lib.ecc_opaque_ristretto255_sha512_DeriveAuthKeyPair(
         ptr_private_key,
         ptr_public_key,
-        ptr_seed,
-        seed_len
+        ptr_seed
     )
     return None
 
@@ -2919,8 +3167,6 @@ def ecc_opaque_ristretto255_sha512_CreateRegistrationRequestWithBlind(
 ) -> None:
     """
     Same as calling CreateRegistrationRequest with a specified blind.
-    
-    See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-07#section-5.1.1.1
     
     request -- (output) a RegistrationRequest structure, size:ecc_opaque_ristretto255_sha512_REGISTRATIONREQUESTSIZE
     password -- an opaque byte string containing the client's password, size:password_len
@@ -2946,7 +3192,7 @@ def ecc_opaque_ristretto255_sha512_CreateRegistrationRequest(
     password_len: int
 ) -> None:
     """
-    See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-07#section-5.1.1.1
+    
     
     request -- (output) a RegistrationRequest structure, size:ecc_opaque_ristretto255_sha512_REGISTRATIONREQUESTSIZE
     blind -- (output) an OPRF scalar value, size:ecc_opaque_ristretto255_sha512_Noe
@@ -2980,8 +3226,6 @@ def ecc_opaque_ristretto255_sha512_CreateRegistrationResponseWithOprfKey(
     limit of credential_identifier_len
     <
     = 200.
-    
-    See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-07#section-5.1.1.2
     
     response -- (output) size:ecc_opaque_ristretto255_sha512_REGISTRATIONRESPONSESIZE
     request -- size:ecc_opaque_ristretto255_sha512_REGISTRATIONREQUESTSIZE
@@ -3020,8 +3264,6 @@ def ecc_opaque_ristretto255_sha512_CreateRegistrationResponse(
     limit of credential_identifier_len
     <
     = 200.
-    
-    See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-07#section-5.1.1.2
     
     response -- (output) a RegistrationResponse structure, size:ecc_opaque_ristretto255_sha512_REGISTRATIONRESPONSESIZE
     oprf_key -- (output) the per-client OPRF key known only to the server, size:ecc_opaque_ristretto255_sha512_Nsk
@@ -3169,7 +3411,7 @@ def ecc_opaque_ristretto255_sha512_CreateCredentialRequestWithBlind(
     blind: bytes
 ) -> None:
     """
-    See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-07#section-6.1.2.1
+    
     
     request -- (output) a CredentialRequest structure, size:ecc_opaque_ristretto255_sha512_CREDENTIALREQUESTSIZE
     password -- an opaque byte string containing the client's password, size:password_len
@@ -3195,7 +3437,7 @@ def ecc_opaque_ristretto255_sha512_CreateCredentialRequest(
     password_len: int
 ) -> None:
     """
-    See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-07#section-6.1.2.1
+    
     
     request -- (output) a CredentialRequest structure, size:ecc_opaque_ristretto255_sha512_CREDENTIALREQUESTSIZE
     blind -- (output) an OPRF scalar value, size:ecc_opaque_ristretto255_sha512_Noe
@@ -3524,8 +3766,6 @@ def ecc_opaque_ristretto255_sha512_3DH_TripleDHIKM(
     Computes the OPAQUE-3DH shared secret derived during the key
     exchange protocol.
     
-    See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-07#section-6.2.2.2
-    
     ikm -- (output) size:96
     sk1 -- size:32
     pk1 -- size:32
@@ -3601,7 +3841,7 @@ def ecc_opaque_ristretto255_sha512_3DH_ClientInitWithSecrets(
     client_keyshare: bytes
 ) -> None:
     """
-    See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-07#section-6.2.3
+    
     
     ke1 -- (output) a KE1 message structure, size:ecc_opaque_ristretto255_sha512_KE1SIZE
     state -- (input, output) a ClientState structure, size:ecc_opaque_ristretto255_sha512_CLIENTSTATESIZE
@@ -3639,7 +3879,7 @@ def ecc_opaque_ristretto255_sha512_3DH_ClientInit(
     password_len: int
 ) -> None:
     """
-    See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-07#section-6.2.3
+    
     
     ke1 -- (output) a KE1 message structure, size:ecc_opaque_ristretto255_sha512_KE1SIZE
     state -- (input, output) a ClientState structure, size:ecc_opaque_ristretto255_sha512_CLIENTSTATESIZE
@@ -3732,7 +3972,7 @@ def ecc_opaque_ristretto255_sha512_3DH_StartWithSecrets(
     client_keyshare: bytes
 ) -> None:
     """
-    See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-07#section-6.2.3.1
+    
     
     ke1 -- (output) size:ecc_opaque_ristretto255_sha512_KE1SIZE
     state -- (input, output) size:ecc_opaque_ristretto255_sha512_CLIENTSTATESIZE
@@ -3764,7 +4004,7 @@ def ecc_opaque_ristretto255_sha512_3DH_Start(
     credential_request: bytes
 ) -> None:
     """
-    See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-07#section-6.2.3.1
+    
     
     ke1 -- (output) size:ecc_opaque_ristretto255_sha512_KE1SIZE
     state -- (input, output) size:ecc_opaque_ristretto255_sha512_CLIENTSTATESIZE
@@ -3860,7 +4100,7 @@ def ecc_opaque_ristretto255_sha512_3DH_ServerInitWithSecrets(
     server_keyshare: bytes
 ) -> None:
     """
-    See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-07#section-6.2.4
+    
     
     ke2_raw -- (output) a KE2 structure, size:ecc_opaque_ristretto255_sha512_KE2SIZE
     state_raw -- (input, output) a ServerState structure, size:ecc_opaque_ristretto255_sha512_SERVERSTATESIZE
@@ -3942,7 +4182,7 @@ def ecc_opaque_ristretto255_sha512_3DH_ServerInit(
     context_len: int
 ) -> None:
     """
-    See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-07#section-6.2.4
+    
     
     ke2_raw -- (output) a KE2 structure, size:ecc_opaque_ristretto255_sha512_KE2SIZE
     state_raw -- (input, output) a ServerState structure, size:ecc_opaque_ristretto255_sha512_SERVERSTATESIZE
@@ -4000,7 +4240,7 @@ def ecc_opaque_ristretto255_sha512_3DH_ServerFinish(
     ke3_raw: bytes
 ) -> int:
     """
-    See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-07#section-6.2.4
+    
     
     session_key -- (output) the shared session secret if and only if KE3 is valid, size:64
     state_raw -- (input, output) a ServerState structure, size:ecc_opaque_ristretto255_sha512_SERVERSTATESIZE
@@ -4526,6 +4766,994 @@ def ecc_sign_eth_bls_AggregateVerify(
     return fun_ret
 
 
+# frost
+
+ecc_frost_ristretto255_sha512_SCALARSIZE = 32
+"""
+Size of a scalar, since this is using the ristretto255
+curve the size is 32 bytes.
+"""
+
+ecc_frost_ristretto255_sha512_ELEMENTSIZE = 32
+"""
+Size of an element, since this is using the ristretto255
+curve the size is 32 bytes.
+"""
+
+ecc_frost_ristretto255_sha512_POINTSIZE = 64
+"""
+Size of a scalar point for polynomial evaluation (x, y).
+"""
+
+ecc_frost_ristretto255_sha512_COMMITMENTSIZE = 96
+"""
+*
+"""
+
+ecc_frost_ristretto255_sha512_BINDINGFACTORSIZE = 64
+"""
+*
+"""
+
+ecc_frost_ristretto255_sha512_SECRETKEYSIZE = 32
+"""
+Size of a private key, since this is using the ristretto255
+curve the size is 32 bytes, the size of an scalar.
+"""
+
+ecc_frost_ristretto255_sha512_PUBLICKEYSIZE = 32
+"""
+Size of a public key, since this is using the ristretto255
+curve the size is 32 bytes, the size of a group element.
+"""
+
+ecc_frost_ristretto255_sha512_SIGNATURESIZE = 64
+"""
+Size of a schnorr signature, a pair of a scalar and an element.
+"""
+
+ecc_frost_ristretto255_sha512_NONCEPAIRSIZE = 64
+"""
+Size of a nonce tuple.
+"""
+
+ecc_frost_ristretto255_sha512_NONCECOMMITMENTPAIRSIZE = 64
+"""
+Size of a nonce commitment tuple.
+"""
+
+def ecc_frost_ristretto255_sha512_nonce_generate_with_randomness(
+    nonce: bytearray,
+    secret: bytes,
+    random_bytes: bytes
+) -> None:
+    """
+    
+    
+    nonce -- (output) size:ecc_frost_ristretto255_sha512_SCALARSIZE
+    secret -- size:ecc_frost_ristretto255_sha512_SCALARSIZE
+    random_bytes -- size:32
+    """
+    ptr_nonce = ffi.from_buffer(nonce)
+    ptr_secret = ffi.from_buffer(secret)
+    ptr_random_bytes = ffi.from_buffer(random_bytes)
+    lib.ecc_frost_ristretto255_sha512_nonce_generate_with_randomness(
+        ptr_nonce,
+        ptr_secret,
+        ptr_random_bytes
+    )
+    return None
+
+
+def ecc_frost_ristretto255_sha512_nonce_generate(
+    nonce: bytearray,
+    secret: bytes
+) -> None:
+    """
+    
+    
+    nonce -- (output) size:ecc_frost_ristretto255_sha512_SCALARSIZE
+    secret -- size:ecc_frost_ristretto255_sha512_SCALARSIZE
+    """
+    ptr_nonce = ffi.from_buffer(nonce)
+    ptr_secret = ffi.from_buffer(secret)
+    lib.ecc_frost_ristretto255_sha512_nonce_generate(
+        ptr_nonce,
+        ptr_secret
+    )
+    return None
+
+
+def ecc_frost_ristretto255_sha512_derive_interpolating_value(
+    L_i: bytearray,
+    x_i: bytes,
+    L: bytes,
+    L_len: int
+) -> None:
+    """
+    Lagrange coefficients are used in FROST to evaluate a polynomial f at f(0),
+    given a set of t other points, where f is represented as a set of coefficients.
+    
+    L_i -- (output) the i-th Lagrange coefficient, size:ecc_frost_ristretto255_sha512_SCALARSIZE
+    x_i -- an x-coordinate contained in L, a scalar, size:ecc_frost_ristretto255_sha512_SCALARSIZE
+    L -- the set of x-coordinates, each a scalar, size:L_len*ecc_frost_ristretto255_sha512_SCALARSIZE
+    L_len -- the number of x-coordinates in `L`
+    """
+    ptr_L_i = ffi.from_buffer(L_i)
+    ptr_x_i = ffi.from_buffer(x_i)
+    ptr_L = ffi.from_buffer(L)
+    lib.ecc_frost_ristretto255_sha512_derive_interpolating_value(
+        ptr_L_i,
+        ptr_x_i,
+        ptr_L,
+        L_len
+    )
+    return None
+
+
+def ecc_frost_ristretto255_sha512_derive_interpolating_value_with_points(
+    L_i: bytearray,
+    x_i: bytes,
+    L: bytes,
+    L_len: int
+) -> None:
+    """
+    This is an optimization that works like `ecc_frost_ristretto255_sha512_derive_interpolating_value`
+    but with a set of points (x, y).
+    
+    L_i -- (output) the i-th Lagrange coefficient, size:ecc_frost_ristretto255_sha512_SCALARSIZE
+    x_i -- an x-coordinate contained in L, a scalar, size:ecc_frost_ristretto255_sha512_SCALARSIZE
+    L -- the set of (x, y)-points, size:L_len*ecc_frost_ristretto255_sha512_POINTSIZE
+    L_len -- the number of (x, y)-points in `L`
+    """
+    ptr_L_i = ffi.from_buffer(L_i)
+    ptr_x_i = ffi.from_buffer(x_i)
+    ptr_L = ffi.from_buffer(L)
+    lib.ecc_frost_ristretto255_sha512_derive_interpolating_value_with_points(
+        ptr_L_i,
+        ptr_x_i,
+        ptr_L,
+        L_len
+    )
+    return None
+
+
+def ecc_frost_ristretto255_sha512_encode_group_commitment_list(
+    out: bytearray,
+    commitment_list: bytes,
+    commitment_list_len: int
+) -> None:
+    """
+    Encodes a list of participant commitments into a bytestring for use in the
+    FROST protocol.
+    
+    out -- (output) size:commitment_list_len*ecc_frost_ristretto255_sha512_COMMITMENTSIZE
+    commitment_list -- a list of commitments issued by each signer, MUST be sorted in ascending order by signer index, size:commitment_list_len*ecc_frost_ristretto255_sha512_COMMITMENTSIZE
+    commitment_list_len -- the number of elements in `commitment_list`
+    """
+    ptr_out = ffi.from_buffer(out)
+    ptr_commitment_list = ffi.from_buffer(commitment_list)
+    lib.ecc_frost_ristretto255_sha512_encode_group_commitment_list(
+        ptr_out,
+        ptr_commitment_list,
+        commitment_list_len
+    )
+    return None
+
+
+def ecc_frost_ristretto255_sha512_participants_from_commitment_list(
+    identifiers: bytearray,
+    commitment_list: bytes,
+    commitment_list_len: int
+) -> None:
+    """
+    Extracts participant identifiers from a commitment list.
+    
+    identifiers -- (output) size:commitment_list_len*ecc_frost_ristretto255_sha512_SCALARSIZE
+    commitment_list -- a list of commitments issued by each signer, MUST be sorted in ascending order by signer index, size:commitment_list_len*ecc_frost_ristretto255_sha512_COMMITMENTSIZE
+    commitment_list_len -- the number of elements in `commitment_list`
+    """
+    ptr_identifiers = ffi.from_buffer(identifiers)
+    ptr_commitment_list = ffi.from_buffer(commitment_list)
+    lib.ecc_frost_ristretto255_sha512_participants_from_commitment_list(
+        ptr_identifiers,
+        ptr_commitment_list,
+        commitment_list_len
+    )
+    return None
+
+
+def ecc_frost_ristretto255_sha512_binding_factor_for_participant(
+    binding_factor: bytearray,
+    binding_factor_list: bytes,
+    binding_factor_list_len: int,
+    identifier: bytes
+) -> int:
+    """
+    Extracts a binding factor from a list of binding factors.
+    
+    binding_factor -- (output) size:ecc_frost_ristretto255_sha512_SCALARSIZE
+    binding_factor_list -- a list of binding factors for each participant, MUST be sorted in ascending order by signer index, size:binding_factor_list_len*ecc_frost_ristretto255_sha512_BINDINGFACTORSIZE
+    binding_factor_list_len -- the number of elements in `binding_factor_list`
+    identifier -- participant identifier, size:ecc_frost_ristretto255_sha512_SCALARSIZE
+    return 0 on success, or -1 if the designated participant is not known
+    """
+    ptr_binding_factor = ffi.from_buffer(binding_factor)
+    ptr_binding_factor_list = ffi.from_buffer(binding_factor_list)
+    ptr_identifier = ffi.from_buffer(identifier)
+    fun_ret = lib.ecc_frost_ristretto255_sha512_binding_factor_for_participant(
+        ptr_binding_factor,
+        ptr_binding_factor_list,
+        binding_factor_list_len,
+        ptr_identifier
+    )
+    return fun_ret
+
+
+def ecc_frost_ristretto255_sha512_compute_binding_factors(
+    binding_factor_list: bytearray,
+    commitment_list: bytes,
+    commitment_list_len: int,
+    msg: bytes,
+    msg_len: int
+) -> None:
+    """
+    Compute binding factors based on the participant commitment list and message
+    to be signed.
+    
+    binding_factor_list -- (output) list of binding factors (identifier, Scalar) tuples representing the binding factors, size:commitment_list_len*ecc_frost_ristretto255_sha512_BINDINGFACTORSIZE
+    commitment_list -- a list of commitments issued by each signer, MUST be sorted in ascending order by signer index, size:commitment_list_len*ecc_frost_ristretto255_sha512_COMMITMENTSIZE
+    commitment_list_len -- the number of elements in `commitment_list`
+    msg -- the message to be signed, size:msg_len
+    msg_len -- the length of `msg`
+    """
+    ptr_binding_factor_list = ffi.from_buffer(binding_factor_list)
+    ptr_commitment_list = ffi.from_buffer(commitment_list)
+    ptr_msg = ffi.from_buffer(msg)
+    lib.ecc_frost_ristretto255_sha512_compute_binding_factors(
+        ptr_binding_factor_list,
+        ptr_commitment_list,
+        commitment_list_len,
+        ptr_msg,
+        msg_len
+    )
+    return None
+
+
+def ecc_frost_ristretto255_sha512_compute_group_commitment(
+    group_comm: bytearray,
+    commitment_list: bytes,
+    commitment_list_len: int,
+    binding_factor_list: bytes,
+    binding_factor_list_len: int
+) -> None:
+    """
+    Create the group commitment from a commitment list.
+    
+    group_comm -- (output) size:ecc_frost_ristretto255_sha512_ELEMENTSIZE
+    commitment_list -- a list of commitments issued by each signer, MUST be sorted in ascending order by signer index, size:commitment_list_len*ecc_frost_ristretto255_sha512_COMMITMENTSIZE
+    commitment_list_len -- the number of elements in `commitment_list`
+    binding_factor_list -- size:ecc_frost_ristretto255_sha512_BINDINGFACTORSIZE
+    binding_factor_list_len -- the number of elements in `binding_factor_list`
+    """
+    ptr_group_comm = ffi.from_buffer(group_comm)
+    ptr_commitment_list = ffi.from_buffer(commitment_list)
+    ptr_binding_factor_list = ffi.from_buffer(binding_factor_list)
+    lib.ecc_frost_ristretto255_sha512_compute_group_commitment(
+        ptr_group_comm,
+        ptr_commitment_list,
+        commitment_list_len,
+        ptr_binding_factor_list,
+        binding_factor_list_len
+    )
+    return None
+
+
+def ecc_frost_ristretto255_sha512_compute_challenge(
+    challenge: bytearray,
+    group_commitment: bytes,
+    group_public_key: bytes,
+    msg: bytes,
+    msg_len: int
+) -> None:
+    """
+    Create the per-message challenge.
+    
+    challenge -- (output) a challenge Scalar value, size:ecc_frost_ristretto255_sha512_SCALARSIZE
+    group_commitment -- an Element representing the group commitment, size:ecc_frost_ristretto255_sha512_ELEMENTSIZE
+    group_public_key -- public key corresponding to the signer secret key share, size:ecc_frost_ristretto255_sha512_PUBLICKEYSIZE
+    msg -- the message to be signed (sent by the Coordinator), size:msg_len
+    msg_len -- the length of `msg`
+    """
+    ptr_challenge = ffi.from_buffer(challenge)
+    ptr_group_commitment = ffi.from_buffer(group_commitment)
+    ptr_group_public_key = ffi.from_buffer(group_public_key)
+    ptr_msg = ffi.from_buffer(msg)
+    lib.ecc_frost_ristretto255_sha512_compute_challenge(
+        ptr_challenge,
+        ptr_group_commitment,
+        ptr_group_public_key,
+        ptr_msg,
+        msg_len
+    )
+    return None
+
+
+def ecc_frost_ristretto255_sha512_commit_with_randomness(
+    nonce: bytearray,
+    comm: bytearray,
+    sk_i: bytes,
+    hiding_nonce_randomness: bytes,
+    binding_nonce_randomness: bytes
+) -> None:
+    """
+    
+    
+    nonce -- (output) a nonce pair, size:ecc_frost_ristretto255_sha512_NONCEPAIRSIZE
+    comm -- (output) a nonce commitment pair, size:ecc_frost_ristretto255_sha512_NONCECOMMITMENTPAIRSIZE
+    sk_i -- the secret key share, size:ecc_frost_ristretto255_sha512_SCALARSIZE
+    hiding_nonce_randomness -- size:32
+    binding_nonce_randomness -- size:32
+    """
+    ptr_nonce = ffi.from_buffer(nonce)
+    ptr_comm = ffi.from_buffer(comm)
+    ptr_sk_i = ffi.from_buffer(sk_i)
+    ptr_hiding_nonce_randomness = ffi.from_buffer(hiding_nonce_randomness)
+    ptr_binding_nonce_randomness = ffi.from_buffer(binding_nonce_randomness)
+    lib.ecc_frost_ristretto255_sha512_commit_with_randomness(
+        ptr_nonce,
+        ptr_comm,
+        ptr_sk_i,
+        ptr_hiding_nonce_randomness,
+        ptr_binding_nonce_randomness
+    )
+    return None
+
+
+def ecc_frost_ristretto255_sha512_commit(
+    nonce: bytearray,
+    comm: bytearray,
+    sk_i: bytes
+) -> None:
+    """
+    
+    
+    nonce -- (output) a nonce pair, size:ecc_frost_ristretto255_sha512_NONCEPAIRSIZE
+    comm -- (output) a nonce commitment pair, size:ecc_frost_ristretto255_sha512_NONCECOMMITMENTPAIRSIZE
+    sk_i -- the secret key share, size:ecc_frost_ristretto255_sha512_SCALARSIZE
+    """
+    ptr_nonce = ffi.from_buffer(nonce)
+    ptr_comm = ffi.from_buffer(comm)
+    ptr_sk_i = ffi.from_buffer(sk_i)
+    lib.ecc_frost_ristretto255_sha512_commit(
+        ptr_nonce,
+        ptr_comm,
+        ptr_sk_i
+    )
+    return None
+
+
+def ecc_frost_ristretto255_sha512_sign(
+    sig_share: bytearray,
+    identifier: bytes,
+    sk_i: bytes,
+    group_public_key: bytes,
+    nonce_i: bytes,
+    msg: bytes,
+    msg_len: int,
+    commitment_list: bytes,
+    commitment_list_len: int
+) -> None:
+    """
+    To produce a signature share.
+    
+    sig_share -- (output) signature share, size:ecc_frost_ristretto255_sha512_SCALARSIZE
+    identifier -- identifier of the signer. Note identifier will never equal 0, size:ecc_frost_ristretto255_sha512_SCALARSIZE
+    sk_i -- signer secret key share, size:ecc_frost_ristretto255_sha512_SECRETKEYSIZE
+    group_public_key -- public key corresponding to the signer secret key share, size:ecc_frost_ristretto255_sha512_PUBLICKEYSIZE
+    nonce_i -- pair of scalar values generated in round one, size:ecc_frost_ristretto255_sha512_NONCEPAIRSIZE
+    msg -- the message to be signed (sent by the Coordinator), size:msg_len
+    msg_len -- the length of `msg`
+    commitment_list -- a list of commitments issued by each signer, MUST be sorted in ascending order by signer index, size:commitment_list_len*ecc_frost_ristretto255_sha512_COMMITMENTSIZE
+    commitment_list_len -- the number of elements in `commitment_list`
+    """
+    ptr_sig_share = ffi.from_buffer(sig_share)
+    ptr_identifier = ffi.from_buffer(identifier)
+    ptr_sk_i = ffi.from_buffer(sk_i)
+    ptr_group_public_key = ffi.from_buffer(group_public_key)
+    ptr_nonce_i = ffi.from_buffer(nonce_i)
+    ptr_msg = ffi.from_buffer(msg)
+    ptr_commitment_list = ffi.from_buffer(commitment_list)
+    lib.ecc_frost_ristretto255_sha512_sign(
+        ptr_sig_share,
+        ptr_identifier,
+        ptr_sk_i,
+        ptr_group_public_key,
+        ptr_nonce_i,
+        ptr_msg,
+        msg_len,
+        ptr_commitment_list,
+        commitment_list_len
+    )
+    return None
+
+
+def ecc_frost_ristretto255_sha512_aggregate(
+    signature: bytearray,
+    commitment_list: bytes,
+    commitment_list_len: int,
+    msg: bytes,
+    msg_len: int,
+    sig_shares: bytes,
+    sig_shares_len: int
+) -> None:
+    """
+    Performs the aggregate operation to obtain the resulting signature.
+    
+    signature -- (output) a Schnorr signature consisting of an Element and Scalar value, size:ecc_frost_ristretto255_sha512_SIGNATURESIZE
+    commitment_list -- the group commitment returned by compute_group_commitment, size:commitment_list_len*ecc_frost_ristretto255_sha512_PUBLICKEYSIZE
+    commitment_list_len -- the group commitment returned by compute_group_commitment, size:ecc_frost_ristretto255_sha512_PUBLICKEYSIZE
+    msg -- the message to be signed (sent by the Coordinator), size:msg_len
+    msg_len -- the length of `msg`
+    sig_shares -- a set of signature shares z_i for each signer, size:sig_shares_len*ecc_frost_ristretto255_sha512_SCALARSIZE
+    sig_shares_len -- the number of elements in `sig_shares`, must satisfy THRESHOLD_LIMIT
+    <
+    = sig_shares_len
+    <
+    = MAX_SIGNERS
+    """
+    ptr_signature = ffi.from_buffer(signature)
+    ptr_commitment_list = ffi.from_buffer(commitment_list)
+    ptr_msg = ffi.from_buffer(msg)
+    ptr_sig_shares = ffi.from_buffer(sig_shares)
+    lib.ecc_frost_ristretto255_sha512_aggregate(
+        ptr_signature,
+        ptr_commitment_list,
+        commitment_list_len,
+        ptr_msg,
+        msg_len,
+        ptr_sig_shares,
+        sig_shares_len
+    )
+    return None
+
+
+def ecc_frost_ristretto255_sha512_verify_signature_share(
+    identifier: bytes,
+    public_key_share_i: bytes,
+    comm_i: bytes,
+    sig_share_i: bytes,
+    commitment_list: bytes,
+    commitment_list_len: int,
+    group_public_key: bytes,
+    msg: bytes,
+    msg_len: int
+) -> int:
+    """
+    Check that the signature share is valid.
+    
+    identifier -- identifier of the signer. Note identifier will never equal 0, size:ecc_frost_ristretto255_sha512_SCALARSIZE
+    public_key_share_i -- the public key for the ith signer, size:ecc_frost_ristretto255_sha512_PUBLICKEYSIZE
+    comm_i -- pair of Element values (hiding_nonce_commitment, binding_nonce_commitment) generated in round one from the ith signer, size:ecc_frost_ristretto255_sha512_NONCECOMMITMENTPAIRSIZE
+    sig_share_i -- a Scalar value indicating the signature share as produced in round two from the ith signer, size:ecc_frost_ristretto255_sha512_SCALARSIZE
+    commitment_list -- a list of commitments issued by each signer, MUST be sorted in ascending order by signer index, size:commitment_list_len*ecc_frost_ristretto255_sha512_COMMITMENTSIZE
+    commitment_list_len -- the number of elements in `commitment_list`
+    group_public_key -- the public key for the group, size:ecc_frost_ristretto255_sha512_PUBLICKEYSIZE
+    msg -- the message to be signed (sent by the Coordinator), size:msg_len
+    msg_len -- the length of `msg`
+    return 1 if the signature share is valid, and 0 otherwise.
+    """
+    ptr_identifier = ffi.from_buffer(identifier)
+    ptr_public_key_share_i = ffi.from_buffer(public_key_share_i)
+    ptr_comm_i = ffi.from_buffer(comm_i)
+    ptr_sig_share_i = ffi.from_buffer(sig_share_i)
+    ptr_commitment_list = ffi.from_buffer(commitment_list)
+    ptr_group_public_key = ffi.from_buffer(group_public_key)
+    ptr_msg = ffi.from_buffer(msg)
+    fun_ret = lib.ecc_frost_ristretto255_sha512_verify_signature_share(
+        ptr_identifier,
+        ptr_public_key_share_i,
+        ptr_comm_i,
+        ptr_sig_share_i,
+        ptr_commitment_list,
+        commitment_list_len,
+        ptr_group_public_key,
+        ptr_msg,
+        msg_len
+    )
+    return fun_ret
+
+
+def ecc_frost_ristretto255_sha512_H1(
+    h1: bytearray,
+    m: bytes,
+    m_len: int
+) -> None:
+    """
+    Map arbitrary inputs to non-zero Scalar elements of the prime-order group scalar field.
+    
+    h1 -- (output) size:ecc_frost_ristretto255_sha512_SCALARSIZE
+    m -- size:m_len
+    m_len -- the length of `m`
+    """
+    ptr_h1 = ffi.from_buffer(h1)
+    ptr_m = ffi.from_buffer(m)
+    lib.ecc_frost_ristretto255_sha512_H1(
+        ptr_h1,
+        ptr_m,
+        m_len
+    )
+    return None
+
+
+def ecc_frost_ristretto255_sha512_H1_2(
+    h1: bytearray,
+    m1: bytes,
+    m1_len: int,
+    m2: bytes,
+    m2_len: int
+) -> None:
+    """
+    Map arbitrary inputs to non-zero Scalar elements of the prime-order group scalar field.
+    
+    This is a variant of H2 that folds internally all inputs in the same
+    hash calculation.
+    
+    h1 -- (output) size:ecc_frost_ristretto255_sha512_SCALARSIZE
+    m1 -- size:m1_len
+    m1_len -- the length of `m1`
+    m2 -- size:m2_len
+    m2_len -- the length of `m2`
+    """
+    ptr_h1 = ffi.from_buffer(h1)
+    ptr_m1 = ffi.from_buffer(m1)
+    ptr_m2 = ffi.from_buffer(m2)
+    lib.ecc_frost_ristretto255_sha512_H1_2(
+        ptr_h1,
+        ptr_m1,
+        m1_len,
+        ptr_m2,
+        m2_len
+    )
+    return None
+
+
+def ecc_frost_ristretto255_sha512_H2(
+    h2: bytearray,
+    m: bytes,
+    m_len: int
+) -> None:
+    """
+    Map arbitrary inputs to non-zero Scalar elements of the prime-order group scalar field.
+    
+    h2 -- (output) size:ecc_frost_ristretto255_sha512_SCALARSIZE
+    m -- size:m_len
+    m_len -- the length of `m`
+    """
+    ptr_h2 = ffi.from_buffer(h2)
+    ptr_m = ffi.from_buffer(m)
+    lib.ecc_frost_ristretto255_sha512_H2(
+        ptr_h2,
+        ptr_m,
+        m_len
+    )
+    return None
+
+
+def ecc_frost_ristretto255_sha512_H2_3(
+    h2: bytearray,
+    m1: bytes,
+    m1_len: int,
+    m2: bytes,
+    m2_len: int,
+    m3: bytes,
+    m3_len: int
+) -> None:
+    """
+    Map arbitrary inputs to non-zero Scalar elements of the prime-order group scalar field.
+    
+    This is a variant of H2 that folds internally all inputs in the same
+    hash calculation.
+    
+    h2 -- (output) size:ecc_frost_ristretto255_sha512_SCALARSIZE
+    m1 -- size:m1_len
+    m1_len -- the length of `m1`
+    m2 -- size:m2_len
+    m2_len -- the length of `m2`
+    m3 -- size:m3_len
+    m3_len -- the length of `m3`
+    """
+    ptr_h2 = ffi.from_buffer(h2)
+    ptr_m1 = ffi.from_buffer(m1)
+    ptr_m2 = ffi.from_buffer(m2)
+    ptr_m3 = ffi.from_buffer(m3)
+    lib.ecc_frost_ristretto255_sha512_H2_3(
+        ptr_h2,
+        ptr_m1,
+        m1_len,
+        ptr_m2,
+        m2_len,
+        ptr_m3,
+        m3_len
+    )
+    return None
+
+
+def ecc_frost_ristretto255_sha512_H3(
+    h3: bytearray,
+    m: bytes,
+    m_len: int
+) -> None:
+    """
+    This is an alias for the ciphersuite hash function with
+    domain separation applied.
+    
+    h3 -- (output) size:ecc_frost_ristretto255_sha512_SCALARSIZE
+    m -- size:m_len
+    m_len -- the length of `m`
+    """
+    ptr_h3 = ffi.from_buffer(h3)
+    ptr_m = ffi.from_buffer(m)
+    lib.ecc_frost_ristretto255_sha512_H3(
+        ptr_h3,
+        ptr_m,
+        m_len
+    )
+    return None
+
+
+def ecc_frost_ristretto255_sha512_H3_2(
+    h3: bytearray,
+    m1: bytes,
+    m1_len: int,
+    m2: bytes,
+    m2_len: int
+) -> None:
+    """
+    This is an alias for the ciphersuite hash function with
+    domain separation applied.
+    
+    This is a variant of H3 that folds internally all inputs in the same
+    hash calculation.
+    
+    h3 -- (output) size:ecc_frost_ristretto255_sha512_SCALARSIZE
+    m1 -- size:m1_len
+    m1_len -- the length of `m1`
+    m2 -- size:m2_len
+    m2_len -- the length of `m2`
+    """
+    ptr_h3 = ffi.from_buffer(h3)
+    ptr_m1 = ffi.from_buffer(m1)
+    ptr_m2 = ffi.from_buffer(m2)
+    lib.ecc_frost_ristretto255_sha512_H3_2(
+        ptr_h3,
+        ptr_m1,
+        m1_len,
+        ptr_m2,
+        m2_len
+    )
+    return None
+
+
+def ecc_frost_ristretto255_sha512_H4(
+    h4: bytearray,
+    m: bytes,
+    m_len: int
+) -> None:
+    """
+    Implemented by computing H(contextString || "msg" || m).
+    
+    h4 -- (output) size:64
+    m -- size:m_len
+    m_len -- the length of `m`
+    """
+    ptr_h4 = ffi.from_buffer(h4)
+    ptr_m = ffi.from_buffer(m)
+    lib.ecc_frost_ristretto255_sha512_H4(
+        ptr_h4,
+        ptr_m,
+        m_len
+    )
+    return None
+
+
+def ecc_frost_ristretto255_sha512_H5(
+    h5: bytearray,
+    m: bytes,
+    m_len: int
+) -> None:
+    """
+    Implemented by computing H(contextString || "com" || m).
+    
+    h5 -- (output) size:64
+    m -- size:m_len
+    m_len -- the length of `m`
+    """
+    ptr_h5 = ffi.from_buffer(h5)
+    ptr_m = ffi.from_buffer(m)
+    lib.ecc_frost_ristretto255_sha512_H5(
+        ptr_h5,
+        ptr_m,
+        m_len
+    )
+    return None
+
+
+def ecc_frost_ristretto255_sha512_prime_order_sign(
+    signature: bytearray,
+    msg: bytes,
+    msg_len: int,
+    SK: bytes
+) -> None:
+    """
+    Generate a single-party setting Schnorr signature.
+    
+    signature -- (output) signature, size:ecc_frost_ristretto255_sha512_SIGNATURESIZE
+    msg -- message to be signed, size:msg_len
+    msg_len -- the length of `msg`
+    SK -- private key, a scalar, size:ecc_frost_ristretto255_sha512_SECRETKEYSIZE
+    """
+    ptr_signature = ffi.from_buffer(signature)
+    ptr_msg = ffi.from_buffer(msg)
+    ptr_SK = ffi.from_buffer(SK)
+    lib.ecc_frost_ristretto255_sha512_prime_order_sign(
+        ptr_signature,
+        ptr_msg,
+        msg_len,
+        ptr_SK
+    )
+    return None
+
+
+def ecc_frost_ristretto255_sha512_prime_order_verify(
+    msg: bytes,
+    msg_len: int,
+    signature: bytes,
+    PK: bytes
+) -> int:
+    """
+    Verify a Schnorr signature.
+    
+    msg -- signed message, size:msg_len
+    msg_len -- the length of `msg`
+    signature -- signature, size:ecc_frost_ristretto255_sha512_SIGNATURESIZE
+    PK -- public key, a group element, size:ecc_frost_ristretto255_sha512_PUBLICKEYSIZE
+    return 1 if signature is valid, and 0 otherwise
+    """
+    ptr_msg = ffi.from_buffer(msg)
+    ptr_signature = ffi.from_buffer(signature)
+    ptr_PK = ffi.from_buffer(PK)
+    fun_ret = lib.ecc_frost_ristretto255_sha512_prime_order_verify(
+        ptr_msg,
+        msg_len,
+        ptr_signature,
+        ptr_PK
+    )
+    return fun_ret
+
+
+def ecc_frost_ristretto255_sha512_trusted_dealer_keygen_with_coefficients(
+    participant_private_keys: bytearray,
+    group_public_key: bytearray,
+    vss_commitment: bytearray,
+    polynomial_coefficients: bytearray,
+    secret_key: bytes,
+    n: int,
+    t: int,
+    coefficients: bytes
+) -> None:
+    """
+    
+    
+    participant_private_keys -- (output) MAX_PARTICIPANTS shares of the secret key s, each a tuple consisting of the participant identifier (a NonZeroScalar) and the key share (a Scalar), size:n*ecc_frost_ristretto255_sha512_POINTSIZE
+    group_public_key -- (output) public key corresponding to the group signing key, an Element, size:ecc_frost_ristretto255_sha512_ELEMENTSIZE
+    vss_commitment -- (output) a vector commitment of Elements in G, to each of the coefficients in the polynomial defined by secret_key_shares and whose first element is G.ScalarBaseMult(s), size:t*ecc_frost_ristretto255_sha512_ELEMENTSIZE
+    polynomial_coefficients -- (output) size:t*ecc_frost_ristretto255_sha512_SCALARSIZE
+    secret_key -- a group secret, a Scalar, that MUST be derived from at least Ns bytes of entropy, size:ecc_frost_ristretto255_sha512_SCALARSIZE
+    n -- the number of shares to generate
+    t -- the threshold of the secret sharing scheme
+    coefficients -- size:(t-1)*ecc_frost_ristretto255_sha512_SCALARSIZE
+    """
+    ptr_participant_private_keys = ffi.from_buffer(participant_private_keys)
+    ptr_group_public_key = ffi.from_buffer(group_public_key)
+    ptr_vss_commitment = ffi.from_buffer(vss_commitment)
+    ptr_polynomial_coefficients = ffi.from_buffer(polynomial_coefficients)
+    ptr_secret_key = ffi.from_buffer(secret_key)
+    ptr_coefficients = ffi.from_buffer(coefficients)
+    lib.ecc_frost_ristretto255_sha512_trusted_dealer_keygen_with_coefficients(
+        ptr_participant_private_keys,
+        ptr_group_public_key,
+        ptr_vss_commitment,
+        ptr_polynomial_coefficients,
+        ptr_secret_key,
+        n,
+        t,
+        ptr_coefficients
+    )
+    return None
+
+
+def ecc_frost_ristretto255_sha512_secret_share_shard(
+    secret_key_shares: bytearray,
+    polynomial_coefficients: bytearray,
+    s: bytes,
+    coefficients: bytes,
+    n: int,
+    t: int
+) -> int:
+    """
+    Split a secret into shares.
+    
+    secret_key_shares -- (output) A list of n secret shares, each of which is an element of F, size:n*ecc_frost_ristretto255_sha512_POINTSIZE
+    polynomial_coefficients -- (output) a vector of t coefficients which uniquely determine a polynomial f, size:t*ecc_frost_ristretto255_sha512_SCALARSIZE
+    s -- secret value to be shared, a scalar, size:ecc_frost_ristretto255_sha512_SCALARSIZE
+    coefficients -- an array of size t - 1 with randomly generated scalars, not including the 0th coefficient of the polynomial, size:(t-1)*ecc_frost_ristretto255_sha512_SCALARSIZE
+    n -- the number of shares to generate, an integer less than 2^16
+    t -- the threshold of the secret sharing scheme, an integer greater than 0
+    return 0 if no errors, else -1
+    """
+    ptr_secret_key_shares = ffi.from_buffer(secret_key_shares)
+    ptr_polynomial_coefficients = ffi.from_buffer(polynomial_coefficients)
+    ptr_s = ffi.from_buffer(s)
+    ptr_coefficients = ffi.from_buffer(coefficients)
+    fun_ret = lib.ecc_frost_ristretto255_sha512_secret_share_shard(
+        ptr_secret_key_shares,
+        ptr_polynomial_coefficients,
+        ptr_s,
+        ptr_coefficients,
+        n,
+        t
+    )
+    return fun_ret
+
+
+def ecc_frost_ristretto255_sha512_secret_share_combine(
+    s: bytearray,
+    shares: bytes,
+    shares_len: int
+) -> int:
+    """
+    Combines a shares list of length MIN_PARTICIPANTS to recover the secret.
+    
+    s -- (output) the resulting secret s that was previously split into shares, size:ecc_frost_ristretto255_sha512_SCALARSIZE
+    shares -- a list of at minimum MIN_PARTICIPANTS secret shares, each a tuple (i, f(i)) where i and f(i) are Scalars, size:shares_len*ecc_frost_ristretto255_sha512_POINTSIZE
+    shares_len -- the number of shares in `shares`
+    return 0 if no errors, else -1
+    """
+    ptr_s = ffi.from_buffer(s)
+    ptr_shares = ffi.from_buffer(shares)
+    fun_ret = lib.ecc_frost_ristretto255_sha512_secret_share_combine(
+        ptr_s,
+        ptr_shares,
+        shares_len
+    )
+    return fun_ret
+
+
+def ecc_frost_ristretto255_sha512_polynomial_evaluate(
+    value: bytearray,
+    x: bytes,
+    coeffs: bytes,
+    coeffs_len: int
+) -> None:
+    """
+    Evaluate a polynomial f at a particular input x, i.e., y = f(x)
+    using Horner's method.
+    
+    value -- (output) scalar result of the polynomial evaluated at input x, size:ecc_frost_ristretto255_sha512_SCALARSIZE
+    x -- input at which to evaluate the polynomial, a scalar, size:ecc_frost_ristretto255_sha512_SCALARSIZE
+    coeffs -- the polynomial coefficients, a list of scalars, size:coeffs_len*ecc_frost_ristretto255_sha512_SCALARSIZE
+    coeffs_len -- the number of coefficients in `coeffs`
+    """
+    ptr_value = ffi.from_buffer(value)
+    ptr_x = ffi.from_buffer(x)
+    ptr_coeffs = ffi.from_buffer(coeffs)
+    lib.ecc_frost_ristretto255_sha512_polynomial_evaluate(
+        ptr_value,
+        ptr_x,
+        ptr_coeffs,
+        coeffs_len
+    )
+    return None
+
+
+def ecc_frost_ristretto255_sha512_polynomial_interpolate_constant(
+    f_zero: bytearray,
+    points: bytes,
+    points_len: int
+) -> None:
+    """
+    Recover the constant term of an interpolating polynomial defined by a set
+    of points.
+    
+    f_zero -- (output) the constant term of f, i.e., f(0), a scalar, size:ecc_frost_ristretto255_sha512_SCALARSIZE
+    points -- a set of t points with distinct x coordinates on a polynomial f, each a tuple of two Scalar values representing the x and y coordinates, size:points_len*ecc_frost_ristretto255_sha512_POINTSIZE
+    points_len -- the number of elements in `points`
+    """
+    ptr_f_zero = ffi.from_buffer(f_zero)
+    ptr_points = ffi.from_buffer(points)
+    lib.ecc_frost_ristretto255_sha512_polynomial_interpolate_constant(
+        ptr_f_zero,
+        ptr_points,
+        points_len
+    )
+    return None
+
+
+def ecc_frost_ristretto255_sha512_vss_commit(
+    vss_commitment: bytearray,
+    coeffs: bytes,
+    coeffs_len: int
+) -> None:
+    """
+    Compute the commitment using a polynomial f of degree at most MIN_PARTICIPANTS-1.
+    
+    vss_commitment -- (output) a vector commitment to each of the coefficients in coeffs, where each item of the vector commitment is an Element, size:coeffs_len*ecc_frost_ristretto255_sha512_ELEMENTSIZE
+    coeffs -- a vector of the MIN_PARTICIPANTS coefficients which uniquely determine a polynomial f, size:coeffs_len*ecc_frost_ristretto255_sha512_SCALARSIZE
+    coeffs_len -- the length of `coeffs`
+    """
+    ptr_vss_commitment = ffi.from_buffer(vss_commitment)
+    ptr_coeffs = ffi.from_buffer(coeffs)
+    lib.ecc_frost_ristretto255_sha512_vss_commit(
+        ptr_vss_commitment,
+        ptr_coeffs,
+        coeffs_len
+    )
+    return None
+
+
+def ecc_frost_ristretto255_sha512_vss_verify(
+    share_i: bytes,
+    vss_commitment: bytes,
+    t: int
+) -> int:
+    """
+    For verification of a participant's share.
+    
+    share_i -- a tuple of the form (i, sk_i), size:ecc_frost_ristretto255_sha512_POINTSIZE
+    vss_commitment -- a vector commitment to each of the coefficients in coeffs, where each item of the vector commitment is an Element, size:t*ecc_frost_ristretto255_sha512_ELEMENTSIZE
+    t -- the threshold of the secret sharing scheme
+    return 1 if sk_i is valid, and 0 otherwise.
+    """
+    ptr_share_i = ffi.from_buffer(share_i)
+    ptr_vss_commitment = ffi.from_buffer(vss_commitment)
+    fun_ret = lib.ecc_frost_ristretto255_sha512_vss_verify(
+        ptr_share_i,
+        ptr_vss_commitment,
+        t
+    )
+    return fun_ret
+
+
+def ecc_frost_ristretto255_sha512_derive_group_info(
+    PK: bytearray,
+    participant_public_keys: bytearray,
+    n: int,
+    t: int,
+    vss_commitment: bytes
+) -> None:
+    """
+    Derive group info.
+    
+    PK -- (output) the public key representing the group, an Element, size:ecc_frost_ristretto255_sha512_ELEMENTSIZE
+    participant_public_keys -- (output) a list of MAX_PARTICIPANTS public keys PK_i for i=1,...,MAX_PARTICIPANTS, where each PK_i is the public key, an Element, for participant i., size:n*ecc_frost_ristretto255_sha512_ELEMENTSIZE
+    n -- the number of shares to generate
+    t -- the threshold of the secret sharing scheme
+    vss_commitment -- a VSS commitment to a secret polynomial f, a vector commitment to each of the coefficients in coeffs, where each element of the vector commitment is an Element, size:t*ecc_frost_ristretto255_sha512_ELEMENTSIZE
+    """
+    ptr_PK = ffi.from_buffer(PK)
+    ptr_participant_public_keys = ffi.from_buffer(participant_public_keys)
+    ptr_vss_commitment = ffi.from_buffer(vss_commitment)
+    lib.ecc_frost_ristretto255_sha512_derive_group_info(
+        ptr_PK,
+        ptr_participant_public_keys,
+        n,
+        t,
+        ptr_vss_commitment
+    )
+    return None
+
+
 # pre
 
 ecc_pre_schema1_MESSAGESIZE = 576
@@ -4905,731 +6133,4 @@ def ecc_pre_schema1_DecryptLevel2(
         ptr_spk
     )
     return fun_ret
-
-
-# frost
-
-ecc_frost_ristretto255_sha512_SCALARSIZE = 32
-"""
-Size of a scalar, since this is using the ristretto255
-curve the size is 32 bytes.
-"""
-
-ecc_frost_ristretto255_sha512_ELEMENTSIZE = 32
-"""
-Size of an element, since this is using the ristretto255
-curve the size is 32 bytes.
-"""
-
-ecc_frost_ristretto255_sha512_SECRETKEYSIZE = 32
-"""
-Size of a private key, since this is using the ristretto255
-curve the size is 32 bytes, the size of an scalar.
-"""
-
-ecc_frost_ristretto255_sha512_PUBLICKEYSIZE = 32
-"""
-Size of a public key, since this is using the ristretto255
-curve the size is 32 bytes, the size of a group element.
-"""
-
-ecc_frost_ristretto255_sha512_SIGNATURESIZE = 64
-"""
-Size of a schnorr signature, a pair of a scalar and an element.
-"""
-
-ecc_frost_ristretto255_sha512_POINTSIZE = 64
-"""
-Size of a scalar point for polynomial evaluation (x, y).
-"""
-
-ecc_frost_ristretto255_sha512_NONCEPAIRSIZE = 64
-"""
-Size of a nonce tuple.
-"""
-
-ecc_frost_ristretto255_sha512_NONCECOMMITMENTPAIRSIZE = 64
-"""
-Size of a nonce commitment tuple.
-"""
-
-ecc_frost_ristretto255_sha512_SIGNINGCOMMITMENTSIZE = 66
-"""
-Size of a signing commitment structure.
-"""
-
-def ecc_frost_ristretto255_sha512_H1(
-    h1: bytearray,
-    m: bytes,
-    m_len: int
-) -> None:
-    """
-    Map arbitrary inputs to non-zero Scalar elements of the prime-order group scalar field.
-    
-    h1 -- (output) size:ecc_frost_ristretto255_sha512_SCALARSIZE
-    m -- size:m_len
-    m_len -- the length of `m`
-    """
-    ptr_h1 = ffi.from_buffer(h1)
-    ptr_m = ffi.from_buffer(m)
-    lib.ecc_frost_ristretto255_sha512_H1(
-        ptr_h1,
-        ptr_m,
-        m_len
-    )
-    return None
-
-
-def ecc_frost_ristretto255_sha512_H1_2(
-    h1: bytearray,
-    m1: bytes,
-    m1_len: int,
-    m2: bytes,
-    m2_len: int
-) -> None:
-    """
-    Map arbitrary inputs to non-zero Scalar elements of the prime-order group scalar field.
-    
-    This is a variant of H2 that folds internally all inputs in the same
-    hash calculation.
-    
-    h1 -- (output) size:ecc_frost_ristretto255_sha512_SCALARSIZE
-    m1 -- size:m1_len
-    m1_len -- the length of `m1`
-    m2 -- size:m2_len
-    m2_len -- the length of `m2`
-    """
-    ptr_h1 = ffi.from_buffer(h1)
-    ptr_m1 = ffi.from_buffer(m1)
-    ptr_m2 = ffi.from_buffer(m2)
-    lib.ecc_frost_ristretto255_sha512_H1_2(
-        ptr_h1,
-        ptr_m1,
-        m1_len,
-        ptr_m2,
-        m2_len
-    )
-    return None
-
-
-def ecc_frost_ristretto255_sha512_H2(
-    h2: bytearray,
-    m: bytes,
-    m_len: int
-) -> None:
-    """
-    Map arbitrary inputs to non-zero Scalar elements of the prime-order group scalar field.
-    
-    h2 -- (output) size:ecc_frost_ristretto255_sha512_SCALARSIZE
-    m -- size:m_len
-    m_len -- the length of `m`
-    """
-    ptr_h2 = ffi.from_buffer(h2)
-    ptr_m = ffi.from_buffer(m)
-    lib.ecc_frost_ristretto255_sha512_H2(
-        ptr_h2,
-        ptr_m,
-        m_len
-    )
-    return None
-
-
-def ecc_frost_ristretto255_sha512_H2_3(
-    h2: bytearray,
-    m1: bytes,
-    m1_len: int,
-    m2: bytes,
-    m2_len: int,
-    m3: bytes,
-    m3_len: int
-) -> None:
-    """
-    Map arbitrary inputs to non-zero Scalar elements of the prime-order group scalar field.
-    
-    This is a variant of H2 that folds internally all inputs in the same
-    hash calculation.
-    
-    h2 -- (output) size:ecc_frost_ristretto255_sha512_SCALARSIZE
-    m1 -- size:m1_len
-    m1_len -- the length of `m1`
-    m2 -- size:m2_len
-    m2_len -- the length of `m2`
-    m3 -- size:m3_len
-    m3_len -- the length of `m3`
-    """
-    ptr_h2 = ffi.from_buffer(h2)
-    ptr_m1 = ffi.from_buffer(m1)
-    ptr_m2 = ffi.from_buffer(m2)
-    ptr_m3 = ffi.from_buffer(m3)
-    lib.ecc_frost_ristretto255_sha512_H2_3(
-        ptr_h2,
-        ptr_m1,
-        m1_len,
-        ptr_m2,
-        m2_len,
-        ptr_m3,
-        m3_len
-    )
-    return None
-
-
-def ecc_frost_ristretto255_sha512_H3(
-    h3: bytearray,
-    m: bytes,
-    m_len: int
-) -> None:
-    """
-    This is an alias for the ciphersuite hash function with
-    domain separation applied.
-    
-    h3 -- (output) size:64
-    m -- size:m_len
-    m_len -- the length of `m`
-    """
-    ptr_h3 = ffi.from_buffer(h3)
-    ptr_m = ffi.from_buffer(m)
-    lib.ecc_frost_ristretto255_sha512_H3(
-        ptr_h3,
-        ptr_m,
-        m_len
-    )
-    return None
-
-
-def ecc_frost_ristretto255_sha512_schnorr_signature_generate(
-    signature: bytearray,
-    msg: bytes,
-    msg_len: int,
-    SK: bytes
-) -> None:
-    """
-    Generate a single-party setting Schnorr signature.
-    
-    signature -- (output) signature, size:ecc_frost_ristretto255_sha512_SIGNATURESIZE
-    msg -- message to be signed, size:msg_len
-    msg_len -- the length of `msg`
-    SK -- private key, a scalar, size:ecc_frost_ristretto255_sha512_SECRETKEYSIZE
-    """
-    ptr_signature = ffi.from_buffer(signature)
-    ptr_msg = ffi.from_buffer(msg)
-    ptr_SK = ffi.from_buffer(SK)
-    lib.ecc_frost_ristretto255_sha512_schnorr_signature_generate(
-        ptr_signature,
-        ptr_msg,
-        msg_len,
-        ptr_SK
-    )
-    return None
-
-
-def ecc_frost_ristretto255_sha512_schnorr_signature_verify(
-    msg: bytes,
-    msg_len: int,
-    signature: bytes,
-    PK: bytes
-) -> int:
-    """
-    Verify a Schnorr signature.
-    
-    msg -- signed message, size:msg_len
-    msg_len -- the length of `msg`
-    signature -- signature, size:ecc_frost_ristretto255_sha512_SIGNATURESIZE
-    PK -- public key, a group element, size:ecc_frost_ristretto255_sha512_PUBLICKEYSIZE
-    return 1 if signature is valid, and 0 otherwise
-    """
-    ptr_msg = ffi.from_buffer(msg)
-    ptr_signature = ffi.from_buffer(signature)
-    ptr_PK = ffi.from_buffer(PK)
-    fun_ret = lib.ecc_frost_ristretto255_sha512_schnorr_signature_verify(
-        ptr_msg,
-        msg_len,
-        ptr_signature,
-        ptr_PK
-    )
-    return fun_ret
-
-
-def ecc_frost_ristretto255_sha512_polynomial_evaluate(
-    value: bytearray,
-    x: bytes,
-    coeffs: bytes,
-    coeffs_len: int
-) -> None:
-    """
-    Evaluate a polynomial f at a particular input x, i.e., y = f(x)
-    using Horner's method.
-    
-    value -- (output) scalar result of the polynomial evaluated at input x, size:ecc_frost_ristretto255_sha512_SCALARSIZE
-    x -- input at which to evaluate the polynomial, a scalar, size:ecc_frost_ristretto255_sha512_SCALARSIZE
-    coeffs -- the polynomial coefficients, a list of scalars, size:coeffs_len*ecc_frost_ristretto255_sha512_SCALARSIZE
-    coeffs_len -- the number of coefficients in `coeffs`
-    """
-    ptr_value = ffi.from_buffer(value)
-    ptr_x = ffi.from_buffer(x)
-    ptr_coeffs = ffi.from_buffer(coeffs)
-    lib.ecc_frost_ristretto255_sha512_polynomial_evaluate(
-        ptr_value,
-        ptr_x,
-        ptr_coeffs,
-        coeffs_len
-    )
-    return None
-
-
-def ecc_frost_ristretto255_sha512_derive_lagrange_coefficient(
-    L_i: bytearray,
-    x_i: bytes,
-    L: bytes,
-    L_len: int
-) -> None:
-    """
-    Lagrange coefficients are used in FROST to evaluate a polynomial f at f(0),
-    given a set of t other points, where f is represented as a set of coefficients.
-    
-    L_i -- (output) the i-th Lagrange coefficient, size:ecc_frost_ristretto255_sha512_SCALARSIZE
-    x_i -- an x-coordinate contained in L, a scalar, size:ecc_frost_ristretto255_sha512_SCALARSIZE
-    L -- the set of x-coordinates, each a scalar, size:L_len*ecc_frost_ristretto255_sha512_SCALARSIZE
-    L_len -- the number of x-coordinates in `L`
-    """
-    ptr_L_i = ffi.from_buffer(L_i)
-    ptr_x_i = ffi.from_buffer(x_i)
-    ptr_L = ffi.from_buffer(L)
-    lib.ecc_frost_ristretto255_sha512_derive_lagrange_coefficient(
-        ptr_L_i,
-        ptr_x_i,
-        ptr_L,
-        L_len
-    )
-    return None
-
-
-def ecc_frost_ristretto255_sha512_derive_lagrange_coefficient_with_points(
-    L_i: bytearray,
-    x_i: bytes,
-    L: bytes,
-    L_len: int
-) -> None:
-    """
-    This is an optimization that works like `ecc_frost_ristretto255_sha512_derive_lagrange_coefficient`
-    but with a set of points (x, y).
-    
-    L_i -- (output) the i-th Lagrange coefficient, size:ecc_frost_ristretto255_sha512_SCALARSIZE
-    x_i -- an x-coordinate contained in L, a scalar, size:ecc_frost_ristretto255_sha512_SCALARSIZE
-    L -- the set of (x, y)-points, size:L_len*ecc_frost_ristretto255_sha512_POINTSIZE
-    L_len -- the number of (x, y)-points in `L`
-    """
-    ptr_L_i = ffi.from_buffer(L_i)
-    ptr_x_i = ffi.from_buffer(x_i)
-    ptr_L = ffi.from_buffer(L)
-    lib.ecc_frost_ristretto255_sha512_derive_lagrange_coefficient_with_points(
-        ptr_L_i,
-        ptr_x_i,
-        ptr_L,
-        L_len
-    )
-    return None
-
-
-def ecc_frost_ristretto255_sha512_polynomial_interpolation(
-    constant_term: bytearray,
-    points: bytes,
-    points_len: int
-) -> None:
-    """
-    Secret sharing requires "splitting" a secret, which is represented
-    as a constant term of some polynomial f of degree t. Recovering the
-    constant term occurs with a set of t points using polynomial interpolation.
-    
-    constant_term -- (output) the constant term of f, i.e., f(0), size:ecc_frost_ristretto255_sha512_SCALARSIZE
-    points -- a set of `t` points on a polynomial f, each a tuple of two scalar values representing the x and y coordinates, size:points_len*ecc_frost_ristretto255_sha512_POINTSIZE
-    points_len -- the number of points in `points`
-    """
-    ptr_constant_term = ffi.from_buffer(constant_term)
-    ptr_points = ffi.from_buffer(points)
-    lib.ecc_frost_ristretto255_sha512_polynomial_interpolation(
-        ptr_constant_term,
-        ptr_points,
-        points_len
-    )
-    return None
-
-
-def ecc_frost_ristretto255_sha512_compute_binding_factor(
-    binding_factor: bytearray,
-    encoded_commitment_list: bytes,
-    encoded_commitment_list_len: int,
-    msg: bytes,
-    msg_len: int
-) -> None:
-    """
-    Compute the binding factor based on the signer commitment list and a message to be signed.
-    
-    binding_factor -- (output) a Scalar representing the binding factor, size:ecc_frost_ristretto255_sha512_SCALARSIZE
-    encoded_commitment_list -- an encoded commitment list, size:encoded_commitment_list_len*ecc_frost_ristretto255_sha512_SIGNINGCOMMITMENTSIZE
-    encoded_commitment_list_len -- the number of elements in `encoded_commitment_list`
-    msg -- the message to be signed (sent by the Coordinator), size:msg_len
-    msg_len -- the length of `msg`
-    """
-    ptr_binding_factor = ffi.from_buffer(binding_factor)
-    ptr_encoded_commitment_list = ffi.from_buffer(encoded_commitment_list)
-    ptr_msg = ffi.from_buffer(msg)
-    lib.ecc_frost_ristretto255_sha512_compute_binding_factor(
-        ptr_binding_factor,
-        ptr_encoded_commitment_list,
-        encoded_commitment_list_len,
-        ptr_msg,
-        msg_len
-    )
-    return None
-
-
-def ecc_frost_ristretto255_sha512_compute_challenge(
-    challenge: bytearray,
-    group_commitment: bytes,
-    group_public_key: bytes,
-    msg: bytes,
-    msg_len: int
-) -> None:
-    """
-    Create the per-message challenge.
-    
-    challenge -- (output) a challenge Scalar value, size:ecc_frost_ristretto255_sha512_SCALARSIZE
-    group_commitment -- an Element representing the group commitment, size:ecc_frost_ristretto255_sha512_ELEMENTSIZE
-    group_public_key -- public key corresponding to the signer secret key share, size:ecc_frost_ristretto255_sha512_PUBLICKEYSIZE
-    msg -- the message to be signed (sent by the Coordinator), size:msg_len
-    msg_len -- the length of `msg`
-    """
-    ptr_challenge = ffi.from_buffer(challenge)
-    ptr_group_commitment = ffi.from_buffer(group_commitment)
-    ptr_group_public_key = ffi.from_buffer(group_public_key)
-    ptr_msg = ffi.from_buffer(msg)
-    lib.ecc_frost_ristretto255_sha512_compute_challenge(
-        ptr_challenge,
-        ptr_group_commitment,
-        ptr_group_public_key,
-        ptr_msg,
-        msg_len
-    )
-    return None
-
-
-def ecc_frost_ristretto255_sha512_commit_with_nonce(
-    comm: bytearray,
-    nonce: bytes
-) -> None:
-    """
-    Generate a pair of public commitments corresponding to the nonce pair.
-    
-    comm -- (output) a nonce commitment pair, size:ecc_frost_ristretto255_sha512_NONCECOMMITMENTPAIRSIZE
-    nonce -- a nonce pair, size:ecc_frost_ristretto255_sha512_NONCEPAIRSIZE
-    """
-    ptr_comm = ffi.from_buffer(comm)
-    ptr_nonce = ffi.from_buffer(nonce)
-    lib.ecc_frost_ristretto255_sha512_commit_with_nonce(
-        ptr_comm,
-        ptr_nonce
-    )
-    return None
-
-
-def ecc_frost_ristretto255_sha512_commit(
-    nonce: bytearray,
-    comm: bytearray
-) -> None:
-    """
-    Generate a pair of nonces and their corresponding public commitments.
-    
-    nonce -- (output) a nonce pair, size:ecc_frost_ristretto255_sha512_NONCEPAIRSIZE
-    comm -- (output) a nonce commitment pair, size:ecc_frost_ristretto255_sha512_NONCECOMMITMENTPAIRSIZE
-    """
-    ptr_nonce = ffi.from_buffer(nonce)
-    ptr_comm = ffi.from_buffer(comm)
-    lib.ecc_frost_ristretto255_sha512_commit(
-        ptr_nonce,
-        ptr_comm
-    )
-    return None
-
-
-def ecc_frost_ristretto255_sha512_group_commitment(
-    group_comm: bytearray,
-    commitment_list: bytes,
-    commitment_list_len: int,
-    binding_factor: bytes
-) -> None:
-    """
-    Create the group commitment from a commitment list.
-    
-    group_comm -- (output) size:ecc_frost_ristretto255_sha512_ELEMENTSIZE
-    commitment_list -- a list of commitments issued by each signer, MUST be sorted in ascending order by signer index, size:commitment_list_len*ecc_frost_ristretto255_sha512_SIGNINGCOMMITMENTSIZE
-    commitment_list_len -- the number of elements in `commitment_list`
-    binding_factor -- size:ecc_frost_ristretto255_sha512_SCALARSIZE
-    """
-    ptr_group_comm = ffi.from_buffer(group_comm)
-    ptr_commitment_list = ffi.from_buffer(commitment_list)
-    ptr_binding_factor = ffi.from_buffer(binding_factor)
-    lib.ecc_frost_ristretto255_sha512_group_commitment(
-        ptr_group_comm,
-        ptr_commitment_list,
-        commitment_list_len,
-        ptr_binding_factor
-    )
-    return None
-
-
-def ecc_frost_ristretto255_sha512_sign(
-    sig_share: bytearray,
-    comm_share: bytearray,
-    index: int,
-    sk_i: bytes,
-    group_public_key: bytes,
-    nonce_i: bytes,
-    comm_i: bytes,
-    msg: bytes,
-    msg_len: int,
-    commitment_list: bytes,
-    commitment_list_len: int,
-    participant_list: bytes,
-    participant_list_len: int
-) -> None:
-    """
-    To produce a signature share.
-    
-    sig_share -- (output) signature share, size:ecc_frost_ristretto255_sha512_SCALARSIZE
-    comm_share -- (output) commitment share, size:ecc_frost_ristretto255_sha512_ELEMENTSIZE
-    index -- index `i` of the signer. Note index will never equal `0` and must be less thant 256
-    sk_i -- signer secret key share, size:ecc_frost_ristretto255_sha512_SECRETKEYSIZE
-    group_public_key -- public key corresponding to the signer secret key share, size:ecc_frost_ristretto255_sha512_PUBLICKEYSIZE
-    nonce_i -- pair of scalar values generated in round one, size:ecc_frost_ristretto255_sha512_NONCEPAIRSIZE
-    comm_i -- pair of element values generated in round one, size:ecc_frost_ristretto255_sha512_NONCECOMMITMENTPAIRSIZE
-    msg -- the message to be signed (sent by the Coordinator), size:msg_len
-    msg_len -- the length of `msg`
-    commitment_list -- a list of commitments issued by each signer, MUST be sorted in ascending order by signer index, size:commitment_list_len*ecc_frost_ristretto255_sha512_SIGNINGCOMMITMENTSIZE
-    commitment_list_len -- the number of elements in `commitment_list`
-    participant_list -- a set containing identifiers for each signer, size:participant_list_len
-    participant_list_len -- the number of elements in `participant_list`
-    """
-    ptr_sig_share = ffi.from_buffer(sig_share)
-    ptr_comm_share = ffi.from_buffer(comm_share)
-    ptr_sk_i = ffi.from_buffer(sk_i)
-    ptr_group_public_key = ffi.from_buffer(group_public_key)
-    ptr_nonce_i = ffi.from_buffer(nonce_i)
-    ptr_comm_i = ffi.from_buffer(comm_i)
-    ptr_msg = ffi.from_buffer(msg)
-    ptr_commitment_list = ffi.from_buffer(commitment_list)
-    ptr_participant_list = ffi.from_buffer(participant_list)
-    lib.ecc_frost_ristretto255_sha512_sign(
-        ptr_sig_share,
-        ptr_comm_share,
-        index,
-        ptr_sk_i,
-        ptr_group_public_key,
-        ptr_nonce_i,
-        ptr_comm_i,
-        ptr_msg,
-        msg_len,
-        ptr_commitment_list,
-        commitment_list_len,
-        ptr_participant_list,
-        participant_list_len
-    )
-    return None
-
-
-def ecc_frost_ristretto255_sha512_verify_signature_share(
-    index: int,
-    public_key_share_i: bytes,
-    comm_i: bytes,
-    sig_share_i: bytes,
-    commitment_list: bytes,
-    commitment_list_len: int,
-    participant_list: bytes,
-    participant_list_len: int,
-    group_public_key: bytes,
-    msg: bytes,
-    msg_len: int
-) -> int:
-    """
-    Check that the signature share is valid.
-    
-    index -- Index `i` of the signer. Note index will never equal `0`.
-    public_key_share_i -- the public key for the ith signer, size:ecc_frost_ristretto255_sha512_PUBLICKEYSIZE
-    comm_i -- pair of Element values (hiding_nonce_commitment, binding_nonce_commitment) generated in round one from the ith signer, size:ecc_frost_ristretto255_sha512_NONCECOMMITMENTPAIRSIZE
-    sig_share_i -- a Scalar value indicating the signature share as produced in round two from the ith signer, size:ecc_frost_ristretto255_sha512_SCALARSIZE
-    commitment_list -- a list of commitments issued by each signer, MUST be sorted in ascending order by signer index, size:commitment_list_len*ecc_frost_ristretto255_sha512_SIGNINGCOMMITMENTSIZE
-    commitment_list_len -- the number of elements in `commitment_list`
-    participant_list -- a set containing identifiers for each signer, size:participant_list_len
-    participant_list_len -- the number of elements in `participant_list`
-    group_public_key -- the public key for the group, size:ecc_frost_ristretto255_sha512_PUBLICKEYSIZE
-    msg -- the message to be signed (sent by the Coordinator), size:msg_len
-    msg_len -- the length of `msg`
-    return 1 if the signature share is valid, and 0 otherwise.
-    """
-    ptr_public_key_share_i = ffi.from_buffer(public_key_share_i)
-    ptr_comm_i = ffi.from_buffer(comm_i)
-    ptr_sig_share_i = ffi.from_buffer(sig_share_i)
-    ptr_commitment_list = ffi.from_buffer(commitment_list)
-    ptr_participant_list = ffi.from_buffer(participant_list)
-    ptr_group_public_key = ffi.from_buffer(group_public_key)
-    ptr_msg = ffi.from_buffer(msg)
-    fun_ret = lib.ecc_frost_ristretto255_sha512_verify_signature_share(
-        index,
-        ptr_public_key_share_i,
-        ptr_comm_i,
-        ptr_sig_share_i,
-        ptr_commitment_list,
-        commitment_list_len,
-        ptr_participant_list,
-        participant_list_len,
-        ptr_group_public_key,
-        ptr_msg,
-        msg_len
-    )
-    return fun_ret
-
-
-def ecc_frost_ristretto255_sha512_trusted_dealer_keygen_with_secret_and_coefficients(
-    public_key: bytearray,
-    secret_key_shares: bytes,
-    n: int,
-    t: int,
-    secret_key: bytes,
-    coefficients: bytes
-) -> None:
-    """
-    Generates a group secret s uniformly at random and uses
-    Shamir and Verifiable Secret Sharing to create secret shares
-    of s to be sent to all other participants.
-    
-    public_key -- (output) public key Element, size:ecc_frost_ristretto255_sha512_PUBLICKEYSIZE
-    secret_key_shares -- shares of the secret key, each a Scalar value, size:n*ecc_frost_ristretto255_sha512_SCALARSIZE
-    n -- the number of shares to generate
-    t -- the threshold of the secret sharing scheme
-    secret_key -- a secret key Scalar, size:ecc_frost_ristretto255_sha512_SCALARSIZE
-    coefficients -- size:t*ecc_frost_ristretto255_sha512_SCALARSIZE
-    """
-    ptr_public_key = ffi.from_buffer(public_key)
-    ptr_secret_key_shares = ffi.from_buffer(secret_key_shares)
-    ptr_secret_key = ffi.from_buffer(secret_key)
-    ptr_coefficients = ffi.from_buffer(coefficients)
-    lib.ecc_frost_ristretto255_sha512_trusted_dealer_keygen_with_secret_and_coefficients(
-        ptr_public_key,
-        ptr_secret_key_shares,
-        n,
-        t,
-        ptr_secret_key,
-        ptr_coefficients
-    )
-    return None
-
-
-def ecc_frost_ristretto255_sha512_trusted_dealer_keygen(
-    secret_key: bytearray,
-    public_key: bytearray,
-    secret_key_shares: bytearray,
-    n: int,
-    t: int
-) -> None:
-    """
-    Generates a group secret s uniformly at random and uses
-    Shamir and Verifiable Secret Sharing to create secret shares
-    of s to be sent to all other participants.
-    
-    secret_key -- (output) a secret key Scalar, size:ecc_frost_ristretto255_sha512_SCALARSIZE
-    public_key -- (output) public key Element, size:ecc_frost_ristretto255_sha512_PUBLICKEYSIZE
-    secret_key_shares -- (output) shares of the secret key, each a Scalar value, size:n*ecc_frost_ristretto255_sha512_SCALARSIZE
-    n -- the number of shares to generate
-    t -- the threshold of the secret sharing scheme
-    """
-    ptr_secret_key = ffi.from_buffer(secret_key)
-    ptr_public_key = ffi.from_buffer(public_key)
-    ptr_secret_key_shares = ffi.from_buffer(secret_key_shares)
-    lib.ecc_frost_ristretto255_sha512_trusted_dealer_keygen(
-        ptr_secret_key,
-        ptr_public_key,
-        ptr_secret_key_shares,
-        n,
-        t
-    )
-    return None
-
-
-def ecc_frost_ristretto255_sha512_secret_share_shard_with_coefficients(
-    points: bytes,
-    n: int,
-    t: int,
-    coefficients: bytes
-) -> None:
-    """
-    Split a secret into shares.
-    
-    points -- A list of n secret shares, each of which is an element of F, size:n*ecc_frost_ristretto255_sha512_SCALARSIZE
-    n -- the number of shares to generate
-    t -- the threshold of the secret sharing scheme
-    coefficients -- size:t*ecc_frost_ristretto255_sha512_SCALARSIZE
-    """
-    ptr_points = ffi.from_buffer(points)
-    ptr_coefficients = ffi.from_buffer(coefficients)
-    lib.ecc_frost_ristretto255_sha512_secret_share_shard_with_coefficients(
-        ptr_points,
-        n,
-        t,
-        ptr_coefficients
-    )
-    return None
-
-
-def ecc_frost_ristretto255_sha512_secret_share_shard(
-    points: bytearray,
-    s: bytes,
-    n: int,
-    t: int
-) -> None:
-    """
-    Split a secret into shares.
-    
-    points -- (output) A list of n secret shares, each of which is an element of F, size:n*ecc_frost_ristretto255_sha512_SCALARSIZE
-    s -- secret to be shared, an element of F, size:ecc_frost_ristretto255_sha512_SCALARSIZE
-    n -- the number of shares to generate
-    t -- the threshold of the secret sharing scheme
-    """
-    ptr_points = ffi.from_buffer(points)
-    ptr_s = ffi.from_buffer(s)
-    lib.ecc_frost_ristretto255_sha512_secret_share_shard(
-        ptr_points,
-        ptr_s,
-        n,
-        t
-    )
-    return None
-
-
-def ecc_frost_ristretto255_sha512_frost_aggregate(
-    signature: bytearray,
-    group_commitment: bytes,
-    sig_shares: bytes,
-    sig_shares_len: int
-) -> None:
-    """
-    Performs the aggregate operation to obtain the resulting signature.
-    
-    signature -- (output) a Schnorr signature consisting of an Element and Scalar value, size:ecc_frost_ristretto255_sha512_SIGNATURESIZE
-    group_commitment -- the group commitment returned by compute_group_commitment, size:ecc_frost_ristretto255_sha512_PUBLICKEYSIZE
-    sig_shares -- a set of signature shares z_i for each signer, size:sig_shares_len*ecc_frost_ristretto255_sha512_SCALARSIZE
-    sig_shares_len -- the number of elements in `sig_shares`, must satisfy THRESHOLD_LIMIT
-    <
-    = sig_shares_len
-    <
-    = MAX_SIGNERS
-    """
-    ptr_signature = ffi.from_buffer(signature)
-    ptr_group_commitment = ffi.from_buffer(group_commitment)
-    ptr_sig_shares = ffi.from_buffer(sig_shares)
-    lib.ecc_frost_ristretto255_sha512_frost_aggregate(
-        ptr_signature,
-        ptr_group_commitment,
-        ptr_sig_shares,
-        sig_shares_len
-    )
-    return None
 
