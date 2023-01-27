@@ -104,7 +104,7 @@ class ParmVarDecl:
 
 class DefineDecl:
     def __init__(self, match):
-        self.comment = match[0].replace(" * ", "").strip()
+        self.comment = match[0].replace(" * ", "").replace(" *", "").strip()
         self.name = match[1]
         self.value = match[2]
 
@@ -118,7 +118,7 @@ class DefineDecl:
         out += " * @type {number}\n"
         out += " */\n"
         out += "Module." + self.name + " = " + self.name + ";\n"
-        return out
+        return out.replace(" * \n", " *\n")
 
     def build_jni_java(self):
         out = ""
@@ -128,7 +128,7 @@ class DefineDecl:
         out += "     *\n"
         out += "     */\n"
         out += "    public static final int " + self.name + " = " + self.value + ";\n"
-        return out
+        return out.replace(" * \n", " *\n")
 
     def build_python(self):
         out = ""
@@ -174,7 +174,7 @@ class VarDecl:
         out += " * @type {" + self.type_js() + "}\n"
         out += " */\n"
         out += "Module." + self.name + " = " + self.name + ";\n"
-        return out
+        return out.replace(" * \n", " *\n")
 
 
 class FunctionDecl:
@@ -219,6 +219,7 @@ class FunctionDecl:
         if comment.comment_return() is not None:
             out += " * @return {number} " + comment.comment_return() + "\n"
         out += " */\n"
+        out = out.replace(" * \n", " *\n")
         out += "Module." + self.name + " = (\n"
         for param in self.params():
             out += "    " + param.name + ",\n"
@@ -307,6 +308,7 @@ class FunctionDecl:
         if comment.comment_return() is not None:
             out += "     * @return " + comment.comment_return() + "\n"
         out += "     */\n"
+        out = out.replace("     * \n", "     *\n")
         out += "    public static native "
         if self.return_type() != "void":
             out += "int"

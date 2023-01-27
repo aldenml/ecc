@@ -1745,22 +1745,22 @@ def ecc_bls12_381_pairing_final_verify(
 
 ecc_h2c_expand_message_xmd_sha256_MAXSIZE = 8160
 """
-*
+
 """
 
 ecc_h2c_expand_message_xmd_sha256_DSTMAXSIZE = 255
 """
-*
+
 """
 
 ecc_h2c_expand_message_xmd_sha512_MAXSIZE = 16320
 """
-*
+
 """
 
 ecc_h2c_expand_message_xmd_sha512_DSTMAXSIZE = 255
 """
-*
+
 """
 
 def ecc_h2c_expand_message_xmd_sha256(
@@ -1882,7 +1882,7 @@ Allows clients and servers to provide public input to the PRF computation.
 
 ecc_voprf_ristretto255_sha512_MAXINFOSIZE = 2000
 """
-*
+
 """
 
 def ecc_voprf_ristretto255_sha512_GenerateProofWithScalar(
@@ -2799,6 +2799,11 @@ ecc_opaque_ristretto255_sha512_Noe = 32
 The size of a serialized OPRF group element.
 """
 
+ecc_opaque_ristretto255_sha512_Ns = 32
+"""
+The size of a serialized OPRF scalar.
+"""
+
 ecc_opaque_ristretto255_sha512_Nok = 32
 """
 The size of an OPRF private key.
@@ -2806,67 +2811,137 @@ The size of an OPRF private key.
 
 ecc_opaque_ristretto255_sha512_Ne = 96
 """
-Envelope size (Ne = Nn + Nm).
+<pre>
+struct {
+  uint8 nonce[Nn];
+  uint8 auth_tag[Nm];
+} Envelope;
+</pre>
+
+nonce: A unique nonce of length Nn, used to protect this Envelope.
+auth_tag: An authentication tag protecting the contents of the envelope, covering the envelope nonce and CleartextCredentials.
+"""
+
+ecc_opaque_ristretto255_sha512_PASSWORDMAXSIZE = 200
+"""
+In order to avoid dynamic memory allocation, this limit is necessary.
 """
 
 ecc_opaque_ristretto255_sha512_IDENTITYMAXSIZE = 200
 """
-*
+In order to avoid dynamic memory allocation, this limit is necessary.
 """
 
-ecc_opaque_ristretto255_sha512_CLEARTEXTCREDENTIALSSIZE = 440
+ecc_opaque_ristretto255_sha512_CLEARTEXTCREDENTIALSSIZE = 434
 """
-*
+
 """
 
 ecc_opaque_ristretto255_sha512_REGISTRATIONREQUESTSIZE = 32
 """
-*
+<pre>
+struct {
+  uint8 blinded_message[Noe];
+} RegistrationRequest;
+</pre>
+
+blinded_message: A serialized OPRF group element.
 """
 
 ecc_opaque_ristretto255_sha512_REGISTRATIONRESPONSESIZE = 64
 """
-*
+<pre>
+typedef struct {
+  uint8 evaluated_message[Noe];
+  uint8 server_public_key[Npk];
+} RegistrationResponse;
+</pre>
+
+evaluated_message: A serialized OPRF group element.
+server_public_key: The server's encoded public key that will be used for the online AKE stage.
 """
 
-ecc_opaque_ristretto255_sha512_REGISTRATIONUPLOADSIZE = 192
+ecc_opaque_ristretto255_sha512_REGISTRATIONRECORDSIZE = 192
 """
-*
+<pre>
+struct {
+  uint8 client_public_key[Npk];
+  uint8 masking_key[Nh];
+  Envelope envelope;
+} RegistrationRecord;
+</pre>
+
+client_public_key: The client's encoded public key, corresponding to the private key client_private_key.
+masking_key: An encryption key used by the server to preserve confidentiality of the envelope during login to defend against client enumeration attacks.
+envelope: The client's Envelope structure.
 """
 
 ecc_opaque_ristretto255_sha512_CREDENTIALREQUESTSIZE = 32
 """
-*
+
 """
 
 ecc_opaque_ristretto255_sha512_CREDENTIALRESPONSESIZE = 192
 """
-*
+
 """
 
 ecc_opaque_ristretto255_sha512_KE1SIZE = 96
 """
-*
+<pre>
+struct {
+  CredentialRequest credential_request;
+  AuthRequest auth_request;
+} KE1;
+</pre>
+
+credential_request: A CredentialRequest structure.
+auth_request: An AuthRequest structure.
 """
 
 ecc_opaque_ristretto255_sha512_KE2SIZE = 320
 """
-*
+<pre>
+struct {
+  CredentialResponse credential_response;
+  AuthResponse auth_response;
+} KE2;
+</pre>
+
+credential_response: A CredentialResponse structure.
+auth_response: An AuthResponse structure.
 """
 
 ecc_opaque_ristretto255_sha512_KE3SIZE = 64
 """
-*
+<pre>
+struct {
+  uint8 client_mac[Nm];
+} KE3;
+</pre>
+
+client_mac: An authentication tag computed over the handshake transcript of fixed size Nm, computed using Km2.
 """
 
-ecc_opaque_ristretto255_sha512_CLIENTSTATESIZE = 160
+ecc_opaque_ristretto255_sha512_CLIENTSTATESIZE = 361
 """
-*
+<pre>
+struct {
+  uint8 password[PASSWORDMAXSIZE];
+  uint8 password_len;
+  uint8 blind[Nok];
+  ClientAkeState_t client_ake_state;
+} ClientState;
+</pre>
+
+password: The client's password.
+blind: The random blinding inverter returned by Blind().
+client_ake_state: a ClientAkeState structure.
 """
 
 ecc_opaque_ristretto255_sha512_SERVERSTATESIZE = 128
 """
-*
+
 """
 
 ecc_opaque_ristretto255_sha512_MHF_IDENTITY = 0
@@ -2889,7 +2964,7 @@ def ecc_opaque_ristretto255_sha512_DeriveKeyPair(
     
     private_key -- (output) a private key, size:ecc_opaque_ristretto255_sha512_Nsk
     public_key -- (output) the associated public key, size:ecc_opaque_ristretto255_sha512_Npk
-    seed -- pseudo-random byte sequence used as a seed, size:ecc_opaque_ristretto255_sha512_Nok
+    seed -- pseudo-random byte sequence used as a seed, size:ecc_opaque_ristretto255_sha512_Nn
     """
     ptr_private_key = ffi.from_buffer(private_key)
     ptr_public_key = ffi.from_buffer(public_key)
@@ -3146,7 +3221,7 @@ def ecc_opaque_ristretto255_sha512_DeriveAuthKeyPair(
     
     private_key -- (output) a private key, size:ecc_opaque_ristretto255_sha512_Nsk
     public_key -- (output) the associated public key, size:ecc_opaque_ristretto255_sha512_Npk
-    seed -- pseudo-random byte sequence used as a seed, size:ecc_opaque_ristretto255_sha512_Nok
+    seed -- pseudo-random byte sequence used as a seed, size:ecc_opaque_ristretto255_sha512_Nn
     """
     ptr_private_key = ffi.from_buffer(private_key)
     ptr_public_key = ffi.from_buffer(public_key)
@@ -3171,7 +3246,7 @@ def ecc_opaque_ristretto255_sha512_CreateRegistrationRequestWithBlind(
     request -- (output) a RegistrationRequest structure, size:ecc_opaque_ristretto255_sha512_REGISTRATIONREQUESTSIZE
     password -- an opaque byte string containing the client's password, size:password_len
     password_len -- the length of `password`
-    blind -- the OPRF scalar value to use, size:ecc_opaque_ristretto255_sha512_Noe
+    blind -- the OPRF scalar value to use, size:ecc_opaque_ristretto255_sha512_Ns
     """
     ptr_request = ffi.from_buffer(request)
     ptr_password = ffi.from_buffer(password)
@@ -3192,10 +3267,10 @@ def ecc_opaque_ristretto255_sha512_CreateRegistrationRequest(
     password_len: int
 ) -> None:
     """
-    
+    To begin the registration flow, the client executes this function.
     
     request -- (output) a RegistrationRequest structure, size:ecc_opaque_ristretto255_sha512_REGISTRATIONREQUESTSIZE
-    blind -- (output) an OPRF scalar value, size:ecc_opaque_ristretto255_sha512_Noe
+    blind -- (output) an OPRF scalar value, size:ecc_opaque_ristretto255_sha512_Ns
     password -- an opaque byte string containing the client's password, size:password_len
     password_len -- the length of `password`
     """
@@ -3211,48 +3286,8 @@ def ecc_opaque_ristretto255_sha512_CreateRegistrationRequest(
     return None
 
 
-def ecc_opaque_ristretto255_sha512_CreateRegistrationResponseWithOprfKey(
-    response: bytearray,
-    request: bytes,
-    server_public_key: bytes,
-    credential_identifier: bytes,
-    credential_identifier_len: int,
-    oprf_key: bytes
-) -> None:
-    """
-    Same as calling CreateRegistrationResponse with a specific oprf_seed.
-    
-    In order to make this method not to use dynamic memory allocation, there is a
-    limit of credential_identifier_len
-    <
-    = 200.
-    
-    response -- (output) size:ecc_opaque_ristretto255_sha512_REGISTRATIONRESPONSESIZE
-    request -- size:ecc_opaque_ristretto255_sha512_REGISTRATIONREQUESTSIZE
-    server_public_key -- size:ecc_opaque_ristretto255_sha512_Npk
-    credential_identifier -- size:credential_identifier_len
-    credential_identifier_len -- the length of `credential_identifier`
-    oprf_key -- size:32
-    """
-    ptr_response = ffi.from_buffer(response)
-    ptr_request = ffi.from_buffer(request)
-    ptr_server_public_key = ffi.from_buffer(server_public_key)
-    ptr_credential_identifier = ffi.from_buffer(credential_identifier)
-    ptr_oprf_key = ffi.from_buffer(oprf_key)
-    lib.ecc_opaque_ristretto255_sha512_CreateRegistrationResponseWithOprfKey(
-        ptr_response,
-        ptr_request,
-        ptr_server_public_key,
-        ptr_credential_identifier,
-        credential_identifier_len,
-        ptr_oprf_key
-    )
-    return None
-
-
 def ecc_opaque_ristretto255_sha512_CreateRegistrationResponse(
     response: bytearray,
-    oprf_key: bytearray,
     request: bytes,
     server_public_key: bytes,
     credential_identifier: bytes,
@@ -3260,28 +3295,23 @@ def ecc_opaque_ristretto255_sha512_CreateRegistrationResponse(
     oprf_seed: bytes
 ) -> None:
     """
-    In order to make this method not to use dynamic memory allocation, there is a
-    limit of credential_identifier_len
-    <
-    = 200.
+    To process the client's registration request, the server executes
+    this function.
     
     response -- (output) a RegistrationResponse structure, size:ecc_opaque_ristretto255_sha512_REGISTRATIONRESPONSESIZE
-    oprf_key -- (output) the per-client OPRF key known only to the server, size:ecc_opaque_ristretto255_sha512_Nsk
     request -- a RegistrationRequest structure, size:ecc_opaque_ristretto255_sha512_REGISTRATIONREQUESTSIZE
     server_public_key -- the server's public key, size:ecc_opaque_ristretto255_sha512_Npk
-    credential_identifier -- an identifier that uniquely represents the credential being registered, size:credential_identifier_len
+    credential_identifier -- an identifier that uniquely represents the credential, size:credential_identifier_len
     credential_identifier_len -- the length of `credential_identifier`
-    oprf_seed -- the server-side seed of Nh bytes used to generate an oprf_key, size:ecc_opaque_ristretto255_sha512_Nh
+    oprf_seed -- the seed of Nh bytes used by the server to generate an oprf_key, size:ecc_opaque_ristretto255_sha512_Nh
     """
     ptr_response = ffi.from_buffer(response)
-    ptr_oprf_key = ffi.from_buffer(oprf_key)
     ptr_request = ffi.from_buffer(request)
     ptr_server_public_key = ffi.from_buffer(server_public_key)
     ptr_credential_identifier = ffi.from_buffer(credential_identifier)
     ptr_oprf_seed = ffi.from_buffer(oprf_seed)
     lib.ecc_opaque_ristretto255_sha512_CreateRegistrationResponse(
         ptr_response,
-        ptr_oprf_key,
         ptr_request,
         ptr_server_public_key,
         ptr_credential_identifier,
@@ -3291,7 +3321,7 @@ def ecc_opaque_ristretto255_sha512_CreateRegistrationResponse(
     return None
 
 
-def ecc_opaque_ristretto255_sha512_FinalizeRequestWithNonce(
+def ecc_opaque_ristretto255_sha512_FinalizeRegistrationRequestWithNonce(
     record: bytearray,
     export_key: bytearray,
     password: bytes,
@@ -3306,18 +3336,14 @@ def ecc_opaque_ristretto255_sha512_FinalizeRequestWithNonce(
     nonce: bytes
 ) -> None:
     """
-    Same as calling `ecc_opaque_ristretto255_sha512_FinalizeRequest` with an
+    Same as calling `ecc_opaque_ristretto255_sha512_FinalizeRegistrationRequest` with an
     specified `nonce`.
     
-    To create the user record used for further authentication, the client
-    executes the following function. Since this works in the internal key mode, the
-    "client_private_key" is null.
-    
-    record -- (output) a RegistrationUpload structure, size:ecc_opaque_ristretto255_sha512_REGISTRATIONUPLOADSIZE
+    record -- (output) a RegistrationUpload structure, size:ecc_opaque_ristretto255_sha512_REGISTRATIONRECORDSIZE
     export_key -- (output) an additional client key, size:ecc_opaque_ristretto255_sha512_Nh
     password -- an opaque byte string containing the client's password, size:password_len
     password_len -- the length of `password`
-    blind -- the OPRF scalar value used for blinding, size:ecc_opaque_ristretto255_sha512_Noe
+    blind -- an OPRF scalar value, size:ecc_opaque_ristretto255_sha512_Ns
     response -- a RegistrationResponse structure, size:ecc_opaque_ristretto255_sha512_REGISTRATIONRESPONSESIZE
     server_identity -- the optional encoded server identity, size:server_identity_len
     server_identity_len -- the length of `server_identity`
@@ -3334,7 +3360,7 @@ def ecc_opaque_ristretto255_sha512_FinalizeRequestWithNonce(
     ptr_server_identity = ffi.from_buffer(server_identity)
     ptr_client_identity = ffi.from_buffer(client_identity)
     ptr_nonce = ffi.from_buffer(nonce)
-    lib.ecc_opaque_ristretto255_sha512_FinalizeRequestWithNonce(
+    lib.ecc_opaque_ristretto255_sha512_FinalizeRegistrationRequestWithNonce(
         ptr_record,
         ptr_export_key,
         ptr_password,
@@ -3351,7 +3377,7 @@ def ecc_opaque_ristretto255_sha512_FinalizeRequestWithNonce(
     return None
 
 
-def ecc_opaque_ristretto255_sha512_FinalizeRequest(
+def ecc_opaque_ristretto255_sha512_FinalizeRegistrationRequest(
     record: bytearray,
     export_key: bytearray,
     password: bytes,
@@ -3365,15 +3391,14 @@ def ecc_opaque_ristretto255_sha512_FinalizeRequest(
     mhf: int
 ) -> None:
     """
-    To create the user record used for further authentication, the client
-    executes the following function. Since this works in the internal key mode, the
-    "client_private_key" is null.
+    To create the user record used for subsequent authentication and complete the
+    registration flow, the client executes the following function.
     
-    record -- (output) a RegistrationUpload structure, size:ecc_opaque_ristretto255_sha512_REGISTRATIONUPLOADSIZE
+    record -- (output) a RegistrationUpload structure, size:ecc_opaque_ristretto255_sha512_REGISTRATIONRECORDSIZE
     export_key -- (output) an additional client key, size:ecc_opaque_ristretto255_sha512_Nh
     password -- an opaque byte string containing the client's password, size:password_len
     password_len -- the length of `password`
-    blind -- the OPRF scalar value used for blinding, size:ecc_opaque_ristretto255_sha512_Noe
+    blind -- an OPRF scalar value, size:ecc_opaque_ristretto255_sha512_Ns
     response -- a RegistrationResponse structure, size:ecc_opaque_ristretto255_sha512_REGISTRATIONRESPONSESIZE
     server_identity -- the optional encoded server identity, size:server_identity_len
     server_identity_len -- the length of `server_identity`
@@ -3388,7 +3413,7 @@ def ecc_opaque_ristretto255_sha512_FinalizeRequest(
     ptr_response = ffi.from_buffer(response)
     ptr_server_identity = ffi.from_buffer(server_identity)
     ptr_client_identity = ffi.from_buffer(client_identity)
-    lib.ecc_opaque_ristretto255_sha512_FinalizeRequest(
+    lib.ecc_opaque_ristretto255_sha512_FinalizeRegistrationRequest(
         ptr_record,
         ptr_export_key,
         ptr_password,
@@ -3416,7 +3441,7 @@ def ecc_opaque_ristretto255_sha512_CreateCredentialRequestWithBlind(
     request -- (output) a CredentialRequest structure, size:ecc_opaque_ristretto255_sha512_CREDENTIALREQUESTSIZE
     password -- an opaque byte string containing the client's password, size:password_len
     password_len -- the length of `password`
-    blind -- an OPRF scalar value, size:ecc_opaque_ristretto255_sha512_Noe
+    blind -- an OPRF scalar value, size:ecc_opaque_ristretto255_sha512_Ns
     """
     ptr_request = ffi.from_buffer(request)
     ptr_password = ffi.from_buffer(password)
@@ -3440,7 +3465,7 @@ def ecc_opaque_ristretto255_sha512_CreateCredentialRequest(
     
     
     request -- (output) a CredentialRequest structure, size:ecc_opaque_ristretto255_sha512_CREDENTIALREQUESTSIZE
-    blind -- (output) an OPRF scalar value, size:ecc_opaque_ristretto255_sha512_Noe
+    blind -- (output) an OPRF scalar value, size:ecc_opaque_ristretto255_sha512_Ns
     password -- an opaque byte string containing the client's password, size:password_len
     password_len -- the length of `password`
     """
@@ -3488,7 +3513,7 @@ def ecc_opaque_ristretto255_sha512_CreateCredentialResponseWithMasking(
     response_raw -- (output) size:ecc_opaque_ristretto255_sha512_CREDENTIALRESPONSESIZE
     request_raw -- size:ecc_opaque_ristretto255_sha512_CREDENTIALREQUESTSIZE
     server_public_key -- size:ecc_opaque_ristretto255_sha512_Npk
-    record_raw -- size:ecc_opaque_ristretto255_sha512_REGISTRATIONUPLOADSIZE
+    record_raw -- size:ecc_opaque_ristretto255_sha512_REGISTRATIONRECORDSIZE
     credential_identifier -- size:credential_identifier_len
     credential_identifier_len -- the length of `credential_identifier`
     oprf_seed -- size:ecc_opaque_ristretto255_sha512_Nh
@@ -3545,7 +3570,7 @@ def ecc_opaque_ristretto255_sha512_CreateCredentialResponse(
     response_raw -- (output) size:ecc_opaque_ristretto255_sha512_CREDENTIALRESPONSESIZE
     request_raw -- size:ecc_opaque_ristretto255_sha512_CREDENTIALREQUESTSIZE
     server_public_key -- size:ecc_opaque_ristretto255_sha512_Npk
-    record_raw -- size:ecc_opaque_ristretto255_sha512_REGISTRATIONUPLOADSIZE
+    record_raw -- size:ecc_opaque_ristretto255_sha512_REGISTRATIONRECORDSIZE
     credential_identifier -- size:credential_identifier_len
     credential_identifier_len -- the length of `credential_identifier`
     oprf_seed -- size:ecc_opaque_ristretto255_sha512_Nh
@@ -3847,7 +3872,7 @@ def ecc_opaque_ristretto255_sha512_3DH_ClientInitWithSecrets(
     state -- (input, output) a ClientState structure, size:ecc_opaque_ristretto255_sha512_CLIENTSTATESIZE
     password -- an opaque byte string containing the client's password, size:password_len
     password_len -- the length of `password`
-    blind -- size:ecc_opaque_ristretto255_sha512_Noe
+    blind -- size:ecc_opaque_ristretto255_sha512_Ns
     client_nonce -- size:ecc_opaque_ristretto255_sha512_Nn
     client_secret -- size:ecc_opaque_ristretto255_sha512_Nsk
     client_keyshare -- size:ecc_opaque_ristretto255_sha512_Npk
@@ -3902,9 +3927,7 @@ def ecc_opaque_ristretto255_sha512_3DH_ClientFinish(
     ke3_raw: bytearray,
     session_key: bytearray,
     export_key: bytearray,
-    state_raw: bytearray,
-    password: bytes,
-    password_len: int,
+    state: bytearray,
     client_identity: bytes,
     client_identity_len: int,
     server_identity: bytes,
@@ -3920,9 +3943,7 @@ def ecc_opaque_ristretto255_sha512_3DH_ClientFinish(
     ke3_raw -- (output) a KE3 message structure, size:ecc_opaque_ristretto255_sha512_KE3SIZE
     session_key -- (output) the session's shared secret, size:64
     export_key -- (output) an additional client key, size:64
-    state_raw -- (input, output) a ClientState structure, size:ecc_opaque_ristretto255_sha512_CLIENTSTATESIZE
-    password -- an opaque byte string containing the client's password, size:password_len
-    password_len -- the length of `password`
+    state -- (input, output) a ClientState structure, size:ecc_opaque_ristretto255_sha512_CLIENTSTATESIZE
     client_identity -- the optional encoded client identity, which is set
     to client_public_key if not specified, size:client_identity_len
     client_identity_len -- the length of `client_identity`
@@ -3938,8 +3959,7 @@ def ecc_opaque_ristretto255_sha512_3DH_ClientFinish(
     ptr_ke3_raw = ffi.from_buffer(ke3_raw)
     ptr_session_key = ffi.from_buffer(session_key)
     ptr_export_key = ffi.from_buffer(export_key)
-    ptr_state_raw = ffi.from_buffer(state_raw)
-    ptr_password = ffi.from_buffer(password)
+    ptr_state = ffi.from_buffer(state)
     ptr_client_identity = ffi.from_buffer(client_identity)
     ptr_server_identity = ffi.from_buffer(server_identity)
     ptr_ke2 = ffi.from_buffer(ke2)
@@ -3948,9 +3968,7 @@ def ecc_opaque_ristretto255_sha512_3DH_ClientFinish(
         ptr_ke3_raw,
         ptr_session_key,
         ptr_export_key,
-        ptr_state_raw,
-        ptr_password,
-        password_len,
+        ptr_state,
         ptr_client_identity,
         client_identity_len,
         ptr_server_identity,
@@ -4112,7 +4130,7 @@ def ecc_opaque_ristretto255_sha512_3DH_ServerInitWithSecrets(
     client_identity -- the optional encoded server identity, which is set to
     client_public_key if null, size:client_identity_len
     client_identity_len -- the length of `client_identity`
-    record_raw -- the client's RegistrationUpload structure, size:ecc_opaque_ristretto255_sha512_REGISTRATIONUPLOADSIZE
+    record_raw -- the client's RegistrationUpload structure, size:ecc_opaque_ristretto255_sha512_REGISTRATIONRECORDSIZE
     credential_identifier -- an identifier that uniquely represents the credential
     being registered, size:credential_identifier_len
     credential_identifier_len -- the length of `credential_identifier`
@@ -4194,7 +4212,7 @@ def ecc_opaque_ristretto255_sha512_3DH_ServerInit(
     client_identity -- the optional encoded server identity, which is set to
     client_public_key if null, size:client_identity_len
     client_identity_len -- the length of `client_identity`
-    record_raw -- the client's RegistrationUpload structure, size:ecc_opaque_ristretto255_sha512_REGISTRATIONUPLOADSIZE
+    record_raw -- the client's RegistrationUpload structure, size:ecc_opaque_ristretto255_sha512_REGISTRATIONRECORDSIZE
     credential_identifier -- an identifier that uniquely represents the credential
     being registered, size:credential_identifier_len
     credential_identifier_len -- the length of `credential_identifier`
@@ -4236,24 +4254,24 @@ def ecc_opaque_ristretto255_sha512_3DH_ServerInit(
 
 def ecc_opaque_ristretto255_sha512_3DH_ServerFinish(
     session_key: bytearray,
-    state_raw: bytearray,
-    ke3_raw: bytes
+    state: bytearray,
+    ke3: bytes
 ) -> int:
     """
     
     
     session_key -- (output) the shared session secret if and only if KE3 is valid, size:64
-    state_raw -- (input, output) a ServerState structure, size:ecc_opaque_ristretto255_sha512_SERVERSTATESIZE
-    ke3_raw -- a KE3 structure, size:ecc_opaque_ristretto255_sha512_KE3SIZE
+    state -- (input, output) a ServerState structure, size:ecc_opaque_ristretto255_sha512_SERVERSTATESIZE
+    ke3 -- a KE3 structure, size:ecc_opaque_ristretto255_sha512_KE3SIZE
     return 0 if the user was authenticated, else -1
     """
     ptr_session_key = ffi.from_buffer(session_key)
-    ptr_state_raw = ffi.from_buffer(state_raw)
-    ptr_ke3_raw = ffi.from_buffer(ke3_raw)
+    ptr_state = ffi.from_buffer(state)
+    ptr_ke3 = ffi.from_buffer(ke3)
     fun_ret = lib.ecc_opaque_ristretto255_sha512_3DH_ServerFinish(
         ptr_session_key,
-        ptr_state_raw,
-        ptr_ke3_raw
+        ptr_state,
+        ptr_ke3
     )
     return fun_ret
 
@@ -4787,12 +4805,12 @@ Size of a scalar point for polynomial evaluation (x, y).
 
 ecc_frost_ristretto255_sha512_COMMITMENTSIZE = 96
 """
-*
+
 """
 
 ecc_frost_ristretto255_sha512_BINDINGFACTORSIZE = 64
 """
-*
+
 """
 
 ecc_frost_ristretto255_sha512_SECRETKEYSIZE = 32

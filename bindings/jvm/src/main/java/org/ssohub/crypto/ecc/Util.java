@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021, Alden Torres
+ * Copyright (c) 2021-2023, Alden Torres
  *
  * Licensed under the terms of the MIT license.
  * Copy of the license at https://opensource.org/licenses/MIT
@@ -7,7 +7,9 @@
 
 package org.ssohub.crypto.ecc;
 
-import java.nio.charset.StandardCharsets;
+import java.util.Random;
+
+import static java.nio.charset.StandardCharsets.UTF_8;
 
 /**
  * Utility functions.
@@ -32,7 +34,22 @@ public final class Util {
      * @return the UTF-8 encoding bytes
      */
     public static byte[] str2bin(String s) {
-        return s.getBytes(StandardCharsets.UTF_8);
+        return s.getBytes(UTF_8);
+    }
+
+    /**
+     * Converts a byte array to the hex string.
+     *
+     * @param bin the input byte array
+     * @return the hex encoded string
+     */
+    public static String bin2hex(byte[] bin, int offset, int length) {
+        final char[] out = new char[length << 1];
+        for (int i = offset, j = 0; i < length; i++) {
+            out[j++] = DIGITS_HEX[(0xF0 & bin[i]) >>> 4];
+            out[j++] = DIGITS_HEX[0x0F & bin[i]];
+        }
+        return new String(out);
     }
 
     /**
@@ -42,17 +59,11 @@ public final class Util {
      * @return the hex encoded string
      */
     public static String bin2hex(byte[] bin) {
-        final int l = bin.length;
-        final char[] out = new char[l << 1];
-        for (int i = 0, j = 0; i < l; i++) {
-            out[j++] = DIGITS_HEX[(0xF0 & bin[i]) >>> 4];
-            out[j++] = DIGITS_HEX[0x0F & bin[i]];
-        }
-        return new String(out);
+        return bin2hex(bin, 0, bin.length);
     }
 
     /**
-     * Converts an hex string to a byte array.
+     * Converts a hex string to a byte array.
      *
      * @param hex the input hex string
      * @return the byte array
@@ -82,10 +93,29 @@ public final class Util {
      * @param n the length of the buffer to return
      * @return the buffer with random elements
      */
-    public static byte[] randombytes(int n) {
+    public static byte[] randomBytes(int n) {
         byte[] buf = new byte[n];
         libecc.ecc_randombytes(buf, n);
 
         return buf;
+    }
+
+    public static Data randomData(int n) {
+        return new Data(randomBytes(n));
+    }
+
+    public static String randomUTF8(int n) {
+        return new String(randomBytes(n), UTF_8);
+    }
+
+    public static String randomAlphaNum(int n) {
+        String alphabet = "abcdefghijklmnopqrstuvwxyz0123456789";
+        StringBuilder sb = new StringBuilder(n);
+        Random rnd = new Random();
+        for (int i = 0; i < n; i++) {
+            char ch = alphabet.charAt(rnd.nextInt(alphabet.length()));
+            sb.append(ch);
+        }
+        return sb.toString();
     }
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2022, Alden Torres
+ * Copyright (c) 2021-2023, Alden Torres
  *
  * Licensed under the terms of the MIT license.
  * Copy of the license at https://opensource.org/licenses/MIT
@@ -106,6 +106,12 @@
 
 // const
 /**
+ * The size of a serialized OPRF scalar.
+ */
+#define ecc_opaque_ristretto255_sha512_Ns 32
+
+// const
+/**
  * The size of an OPRF private key.
  */
 #define ecc_opaque_ristretto255_sha512_Nok 32
@@ -115,13 +121,27 @@
 
 // const
 /**
- * Envelope size (Ne = Nn + Nm).
+ * <pre>
+ * struct {
+ *   uint8 nonce[Nn];
+ *   uint8 auth_tag[Nm];
+ * } Envelope;
+ * </pre>
+ *
+ * nonce: A unique nonce of length Nn, used to protect this Envelope.
+ * auth_tag: An authentication tag protecting the contents of the envelope, covering the envelope nonce and CleartextCredentials.
  */
 #define ecc_opaque_ristretto255_sha512_Ne 96
 
 // const
 /**
- *
+ * In order to avoid dynamic memory allocation, this limit is necessary.
+ */
+#define ecc_opaque_ristretto255_sha512_PASSWORDMAXSIZE 200
+
+// const
+/**
+ * In order to avoid dynamic memory allocation, this limit is necessary.
  */
 #define ecc_opaque_ristretto255_sha512_IDENTITYMAXSIZE 200
 
@@ -129,25 +149,49 @@
 /**
  *
  */
-#define ecc_opaque_ristretto255_sha512_CLEARTEXTCREDENTIALSSIZE 440
+#define ecc_opaque_ristretto255_sha512_CLEARTEXTCREDENTIALSSIZE 434
 
 // const
 /**
+ * <pre>
+ * struct {
+ *   uint8 blinded_message[Noe];
+ * } RegistrationRequest;
+ * </pre>
  *
+ * blinded_message: A serialized OPRF group element.
  */
 #define ecc_opaque_ristretto255_sha512_REGISTRATIONREQUESTSIZE 32
 
 // const
 /**
+ * <pre>
+ * typedef struct {
+ *   uint8 evaluated_message[Noe];
+ *   uint8 server_public_key[Npk];
+ * } RegistrationResponse;
+ * </pre>
  *
+ * evaluated_message: A serialized OPRF group element.
+ * server_public_key: The server's encoded public key that will be used for the online AKE stage.
  */
 #define ecc_opaque_ristretto255_sha512_REGISTRATIONRESPONSESIZE 64
 
 // const
 /**
+ * <pre>
+ * struct {
+ *   uint8 client_public_key[Npk];
+ *   uint8 masking_key[Nh];
+ *   Envelope envelope;
+ * } RegistrationRecord;
+ * </pre>
  *
+ * client_public_key: The client's encoded public key, corresponding to the private key client_private_key.
+ * masking_key: An encryption key used by the server to preserve confidentiality of the envelope during login to defend against client enumeration attacks.
+ * envelope: The client's Envelope structure.
  */
-#define ecc_opaque_ristretto255_sha512_REGISTRATIONUPLOADSIZE 192
+#define ecc_opaque_ristretto255_sha512_REGISTRATIONRECORDSIZE 192
 
 // const
 /**
@@ -163,27 +207,60 @@
 
 // const
 /**
+ * <pre>
+ * struct {
+ *   CredentialRequest credential_request;
+ *   AuthRequest auth_request;
+ * } KE1;
+ * </pre>
  *
+ * credential_request: A CredentialRequest structure.
+ * auth_request: An AuthRequest structure.
  */
 #define ecc_opaque_ristretto255_sha512_KE1SIZE 96
 
 // const
 /**
+ * <pre>
+ * struct {
+ *   CredentialResponse credential_response;
+ *   AuthResponse auth_response;
+ * } KE2;
+ * </pre>
  *
+ * credential_response: A CredentialResponse structure.
+ * auth_response: An AuthResponse structure.
  */
 #define ecc_opaque_ristretto255_sha512_KE2SIZE 320
 
 // const
 /**
+ * <pre>
+ * struct {
+ *   uint8 client_mac[Nm];
+ * } KE3;
+ * </pre>
  *
+ * client_mac: An authentication tag computed over the handshake transcript of fixed size Nm, computed using Km2.
  */
 #define ecc_opaque_ristretto255_sha512_KE3SIZE 64
 
 // const
 /**
+ * <pre>
+ * struct {
+ *   uint8 password[PASSWORDMAXSIZE];
+ *   uint8 password_len;
+ *   uint8 blind[Nok];
+ *   ClientAkeState_t client_ake_state;
+ * } ClientState;
+ * </pre>
  *
+ * password: The client's password.
+ * blind: The random blinding inverter returned by Blind().
+ * client_ake_state: a ClientAkeState structure.
  */
-#define ecc_opaque_ristretto255_sha512_CLIENTSTATESIZE 160
+#define ecc_opaque_ristretto255_sha512_CLIENTSTATESIZE 361
 
 // const
 /**
@@ -208,7 +285,7 @@
  *
  * @param[out] private_key a private key, size:ecc_opaque_ristretto255_sha512_Nsk
  * @param[out] public_key the associated public key, size:ecc_opaque_ristretto255_sha512_Npk
- * @param seed pseudo-random byte sequence used as a seed, size:ecc_opaque_ristretto255_sha512_Nok
+ * @param seed pseudo-random byte sequence used as a seed, size:ecc_opaque_ristretto255_sha512_Nn
  */
 ECC_EXPORT
 void ecc_opaque_ristretto255_sha512_DeriveKeyPair(
@@ -355,7 +432,7 @@ void ecc_opaque_ristretto255_sha512_GenerateAuthKeyPair(
  *
  * @param[out] private_key a private key, size:ecc_opaque_ristretto255_sha512_Nsk
  * @param[out] public_key the associated public key, size:ecc_opaque_ristretto255_sha512_Npk
- * @param seed pseudo-random byte sequence used as a seed, size:ecc_opaque_ristretto255_sha512_Nok
+ * @param seed pseudo-random byte sequence used as a seed, size:ecc_opaque_ristretto255_sha512_Nn
  */
 ECC_EXPORT
 void ecc_opaque_ristretto255_sha512_DeriveAuthKeyPair(
@@ -369,7 +446,7 @@ void ecc_opaque_ristretto255_sha512_DeriveAuthKeyPair(
  * @param[out] request a RegistrationRequest structure, size:ecc_opaque_ristretto255_sha512_REGISTRATIONREQUESTSIZE
  * @param password an opaque byte string containing the client's password, size:password_len
  * @param password_len the length of `password`
- * @param blind the OPRF scalar value to use, size:ecc_opaque_ristretto255_sha512_Noe
+ * @param blind the OPRF scalar value to use, size:ecc_opaque_ristretto255_sha512_Ns
  */
 ECC_EXPORT
 void ecc_opaque_ristretto255_sha512_CreateRegistrationRequestWithBlind(
@@ -379,9 +456,10 @@ void ecc_opaque_ristretto255_sha512_CreateRegistrationRequestWithBlind(
 );
 
 /**
+ * To begin the registration flow, the client executes this function.
  *
  * @param[out] request a RegistrationRequest structure, size:ecc_opaque_ristretto255_sha512_REGISTRATIONREQUESTSIZE
- * @param[out] blind an OPRF scalar value, size:ecc_opaque_ristretto255_sha512_Noe
+ * @param[out] blind an OPRF scalar value, size:ecc_opaque_ristretto255_sha512_Ns
  * @param password an opaque byte string containing the client's password, size:password_len
  * @param password_len the length of `password`
  */
@@ -393,43 +471,19 @@ void ecc_opaque_ristretto255_sha512_CreateRegistrationRequest(
 );
 
 /**
- * Same as calling CreateRegistrationResponse with a specific oprf_seed.
- *
- * In order to make this method not to use dynamic memory allocation, there is a
- * limit of credential_identifier_len <= 200.
- *
- * @param[out] response size:ecc_opaque_ristretto255_sha512_REGISTRATIONRESPONSESIZE
- * @param request size:ecc_opaque_ristretto255_sha512_REGISTRATIONREQUESTSIZE
- * @param server_public_key size:ecc_opaque_ristretto255_sha512_Npk
- * @param credential_identifier size:credential_identifier_len
- * @param credential_identifier_len the length of `credential_identifier`
- * @param oprf_key size:32
- */
-ECC_EXPORT
-void ecc_opaque_ristretto255_sha512_CreateRegistrationResponseWithOprfKey(
-    byte_t *response,
-    const byte_t *request,
-    const byte_t *server_public_key,
-    const byte_t *credential_identifier, int credential_identifier_len,
-    const byte_t *oprf_key
-);
-
-/**
- * In order to make this method not to use dynamic memory allocation, there is a
- * limit of credential_identifier_len <= 200.
+ * To process the client's registration request, the server executes
+ * this function.
  *
  * @param[out] response a RegistrationResponse structure, size:ecc_opaque_ristretto255_sha512_REGISTRATIONRESPONSESIZE
- * @param[out] oprf_key the per-client OPRF key known only to the server, size:ecc_opaque_ristretto255_sha512_Nsk
  * @param request a RegistrationRequest structure, size:ecc_opaque_ristretto255_sha512_REGISTRATIONREQUESTSIZE
  * @param server_public_key the server's public key, size:ecc_opaque_ristretto255_sha512_Npk
- * @param credential_identifier an identifier that uniquely represents the credential being registered, size:credential_identifier_len
+ * @param credential_identifier an identifier that uniquely represents the credential, size:credential_identifier_len
  * @param credential_identifier_len the length of `credential_identifier`
- * @param oprf_seed the server-side seed of Nh bytes used to generate an oprf_key, size:ecc_opaque_ristretto255_sha512_Nh
+ * @param oprf_seed the seed of Nh bytes used by the server to generate an oprf_key, size:ecc_opaque_ristretto255_sha512_Nh
  */
 ECC_EXPORT
 void ecc_opaque_ristretto255_sha512_CreateRegistrationResponse(
     byte_t *response,
-    byte_t *oprf_key,
     const byte_t *request,
     const byte_t *server_public_key,
     const byte_t *credential_identifier, int credential_identifier_len,
@@ -437,18 +491,14 @@ void ecc_opaque_ristretto255_sha512_CreateRegistrationResponse(
 );
 
 /**
- * Same as calling `ecc_opaque_ristretto255_sha512_FinalizeRequest` with an
+ * Same as calling `ecc_opaque_ristretto255_sha512_FinalizeRegistrationRequest` with an
  * specified `nonce`.
  *
- * To create the user record used for further authentication, the client
- * executes the following function. Since this works in the internal key mode, the
- * "client_private_key" is null.
- *
- * @param[out] record a RegistrationUpload structure, size:ecc_opaque_ristretto255_sha512_REGISTRATIONUPLOADSIZE
+ * @param[out] record a RegistrationUpload structure, size:ecc_opaque_ristretto255_sha512_REGISTRATIONRECORDSIZE
  * @param[out] export_key an additional client key, size:ecc_opaque_ristretto255_sha512_Nh
  * @param password an opaque byte string containing the client's password, size:password_len
  * @param password_len the length of `password`
- * @param blind the OPRF scalar value used for blinding, size:ecc_opaque_ristretto255_sha512_Noe
+ * @param blind an OPRF scalar value, size:ecc_opaque_ristretto255_sha512_Ns
  * @param response a RegistrationResponse structure, size:ecc_opaque_ristretto255_sha512_REGISTRATIONRESPONSESIZE
  * @param server_identity the optional encoded server identity, size:server_identity_len
  * @param server_identity_len the length of `server_identity`
@@ -458,12 +508,12 @@ void ecc_opaque_ristretto255_sha512_CreateRegistrationResponse(
  * @param nonce size:ecc_opaque_ristretto255_sha512_Nn
  */
 ECC_EXPORT
-void ecc_opaque_ristretto255_sha512_FinalizeRequestWithNonce(
-    byte_t *record, // RegistrationUpload_t
+void ecc_opaque_ristretto255_sha512_FinalizeRegistrationRequestWithNonce(
+    byte_t *record,
     byte_t *export_key,
     const byte_t *password, int password_len,
     const byte_t *blind,
-    const byte_t *response, // RegistrationResponse_t
+    const byte_t *response,
     const byte_t *server_identity, int server_identity_len,
     const byte_t *client_identity, int client_identity_len,
     int mhf,
@@ -471,15 +521,14 @@ void ecc_opaque_ristretto255_sha512_FinalizeRequestWithNonce(
 );
 
 /**
- * To create the user record used for further authentication, the client
- * executes the following function. Since this works in the internal key mode, the
- * "client_private_key" is null.
+ * To create the user record used for subsequent authentication and complete the
+ * registration flow, the client executes the following function.
  *
- * @param[out] record a RegistrationUpload structure, size:ecc_opaque_ristretto255_sha512_REGISTRATIONUPLOADSIZE
+ * @param[out] record a RegistrationUpload structure, size:ecc_opaque_ristretto255_sha512_REGISTRATIONRECORDSIZE
  * @param[out] export_key an additional client key, size:ecc_opaque_ristretto255_sha512_Nh
  * @param password an opaque byte string containing the client's password, size:password_len
  * @param password_len the length of `password`
- * @param blind the OPRF scalar value used for blinding, size:ecc_opaque_ristretto255_sha512_Noe
+ * @param blind an OPRF scalar value, size:ecc_opaque_ristretto255_sha512_Ns
  * @param response a RegistrationResponse structure, size:ecc_opaque_ristretto255_sha512_REGISTRATIONRESPONSESIZE
  * @param server_identity the optional encoded server identity, size:server_identity_len
  * @param server_identity_len the length of `server_identity`
@@ -488,12 +537,12 @@ void ecc_opaque_ristretto255_sha512_FinalizeRequestWithNonce(
  * @param mhf the memory hard function to use
  */
 ECC_EXPORT
-void ecc_opaque_ristretto255_sha512_FinalizeRequest(
-    byte_t *record, // RegistrationUpload_t
+void ecc_opaque_ristretto255_sha512_FinalizeRegistrationRequest(
+    byte_t *record,
     byte_t *export_key,
     const byte_t *password, int password_len,
     const byte_t *blind,
-    const byte_t *response, // RegistrationResponse_t
+    const byte_t *response,
     const byte_t *server_identity, int server_identity_len,
     const byte_t *client_identity, int client_identity_len,
     int mhf
@@ -504,7 +553,7 @@ void ecc_opaque_ristretto255_sha512_FinalizeRequest(
  * @param[out] request a CredentialRequest structure, size:ecc_opaque_ristretto255_sha512_CREDENTIALREQUESTSIZE
  * @param password an opaque byte string containing the client's password, size:password_len
  * @param password_len the length of `password`
- * @param blind an OPRF scalar value, size:ecc_opaque_ristretto255_sha512_Noe
+ * @param blind an OPRF scalar value, size:ecc_opaque_ristretto255_sha512_Ns
  */
 ECC_EXPORT
 void ecc_opaque_ristretto255_sha512_CreateCredentialRequestWithBlind(
@@ -516,7 +565,7 @@ void ecc_opaque_ristretto255_sha512_CreateCredentialRequestWithBlind(
 /**
  *
  * @param[out] request a CredentialRequest structure, size:ecc_opaque_ristretto255_sha512_CREDENTIALREQUESTSIZE
- * @param[out] blind an OPRF scalar value, size:ecc_opaque_ristretto255_sha512_Noe
+ * @param[out] blind an OPRF scalar value, size:ecc_opaque_ristretto255_sha512_Ns
  * @param password an opaque byte string containing the client's password, size:password_len
  * @param password_len the length of `password`
  */
@@ -547,7 +596,7 @@ void ecc_opaque_ristretto255_sha512_CreateCredentialRequest(
  * @param[out] response_raw size:ecc_opaque_ristretto255_sha512_CREDENTIALRESPONSESIZE
  * @param request_raw size:ecc_opaque_ristretto255_sha512_CREDENTIALREQUESTSIZE
  * @param server_public_key size:ecc_opaque_ristretto255_sha512_Npk
- * @param record_raw size:ecc_opaque_ristretto255_sha512_REGISTRATIONUPLOADSIZE
+ * @param record_raw size:ecc_opaque_ristretto255_sha512_REGISTRATIONRECORDSIZE
  * @param credential_identifier size:credential_identifier_len
  * @param credential_identifier_len the length of `credential_identifier`
  * @param oprf_seed size:ecc_opaque_ristretto255_sha512_Nh
@@ -584,7 +633,7 @@ void ecc_opaque_ristretto255_sha512_CreateCredentialResponseWithMasking(
  * @param[out] response_raw size:ecc_opaque_ristretto255_sha512_CREDENTIALRESPONSESIZE
  * @param request_raw size:ecc_opaque_ristretto255_sha512_CREDENTIALREQUESTSIZE
  * @param server_public_key size:ecc_opaque_ristretto255_sha512_Npk
- * @param record_raw size:ecc_opaque_ristretto255_sha512_REGISTRATIONUPLOADSIZE
+ * @param record_raw size:ecc_opaque_ristretto255_sha512_REGISTRATIONRECORDSIZE
  * @param credential_identifier size:credential_identifier_len
  * @param credential_identifier_len the length of `credential_identifier`
  * @param oprf_seed size:ecc_opaque_ristretto255_sha512_Nh
@@ -743,7 +792,7 @@ void ecc_opaque_ristretto255_sha512_3DH_DeriveKeys(
  * @param[in,out] state a ClientState structure, size:ecc_opaque_ristretto255_sha512_CLIENTSTATESIZE
  * @param password an opaque byte string containing the client's password, size:password_len
  * @param password_len the length of `password`
- * @param blind size:ecc_opaque_ristretto255_sha512_Noe
+ * @param blind size:ecc_opaque_ristretto255_sha512_Ns
  * @param client_nonce size:ecc_opaque_ristretto255_sha512_Nn
  * @param client_secret size:ecc_opaque_ristretto255_sha512_Nsk
  * @param client_keyshare size:ecc_opaque_ristretto255_sha512_Npk
@@ -778,9 +827,7 @@ void ecc_opaque_ristretto255_sha512_3DH_ClientInit(
  * @param[out] ke3_raw a KE3 message structure, size:ecc_opaque_ristretto255_sha512_KE3SIZE
  * @param[out] session_key the session's shared secret, size:64
  * @param[out] export_key an additional client key, size:64
- * @param[in,out] state_raw a ClientState structure, size:ecc_opaque_ristretto255_sha512_CLIENTSTATESIZE
- * @param password an opaque byte string containing the client's password, size:password_len
- * @param password_len the length of `password`
+ * @param[in,out] state a ClientState structure, size:ecc_opaque_ristretto255_sha512_CLIENTSTATESIZE
  * @param client_identity the optional encoded client identity, which is set
  * to client_public_key if not specified, size:client_identity_len
  * @param client_identity_len the length of `client_identity`
@@ -798,8 +845,7 @@ int ecc_opaque_ristretto255_sha512_3DH_ClientFinish(
     byte_t *ke3_raw,
     byte_t *session_key,
     byte_t *export_key,
-    byte_t *state_raw,
-    const byte_t *password, int password_len,
+    byte_t *state,
     const byte_t *client_identity, int client_identity_len,
     const byte_t *server_identity, int server_identity_len,
     const byte_t *ke2,
@@ -880,7 +926,7 @@ int ecc_opaque_ristretto255_sha512_3DH_ClientFinalize(
  * @param client_identity the optional encoded server identity, which is set to
  * client_public_key if null, size:client_identity_len
  * @param client_identity_len the length of `client_identity`
- * @param record_raw the client's RegistrationUpload structure, size:ecc_opaque_ristretto255_sha512_REGISTRATIONUPLOADSIZE
+ * @param record_raw the client's RegistrationUpload structure, size:ecc_opaque_ristretto255_sha512_REGISTRATIONRECORDSIZE
  * @param credential_identifier an identifier that uniquely represents the credential
  * being registered, size:credential_identifier_len
  * @param credential_identifier_len the length of `credential_identifier`
@@ -924,7 +970,7 @@ void ecc_opaque_ristretto255_sha512_3DH_ServerInitWithSecrets(
  * @param client_identity the optional encoded server identity, which is set to
  * client_public_key if null, size:client_identity_len
  * @param client_identity_len the length of `client_identity`
- * @param record_raw the client's RegistrationUpload structure, size:ecc_opaque_ristretto255_sha512_REGISTRATIONUPLOADSIZE
+ * @param record_raw the client's RegistrationUpload structure, size:ecc_opaque_ristretto255_sha512_REGISTRATIONRECORDSIZE
  * @param credential_identifier an identifier that uniquely represents the credential
  * being registered, size:credential_identifier_len
  * @param credential_identifier_len the length of `credential_identifier`
@@ -951,15 +997,15 @@ void ecc_opaque_ristretto255_sha512_3DH_ServerInit(
 /**
  *
  * @param[out] session_key the shared session secret if and only if KE3 is valid, size:64
- * @param[in,out] state_raw a ServerState structure, size:ecc_opaque_ristretto255_sha512_SERVERSTATESIZE
- * @param ke3_raw a KE3 structure, size:ecc_opaque_ristretto255_sha512_KE3SIZE
+ * @param[in,out] state a ServerState structure, size:ecc_opaque_ristretto255_sha512_SERVERSTATESIZE
+ * @param ke3 a KE3 structure, size:ecc_opaque_ristretto255_sha512_KE3SIZE
  * @return 0 if the user was authenticated, else -1
  */
 ECC_EXPORT
 int ecc_opaque_ristretto255_sha512_3DH_ServerFinish(
     byte_t *session_key,
-    byte_t *state_raw,
-    const byte_t *ke3_raw
+    byte_t *state,
+    const byte_t *ke3
 );
 
 /**

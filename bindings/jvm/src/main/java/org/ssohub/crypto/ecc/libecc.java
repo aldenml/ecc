@@ -52,7 +52,7 @@ public final class libecc {
 
     /**
      * Concatenates two byte arrays. Same as a || b.
-     * 
+     *
      * a || b: denotes the concatenation of byte strings a and b. For
      * example, "ABC" || "DEF" == "ABCDEF".
      *
@@ -137,7 +137,7 @@ public final class libecc {
     /**
      * I2OSP converts a non-negative integer to an octet string of a
      * specified length.
-     * 
+     *
      * See https://datatracker.ietf.org/doc/html/rfc8017#section-4.1
      *
      * @param out (output) corresponding octet string of length xLen, size:xLen
@@ -153,11 +153,11 @@ public final class libecc {
     /**
      * Takes two pointers to unsigned numbers encoded in little-endian
      * format and returns:
-     * 
+     *
      * -1 if a is less than b
      * 0 if a is equals to b
      * 1 if a is greater than b
-     * 
+     *
      * The comparison is done in constant time
      *
      * @param a first unsigned integer argument, size:len
@@ -200,7 +200,7 @@ public final class libecc {
 
     /**
      * Computes the SHA-256 of a given input.
-     * 
+     *
      * See https://en.wikipedia.org/wiki/SHA-2
      *
      * @param digest (output) the SHA-256 of the input, size:ecc_hash_sha256_HASHSIZE
@@ -215,7 +215,7 @@ public final class libecc {
 
     /**
      * Computes the SHA-512 of a given input.
-     * 
+     *
      * See https://en.wikipedia.org/wiki/SHA-2
      *
      * @param digest (output) the SHA-512 of the input, size:ecc_hash_sha512_HASHSIZE
@@ -244,7 +244,7 @@ public final class libecc {
 
     /**
      * Computes the HMAC-SHA-256 of the input stream.
-     * 
+     *
      * See https://datatracker.ietf.org/doc/html/rfc2104
      * See https://datatracker.ietf.org/doc/html/rfc4868
      *
@@ -264,7 +264,7 @@ public final class libecc {
 
     /**
      * Computes the HMAC-SHA-512 of the input stream.
-     * 
+     *
      * See https://datatracker.ietf.org/doc/html/rfc2104
      * See https://datatracker.ietf.org/doc/html/rfc4868
      *
@@ -298,7 +298,7 @@ public final class libecc {
 
     /**
      * Computes the HKDF-SHA-256 extract of the input using a key material.
-     * 
+     *
      * See https://datatracker.ietf.org/doc/html/rfc5869
      *
      * @param prk (output) a pseudorandom key, size:ecc_kdf_hkdf_sha256_KEYSIZE
@@ -317,7 +317,7 @@ public final class libecc {
 
     /**
      * Computes the HKDF-SHA-256 expand of the input using a key.
-     * 
+     *
      * See https://datatracker.ietf.org/doc/html/rfc5869
      *
      * @param okm (output) output keying material of length `len`, size:len
@@ -336,7 +336,7 @@ public final class libecc {
 
     /**
      * Computes the HKDF-SHA-512 extract of the input using a key material.
-     * 
+     *
      * See https://datatracker.ietf.org/doc/html/rfc5869
      *
      * @param prk (output) a pseudorandom key, size:ecc_kdf_hkdf_sha512_KEYSIZE
@@ -355,7 +355,7 @@ public final class libecc {
 
     /**
      * Computes the HKDF-SHA-512 expand of the input using a key.
-     * 
+     *
      * See https://datatracker.ietf.org/doc/html/rfc5869
      *
      * @param okm (output) output keying material of length `len`, size:len
@@ -476,7 +476,7 @@ public final class libecc {
      * Maps a 32 bytes vector r to a point, and stores its compressed
      * representation into p. The point is guaranteed to be on the main
      * subgroup.
-     * 
+     *
      * This function directly exposes the Elligator 2 map. Uses the high
      * bit to set the sign of the X coordinate, and the resulting point is
      * multiplied by the cofactor.
@@ -586,7 +586,7 @@ public final class libecc {
      * Reduces s to s mod L and puts the bytes representing the integer
      * into r where L = (2^252 + 27742317777372353535851937790883648493) is
      * the order of the group.
-     * 
+     *
      * The interval `s` is sampled from should be at least 317 bits to
      * ensure almost uniformity of `r` over `L`.
      *
@@ -601,11 +601,11 @@ public final class libecc {
     /**
      * Multiplies a point p by a valid scalar n (clamped) and puts
      * the Y coordinate of the resulting point into q.
-     * 
+     *
      * This function returns 0 on success, or -1 if n is 0 or if p is not
      * on the curve, not on the main subgroup, is a point of small order,
      * or is not provided in canonical form.
-     * 
+     *
      * Note that n is "clamped" (the 3 low bits are cleared to make it a
      * multiple of the cofactor, bit 254 is set and bit 255 is cleared to
      * respect the original design). This prevents attacks using small
@@ -626,7 +626,7 @@ public final class libecc {
     /**
      * Multiplies the base point (x, 4/5) by a scalar n (clamped) and puts
      * the Y coordinate of the resulting point into q.
-     * 
+     *
      * Note that n is "clamped" (the 3 low bits are cleared to make it a
      * multiple of the cofactor, bit 254 is set and bit 255 is cleared to
      * respect the original design). This prevents attacks using small
@@ -710,7 +710,7 @@ public final class libecc {
     );
 
     /**
-     * 
+     *
      *
      * @param g (output) size:ecc_ristretto255_ELEMENTSIZE
      */
@@ -827,7 +827,7 @@ public final class libecc {
      * Reduces s to s mod L and puts the bytes integer into r where
      * L = 2^252 + 27742317777372353535851937790883648493 is the order
      * of the group.
-     * 
+     *
      * The interval `s` is sampled from should be at least 317 bits to
      * ensure almost uniformity of `r` over `L`.
      *
@@ -964,7 +964,7 @@ public final class libecc {
 
     /**
      * This is a naive implementation of an iterative exponentiation by squaring.
-     * 
+     *
      * NOTE: This method is not side-channel attack resistant on `n`, the algorithm
      * leaks information about it, don't use this if `n` is a secret.
      *
@@ -988,7 +988,7 @@ public final class libecc {
     );
 
     /**
-     * 
+     *
      *
      * @param r (output) size:ecc_bls12_381_G1SIZE
      * @param p size:ecc_bls12_381_G1SIZE
@@ -1001,7 +1001,7 @@ public final class libecc {
     );
 
     /**
-     * 
+     *
      *
      * @param neg (output) size:ecc_bls12_381_G1SIZE
      * @param p size:ecc_bls12_381_G1SIZE
@@ -1012,7 +1012,7 @@ public final class libecc {
     );
 
     /**
-     * 
+     *
      *
      * @param g (output) size:ecc_bls12_381_G1SIZE
      */
@@ -1047,7 +1047,7 @@ public final class libecc {
     );
 
     /**
-     * 
+     *
      *
      * @param r (output) size:ecc_bls12_381_G2SIZE
      * @param p size:ecc_bls12_381_G2SIZE
@@ -1060,7 +1060,7 @@ public final class libecc {
     );
 
     /**
-     * 
+     *
      *
      * @param neg (output) size:ecc_bls12_381_G2SIZE
      * @param p size:ecc_bls12_381_G2SIZE
@@ -1071,7 +1071,7 @@ public final class libecc {
     );
 
     /**
-     * 
+     *
      *
      * @param g (output) size:ecc_bls12_381_G2SIZE
      */
@@ -1102,10 +1102,10 @@ public final class libecc {
 
     /**
      * Evaluates a pairing of BLS12-381.
-     * 
+     *
      * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-pairing-friendly-curves-09#section-2.2
      * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-pairing-friendly-curves-09#section-2.4
-     * 
+     *
      * G1 is a subgroup of E(GF(p)) of order r.
      * G2 is a subgroup of E'(GF(p^2)) of order r.
      * GT is a subgroup of a multiplicative group (GF(p^12))^* of order r.
@@ -1121,7 +1121,7 @@ public final class libecc {
     );
 
     /**
-     * 
+     *
      *
      * @param ret (output) size:ecc_bls12_381_FP12SIZE
      * @param p1_g1 size:ecc_bls12_381_G1SIZE
@@ -1134,7 +1134,7 @@ public final class libecc {
     );
 
     /**
-     * 
+     *
      *
      * @param ret (output) size:ecc_bls12_381_FP12SIZE
      * @param a size:ecc_bls12_381_FP12SIZE
@@ -1160,25 +1160,25 @@ public final class libecc {
     // h2c
 
     /**
-     * *
+     *
      *
      */
     public static final int ecc_h2c_expand_message_xmd_sha256_MAXSIZE = 8160;
 
     /**
-     * *
+     *
      *
      */
     public static final int ecc_h2c_expand_message_xmd_sha256_DSTMAXSIZE = 255;
 
     /**
-     * *
+     *
      *
      */
     public static final int ecc_h2c_expand_message_xmd_sha512_MAXSIZE = 16320;
 
     /**
-     * *
+     *
      *
      */
     public static final int ecc_h2c_expand_message_xmd_sha512_DSTMAXSIZE = 255;
@@ -1282,13 +1282,13 @@ public final class libecc {
     public static final int ecc_voprf_ristretto255_sha512_MODE_POPRF = 2;
 
     /**
-     * *
+     *
      *
      */
     public static final int ecc_voprf_ristretto255_sha512_MAXINFOSIZE = 2000;
 
     /**
-     * 
+     *
      *
      * @param proof (output) size:ecc_voprf_ristretto255_sha512_PROOFSIZE
      * @param k size:ecc_voprf_ristretto255_sha512_SCALARSIZE
@@ -1313,7 +1313,7 @@ public final class libecc {
     );
 
     /**
-     * 
+     *
      *
      * @param proof (output) size:ecc_voprf_ristretto255_sha512_PROOFSIZE
      * @param k size:ecc_voprf_ristretto255_sha512_SCALARSIZE
@@ -1336,7 +1336,7 @@ public final class libecc {
     );
 
     /**
-     * 
+     *
      *
      * @param M (output) size:ecc_voprf_ristretto255_sha512_ELEMENTSIZE
      * @param Z (output) size:ecc_voprf_ristretto255_sha512_ELEMENTSIZE
@@ -1359,7 +1359,7 @@ public final class libecc {
     );
 
     /**
-     * 
+     *
      *
      * @param A size:ecc_voprf_ristretto255_sha512_ELEMENTSIZE
      * @param B size:ecc_voprf_ristretto255_sha512_ELEMENTSIZE
@@ -1381,7 +1381,7 @@ public final class libecc {
     );
 
     /**
-     * 
+     *
      *
      * @param M (output) size:ecc_voprf_ristretto255_sha512_ELEMENTSIZE
      * @param Z (output) size:ecc_voprf_ristretto255_sha512_ELEMENTSIZE
@@ -1456,7 +1456,7 @@ public final class libecc {
     );
 
     /**
-     * 
+     *
      *
      * @param blind (output) scalar used in the blind operation, size:ecc_voprf_ristretto255_sha512_SCALARSIZE
      * @param blindedElement (output) blinded element, size:ecc_voprf_ristretto255_sha512_ELEMENTSIZE
@@ -1474,7 +1474,7 @@ public final class libecc {
     );
 
     /**
-     * 
+     *
      *
      * @param evaluatedElement (output) blinded element, size:ecc_voprf_ristretto255_sha512_ELEMENTSIZE
      * @param skS scalar used in the blind operation, size:ecc_voprf_ristretto255_sha512_SCALARSIZE
@@ -1487,7 +1487,7 @@ public final class libecc {
     );
 
     /**
-     * 
+     *
      *
      * @param output (output) size:ecc_voprf_ristretto255_sha512_Nh
      * @param input the input message, size:inputLen
@@ -1504,7 +1504,7 @@ public final class libecc {
     );
 
     /**
-     * 
+     *
      *
      * @param output (output) size:ecc_voprf_ristretto255_sha512_Nh
      * @param skS size:ecc_voprf_ristretto255_sha512_SCALARSIZE
@@ -1522,7 +1522,7 @@ public final class libecc {
     );
 
     /**
-     * 
+     *
      *
      * @param evaluatedElement (output) size:ecc_voprf_ristretto255_sha512_ELEMENTSIZE
      * @param proof (output) size:ecc_voprf_ristretto255_sha512_PROOFSIZE
@@ -1541,7 +1541,7 @@ public final class libecc {
     );
 
     /**
-     * 
+     *
      *
      * @param evaluatedElement (output) size:ecc_voprf_ristretto255_sha512_ELEMENTSIZE
      * @param proof (output) size:ecc_voprf_ristretto255_sha512_PROOFSIZE
@@ -1558,7 +1558,7 @@ public final class libecc {
     );
 
     /**
-     * 
+     *
      *
      * @param output (output) size:ecc_voprf_ristretto255_sha512_Nh
      * @param input the input message, size:inputLen
@@ -1582,7 +1582,7 @@ public final class libecc {
     );
 
     /**
-     * 
+     *
      *
      * @param blindedElement (output) blinded element, size:ecc_voprf_ristretto255_sha512_ELEMENTSIZE
      * @param tweakedKey (output) blinded element, size:ecc_voprf_ristretto255_sha512_ELEMENTSIZE
@@ -1608,7 +1608,7 @@ public final class libecc {
     );
 
     /**
-     * 
+     *
      *
      * @param blind (output) scalar used in the blind operation, size:ecc_voprf_ristretto255_sha512_SCALARSIZE
      * @param blindedElement (output) blinded element, size:ecc_voprf_ristretto255_sha512_ELEMENTSIZE
@@ -1634,7 +1634,7 @@ public final class libecc {
     );
 
     /**
-     * 
+     *
      *
      * @param evaluatedElement (output) size:ecc_voprf_ristretto255_sha512_ELEMENTSIZE
      * @param proof (output) size:ecc_voprf_ristretto255_sha512_PROOFSIZE
@@ -1658,7 +1658,7 @@ public final class libecc {
     );
 
     /**
-     * 
+     *
      *
      * @param evaluatedElement (output) size:ecc_voprf_ristretto255_sha512_ELEMENTSIZE
      * @param proof (output) size:ecc_voprf_ristretto255_sha512_PROOFSIZE
@@ -1680,7 +1680,7 @@ public final class libecc {
     );
 
     /**
-     * 
+     *
      *
      * @param output (output) size:ecc_voprf_ristretto255_sha512_Nh
      * @param input the input message, size:inputLen
@@ -1767,7 +1767,7 @@ public final class libecc {
     );
 
     /**
-     * 
+     *
      *
      * @param out (output) size:ecc_voprf_ristretto255_sha512_SCALARSIZE
      * @param input size:inputLen
@@ -1784,7 +1784,7 @@ public final class libecc {
     );
 
     /**
-     * 
+     *
      *
      * @param out (output) size:ecc_voprf_ristretto255_sha512_SCALARSIZE
      * @param input size:inputLen
@@ -1843,85 +1843,162 @@ public final class libecc {
     public static final int ecc_opaque_ristretto255_sha512_Noe = 32;
 
     /**
+     * The size of a serialized OPRF scalar.
+     *
+     */
+    public static final int ecc_opaque_ristretto255_sha512_Ns = 32;
+
+    /**
      * The size of an OPRF private key.
      *
      */
     public static final int ecc_opaque_ristretto255_sha512_Nok = 32;
 
     /**
-     * Envelope size (Ne = Nn + Nm).
+     * <pre>
+     * struct {
+     *   uint8 nonce[Nn];
+     *   uint8 auth_tag[Nm];
+     * } Envelope;
+     * </pre>
+     *
+     * nonce: A unique nonce of length Nn, used to protect this Envelope.
+     * auth_tag: An authentication tag protecting the contents of the envelope, covering the envelope nonce and CleartextCredentials.
      *
      */
     public static final int ecc_opaque_ristretto255_sha512_Ne = 96;
 
     /**
-     * *
+     * In order to avoid dynamic memory allocation, this limit is necessary.
+     *
+     */
+    public static final int ecc_opaque_ristretto255_sha512_PASSWORDMAXSIZE = 200;
+
+    /**
+     * In order to avoid dynamic memory allocation, this limit is necessary.
      *
      */
     public static final int ecc_opaque_ristretto255_sha512_IDENTITYMAXSIZE = 200;
 
     /**
-     * *
+     *
      *
      */
-    public static final int ecc_opaque_ristretto255_sha512_CLEARTEXTCREDENTIALSSIZE = 440;
+    public static final int ecc_opaque_ristretto255_sha512_CLEARTEXTCREDENTIALSSIZE = 434;
 
     /**
-     * *
+     * <pre>
+     * struct {
+     *   uint8 blinded_message[Noe];
+     * } RegistrationRequest;
+     * </pre>
+     *
+     * blinded_message: A serialized OPRF group element.
      *
      */
     public static final int ecc_opaque_ristretto255_sha512_REGISTRATIONREQUESTSIZE = 32;
 
     /**
-     * *
+     * <pre>
+     * typedef struct {
+     *   uint8 evaluated_message[Noe];
+     *   uint8 server_public_key[Npk];
+     * } RegistrationResponse;
+     * </pre>
+     *
+     * evaluated_message: A serialized OPRF group element.
+     * server_public_key: The server's encoded public key that will be used for the online AKE stage.
      *
      */
     public static final int ecc_opaque_ristretto255_sha512_REGISTRATIONRESPONSESIZE = 64;
 
     /**
-     * *
+     * <pre>
+     * struct {
+     *   uint8 client_public_key[Npk];
+     *   uint8 masking_key[Nh];
+     *   Envelope envelope;
+     * } RegistrationRecord;
+     * </pre>
+     *
+     * client_public_key: The client's encoded public key, corresponding to the private key client_private_key.
+     * masking_key: An encryption key used by the server to preserve confidentiality of the envelope during login to defend against client enumeration attacks.
+     * envelope: The client's Envelope structure.
      *
      */
-    public static final int ecc_opaque_ristretto255_sha512_REGISTRATIONUPLOADSIZE = 192;
+    public static final int ecc_opaque_ristretto255_sha512_REGISTRATIONRECORDSIZE = 192;
 
     /**
-     * *
+     *
      *
      */
     public static final int ecc_opaque_ristretto255_sha512_CREDENTIALREQUESTSIZE = 32;
 
     /**
-     * *
+     *
      *
      */
     public static final int ecc_opaque_ristretto255_sha512_CREDENTIALRESPONSESIZE = 192;
 
     /**
-     * *
+     * <pre>
+     * struct {
+     *   CredentialRequest credential_request;
+     *   AuthRequest auth_request;
+     * } KE1;
+     * </pre>
+     *
+     * credential_request: A CredentialRequest structure.
+     * auth_request: An AuthRequest structure.
      *
      */
     public static final int ecc_opaque_ristretto255_sha512_KE1SIZE = 96;
 
     /**
-     * *
+     * <pre>
+     * struct {
+     *   CredentialResponse credential_response;
+     *   AuthResponse auth_response;
+     * } KE2;
+     * </pre>
+     *
+     * credential_response: A CredentialResponse structure.
+     * auth_response: An AuthResponse structure.
      *
      */
     public static final int ecc_opaque_ristretto255_sha512_KE2SIZE = 320;
 
     /**
-     * *
+     * <pre>
+     * struct {
+     *   uint8 client_mac[Nm];
+     * } KE3;
+     * </pre>
+     *
+     * client_mac: An authentication tag computed over the handshake transcript of fixed size Nm, computed using Km2.
      *
      */
     public static final int ecc_opaque_ristretto255_sha512_KE3SIZE = 64;
 
     /**
-     * *
+     * <pre>
+     * struct {
+     *   uint8 password[PASSWORDMAXSIZE];
+     *   uint8 password_len;
+     *   uint8 blind[Nok];
+     *   ClientAkeState_t client_ake_state;
+     * } ClientState;
+     * </pre>
+     *
+     * password: The client's password.
+     * blind: The random blinding inverter returned by Blind().
+     * client_ake_state: a ClientAkeState structure.
      *
      */
-    public static final int ecc_opaque_ristretto255_sha512_CLIENTSTATESIZE = 160;
+    public static final int ecc_opaque_ristretto255_sha512_CLIENTSTATESIZE = 361;
 
     /**
-     * *
+     *
      *
      */
     public static final int ecc_opaque_ristretto255_sha512_SERVERSTATESIZE = 128;
@@ -1943,7 +2020,7 @@ public final class libecc {
      *
      * @param private_key (output) a private key, size:ecc_opaque_ristretto255_sha512_Nsk
      * @param public_key (output) the associated public key, size:ecc_opaque_ristretto255_sha512_Npk
-     * @param seed pseudo-random byte sequence used as a seed, size:ecc_opaque_ristretto255_sha512_Nok
+     * @param seed pseudo-random byte sequence used as a seed, size:ecc_opaque_ristretto255_sha512_Nn
      */
     public static native void ecc_opaque_ristretto255_sha512_DeriveKeyPair(
         byte[] private_key,
@@ -2005,7 +2082,7 @@ public final class libecc {
 
     /**
      * Creates an "Envelope" at registration.
-     * 
+     *
      * In order to work with stack allocated memory (i.e. fixed and not dynamic
      * allocation), it's necessary to add the restriction on length of the
      * identities to less than 200 bytes.
@@ -2074,7 +2151,7 @@ public final class libecc {
 
     /**
      * Returns a randomly generated private and public key pair.
-     * 
+     *
      * This is implemented by generating a random "seed", then
      * calling internally DeriveAuthKeyPair.
      *
@@ -2092,7 +2169,7 @@ public final class libecc {
      *
      * @param private_key (output) a private key, size:ecc_opaque_ristretto255_sha512_Nsk
      * @param public_key (output) the associated public key, size:ecc_opaque_ristretto255_sha512_Npk
-     * @param seed pseudo-random byte sequence used as a seed, size:ecc_opaque_ristretto255_sha512_Nok
+     * @param seed pseudo-random byte sequence used as a seed, size:ecc_opaque_ristretto255_sha512_Nn
      */
     public static native void ecc_opaque_ristretto255_sha512_DeriveAuthKeyPair(
         byte[] private_key,
@@ -2106,7 +2183,7 @@ public final class libecc {
      * @param request (output) a RegistrationRequest structure, size:ecc_opaque_ristretto255_sha512_REGISTRATIONREQUESTSIZE
      * @param password an opaque byte string containing the client's password, size:password_len
      * @param password_len the length of `password`
-     * @param blind the OPRF scalar value to use, size:ecc_opaque_ristretto255_sha512_Noe
+     * @param blind the OPRF scalar value to use, size:ecc_opaque_ristretto255_sha512_Ns
      */
     public static native void ecc_opaque_ristretto255_sha512_CreateRegistrationRequestWithBlind(
         byte[] request,
@@ -2116,10 +2193,10 @@ public final class libecc {
     );
 
     /**
-     * 
+     * To begin the registration flow, the client executes this function.
      *
      * @param request (output) a RegistrationRequest structure, size:ecc_opaque_ristretto255_sha512_REGISTRATIONREQUESTSIZE
-     * @param blind (output) an OPRF scalar value, size:ecc_opaque_ristretto255_sha512_Noe
+     * @param blind (output) an OPRF scalar value, size:ecc_opaque_ristretto255_sha512_Ns
      * @param password an opaque byte string containing the client's password, size:password_len
      * @param password_len the length of `password`
      */
@@ -2131,46 +2208,18 @@ public final class libecc {
     );
 
     /**
-     * Same as calling CreateRegistrationResponse with a specific oprf_seed.
-     * 
-     * In order to make this method not to use dynamic memory allocation, there is a
-     * limit of credential_identifier_len
-     * <
-     * = 200.
-     *
-     * @param response (output) size:ecc_opaque_ristretto255_sha512_REGISTRATIONRESPONSESIZE
-     * @param request size:ecc_opaque_ristretto255_sha512_REGISTRATIONREQUESTSIZE
-     * @param server_public_key size:ecc_opaque_ristretto255_sha512_Npk
-     * @param credential_identifier size:credential_identifier_len
-     * @param credential_identifier_len the length of `credential_identifier`
-     * @param oprf_key size:32
-     */
-    public static native void ecc_opaque_ristretto255_sha512_CreateRegistrationResponseWithOprfKey(
-        byte[] response,
-        byte[] request,
-        byte[] server_public_key,
-        byte[] credential_identifier,
-        int credential_identifier_len,
-        byte[] oprf_key
-    );
-
-    /**
-     * In order to make this method not to use dynamic memory allocation, there is a
-     * limit of credential_identifier_len
-     * <
-     * = 200.
+     * To process the client's registration request, the server executes
+     * this function.
      *
      * @param response (output) a RegistrationResponse structure, size:ecc_opaque_ristretto255_sha512_REGISTRATIONRESPONSESIZE
-     * @param oprf_key (output) the per-client OPRF key known only to the server, size:ecc_opaque_ristretto255_sha512_Nsk
      * @param request a RegistrationRequest structure, size:ecc_opaque_ristretto255_sha512_REGISTRATIONREQUESTSIZE
      * @param server_public_key the server's public key, size:ecc_opaque_ristretto255_sha512_Npk
-     * @param credential_identifier an identifier that uniquely represents the credential being registered, size:credential_identifier_len
+     * @param credential_identifier an identifier that uniquely represents the credential, size:credential_identifier_len
      * @param credential_identifier_len the length of `credential_identifier`
-     * @param oprf_seed the server-side seed of Nh bytes used to generate an oprf_key, size:ecc_opaque_ristretto255_sha512_Nh
+     * @param oprf_seed the seed of Nh bytes used by the server to generate an oprf_key, size:ecc_opaque_ristretto255_sha512_Nh
      */
     public static native void ecc_opaque_ristretto255_sha512_CreateRegistrationResponse(
         byte[] response,
-        byte[] oprf_key,
         byte[] request,
         byte[] server_public_key,
         byte[] credential_identifier,
@@ -2179,18 +2228,14 @@ public final class libecc {
     );
 
     /**
-     * Same as calling `ecc_opaque_ristretto255_sha512_FinalizeRequest` with an
+     * Same as calling `ecc_opaque_ristretto255_sha512_FinalizeRegistrationRequest` with an
      * specified `nonce`.
-     * 
-     * To create the user record used for further authentication, the client
-     * executes the following function. Since this works in the internal key mode, the
-     * "client_private_key" is null.
      *
-     * @param record (output) a RegistrationUpload structure, size:ecc_opaque_ristretto255_sha512_REGISTRATIONUPLOADSIZE
+     * @param record (output) a RegistrationUpload structure, size:ecc_opaque_ristretto255_sha512_REGISTRATIONRECORDSIZE
      * @param export_key (output) an additional client key, size:ecc_opaque_ristretto255_sha512_Nh
      * @param password an opaque byte string containing the client's password, size:password_len
      * @param password_len the length of `password`
-     * @param blind the OPRF scalar value used for blinding, size:ecc_opaque_ristretto255_sha512_Noe
+     * @param blind an OPRF scalar value, size:ecc_opaque_ristretto255_sha512_Ns
      * @param response a RegistrationResponse structure, size:ecc_opaque_ristretto255_sha512_REGISTRATIONRESPONSESIZE
      * @param server_identity the optional encoded server identity, size:server_identity_len
      * @param server_identity_len the length of `server_identity`
@@ -2199,7 +2244,7 @@ public final class libecc {
      * @param mhf the memory hard function to use
      * @param nonce size:ecc_opaque_ristretto255_sha512_Nn
      */
-    public static native void ecc_opaque_ristretto255_sha512_FinalizeRequestWithNonce(
+    public static native void ecc_opaque_ristretto255_sha512_FinalizeRegistrationRequestWithNonce(
         byte[] record,
         byte[] export_key,
         byte[] password,
@@ -2215,15 +2260,14 @@ public final class libecc {
     );
 
     /**
-     * To create the user record used for further authentication, the client
-     * executes the following function. Since this works in the internal key mode, the
-     * "client_private_key" is null.
+     * To create the user record used for subsequent authentication and complete the
+     * registration flow, the client executes the following function.
      *
-     * @param record (output) a RegistrationUpload structure, size:ecc_opaque_ristretto255_sha512_REGISTRATIONUPLOADSIZE
+     * @param record (output) a RegistrationUpload structure, size:ecc_opaque_ristretto255_sha512_REGISTRATIONRECORDSIZE
      * @param export_key (output) an additional client key, size:ecc_opaque_ristretto255_sha512_Nh
      * @param password an opaque byte string containing the client's password, size:password_len
      * @param password_len the length of `password`
-     * @param blind the OPRF scalar value used for blinding, size:ecc_opaque_ristretto255_sha512_Noe
+     * @param blind an OPRF scalar value, size:ecc_opaque_ristretto255_sha512_Ns
      * @param response a RegistrationResponse structure, size:ecc_opaque_ristretto255_sha512_REGISTRATIONRESPONSESIZE
      * @param server_identity the optional encoded server identity, size:server_identity_len
      * @param server_identity_len the length of `server_identity`
@@ -2231,7 +2275,7 @@ public final class libecc {
      * @param client_identity_len the length of `client_identity`
      * @param mhf the memory hard function to use
      */
-    public static native void ecc_opaque_ristretto255_sha512_FinalizeRequest(
+    public static native void ecc_opaque_ristretto255_sha512_FinalizeRegistrationRequest(
         byte[] record,
         byte[] export_key,
         byte[] password,
@@ -2246,12 +2290,12 @@ public final class libecc {
     );
 
     /**
-     * 
+     *
      *
      * @param request (output) a CredentialRequest structure, size:ecc_opaque_ristretto255_sha512_CREDENTIALREQUESTSIZE
      * @param password an opaque byte string containing the client's password, size:password_len
      * @param password_len the length of `password`
-     * @param blind an OPRF scalar value, size:ecc_opaque_ristretto255_sha512_Noe
+     * @param blind an OPRF scalar value, size:ecc_opaque_ristretto255_sha512_Ns
      */
     public static native void ecc_opaque_ristretto255_sha512_CreateCredentialRequestWithBlind(
         byte[] request,
@@ -2261,10 +2305,10 @@ public final class libecc {
     );
 
     /**
-     * 
+     *
      *
      * @param request (output) a CredentialRequest structure, size:ecc_opaque_ristretto255_sha512_CREDENTIALREQUESTSIZE
-     * @param blind (output) an OPRF scalar value, size:ecc_opaque_ristretto255_sha512_Noe
+     * @param blind (output) an OPRF scalar value, size:ecc_opaque_ristretto255_sha512_Ns
      * @param password an opaque byte string containing the client's password, size:password_len
      * @param password_len the length of `password`
      */
@@ -2280,16 +2324,16 @@ public final class libecc {
      * limit of credential_identifier_len
      * <
      * = 200.
-     * 
+     *
      * There are two scenarios to handle for the construction of a
      * CredentialResponse object: either the record for the client exists
      * (corresponding to a properly registered client), or it was never
      * created (corresponding to a client that has yet to register).
-     * 
+     *
      * In the case of a record that does not exist, the server SHOULD invoke
      * the CreateCredentialResponse function where the record argument is
      * configured so that:
-     * 
+     *
      * - record.masking_key is set to a random byte string of length Nh, and
      * - record.envelope is set to the byte string consisting only of
      * zeros, of length Ne
@@ -2297,7 +2341,7 @@ public final class libecc {
      * @param response_raw (output) size:ecc_opaque_ristretto255_sha512_CREDENTIALRESPONSESIZE
      * @param request_raw size:ecc_opaque_ristretto255_sha512_CREDENTIALREQUESTSIZE
      * @param server_public_key size:ecc_opaque_ristretto255_sha512_Npk
-     * @param record_raw size:ecc_opaque_ristretto255_sha512_REGISTRATIONUPLOADSIZE
+     * @param record_raw size:ecc_opaque_ristretto255_sha512_REGISTRATIONRECORDSIZE
      * @param credential_identifier size:credential_identifier_len
      * @param credential_identifier_len the length of `credential_identifier`
      * @param oprf_seed size:ecc_opaque_ristretto255_sha512_Nh
@@ -2319,16 +2363,16 @@ public final class libecc {
      * limit of credential_identifier_len
      * <
      * = 200.
-     * 
+     *
      * There are two scenarios to handle for the construction of a
      * CredentialResponse object: either the record for the client exists
      * (corresponding to a properly registered client), or it was never
      * created (corresponding to a client that has yet to register).
-     * 
+     *
      * In the case of a record that does not exist, the server SHOULD invoke
      * the CreateCredentialResponse function where the record argument is
      * configured so that:
-     * 
+     *
      * - record.masking_key is set to a random byte string of length Nh, and
      * - record.envelope is set to the byte string consisting only of
      * zeros, of length Ne
@@ -2336,7 +2380,7 @@ public final class libecc {
      * @param response_raw (output) size:ecc_opaque_ristretto255_sha512_CREDENTIALRESPONSESIZE
      * @param request_raw size:ecc_opaque_ristretto255_sha512_CREDENTIALREQUESTSIZE
      * @param server_public_key size:ecc_opaque_ristretto255_sha512_Npk
-     * @param record_raw size:ecc_opaque_ristretto255_sha512_REGISTRATIONUPLOADSIZE
+     * @param record_raw size:ecc_opaque_ristretto255_sha512_REGISTRATIONRECORDSIZE
      * @param credential_identifier size:credential_identifier_len
      * @param credential_identifier_len the length of `credential_identifier`
      * @param oprf_seed size:ecc_opaque_ristretto255_sha512_Nh
@@ -2352,7 +2396,7 @@ public final class libecc {
     );
 
     /**
-     * 
+     *
      *
      * @param client_private_key (output) size:ecc_opaque_ristretto255_sha512_Nsk
      * @param server_public_key (output) size:ecc_opaque_ristretto255_sha512_Npk
@@ -2384,7 +2428,7 @@ public final class libecc {
     );
 
     /**
-     * 
+     *
      *
      * @param out (output) size:length
      * @param secret size:64
@@ -2405,7 +2449,7 @@ public final class libecc {
     );
 
     /**
-     * 
+     *
      *
      * @param out (output) size:ecc_opaque_ristretto255_sha512_Nx
      * @param secret size:64
@@ -2425,7 +2469,7 @@ public final class libecc {
 
     /**
      * The OPAQUE-3DH key schedule requires a preamble.
-     * 
+     *
      * OPAQUE-3DH can optionally include shared "context" information in the
      * transcript, such as configuration parameters or application-specific
      * info, e.g. "appXYZ-v1.2.3".
@@ -2482,7 +2526,7 @@ public final class libecc {
     );
 
     /**
-     * 
+     *
      *
      * @param km2 (output) size:64
      * @param km3 (output) size:64
@@ -2503,13 +2547,13 @@ public final class libecc {
     );
 
     /**
-     * 
+     *
      *
      * @param ke1 (output) a KE1 message structure, size:ecc_opaque_ristretto255_sha512_KE1SIZE
      * @param state (input, output) a ClientState structure, size:ecc_opaque_ristretto255_sha512_CLIENTSTATESIZE
      * @param password an opaque byte string containing the client's password, size:password_len
      * @param password_len the length of `password`
-     * @param blind size:ecc_opaque_ristretto255_sha512_Noe
+     * @param blind size:ecc_opaque_ristretto255_sha512_Ns
      * @param client_nonce size:ecc_opaque_ristretto255_sha512_Nn
      * @param client_secret size:ecc_opaque_ristretto255_sha512_Nsk
      * @param client_keyshare size:ecc_opaque_ristretto255_sha512_Npk
@@ -2526,7 +2570,7 @@ public final class libecc {
     );
 
     /**
-     * 
+     *
      *
      * @param ke1 (output) a KE1 message structure, size:ecc_opaque_ristretto255_sha512_KE1SIZE
      * @param state (input, output) a ClientState structure, size:ecc_opaque_ristretto255_sha512_CLIENTSTATESIZE
@@ -2541,14 +2585,12 @@ public final class libecc {
     );
 
     /**
-     * 
+     *
      *
      * @param ke3_raw (output) a KE3 message structure, size:ecc_opaque_ristretto255_sha512_KE3SIZE
      * @param session_key (output) the session's shared secret, size:64
      * @param export_key (output) an additional client key, size:64
-     * @param state_raw (input, output) a ClientState structure, size:ecc_opaque_ristretto255_sha512_CLIENTSTATESIZE
-     * @param password an opaque byte string containing the client's password, size:password_len
-     * @param password_len the length of `password`
+     * @param state (input, output) a ClientState structure, size:ecc_opaque_ristretto255_sha512_CLIENTSTATESIZE
      * @param client_identity the optional encoded client identity, which is set
      * to client_public_key if not specified, size:client_identity_len
      * @param client_identity_len the length of `client_identity`
@@ -2565,9 +2607,7 @@ public final class libecc {
         byte[] ke3_raw,
         byte[] session_key,
         byte[] export_key,
-        byte[] state_raw,
-        byte[] password,
-        int password_len,
+        byte[] state,
         byte[] client_identity,
         int client_identity_len,
         byte[] server_identity,
@@ -2579,7 +2619,7 @@ public final class libecc {
     );
 
     /**
-     * 
+     *
      *
      * @param ke1 (output) size:ecc_opaque_ristretto255_sha512_KE1SIZE
      * @param state (input, output) size:ecc_opaque_ristretto255_sha512_CLIENTSTATESIZE
@@ -2598,7 +2638,7 @@ public final class libecc {
     );
 
     /**
-     * 
+     *
      *
      * @param ke1 (output) size:ecc_opaque_ristretto255_sha512_KE1SIZE
      * @param state (input, output) size:ecc_opaque_ristretto255_sha512_CLIENTSTATESIZE
@@ -2611,7 +2651,7 @@ public final class libecc {
     );
 
     /**
-     * 
+     *
      *
      * @param ke3_raw (output) size:ecc_opaque_ristretto255_sha512_KE3SIZE
      * @param session_key (output) size:64
@@ -2643,7 +2683,7 @@ public final class libecc {
     );
 
     /**
-     * 
+     *
      *
      * @param ke2_raw (output) a KE2 structure, size:ecc_opaque_ristretto255_sha512_KE2SIZE
      * @param state_raw (input, output) a ServerState structure, size:ecc_opaque_ristretto255_sha512_SERVERSTATESIZE
@@ -2655,7 +2695,7 @@ public final class libecc {
      * @param client_identity the optional encoded server identity, which is set to
      * client_public_key if null, size:client_identity_len
      * @param client_identity_len the length of `client_identity`
-     * @param record_raw the client's RegistrationUpload structure, size:ecc_opaque_ristretto255_sha512_REGISTRATIONUPLOADSIZE
+     * @param record_raw the client's RegistrationUpload structure, size:ecc_opaque_ristretto255_sha512_REGISTRATIONRECORDSIZE
      * @param credential_identifier an identifier that uniquely represents the credential
      * being registered, size:credential_identifier_len
      * @param credential_identifier_len the length of `credential_identifier`
@@ -2691,7 +2731,7 @@ public final class libecc {
     );
 
     /**
-     * 
+     *
      *
      * @param ke2_raw (output) a KE2 structure, size:ecc_opaque_ristretto255_sha512_KE2SIZE
      * @param state_raw (input, output) a ServerState structure, size:ecc_opaque_ristretto255_sha512_SERVERSTATESIZE
@@ -2703,7 +2743,7 @@ public final class libecc {
      * @param client_identity the optional encoded server identity, which is set to
      * client_public_key if null, size:client_identity_len
      * @param client_identity_len the length of `client_identity`
-     * @param record_raw the client's RegistrationUpload structure, size:ecc_opaque_ristretto255_sha512_REGISTRATIONUPLOADSIZE
+     * @param record_raw the client's RegistrationUpload structure, size:ecc_opaque_ristretto255_sha512_REGISTRATIONRECORDSIZE
      * @param credential_identifier an identifier that uniquely represents the credential
      * being registered, size:credential_identifier_len
      * @param credential_identifier_len the length of `credential_identifier`
@@ -2731,21 +2771,21 @@ public final class libecc {
     );
 
     /**
-     * 
+     *
      *
      * @param session_key (output) the shared session secret if and only if KE3 is valid, size:64
-     * @param state_raw (input, output) a ServerState structure, size:ecc_opaque_ristretto255_sha512_SERVERSTATESIZE
-     * @param ke3_raw a KE3 structure, size:ecc_opaque_ristretto255_sha512_KE3SIZE
+     * @param state (input, output) a ServerState structure, size:ecc_opaque_ristretto255_sha512_SERVERSTATESIZE
+     * @param ke3 a KE3 structure, size:ecc_opaque_ristretto255_sha512_KE3SIZE
      * @return 0 if the user was authenticated, else -1
      */
     public static native int ecc_opaque_ristretto255_sha512_3DH_ServerFinish(
         byte[] session_key,
-        byte[] state_raw,
-        byte[] ke3_raw
+        byte[] state,
+        byte[] ke3
     );
 
     /**
-     * 
+     *
      *
      * @param ke2_raw (output) size:ecc_opaque_ristretto255_sha512_KE2SIZE
      * @param state_raw (input, output) size:ecc_opaque_ristretto255_sha512_SERVERSTATESIZE
@@ -2784,7 +2824,7 @@ public final class libecc {
     );
 
     /**
-     * 
+     *
      *
      * @param ke2_raw (output) size:ecc_opaque_ristretto255_sha512_KE2SIZE
      * @param state_raw (input, output) size:ecc_opaque_ristretto255_sha512_SERVERSTATESIZE
@@ -2943,7 +2983,7 @@ public final class libecc {
     /**
      * Generates a secret key `sk` deterministically from a secret
      * octet string `ikm`. The secret key is guaranteed to be nonzero.
-     * 
+     *
      * For security, `ikm` MUST be infeasible to guess, e.g., generated
      * by a trusted source of randomness and be at least 32 bytes long.
      *
@@ -3027,7 +3067,7 @@ public final class libecc {
     );
 
     /**
-     * 
+     *
      *
      * @param pks size:n*ecc_sign_eth_bls_PUBLICKEYSIZE
      * @param n the number of public keys in `pks`
@@ -3047,7 +3087,7 @@ public final class libecc {
     /**
      * Checks an aggregated signature over several (PK, message) pairs. The
      * messages are concatenated and in PASCAL-encoded form [size, chars].
-     * 
+     *
      * In order to keep the API simple, the maximum length of a message is 255.
      *
      * @param n number of pairs
@@ -3088,13 +3128,13 @@ public final class libecc {
     public static final int ecc_frost_ristretto255_sha512_POINTSIZE = 64;
 
     /**
-     * *
+     *
      *
      */
     public static final int ecc_frost_ristretto255_sha512_COMMITMENTSIZE = 96;
 
     /**
-     * *
+     *
      *
      */
     public static final int ecc_frost_ristretto255_sha512_BINDINGFACTORSIZE = 64;
@@ -3132,7 +3172,7 @@ public final class libecc {
     public static final int ecc_frost_ristretto255_sha512_NONCECOMMITMENTPAIRSIZE = 64;
 
     /**
-     * 
+     *
      *
      * @param nonce (output) size:ecc_frost_ristretto255_sha512_SCALARSIZE
      * @param secret size:ecc_frost_ristretto255_sha512_SCALARSIZE
@@ -3145,7 +3185,7 @@ public final class libecc {
     );
 
     /**
-     * 
+     *
      *
      * @param nonce (output) size:ecc_frost_ristretto255_sha512_SCALARSIZE
      * @param secret size:ecc_frost_ristretto255_sha512_SCALARSIZE
@@ -3283,7 +3323,7 @@ public final class libecc {
     );
 
     /**
-     * 
+     *
      *
      * @param nonce (output) a nonce pair, size:ecc_frost_ristretto255_sha512_NONCEPAIRSIZE
      * @param comm (output) a nonce commitment pair, size:ecc_frost_ristretto255_sha512_NONCECOMMITMENTPAIRSIZE
@@ -3300,7 +3340,7 @@ public final class libecc {
     );
 
     /**
-     * 
+     *
      *
      * @param nonce (output) a nonce pair, size:ecc_frost_ristretto255_sha512_NONCEPAIRSIZE
      * @param comm (output) a nonce commitment pair, size:ecc_frost_ristretto255_sha512_NONCECOMMITMENTPAIRSIZE
@@ -3403,7 +3443,7 @@ public final class libecc {
 
     /**
      * Map arbitrary inputs to non-zero Scalar elements of the prime-order group scalar field.
-     * 
+     *
      * This is a variant of H2 that folds internally all inputs in the same
      * hash calculation.
      *
@@ -3436,7 +3476,7 @@ public final class libecc {
 
     /**
      * Map arbitrary inputs to non-zero Scalar elements of the prime-order group scalar field.
-     * 
+     *
      * This is a variant of H2 that folds internally all inputs in the same
      * hash calculation.
      *
@@ -3475,7 +3515,7 @@ public final class libecc {
     /**
      * This is an alias for the ciphersuite hash function with
      * domain separation applied.
-     * 
+     *
      * This is a variant of H3 that folds internally all inputs in the same
      * hash calculation.
      *
@@ -3551,7 +3591,7 @@ public final class libecc {
     );
 
     /**
-     * 
+     *
      *
      * @param participant_private_keys (output) MAX_PARTICIPANTS shares of the secret key s, each a tuple consisting of the participant identifier (a NonZeroScalar) and the key share (a Scalar), size:n*ecc_frost_ristretto255_sha512_POINTSIZE
      * @param group_public_key (output) public key corresponding to the group signing key, an Element, size:ecc_frost_ristretto255_sha512_ELEMENTSIZE
@@ -3745,7 +3785,7 @@ public final class libecc {
 
     /**
      * Generates a random message suitable to use in the protocol.
-     * 
+     *
      * The output can be used in other key derivation algorithms for other
      * symmetric encryption protocols.
      *
@@ -3808,7 +3848,7 @@ public final class libecc {
     /**
      * Encrypt a message `m` to delegatee j, given j’s public key (pk_j) and the
      * sender i’s signing key pair (spk_i, ssk_i). Produces a ciphertext C_j.
-     * 
+     *
      * This is also called encryption of level 1, since it's used to encrypt to
      * itself (i.e j == i), in order to have later the ciphertext re-encrypted
      * by the proxy with the re-encryption key (level 2).
@@ -3832,7 +3872,7 @@ public final class libecc {
     /**
      * Encrypt a message `m` to delegatee j, given j’s public key (pk_j) and the
      * sender i’s signing key pair (spk_i, ssk_i). Produces a ciphertext C_j.
-     * 
+     *
      * This is also called encryption of level 1, since it's used to encrypt to
      * itself (i.e j == i), in order to have later the ciphertext re-encrypted
      * by the proxy with the re-encryption key (level 2).
@@ -3853,7 +3893,7 @@ public final class libecc {
 
     /**
      * Generate a re-encryption key from user i (the delegator) to user j (the delegatee).
-     * 
+     *
      * Requires the delegator’s private key (sk_i), the delegatee’s public key (pk_j), and
      * the delegator’s signing key pair (spk_i, ssk_i).
      *
@@ -3875,10 +3915,10 @@ public final class libecc {
      * Re-encrypt a ciphertext encrypted to i (C_i) into a ciphertext encrypted
      * to j (C_j), given a re-encryption key (tk_i_j) and the proxy’s signing key
      * pair (spk, ssk).
-     * 
+     *
      * This operation is performed by the proxy and is also called encryption of
      * level 2, since it takes a ciphertext from a level 1 and re-encrypt it.
-     * 
+     *
      * It also validate the signature on the encrypted ciphertext and re-encryption key.
      *
      * @param C_j_raw (output) a CiphertextLevel2_t structure, size:ecc_pre_schema1_CIPHERTEXTLEVEL2SIZE
@@ -3903,10 +3943,10 @@ public final class libecc {
     /**
      * Decrypt a signed ciphertext (C_i) given the private key of the recipient
      * i (sk_i). Returns the original message that was encrypted, m.
-     * 
+     *
      * This operations is usually performed by the delegator, since it encrypted
      * the message just to be stored and later be re-encrypted by the proxy.
-     * 
+     *
      * It also validate the signature on the encrypted ciphertext.
      *
      * @param m (output) the original plaintext message, size:ecc_pre_schema1_MESSAGESIZE
@@ -3925,10 +3965,10 @@ public final class libecc {
     /**
      * Decrypt a signed ciphertext (C_j) given the private key of the recipient
      * j (sk_j). Returns the original message that was encrypted, m.
-     * 
+     *
      * This operations is usually performed by the delegatee, since it is the proxy
      * that re-encrypt the message and send the ciphertext to the final recipient.
-     * 
+     *
      * It also validate the signature on the encrypted ciphertext.
      *
      * @param m (output) the original plaintext message, size:ecc_pre_schema1_MESSAGESIZE

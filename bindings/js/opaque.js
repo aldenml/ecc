@@ -81,11 +81,9 @@ export async function opaque_ristretto255_sha512_CreateRegistrationResponse(
     const libecc = await libecc_module();
 
     let response_raw = new Uint8Array(64);
-    let oprf_key = new Uint8Array(32);
 
     await libecc.ecc_opaque_ristretto255_sha512_CreateRegistrationResponse(
         response_raw,
-        oprf_key,
         request_raw,
         server_public_key,
         credential_identifier, credential_identifier.length,
@@ -94,7 +92,6 @@ export async function opaque_ristretto255_sha512_CreateRegistrationResponse(
 
     return {
         response: response_raw,
-        oprf_key: oprf_key,
     };
 }
 
@@ -127,7 +124,7 @@ export async function opaque_ristretto255_sha512_FinalizeRequest(
     let record_raw = new Uint8Array(192);
     let export_key = new Uint8Array(64);
 
-    await libecc.ecc_opaque_ristretto255_sha512_FinalizeRequest(
+    await libecc.ecc_opaque_ristretto255_sha512_FinalizeRegistrationRequest(
         record_raw,
         export_key,
         password, password.length,
@@ -182,7 +179,6 @@ export async function opaque_ristretto255_sha512_3DH_ClientInit(
  */
 export async function opaque_ristretto255_sha512_3DH_ClientFinish(
     state_raw,
-    password,
     client_identity,
     server_identity,
     ke2_raw,
@@ -201,7 +197,6 @@ export async function opaque_ristretto255_sha512_3DH_ClientFinish(
         session_key,
         export_key,
         state_raw,
-        password, password.length,
         client_identity, client_identity.length,
         server_identity, server_identity.length,
         ke2_raw,

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2022, Alden Torres
+ * Copyright (c) 2021-2023, Alden Torres
  *
  * Licensed under the terms of the MIT license.
  * Copy of the license at https://opensource.org/licenses/MIT
@@ -138,7 +138,7 @@ static void test_opaque_ristretto255_sha512(void **state) {
         ecc_json_hex(outputs_registration_response, &outputs_registration_response_len, item, "outputs.registration_response");
         ecc_log("outputs_registration_response", outputs_registration_response, outputs_registration_response_len);
 
-        byte_t outputs_registration_upload[ecc_opaque_ristretto255_sha512_REGISTRATIONUPLOADSIZE];
+        byte_t outputs_registration_upload[ecc_opaque_ristretto255_sha512_REGISTRATIONRECORDSIZE];
         int outputs_registration_upload_len;
         ecc_json_hex(outputs_registration_upload, &outputs_registration_upload_len, item, "outputs.registration_upload");
         ecc_log("outputs_registration_upload", outputs_registration_upload, outputs_registration_upload_len);
@@ -157,10 +157,8 @@ static void test_opaque_ristretto255_sha512(void **state) {
         assert_memory_equal(registration_request, outputs_registration_request, sizeof outputs_registration_request);
 
         byte_t registration_response[ecc_opaque_ristretto255_sha512_REGISTRATIONRESPONSESIZE];
-        byte_t oprf_key[32];
         ecc_opaque_ristretto255_sha512_CreateRegistrationResponse(
             registration_response,
-            oprf_key,
             registration_request,
             server_public_key,
             credential_identifier, credential_identifier_len,
@@ -168,9 +166,9 @@ static void test_opaque_ristretto255_sha512(void **state) {
         );
         assert_memory_equal(registration_response, outputs_registration_response, sizeof outputs_registration_response);
 
-        byte_t record[ecc_opaque_ristretto255_sha512_REGISTRATIONUPLOADSIZE];
+        byte_t record[ecc_opaque_ristretto255_sha512_REGISTRATIONRECORDSIZE];
         byte_t export_key[64];
-        ecc_opaque_ristretto255_sha512_FinalizeRequestWithNonce(
+        ecc_opaque_ristretto255_sha512_FinalizeRegistrationRequestWithNonce(
             record,
             export_key,
             password, password_len,
@@ -225,7 +223,6 @@ static void test_opaque_ristretto255_sha512(void **state) {
             client_session_key,
             export_key2,
             client_state,
-            password, password_len,
             client_identity, client_identity_len,
             server_identity, server_identity_len,
             ke2,
@@ -278,19 +275,17 @@ static void test_opaque_ristretto255_sha512_random1(void **state) {
     );
 
     byte_t registration_response[ecc_opaque_ristretto255_sha512_REGISTRATIONRESPONSESIZE];
-    byte_t oprf_key[32];
     ecc_opaque_ristretto255_sha512_CreateRegistrationResponse(
         registration_response,
-        oprf_key,
         registration_request,
         server_public_key,
         credential_identifier, sizeof credential_identifier,
         oprf_seed
     );
 
-    byte_t record[ecc_opaque_ristretto255_sha512_REGISTRATIONUPLOADSIZE];
+    byte_t record[ecc_opaque_ristretto255_sha512_REGISTRATIONRECORDSIZE];
     byte_t export_key[64];
-    ecc_opaque_ristretto255_sha512_FinalizeRequest(
+    ecc_opaque_ristretto255_sha512_FinalizeRegistrationRequest(
         record,
         export_key,
         password, sizeof password,
@@ -337,7 +332,6 @@ static void test_opaque_ristretto255_sha512_random1(void **state) {
         client_session_key,
         export_key2,
         client_state,
-        password, sizeof password,
         NULL, 0,
         NULL, 0,
         ke2,
