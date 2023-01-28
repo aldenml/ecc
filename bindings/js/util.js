@@ -1,11 +1,19 @@
 /*
- * Copyright (c) 2021, Alden Torres
+ * Copyright (c) 2021-2023, Alden Torres
  *
  * Licensed under the terms of the MIT license.
  * Copy of the license at https://opensource.org/licenses/MIT
  */
 
 import libecc_module from "./libecc.js";
+
+export const libecc_promise = libecc_module();
+
+export var libecc = null;
+
+libecc_promise.then((module) => {
+    libecc = module;
+});
 
 /**
  * Converts a string into a byte array using UTF-8 encoding.
@@ -146,13 +154,10 @@ export function strxor(str1, str2) {
  * Returns a buffer of length `n` with an unpredictable sequence of bytes.
  *
  * @param {number} n the length of the buffer to return
- * @return {Promise<Uint8Array>} the buffer with random elements
+ * @return {Uint8Array} the buffer with random elements
  */
-export async function randombytes(n) {
-    const libecc = await libecc_module();
-
+export function randombytes(n) {
     const buf = new Uint8Array(n);
-    await libecc.ecc_randombytes(buf, n);
-
+    libecc.ecc_randombytes(buf, n);
     return buf;
 }

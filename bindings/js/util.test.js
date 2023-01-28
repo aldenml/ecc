@@ -8,13 +8,32 @@
 import libecc_module from "./libecc.js";
 import * as util from "./util.js";
 import assert from "assert";
+import {
+    libecc_promise,
+    libecc,
+    randombytes,
+} from "./util.js";
 
 describe("util",() => {
 
-    it("ecc_randombytes_test", async () => {
-        const libecc = await libecc_module();
+    it("test_ecc_randombytes", async () => {
+        await libecc_promise;
         let buf = new Uint8Array(10);
         libecc.ecc_randombytes(buf, buf.length);
+        let count = 0;
+        for (let i = 0; i < buf.length; i++) {
+            if (buf[i] === 0) {
+                count++;
+            }
+        }
+        // what are the odds of having more than one 0 in a random of 10 elements
+        assert.strictEqual(count < 2, true);
+    });
+
+    it("test_randombytes", async () => {
+        await libecc_promise;
+
+        let buf = randombytes(10);
         let count = 0;
         for (let i = 0; i < buf.length; i++) {
             if (buf[i] === 0) {
