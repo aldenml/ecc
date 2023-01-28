@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2022, Alden Torres
+ * Copyright (c) 2021-2023, Alden Torres
  *
  * Licensed under the terms of the MIT license.
  * Copy of the license at https://opensource.org/licenses/MIT
@@ -42,6 +42,7 @@
 #define Npk ecc_opaque_ristretto255_sha512_Npk // 32
 #define Nsk ecc_opaque_ristretto255_sha512_Nsk // 32
 #define Noe ecc_opaque_ristretto255_sha512_Noe // 32
+// #define Ns ecc_opaque_ristretto255_sha512_Ns // 32
 #define Nok ecc_opaque_ristretto255_sha512_Nok // 32
 #define Ne ecc_opaque_ristretto255_sha512_Ne // 96
 #define Nseed Nn // 32
@@ -49,9 +50,9 @@
 typedef struct {
     byte_t server_public_key[Npk];
     byte_t server_identity[ecc_opaque_ristretto255_sha512_IDENTITYMAXSIZE];
-    int server_identity_len;
+    byte_t server_identity_len;
     byte_t client_identity[ecc_opaque_ristretto255_sha512_IDENTITYMAXSIZE];
-    int client_identity_len;
+    byte_t client_identity_len;
 } CleartextCredentials_t;
 
 typedef struct {
@@ -60,11 +61,11 @@ typedef struct {
 } Envelope_t;
 
 typedef struct {
-    byte_t data[Noe];
+    byte_t blinded_message[Noe];
 } RegistrationRequest_t;
 
 typedef struct {
-    byte_t data[Noe];
+    byte_t evaluated_message[Noe];
     byte_t server_public_key[Npk];
 } RegistrationResponse_t;
 
@@ -96,10 +97,6 @@ typedef struct {
 } AuthResponse_t;
 
 typedef struct {
-    byte_t client_mac[Nm];
-} AuthFinish_t;
-
-typedef struct {
     CredentialRequest_t credential_request;
     AuthInit_t auth_init;
 } KE1_t;
@@ -110,13 +107,19 @@ typedef struct {
 } KE2_t;
 
 typedef struct {
-    AuthFinish_t auth_finish;
+    byte_t client_mac[Nm];
 } KE3_t;
 
 typedef struct {
-    byte_t blind[Nok];
     byte_t client_secret[Nsk];
     KE1_t ke1;
+} ClientAkeState_t;
+
+typedef struct {
+    byte_t password[ecc_opaque_ristretto255_sha512_PASSWORDMAXSIZE];
+    byte_t password_len;
+    byte_t blind[Nok];
+    ClientAkeState_t client_ake_state;
 } ClientState_t;
 
 typedef struct {
@@ -124,11 +127,14 @@ typedef struct {
     byte_t session_key[Nx];
 } ServerState_t;
 
+static_assert(ecc_opaque_ristretto255_sha512_Noe == ecc_ristretto255_ELEMENTSIZE, "");
+static_assert(ecc_opaque_ristretto255_sha512_Ns == ecc_ristretto255_SCALARSIZE, "");
+
 static_assert(
     ecc_opaque_ristretto255_sha512_CLEARTEXTCREDENTIALSSIZE ==
     ecc_opaque_ristretto255_sha512_Npk +
-    ecc_opaque_ristretto255_sha512_IDENTITYMAXSIZE + 4 +
-    ecc_opaque_ristretto255_sha512_IDENTITYMAXSIZE + 4,
+    ecc_opaque_ristretto255_sha512_IDENTITYMAXSIZE + 1 +
+    ecc_opaque_ristretto255_sha512_IDENTITYMAXSIZE + 1,
     "");
 static_assert(
     ecc_opaque_ristretto255_sha512_REGISTRATIONREQUESTSIZE ==
@@ -140,7 +146,7 @@ static_assert(
     ecc_opaque_ristretto255_sha512_Npk,
     "");
 static_assert(
-    ecc_opaque_ristretto255_sha512_REGISTRATIONUPLOADSIZE ==
+    ecc_opaque_ristretto255_sha512_REGISTRATIONRECORDSIZE ==
     ecc_opaque_ristretto255_sha512_Npk +
     ecc_opaque_ristretto255_sha512_Nh +
     ecc_opaque_ristretto255_sha512_Ne,
@@ -175,6 +181,7 @@ static_assert(
     "");
 static_assert(
     ecc_opaque_ristretto255_sha512_CLIENTSTATESIZE ==
+    ecc_opaque_ristretto255_sha512_PASSWORDMAXSIZE + 1 +
     ecc_opaque_ristretto255_sha512_Nok +
     ecc_opaque_ristretto255_sha512_Nsk +
     ecc_opaque_ristretto255_sha512_KE1SIZE,
@@ -189,7 +196,7 @@ static_assert(sizeof(CleartextCredentials_t) == ecc_opaque_ristretto255_sha512_C
 static_assert(sizeof(Envelope_t) == ecc_opaque_ristretto255_sha512_Ne, "");
 static_assert(sizeof(RegistrationRequest_t) == ecc_opaque_ristretto255_sha512_REGISTRATIONREQUESTSIZE, "");
 static_assert(sizeof(RegistrationResponse_t) == ecc_opaque_ristretto255_sha512_REGISTRATIONRESPONSESIZE, "");
-static_assert(sizeof(RegistrationUpload_t) == ecc_opaque_ristretto255_sha512_REGISTRATIONUPLOADSIZE, "");
+static_assert(sizeof(RegistrationUpload_t) == ecc_opaque_ristretto255_sha512_REGISTRATIONRECORDSIZE, "");
 static_assert(sizeof(CredentialRequest_t) == ecc_opaque_ristretto255_sha512_CREDENTIALREQUESTSIZE, "");
 static_assert(sizeof(CredentialResponse_t) == ecc_opaque_ristretto255_sha512_CREDENTIALRESPONSESIZE, "");
 static_assert(sizeof(KE1_t) == ecc_opaque_ristretto255_sha512_KE1SIZE, "");
@@ -250,25 +257,7 @@ void ecc_opaque_ristretto255_sha512_CreateCleartextCredentials(
     //    with (server_public_key, server_identity, client_identity)
     // 6. Output cleartext_credentials
 
-#ifdef __GNUC__
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wcast-align"
-#endif
-
-#ifdef __clang__
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wcast-align"
-#endif
-
     CleartextCredentials_t *cleartext_credentials = (CleartextCredentials_t *) cleartext_credentials_ptr;
-
-#ifdef __clang__
-#pragma clang diagnostic pop
-#endif
-
-#ifdef __GNUC__
-#pragma GCC diagnostic pop
-#endif
 
     if (server_identity == NULL || server_identity_len == 0) {
         server_identity = server_public_key;
@@ -281,9 +270,9 @@ void ecc_opaque_ristretto255_sha512_CreateCleartextCredentials(
 
     memcpy(cleartext_credentials->server_public_key, server_public_key, Npk);
     memcpy(cleartext_credentials->server_identity, server_identity, server_identity_len);
-    cleartext_credentials->server_identity_len = server_identity_len;
+    cleartext_credentials->server_identity_len = (byte_t) server_identity_len;
     memcpy(cleartext_credentials->client_identity, client_identity, client_identity_len);
-    cleartext_credentials->client_identity_len = client_identity_len;
+    cleartext_credentials->client_identity_len = (byte_t) client_identity_len;
 }
 
 void ecc_opaque_ristretto255_sha512_EnvelopeStoreWithNonce(
@@ -529,7 +518,7 @@ void ecc_opaque_ristretto255_sha512_RecoverPublicKey(
 void ecc_opaque_ristretto255_sha512_GenerateAuthKeyPair(
     byte_t *private_key, byte_t *public_key
 ) {
-    byte_t seed[32];
+    byte_t seed[Nseed];
     ecc_randombytes(seed, sizeof seed);
 
     ecc_opaque_ristretto255_sha512_DeriveAuthKeyPair(
@@ -582,44 +571,9 @@ void ecc_opaque_ristretto255_sha512_CreateRegistrationRequest(
     ecc_opaque_ristretto255_sha512_CreateRegistrationRequestWithBlind(request, password, password_len, blind);
 }
 
-void ecc_opaque_ristretto255_sha512_CreateRegistrationResponseWithOprfKey(
+void ecc_opaque_ristretto255_sha512_CreateRegistrationResponse(
     byte_t *response_ptr,
     const byte_t *request_ptr,
-    const byte_t *server_public_key,
-    const byte_t *credential_identifier, int credential_identifier_len,
-    const byte_t *oprf_key
-) {
-    ECC_UNUSED(credential_identifier);
-    ECC_UNUSED(credential_identifier_len);
-
-    // Steps:
-    // 1. ---
-    // 2. ---
-    // 3. Z = Evaluate(oprf_key, request.data, nil)
-    // 4. Create RegistrationResponse response with (Z, server_public_key)
-    // 5. Output (response, oprf_key)
-
-    const RegistrationRequest_t *request = (const RegistrationRequest_t *) request_ptr;
-    RegistrationResponse_t *response = (RegistrationResponse_t *) response_ptr;
-
-    // 3. Z = Evaluate(oprf_key, request.data)
-    byte_t *Z = response->data;
-    // TODO: review draft
-    ecc_voprf_ristretto255_sha512_BlindEvaluate(
-        Z,
-        oprf_key,
-        request->data
-    );
-
-    // 4. Create RegistrationResponse response with (Z, server_public_key)
-    // 5. Output (response, oprf_key)
-    memcpy(response->server_public_key, server_public_key, Npk);
-}
-
-void ecc_opaque_ristretto255_sha512_CreateRegistrationResponse(
-    byte_t *response,
-    byte_t *oprf_key,
-    const byte_t *request,
     const byte_t *server_public_key,
     const byte_t *credential_identifier, int credential_identifier_len,
     const byte_t *oprf_seed
@@ -645,10 +599,11 @@ void ecc_opaque_ristretto255_sha512_CreateRegistrationResponse(
     byte_t ikm[Nseed];
     ecc_kdf_hkdf_sha512_expand(ikm, oprf_seed, ikm_info, ikm_info_len, Nseed);
 #if ECC_LOG
-    ecc_log("ikm", ikm, sizeof ikm);
+    ecc_log("opaque:CreateRegistrationResponse:ikm", ikm, sizeof ikm);
 #endif
 
     // 2. (oprf_key, _) = DeriveKeyPair(ikm)
+    byte_t oprf_key[Nsk];
     byte_t ignore[Npk];
     ecc_opaque_ristretto255_sha512_DeriveKeyPair(
         oprf_key,
@@ -656,27 +611,35 @@ void ecc_opaque_ristretto255_sha512_CreateRegistrationResponse(
         ikm
     );
 #if ECC_LOG
-    ecc_log("oprf_key", oprf_key, 32);
+    ecc_log("opaque:CreateRegistrationResponse:oprf_key", oprf_key, 32);
 #endif
 
     // 3. Z = Evaluate(oprf_key, request.data, nil)
     // 4. Create RegistrationResponse response with (Z, server_public_key)
     // 5. Output (response, oprf_key)
-    ecc_opaque_ristretto255_sha512_CreateRegistrationResponseWithOprfKey(
-        response,
-        request,
-        server_public_key,
-        credential_identifier, credential_identifier_len,
-        oprf_key
+    const RegistrationRequest_t *request = (const RegistrationRequest_t *) request_ptr;
+    RegistrationResponse_t *response = (RegistrationResponse_t *) response_ptr;
+
+    // 3. Z = Evaluate(oprf_key, request.data)
+    byte_t *Z = response->evaluated_message;
+    ecc_voprf_ristretto255_sha512_BlindEvaluate(
+        Z,
+        oprf_key,
+        request->blinded_message
     );
+
+    // 4. Create RegistrationResponse response with (Z, server_public_key)
+    // 5. Output (response, oprf_key)
+    memcpy(response->server_public_key, server_public_key, Npk);
 
     // cleanup stack memory
     ecc_memzero(ikm_info, sizeof ikm_info);
     ecc_memzero(ikm, sizeof ikm);
+    ecc_memzero(oprf_key, sizeof oprf_key);
     ecc_memzero(ignore, sizeof ignore);
 }
 
-void ecc_opaque_ristretto255_sha512_FinalizeRequestWithNonce(
+void ecc_opaque_ristretto255_sha512_FinalizeRegistrationRequestWithNonce(
     byte_t *record_ptr, // RegistrationUpload_t
     byte_t *export_key, // 64
     const byte_t *password, const int password_len,
@@ -705,7 +668,7 @@ void ecc_opaque_ristretto255_sha512_FinalizeRequestWithNonce(
         y,
         password, password_len,
         blind,
-        response->data
+        response->evaluated_message
     );
 #if ECC_LOG
     ecc_log("opaque:FinalizeRequestWithNonce:response->data", response->data, sizeof response->data);
@@ -760,7 +723,7 @@ void ecc_opaque_ristretto255_sha512_FinalizeRequestWithNonce(
     ecc_memzero(masking_key, sizeof masking_key);
 }
 
-void ecc_opaque_ristretto255_sha512_FinalizeRequest(
+void ecc_opaque_ristretto255_sha512_FinalizeRegistrationRequest(
     byte_t *record, // RegistrationUpload_t
     byte_t *export_key, // 64
     const byte_t *password, const int password_len,
@@ -773,7 +736,7 @@ void ecc_opaque_ristretto255_sha512_FinalizeRequest(
     byte_t nonce[Nn];
     ecc_randombytes(nonce, Nn);
 
-    ecc_opaque_ristretto255_sha512_FinalizeRequestWithNonce(
+    ecc_opaque_ristretto255_sha512_FinalizeRegistrationRequestWithNonce(
         record,
         export_key,
         password, password_len,
@@ -791,7 +754,7 @@ void ecc_opaque_ristretto255_sha512_FinalizeRequest(
 
 void ecc_opaque_ristretto255_sha512_CreateCredentialRequestWithBlind(
     byte_t *request_ptr,
-    const byte_t *password, int password_len,
+    const byte_t *password, const int password_len,
     const byte_t *blind
 ) {
     // Steps:
@@ -871,7 +834,6 @@ void ecc_opaque_ristretto255_sha512_CreateCredentialResponseWithMasking(
 
     // 3. Z = Evaluate(oprf_key, request.data, nil)
     byte_t Z[32];
-    // TODO: review draft
     ecc_voprf_ristretto255_sha512_BlindEvaluate(
         Z,
         oprf_key,
@@ -1292,6 +1254,9 @@ void ecc_opaque_ristretto255_sha512_3DH_ClientInitWithSecrets(
         password, password_len,
         blind
     );
+
+    memcpy(state->password, password, password_len);
+    state->password_len = (byte_t) password_len;
     memcpy(state->blind, blind, Nok);
 
     // 3. ke1 = Start(request)
@@ -1326,6 +1291,9 @@ void ecc_opaque_ristretto255_sha512_3DH_ClientInit(
         password, password_len
     );
 
+    memcpy(state->password, password, password_len);
+    state->password_len = (byte_t) password_len;
+
     // 3. ke1 = Start(request)
     // 4. Output ke1
     ecc_opaque_ristretto255_sha512_3DH_Start(
@@ -1337,8 +1305,7 @@ int ecc_opaque_ristretto255_sha512_3DH_ClientFinish(
     byte_t *ke3_raw,
     byte_t *session_key,
     byte_t *export_key, // 64
-    byte_t *state_raw,
-    const byte_t *password, const int password_len,
+    byte_t *state_ptr,
     const byte_t *client_identity, const int client_identity_len,
     const byte_t *server_identity, const int server_identity_len,
     const byte_t *ke2_raw,
@@ -1354,7 +1321,7 @@ int ecc_opaque_ristretto255_sha512_3DH_ClientFinish(
     //                     server_public_key, ke1, ke2)
     // 3. Output (ke3, session_key)
 
-    ClientState_t *state = (ClientState_t *) state_raw;
+    ClientState_t *state = (ClientState_t *) state_ptr;
     const KE2_t *ke2 = (const KE2_t *) ke2_raw;
 
     // 1. (client_private_key, server_public_key, export_key) =
@@ -1366,7 +1333,7 @@ int ecc_opaque_ristretto255_sha512_3DH_ClientFinish(
         client_private_key,
         server_public_key,
         export_key,
-        password, password_len,
+        state->password, state->password_len,
         state->blind,
         (const byte_t *) &ke2->credential_response,
         server_identity, server_identity_len,
@@ -1380,7 +1347,7 @@ int ecc_opaque_ristretto255_sha512_3DH_ClientFinish(
     const int finalize_ret = ecc_opaque_ristretto255_sha512_3DH_ClientFinalize(
         ke3_raw,
         session_key,
-        state_raw,
+        state_ptr,
         client_identity, client_identity_len,
         client_private_key,
         server_identity, server_identity_len,
@@ -1426,9 +1393,9 @@ void ecc_opaque_ristretto255_sha512_3DH_StartWithSecrets(
 
     // 4. state.client_secret = client_secret
     // 5. Output (ke1, client_secret)
-    memcpy(state->client_secret, client_secret, 32);
+    memcpy(state->client_ake_state.client_secret, client_secret, 32);
     // save KE1 in the client state
-    memcpy(&state->ke1, ke1, sizeof(KE1_t));
+    memcpy(&state->client_ake_state.ke1, ke1, sizeof(KE1_t));
 }
 
 void ecc_opaque_ristretto255_sha512_3DH_Start(
@@ -1462,9 +1429,9 @@ void ecc_opaque_ristretto255_sha512_3DH_Start(
 
     // 4. state.client_secret = client_secret
     // 5. Output (ke1, client_secret)
-    memcpy(state->client_secret, client_secret, 32);
+    memcpy(state->client_ake_state.client_secret, client_secret, 32);
     // save KE1 in the client state
-    memcpy(&state->ke1, ke1, sizeof(KE1_t));
+    memcpy(&state->client_ake_state.ke1, ke1, sizeof(KE1_t));
 
     // cleanup stack memory
     ecc_memzero(client_nonce, sizeof client_nonce);
@@ -1503,8 +1470,8 @@ int ecc_opaque_ristretto255_sha512_3DH_ClientFinalize(
     byte_t ikm[96];
     ecc_opaque_ristretto255_sha512_3DH_TripleDHIKM(
         ikm,
-        state->client_secret, ke2->auth_response.server_keyshare,
-        state->client_secret, server_public_key,
+        state->client_ake_state.client_secret, ke2->auth_response.server_keyshare,
+        state->client_ake_state.client_secret, server_public_key,
         client_private_key, ke2->auth_response.server_keyshare
     );
 
@@ -1518,7 +1485,7 @@ int ecc_opaque_ristretto255_sha512_3DH_ClientFinalize(
         context, context_len,
         client_identity, client_identity_len,
         client_public_key,
-        (byte_t *) &state->ke1,
+        (byte_t *) &state->client_ake_state.ke1,
         server_identity, server_identity_len,
         server_public_key,
         (const byte_t *) ke2
@@ -1695,18 +1662,18 @@ void ecc_opaque_ristretto255_sha512_3DH_ServerInit(
 
 int ecc_opaque_ristretto255_sha512_3DH_ServerFinish(
     byte_t *session_key,
-    byte_t *state_raw,
-    const byte_t *ke3_raw
+    byte_t *state_ptr,
+    const byte_t *ke3_ptr
 ) {
     // Steps:
     // 1. if !ct_equal(ke3.client_mac, state.expected_client_mac):
     // 2.    raise HandshakeError
     // 3. Output state.session_key
 
-    ServerState_t *state = (ServerState_t *) state_raw;
-    const KE3_t *ke3 = (const KE3_t *) ke3_raw;
+    ServerState_t *state = (ServerState_t *) state_ptr;
+    const KE3_t *ke3 = (const KE3_t *) ke3_ptr;
 
-    if (ecc_compare(ke3->auth_finish.client_mac, state->expected_client_mac, Nh))
+    if (ecc_compare(ke3->client_mac, state->expected_client_mac, Nh))
         return -1;
 
     memcpy(session_key, state->session_key, 64);

@@ -62,7 +62,7 @@ Module.ecc_randombytes = (
 
 /**
  * Concatenates two byte arrays. Same as a || b.
- * 
+ *
  * a || b: denotes the concatenation of byte strings a and b. For
  * example, "ABC" || "DEF" == "ABCDEF".
  *
@@ -218,7 +218,7 @@ Module.ecc_strxor = (
 /**
  * I2OSP converts a non-negative integer to an octet string of a
  * specified length.
- * 
+ *
  * See https://datatracker.ietf.org/doc/html/rfc8017#section-4.1
  *
  * @param {Uint8Array} out (output) corresponding octet string of length xLen, size:xLen
@@ -243,11 +243,11 @@ Module.ecc_I2OSP = (
 /**
  * Takes two pointers to unsigned numbers encoded in little-endian
  * format and returns:
- * 
+ *
  * -1 if a is less than b
  * 0 if a is equals to b
  * 1 if a is greater than b
- * 
+ *
  * The comparison is done in constant time
  *
  * @param {Uint8Array} a first unsigned integer argument, size:len
@@ -313,7 +313,7 @@ Module.ecc_hash_sha512_HASHSIZE = ecc_hash_sha512_HASHSIZE;
 
 /**
  * Computes the SHA-256 of a given input.
- * 
+ *
  * See https://en.wikipedia.org/wiki/SHA-2
  *
  * @param {Uint8Array} digest (output) the SHA-256 of the input, size:ecc_hash_sha256_HASHSIZE
@@ -339,7 +339,7 @@ Module.ecc_hash_sha256 = (
 
 /**
  * Computes the SHA-512 of a given input.
- * 
+ *
  * See https://en.wikipedia.org/wiki/SHA-2
  *
  * @param {Uint8Array} digest (output) the SHA-512 of the input, size:ecc_hash_sha512_HASHSIZE
@@ -383,7 +383,7 @@ Module.ecc_mac_hmac_sha512_HASHSIZE = ecc_mac_hmac_sha512_HASHSIZE;
 
 /**
  * Computes the HMAC-SHA-256 of the input stream.
- * 
+ *
  * See https://datatracker.ietf.org/doc/html/rfc2104
  * See https://datatracker.ietf.org/doc/html/rfc4868
  *
@@ -418,7 +418,7 @@ Module.ecc_mac_hmac_sha256 = (
 
 /**
  * Computes the HMAC-SHA-512 of the input stream.
- * 
+ *
  * See https://datatracker.ietf.org/doc/html/rfc2104
  * See https://datatracker.ietf.org/doc/html/rfc4868
  *
@@ -471,7 +471,7 @@ Module.ecc_kdf_hkdf_sha512_KEYSIZE = ecc_kdf_hkdf_sha512_KEYSIZE;
 
 /**
  * Computes the HKDF-SHA-256 extract of the input using a key material.
- * 
+ *
  * See https://datatracker.ietf.org/doc/html/rfc5869
  *
  * @param {Uint8Array} prk (output) a pseudorandom key, size:ecc_kdf_hkdf_sha256_KEYSIZE
@@ -505,7 +505,7 @@ Module.ecc_kdf_hkdf_sha256_extract = (
 
 /**
  * Computes the HKDF-SHA-256 expand of the input using a key.
- * 
+ *
  * See https://datatracker.ietf.org/doc/html/rfc5869
  *
  * @param {Uint8Array} okm (output) output keying material of length `len`, size:len
@@ -539,7 +539,7 @@ Module.ecc_kdf_hkdf_sha256_expand = (
 
 /**
  * Computes the HKDF-SHA-512 extract of the input using a key material.
- * 
+ *
  * See https://datatracker.ietf.org/doc/html/rfc5869
  *
  * @param {Uint8Array} prk (output) a pseudorandom key, size:ecc_kdf_hkdf_sha512_KEYSIZE
@@ -573,7 +573,7 @@ Module.ecc_kdf_hkdf_sha512_extract = (
 
 /**
  * Computes the HKDF-SHA-512 expand of the input using a key.
- * 
+ *
  * See https://datatracker.ietf.org/doc/html/rfc5869
  *
  * @param {Uint8Array} okm (output) output keying material of length `len`, size:len
@@ -779,7 +779,7 @@ Module.ecc_ed25519_generator = (
  * Maps a 32 bytes vector r to a point, and stores its compressed
  * representation into p. The point is guaranteed to be on the main
  * subgroup.
- * 
+ *
  * This function directly exposes the Elligator 2 map. Uses the high
  * bit to set the sign of the X coordinate, and the resulting point is
  * multiplied by the cofactor.
@@ -983,7 +983,7 @@ Module.ecc_ed25519_scalar_mul = (
  * Reduces s to s mod L and puts the bytes representing the integer
  * into r where L = (2^252 + 27742317777372353535851937790883648493) is
  * the order of the group.
- * 
+ *
  * The interval `s` is sampled from should be at least 317 bits to
  * ensure almost uniformity of `r` over `L`.
  *
@@ -1008,11 +1008,11 @@ Module.ecc_ed25519_scalar_reduce = (
 /**
  * Multiplies a point p by a valid scalar n (clamped) and puts
  * the Y coordinate of the resulting point into q.
- * 
+ *
  * This function returns 0 on success, or -1 if n is 0 or if p is not
  * on the curve, not on the main subgroup, is a point of small order,
  * or is not provided in canonical form.
- * 
+ *
  * Note that n is "clamped" (the 3 low bits are cleared to make it a
  * multiple of the cofactor, bit 254 is set and bit 255 is cleared to
  * respect the original design). This prevents attacks using small
@@ -1047,7 +1047,7 @@ Module.ecc_ed25519_scalarmult = (
 /**
  * Multiplies the base point (x, 4/5) by a scalar n (clamped) and puts
  * the Y coordinate of the resulting point into q.
- * 
+ *
  * Note that n is "clamped" (the 3 low bits are cleared to make it a
  * multiple of the cofactor, bit 254 is set and bit 255 is cleared to
  * respect the original design). This prevents attacks using small
@@ -1185,7 +1185,7 @@ Module.ecc_ristretto255_sub = (
 }
 
 /**
- * 
+ *
  *
  * @param {Uint8Array} g (output) size:ecc_ristretto255_ELEMENTSIZE
  */
@@ -1403,7 +1403,7 @@ Module.ecc_ristretto255_scalar_mul = (
  * Reduces s to s mod L and puts the bytes integer into r where
  * L = 2^252 + 27742317777372353535851937790883648493 is the order
  * of the group.
- * 
+ *
  * The interval `s` is sampled from should be at least 317 bits to
  * ensure almost uniformity of `r` over `L`.
  *
@@ -1639,7 +1639,7 @@ Module.ecc_bls12_381_fp12_mul = (
 
 /**
  * This is a naive implementation of an iterative exponentiation by squaring.
- * 
+ *
  * NOTE: This method is not side-channel attack resistant on `n`, the algorithm
  * leaks information about it, don't use this if `n` is a secret.
  *
@@ -1681,7 +1681,7 @@ Module.ecc_bls12_381_fp12_random = (
 }
 
 /**
- * 
+ *
  *
  * @param {Uint8Array} r (output) size:ecc_bls12_381_G1SIZE
  * @param {Uint8Array} p size:ecc_bls12_381_G1SIZE
@@ -1707,7 +1707,7 @@ Module.ecc_bls12_381_g1_add = (
 }
 
 /**
- * 
+ *
  *
  * @param {Uint8Array} neg (output) size:ecc_bls12_381_G1SIZE
  * @param {Uint8Array} p size:ecc_bls12_381_G1SIZE
@@ -1728,7 +1728,7 @@ Module.ecc_bls12_381_g1_negate = (
 }
 
 /**
- * 
+ *
  *
  * @param {Uint8Array} g (output) size:ecc_bls12_381_G1SIZE
  */
@@ -1793,7 +1793,7 @@ Module.ecc_bls12_381_g1_scalarmult_base = (
 }
 
 /**
- * 
+ *
  *
  * @param {Uint8Array} r (output) size:ecc_bls12_381_G2SIZE
  * @param {Uint8Array} p size:ecc_bls12_381_G2SIZE
@@ -1819,7 +1819,7 @@ Module.ecc_bls12_381_g2_add = (
 }
 
 /**
- * 
+ *
  *
  * @param {Uint8Array} neg (output) size:ecc_bls12_381_G2SIZE
  * @param {Uint8Array} p size:ecc_bls12_381_G2SIZE
@@ -1840,7 +1840,7 @@ Module.ecc_bls12_381_g2_negate = (
 }
 
 /**
- * 
+ *
  *
  * @param {Uint8Array} g (output) size:ecc_bls12_381_G2SIZE
  */
@@ -1895,10 +1895,10 @@ Module.ecc_bls12_381_scalar_random = (
 
 /**
  * Evaluates a pairing of BLS12-381.
- * 
+ *
  * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-pairing-friendly-curves-09#section-2.2
  * See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-pairing-friendly-curves-09#section-2.4
- * 
+ *
  * G1 is a subgroup of E(GF(p)) of order r.
  * G2 is a subgroup of E'(GF(p^2)) of order r.
  * GT is a subgroup of a multiplicative group (GF(p^12))^* of order r.
@@ -1927,7 +1927,7 @@ Module.ecc_bls12_381_pairing = (
 }
 
 /**
- * 
+ *
  *
  * @param {Uint8Array} ret (output) size:ecc_bls12_381_FP12SIZE
  * @param {Uint8Array} p1_g1 size:ecc_bls12_381_G1SIZE
@@ -1953,7 +1953,7 @@ Module.ecc_bls12_381_pairing_miller_loop = (
 }
 
 /**
- * 
+ *
  *
  * @param {Uint8Array} ret (output) size:ecc_bls12_381_FP12SIZE
  * @param {Uint8Array} a size:ecc_bls12_381_FP12SIZE
@@ -2000,7 +2000,7 @@ Module.ecc_bls12_381_pairing_final_verify = (
 
 const ecc_h2c_expand_message_xmd_sha256_MAXSIZE = 8160;
 /**
- * *
+ *
  *
  * @type {number}
  */
@@ -2008,7 +2008,7 @@ Module.ecc_h2c_expand_message_xmd_sha256_MAXSIZE = ecc_h2c_expand_message_xmd_sh
 
 const ecc_h2c_expand_message_xmd_sha256_DSTMAXSIZE = 255;
 /**
- * *
+ *
  *
  * @type {number}
  */
@@ -2016,7 +2016,7 @@ Module.ecc_h2c_expand_message_xmd_sha256_DSTMAXSIZE = ecc_h2c_expand_message_xmd
 
 const ecc_h2c_expand_message_xmd_sha512_MAXSIZE = 16320;
 /**
- * *
+ *
  *
  * @type {number}
  */
@@ -2024,7 +2024,7 @@ Module.ecc_h2c_expand_message_xmd_sha512_MAXSIZE = ecc_h2c_expand_message_xmd_sh
 
 const ecc_h2c_expand_message_xmd_sha512_DSTMAXSIZE = 255;
 /**
- * *
+ *
  *
  * @type {number}
  */
@@ -2178,14 +2178,14 @@ Module.ecc_voprf_ristretto255_sha512_MODE_POPRF = ecc_voprf_ristretto255_sha512_
 
 const ecc_voprf_ristretto255_sha512_MAXINFOSIZE = 2000;
 /**
- * *
+ *
  *
  * @type {number}
  */
 Module.ecc_voprf_ristretto255_sha512_MAXINFOSIZE = ecc_voprf_ristretto255_sha512_MAXINFOSIZE;
 
 /**
- * 
+ *
  *
  * @param {Uint8Array} proof (output) size:ecc_voprf_ristretto255_sha512_PROOFSIZE
  * @param {Uint8Array} k size:ecc_voprf_ristretto255_sha512_SCALARSIZE
@@ -2237,7 +2237,7 @@ Module.ecc_voprf_ristretto255_sha512_GenerateProofWithScalar = (
 }
 
 /**
- * 
+ *
  *
  * @param {Uint8Array} proof (output) size:ecc_voprf_ristretto255_sha512_PROOFSIZE
  * @param {Uint8Array} k size:ecc_voprf_ristretto255_sha512_SCALARSIZE
@@ -2284,7 +2284,7 @@ Module.ecc_voprf_ristretto255_sha512_GenerateProof = (
 }
 
 /**
- * 
+ *
  *
  * @param {Uint8Array} M (output) size:ecc_voprf_ristretto255_sha512_ELEMENTSIZE
  * @param {Uint8Array} Z (output) size:ecc_voprf_ristretto255_sha512_ELEMENTSIZE
@@ -2332,7 +2332,7 @@ Module.ecc_voprf_ristretto255_sha512_ComputeCompositesFast = (
 }
 
 /**
- * 
+ *
  *
  * @param {Uint8Array} A size:ecc_voprf_ristretto255_sha512_ELEMENTSIZE
  * @param {Uint8Array} B size:ecc_voprf_ristretto255_sha512_ELEMENTSIZE
@@ -2375,7 +2375,7 @@ Module.ecc_voprf_ristretto255_sha512_VerifyProof = (
 }
 
 /**
- * 
+ *
  *
  * @param {Uint8Array} M (output) size:ecc_voprf_ristretto255_sha512_ELEMENTSIZE
  * @param {Uint8Array} Z (output) size:ecc_voprf_ristretto255_sha512_ELEMENTSIZE
@@ -2519,7 +2519,7 @@ Module.ecc_voprf_ristretto255_sha512_BlindWithScalar = (
 }
 
 /**
- * 
+ *
  *
  * @param {Uint8Array} blind (output) scalar used in the blind operation, size:ecc_voprf_ristretto255_sha512_SCALARSIZE
  * @param {Uint8Array} blindedElement (output) blinded element, size:ecc_voprf_ristretto255_sha512_ELEMENTSIZE
@@ -2554,7 +2554,7 @@ Module.ecc_voprf_ristretto255_sha512_Blind = (
 }
 
 /**
- * 
+ *
  *
  * @param {Uint8Array} evaluatedElement (output) blinded element, size:ecc_voprf_ristretto255_sha512_ELEMENTSIZE
  * @param {Uint8Array} skS scalar used in the blind operation, size:ecc_voprf_ristretto255_sha512_SCALARSIZE
@@ -2580,7 +2580,7 @@ Module.ecc_voprf_ristretto255_sha512_BlindEvaluate = (
 }
 
 /**
- * 
+ *
  *
  * @param {Uint8Array} output (output) size:ecc_voprf_ristretto255_sha512_Nh
  * @param {Uint8Array} input the input message, size:inputLen
@@ -2614,7 +2614,7 @@ Module.ecc_voprf_ristretto255_sha512_Finalize = (
 }
 
 /**
- * 
+ *
  *
  * @param {Uint8Array} output (output) size:ecc_voprf_ristretto255_sha512_Nh
  * @param {Uint8Array} skS size:ecc_voprf_ristretto255_sha512_SCALARSIZE
@@ -2648,7 +2648,7 @@ Module.ecc_voprf_ristretto255_sha512_Evaluate = (
 }
 
 /**
- * 
+ *
  *
  * @param {Uint8Array} evaluatedElement (output) size:ecc_voprf_ristretto255_sha512_ELEMENTSIZE
  * @param {Uint8Array} proof (output) size:ecc_voprf_ristretto255_sha512_PROOFSIZE
@@ -2690,7 +2690,7 @@ Module.ecc_voprf_ristretto255_sha512_VerifiableBlindEvaluateWithScalar = (
 }
 
 /**
- * 
+ *
  *
  * @param {Uint8Array} evaluatedElement (output) size:ecc_voprf_ristretto255_sha512_ELEMENTSIZE
  * @param {Uint8Array} proof (output) size:ecc_voprf_ristretto255_sha512_PROOFSIZE
@@ -2727,7 +2727,7 @@ Module.ecc_voprf_ristretto255_sha512_VerifiableBlindEvaluate = (
 }
 
 /**
- * 
+ *
  *
  * @param {Uint8Array} output (output) size:ecc_voprf_ristretto255_sha512_Nh
  * @param {Uint8Array} input the input message, size:inputLen
@@ -2778,7 +2778,7 @@ Module.ecc_voprf_ristretto255_sha512_VerifiableFinalize = (
 }
 
 /**
- * 
+ *
  *
  * @param {Uint8Array} blindedElement (output) blinded element, size:ecc_voprf_ristretto255_sha512_ELEMENTSIZE
  * @param {Uint8Array} tweakedKey (output) blinded element, size:ecc_voprf_ristretto255_sha512_ELEMENTSIZE
@@ -2830,7 +2830,7 @@ Module.ecc_voprf_ristretto255_sha512_PartiallyBlindWithScalar = (
 }
 
 /**
- * 
+ *
  *
  * @param {Uint8Array} blind (output) scalar used in the blind operation, size:ecc_voprf_ristretto255_sha512_SCALARSIZE
  * @param {Uint8Array} blindedElement (output) blinded element, size:ecc_voprf_ristretto255_sha512_ELEMENTSIZE
@@ -2883,7 +2883,7 @@ Module.ecc_voprf_ristretto255_sha512_PartiallyBlind = (
 }
 
 /**
- * 
+ *
  *
  * @param {Uint8Array} evaluatedElement (output) size:ecc_voprf_ristretto255_sha512_ELEMENTSIZE
  * @param {Uint8Array} proof (output) size:ecc_voprf_ristretto255_sha512_PROOFSIZE
@@ -2932,7 +2932,7 @@ Module.ecc_voprf_ristretto255_sha512_PartiallyBlindEvaluateWithScalar = (
 }
 
 /**
- * 
+ *
  *
  * @param {Uint8Array} evaluatedElement (output) size:ecc_voprf_ristretto255_sha512_ELEMENTSIZE
  * @param {Uint8Array} proof (output) size:ecc_voprf_ristretto255_sha512_PROOFSIZE
@@ -2976,7 +2976,7 @@ Module.ecc_voprf_ristretto255_sha512_PartiallyBlindEvaluate = (
 }
 
 /**
- * 
+ *
  *
  * @param {Uint8Array} output (output) size:ecc_voprf_ristretto255_sha512_Nh
  * @param {Uint8Array} input the input message, size:inputLen
@@ -3140,7 +3140,7 @@ Module.ecc_voprf_ristretto255_sha512_HashToGroup = (
 }
 
 /**
- * 
+ *
  *
  * @param {Uint8Array} out (output) size:ecc_voprf_ristretto255_sha512_SCALARSIZE
  * @param {Uint8Array} input size:inputLen
@@ -3172,7 +3172,7 @@ Module.ecc_voprf_ristretto255_sha512_HashToScalarWithDST = (
 }
 
 /**
- * 
+ *
  *
  * @param {Uint8Array} out (output) size:ecc_voprf_ristretto255_sha512_SCALARSIZE
  * @param {Uint8Array} input size:inputLen
@@ -3256,6 +3256,14 @@ const ecc_opaque_ristretto255_sha512_Noe = 32;
  */
 Module.ecc_opaque_ristretto255_sha512_Noe = ecc_opaque_ristretto255_sha512_Noe;
 
+const ecc_opaque_ristretto255_sha512_Ns = 32;
+/**
+ * The size of a serialized OPRF scalar.
+ *
+ * @type {number}
+ */
+Module.ecc_opaque_ristretto255_sha512_Ns = ecc_opaque_ristretto255_sha512_Ns;
+
 const ecc_opaque_ristretto255_sha512_Nok = 32;
 /**
  * The size of an OPRF private key.
@@ -3266,23 +3274,39 @@ Module.ecc_opaque_ristretto255_sha512_Nok = ecc_opaque_ristretto255_sha512_Nok;
 
 const ecc_opaque_ristretto255_sha512_Ne = 96;
 /**
- * Envelope size (Ne = Nn + Nm).
+ * <pre>
+ * struct {
+ *   uint8 nonce[Nn];
+ *   uint8 auth_tag[Nm];
+ * } Envelope;
+ * </pre>
+ *
+ * nonce: A unique nonce of length Nn, used to protect this Envelope.
+ * auth_tag: An authentication tag protecting the contents of the envelope, covering the envelope nonce and CleartextCredentials.
  *
  * @type {number}
  */
 Module.ecc_opaque_ristretto255_sha512_Ne = ecc_opaque_ristretto255_sha512_Ne;
 
+const ecc_opaque_ristretto255_sha512_PASSWORDMAXSIZE = 200;
+/**
+ * In order to avoid dynamic memory allocation, this limit is necessary.
+ *
+ * @type {number}
+ */
+Module.ecc_opaque_ristretto255_sha512_PASSWORDMAXSIZE = ecc_opaque_ristretto255_sha512_PASSWORDMAXSIZE;
+
 const ecc_opaque_ristretto255_sha512_IDENTITYMAXSIZE = 200;
 /**
- * *
+ * In order to avoid dynamic memory allocation, this limit is necessary.
  *
  * @type {number}
  */
 Module.ecc_opaque_ristretto255_sha512_IDENTITYMAXSIZE = ecc_opaque_ristretto255_sha512_IDENTITYMAXSIZE;
 
-const ecc_opaque_ristretto255_sha512_CLEARTEXTCREDENTIALSSIZE = 440;
+const ecc_opaque_ristretto255_sha512_CLEARTEXTCREDENTIALSSIZE = 434;
 /**
- * *
+ *
  *
  * @type {number}
  */
@@ -3290,7 +3314,13 @@ Module.ecc_opaque_ristretto255_sha512_CLEARTEXTCREDENTIALSSIZE = ecc_opaque_rist
 
 const ecc_opaque_ristretto255_sha512_REGISTRATIONREQUESTSIZE = 32;
 /**
- * *
+ * <pre>
+ * struct {
+ *   uint8 blinded_message[Noe];
+ * } RegistrationRequest;
+ * </pre>
+ *
+ * blinded_message: A serialized OPRF group element.
  *
  * @type {number}
  */
@@ -3298,23 +3328,41 @@ Module.ecc_opaque_ristretto255_sha512_REGISTRATIONREQUESTSIZE = ecc_opaque_ristr
 
 const ecc_opaque_ristretto255_sha512_REGISTRATIONRESPONSESIZE = 64;
 /**
- * *
+ * <pre>
+ * typedef struct {
+ *   uint8 evaluated_message[Noe];
+ *   uint8 server_public_key[Npk];
+ * } RegistrationResponse;
+ * </pre>
+ *
+ * evaluated_message: A serialized OPRF group element.
+ * server_public_key: The server's encoded public key that will be used for the online AKE stage.
  *
  * @type {number}
  */
 Module.ecc_opaque_ristretto255_sha512_REGISTRATIONRESPONSESIZE = ecc_opaque_ristretto255_sha512_REGISTRATIONRESPONSESIZE;
 
-const ecc_opaque_ristretto255_sha512_REGISTRATIONUPLOADSIZE = 192;
+const ecc_opaque_ristretto255_sha512_REGISTRATIONRECORDSIZE = 192;
 /**
- * *
+ * <pre>
+ * struct {
+ *   uint8 client_public_key[Npk];
+ *   uint8 masking_key[Nh];
+ *   Envelope envelope;
+ * } RegistrationRecord;
+ * </pre>
+ *
+ * client_public_key: The client's encoded public key, corresponding to the private key client_private_key.
+ * masking_key: An encryption key used by the server to preserve confidentiality of the envelope during login to defend against client enumeration attacks.
+ * envelope: The client's Envelope structure.
  *
  * @type {number}
  */
-Module.ecc_opaque_ristretto255_sha512_REGISTRATIONUPLOADSIZE = ecc_opaque_ristretto255_sha512_REGISTRATIONUPLOADSIZE;
+Module.ecc_opaque_ristretto255_sha512_REGISTRATIONRECORDSIZE = ecc_opaque_ristretto255_sha512_REGISTRATIONRECORDSIZE;
 
 const ecc_opaque_ristretto255_sha512_CREDENTIALREQUESTSIZE = 32;
 /**
- * *
+ *
  *
  * @type {number}
  */
@@ -3322,7 +3370,7 @@ Module.ecc_opaque_ristretto255_sha512_CREDENTIALREQUESTSIZE = ecc_opaque_ristret
 
 const ecc_opaque_ristretto255_sha512_CREDENTIALRESPONSESIZE = 192;
 /**
- * *
+ *
  *
  * @type {number}
  */
@@ -3330,7 +3378,15 @@ Module.ecc_opaque_ristretto255_sha512_CREDENTIALRESPONSESIZE = ecc_opaque_ristre
 
 const ecc_opaque_ristretto255_sha512_KE1SIZE = 96;
 /**
- * *
+ * <pre>
+ * struct {
+ *   CredentialRequest credential_request;
+ *   AuthRequest auth_request;
+ * } KE1;
+ * </pre>
+ *
+ * credential_request: A CredentialRequest structure.
+ * auth_request: An AuthRequest structure.
  *
  * @type {number}
  */
@@ -3338,7 +3394,15 @@ Module.ecc_opaque_ristretto255_sha512_KE1SIZE = ecc_opaque_ristretto255_sha512_K
 
 const ecc_opaque_ristretto255_sha512_KE2SIZE = 320;
 /**
- * *
+ * <pre>
+ * struct {
+ *   CredentialResponse credential_response;
+ *   AuthResponse auth_response;
+ * } KE2;
+ * </pre>
+ *
+ * credential_response: A CredentialResponse structure.
+ * auth_response: An AuthResponse structure.
  *
  * @type {number}
  */
@@ -3346,15 +3410,32 @@ Module.ecc_opaque_ristretto255_sha512_KE2SIZE = ecc_opaque_ristretto255_sha512_K
 
 const ecc_opaque_ristretto255_sha512_KE3SIZE = 64;
 /**
- * *
+ * <pre>
+ * struct {
+ *   uint8 client_mac[Nm];
+ * } KE3;
+ * </pre>
+ *
+ * client_mac: An authentication tag computed over the handshake transcript of fixed size Nm, computed using Km2.
  *
  * @type {number}
  */
 Module.ecc_opaque_ristretto255_sha512_KE3SIZE = ecc_opaque_ristretto255_sha512_KE3SIZE;
 
-const ecc_opaque_ristretto255_sha512_CLIENTSTATESIZE = 160;
+const ecc_opaque_ristretto255_sha512_CLIENTSTATESIZE = 361;
 /**
- * *
+ * <pre>
+ * struct {
+ *   uint8 password[PASSWORDMAXSIZE];
+ *   uint8 password_len;
+ *   uint8 blind[Nok];
+ *   ClientAkeState_t client_ake_state;
+ * } ClientState;
+ * </pre>
+ *
+ * password: The client's password.
+ * blind: The random blinding inverter returned by Blind().
+ * client_ake_state: a ClientAkeState structure.
  *
  * @type {number}
  */
@@ -3362,7 +3443,7 @@ Module.ecc_opaque_ristretto255_sha512_CLIENTSTATESIZE = ecc_opaque_ristretto255_
 
 const ecc_opaque_ristretto255_sha512_SERVERSTATESIZE = 128;
 /**
- * *
+ *
  *
  * @type {number}
  */
@@ -3389,7 +3470,7 @@ Module.ecc_opaque_ristretto255_sha512_MHF_SCRYPT = ecc_opaque_ristretto255_sha51
  *
  * @param {Uint8Array} private_key (output) a private key, size:ecc_opaque_ristretto255_sha512_Nsk
  * @param {Uint8Array} public_key (output) the associated public key, size:ecc_opaque_ristretto255_sha512_Npk
- * @param {Uint8Array} seed pseudo-random byte sequence used as a seed, size:ecc_opaque_ristretto255_sha512_Nok
+ * @param {Uint8Array} seed pseudo-random byte sequence used as a seed, size:ecc_opaque_ristretto255_sha512_Nn
  */
 Module.ecc_opaque_ristretto255_sha512_DeriveKeyPair = (
     private_key,
@@ -3398,7 +3479,7 @@ Module.ecc_opaque_ristretto255_sha512_DeriveKeyPair = (
 ) => {
     const ptr_private_key = mput(private_key, ecc_opaque_ristretto255_sha512_Nsk);
     const ptr_public_key = mput(public_key, ecc_opaque_ristretto255_sha512_Npk);
-    const ptr_seed = mput(seed, ecc_opaque_ristretto255_sha512_Nok);
+    const ptr_seed = mput(seed, ecc_opaque_ristretto255_sha512_Nn);
     _ecc_opaque_ristretto255_sha512_DeriveKeyPair(
         ptr_private_key,
         ptr_public_key,
@@ -3408,7 +3489,7 @@ Module.ecc_opaque_ristretto255_sha512_DeriveKeyPair = (
     mget(public_key, ptr_public_key, ecc_opaque_ristretto255_sha512_Npk);
     mfree(ptr_private_key, ecc_opaque_ristretto255_sha512_Nsk);
     mfree(ptr_public_key, ecc_opaque_ristretto255_sha512_Npk);
-    mfree(ptr_seed, ecc_opaque_ristretto255_sha512_Nok);
+    mfree(ptr_seed, ecc_opaque_ristretto255_sha512_Nn);
 }
 
 /**
@@ -3522,7 +3603,7 @@ Module.ecc_opaque_ristretto255_sha512_EnvelopeStoreWithNonce = (
 
 /**
  * Creates an "Envelope" at registration.
- * 
+ *
  * In order to work with stack allocated memory (i.e. fixed and not dynamic
  * allocation), it's necessary to add the restriction on length of the
  * identities to less than 200 bytes.
@@ -3663,7 +3744,7 @@ Module.ecc_opaque_ristretto255_sha512_RecoverPublicKey = (
 
 /**
  * Returns a randomly generated private and public key pair.
- * 
+ *
  * This is implemented by generating a random "seed", then
  * calling internally DeriveAuthKeyPair.
  *
@@ -3692,7 +3773,7 @@ Module.ecc_opaque_ristretto255_sha512_GenerateAuthKeyPair = (
  *
  * @param {Uint8Array} private_key (output) a private key, size:ecc_opaque_ristretto255_sha512_Nsk
  * @param {Uint8Array} public_key (output) the associated public key, size:ecc_opaque_ristretto255_sha512_Npk
- * @param {Uint8Array} seed pseudo-random byte sequence used as a seed, size:ecc_opaque_ristretto255_sha512_Nok
+ * @param {Uint8Array} seed pseudo-random byte sequence used as a seed, size:ecc_opaque_ristretto255_sha512_Nn
  */
 Module.ecc_opaque_ristretto255_sha512_DeriveAuthKeyPair = (
     private_key,
@@ -3701,7 +3782,7 @@ Module.ecc_opaque_ristretto255_sha512_DeriveAuthKeyPair = (
 ) => {
     const ptr_private_key = mput(private_key, ecc_opaque_ristretto255_sha512_Nsk);
     const ptr_public_key = mput(public_key, ecc_opaque_ristretto255_sha512_Npk);
-    const ptr_seed = mput(seed, ecc_opaque_ristretto255_sha512_Nok);
+    const ptr_seed = mput(seed, ecc_opaque_ristretto255_sha512_Nn);
     _ecc_opaque_ristretto255_sha512_DeriveAuthKeyPair(
         ptr_private_key,
         ptr_public_key,
@@ -3711,7 +3792,7 @@ Module.ecc_opaque_ristretto255_sha512_DeriveAuthKeyPair = (
     mget(public_key, ptr_public_key, ecc_opaque_ristretto255_sha512_Npk);
     mfree(ptr_private_key, ecc_opaque_ristretto255_sha512_Nsk);
     mfree(ptr_public_key, ecc_opaque_ristretto255_sha512_Npk);
-    mfree(ptr_seed, ecc_opaque_ristretto255_sha512_Nok);
+    mfree(ptr_seed, ecc_opaque_ristretto255_sha512_Nn);
 }
 
 /**
@@ -3720,7 +3801,7 @@ Module.ecc_opaque_ristretto255_sha512_DeriveAuthKeyPair = (
  * @param {Uint8Array} request (output) a RegistrationRequest structure, size:ecc_opaque_ristretto255_sha512_REGISTRATIONREQUESTSIZE
  * @param {Uint8Array} password an opaque byte string containing the client's password, size:password_len
  * @param {number} password_len the length of `password`
- * @param {Uint8Array} blind the OPRF scalar value to use, size:ecc_opaque_ristretto255_sha512_Noe
+ * @param {Uint8Array} blind the OPRF scalar value to use, size:ecc_opaque_ristretto255_sha512_Ns
  */
 Module.ecc_opaque_ristretto255_sha512_CreateRegistrationRequestWithBlind = (
     request,
@@ -3730,7 +3811,7 @@ Module.ecc_opaque_ristretto255_sha512_CreateRegistrationRequestWithBlind = (
 ) => {
     const ptr_request = mput(request, ecc_opaque_ristretto255_sha512_REGISTRATIONREQUESTSIZE);
     const ptr_password = mput(password, password_len);
-    const ptr_blind = mput(blind, ecc_opaque_ristretto255_sha512_Noe);
+    const ptr_blind = mput(blind, ecc_opaque_ristretto255_sha512_Ns);
     _ecc_opaque_ristretto255_sha512_CreateRegistrationRequestWithBlind(
         ptr_request,
         ptr_password,
@@ -3740,14 +3821,14 @@ Module.ecc_opaque_ristretto255_sha512_CreateRegistrationRequestWithBlind = (
     mget(request, ptr_request, ecc_opaque_ristretto255_sha512_REGISTRATIONREQUESTSIZE);
     mfree(ptr_request, ecc_opaque_ristretto255_sha512_REGISTRATIONREQUESTSIZE);
     mfree(ptr_password, password_len);
-    mfree(ptr_blind, ecc_opaque_ristretto255_sha512_Noe);
+    mfree(ptr_blind, ecc_opaque_ristretto255_sha512_Ns);
 }
 
 /**
- * 
+ * To begin the registration flow, the client executes this function.
  *
  * @param {Uint8Array} request (output) a RegistrationRequest structure, size:ecc_opaque_ristretto255_sha512_REGISTRATIONREQUESTSIZE
- * @param {Uint8Array} blind (output) an OPRF scalar value, size:ecc_opaque_ristretto255_sha512_Noe
+ * @param {Uint8Array} blind (output) an OPRF scalar value, size:ecc_opaque_ristretto255_sha512_Ns
  * @param {Uint8Array} password an opaque byte string containing the client's password, size:password_len
  * @param {number} password_len the length of `password`
  */
@@ -3758,7 +3839,7 @@ Module.ecc_opaque_ristretto255_sha512_CreateRegistrationRequest = (
     password_len,
 ) => {
     const ptr_request = mput(request, ecc_opaque_ristretto255_sha512_REGISTRATIONREQUESTSIZE);
-    const ptr_blind = mput(blind, ecc_opaque_ristretto255_sha512_Noe);
+    const ptr_blind = mput(blind, ecc_opaque_ristretto255_sha512_Ns);
     const ptr_password = mput(password, password_len);
     _ecc_opaque_ristretto255_sha512_CreateRegistrationRequest(
         ptr_request,
@@ -3767,73 +3848,25 @@ Module.ecc_opaque_ristretto255_sha512_CreateRegistrationRequest = (
         password_len,
     );
     mget(request, ptr_request, ecc_opaque_ristretto255_sha512_REGISTRATIONREQUESTSIZE);
-    mget(blind, ptr_blind, ecc_opaque_ristretto255_sha512_Noe);
+    mget(blind, ptr_blind, ecc_opaque_ristretto255_sha512_Ns);
     mfree(ptr_request, ecc_opaque_ristretto255_sha512_REGISTRATIONREQUESTSIZE);
-    mfree(ptr_blind, ecc_opaque_ristretto255_sha512_Noe);
+    mfree(ptr_blind, ecc_opaque_ristretto255_sha512_Ns);
     mfree(ptr_password, password_len);
 }
 
 /**
- * Same as calling CreateRegistrationResponse with a specific oprf_seed.
- * 
- * In order to make this method not to use dynamic memory allocation, there is a
- * limit of credential_identifier_len
- * <
- * = 200.
- *
- * @param {Uint8Array} response (output) size:ecc_opaque_ristretto255_sha512_REGISTRATIONRESPONSESIZE
- * @param {Uint8Array} request size:ecc_opaque_ristretto255_sha512_REGISTRATIONREQUESTSIZE
- * @param {Uint8Array} server_public_key size:ecc_opaque_ristretto255_sha512_Npk
- * @param {Uint8Array} credential_identifier size:credential_identifier_len
- * @param {number} credential_identifier_len the length of `credential_identifier`
- * @param {Uint8Array} oprf_key size:32
- */
-Module.ecc_opaque_ristretto255_sha512_CreateRegistrationResponseWithOprfKey = (
-    response,
-    request,
-    server_public_key,
-    credential_identifier,
-    credential_identifier_len,
-    oprf_key,
-) => {
-    const ptr_response = mput(response, ecc_opaque_ristretto255_sha512_REGISTRATIONRESPONSESIZE);
-    const ptr_request = mput(request, ecc_opaque_ristretto255_sha512_REGISTRATIONREQUESTSIZE);
-    const ptr_server_public_key = mput(server_public_key, ecc_opaque_ristretto255_sha512_Npk);
-    const ptr_credential_identifier = mput(credential_identifier, credential_identifier_len);
-    const ptr_oprf_key = mput(oprf_key, 32);
-    _ecc_opaque_ristretto255_sha512_CreateRegistrationResponseWithOprfKey(
-        ptr_response,
-        ptr_request,
-        ptr_server_public_key,
-        ptr_credential_identifier,
-        credential_identifier_len,
-        ptr_oprf_key,
-    );
-    mget(response, ptr_response, ecc_opaque_ristretto255_sha512_REGISTRATIONRESPONSESIZE);
-    mfree(ptr_response, ecc_opaque_ristretto255_sha512_REGISTRATIONRESPONSESIZE);
-    mfree(ptr_request, ecc_opaque_ristretto255_sha512_REGISTRATIONREQUESTSIZE);
-    mfree(ptr_server_public_key, ecc_opaque_ristretto255_sha512_Npk);
-    mfree(ptr_credential_identifier, credential_identifier_len);
-    mfree(ptr_oprf_key, 32);
-}
-
-/**
- * In order to make this method not to use dynamic memory allocation, there is a
- * limit of credential_identifier_len
- * <
- * = 200.
+ * To process the client's registration request, the server executes
+ * this function.
  *
  * @param {Uint8Array} response (output) a RegistrationResponse structure, size:ecc_opaque_ristretto255_sha512_REGISTRATIONRESPONSESIZE
- * @param {Uint8Array} oprf_key (output) the per-client OPRF key known only to the server, size:ecc_opaque_ristretto255_sha512_Nsk
  * @param {Uint8Array} request a RegistrationRequest structure, size:ecc_opaque_ristretto255_sha512_REGISTRATIONREQUESTSIZE
  * @param {Uint8Array} server_public_key the server's public key, size:ecc_opaque_ristretto255_sha512_Npk
- * @param {Uint8Array} credential_identifier an identifier that uniquely represents the credential being registered, size:credential_identifier_len
+ * @param {Uint8Array} credential_identifier an identifier that uniquely represents the credential, size:credential_identifier_len
  * @param {number} credential_identifier_len the length of `credential_identifier`
- * @param {Uint8Array} oprf_seed the server-side seed of Nh bytes used to generate an oprf_key, size:ecc_opaque_ristretto255_sha512_Nh
+ * @param {Uint8Array} oprf_seed the seed of Nh bytes used by the server to generate an oprf_key, size:ecc_opaque_ristretto255_sha512_Nh
  */
 Module.ecc_opaque_ristretto255_sha512_CreateRegistrationResponse = (
     response,
-    oprf_key,
     request,
     server_public_key,
     credential_identifier,
@@ -3841,14 +3874,12 @@ Module.ecc_opaque_ristretto255_sha512_CreateRegistrationResponse = (
     oprf_seed,
 ) => {
     const ptr_response = mput(response, ecc_opaque_ristretto255_sha512_REGISTRATIONRESPONSESIZE);
-    const ptr_oprf_key = mput(oprf_key, ecc_opaque_ristretto255_sha512_Nsk);
     const ptr_request = mput(request, ecc_opaque_ristretto255_sha512_REGISTRATIONREQUESTSIZE);
     const ptr_server_public_key = mput(server_public_key, ecc_opaque_ristretto255_sha512_Npk);
     const ptr_credential_identifier = mput(credential_identifier, credential_identifier_len);
     const ptr_oprf_seed = mput(oprf_seed, ecc_opaque_ristretto255_sha512_Nh);
     _ecc_opaque_ristretto255_sha512_CreateRegistrationResponse(
         ptr_response,
-        ptr_oprf_key,
         ptr_request,
         ptr_server_public_key,
         ptr_credential_identifier,
@@ -3856,9 +3887,7 @@ Module.ecc_opaque_ristretto255_sha512_CreateRegistrationResponse = (
         ptr_oprf_seed,
     );
     mget(response, ptr_response, ecc_opaque_ristretto255_sha512_REGISTRATIONRESPONSESIZE);
-    mget(oprf_key, ptr_oprf_key, ecc_opaque_ristretto255_sha512_Nsk);
     mfree(ptr_response, ecc_opaque_ristretto255_sha512_REGISTRATIONRESPONSESIZE);
-    mfree(ptr_oprf_key, ecc_opaque_ristretto255_sha512_Nsk);
     mfree(ptr_request, ecc_opaque_ristretto255_sha512_REGISTRATIONREQUESTSIZE);
     mfree(ptr_server_public_key, ecc_opaque_ristretto255_sha512_Npk);
     mfree(ptr_credential_identifier, credential_identifier_len);
@@ -3866,18 +3895,14 @@ Module.ecc_opaque_ristretto255_sha512_CreateRegistrationResponse = (
 }
 
 /**
- * Same as calling `ecc_opaque_ristretto255_sha512_FinalizeRequest` with an
+ * Same as calling `ecc_opaque_ristretto255_sha512_FinalizeRegistrationRequest` with an
  * specified `nonce`.
- * 
- * To create the user record used for further authentication, the client
- * executes the following function. Since this works in the internal key mode, the
- * "client_private_key" is null.
  *
- * @param {Uint8Array} record (output) a RegistrationUpload structure, size:ecc_opaque_ristretto255_sha512_REGISTRATIONUPLOADSIZE
+ * @param {Uint8Array} record (output) a RegistrationUpload structure, size:ecc_opaque_ristretto255_sha512_REGISTRATIONRECORDSIZE
  * @param {Uint8Array} export_key (output) an additional client key, size:ecc_opaque_ristretto255_sha512_Nh
  * @param {Uint8Array} password an opaque byte string containing the client's password, size:password_len
  * @param {number} password_len the length of `password`
- * @param {Uint8Array} blind the OPRF scalar value used for blinding, size:ecc_opaque_ristretto255_sha512_Noe
+ * @param {Uint8Array} blind an OPRF scalar value, size:ecc_opaque_ristretto255_sha512_Ns
  * @param {Uint8Array} response a RegistrationResponse structure, size:ecc_opaque_ristretto255_sha512_REGISTRATIONRESPONSESIZE
  * @param {Uint8Array} server_identity the optional encoded server identity, size:server_identity_len
  * @param {number} server_identity_len the length of `server_identity`
@@ -3886,7 +3911,7 @@ Module.ecc_opaque_ristretto255_sha512_CreateRegistrationResponse = (
  * @param {number} mhf the memory hard function to use
  * @param {Uint8Array} nonce size:ecc_opaque_ristretto255_sha512_Nn
  */
-Module.ecc_opaque_ristretto255_sha512_FinalizeRequestWithNonce = (
+Module.ecc_opaque_ristretto255_sha512_FinalizeRegistrationRequestWithNonce = (
     record,
     export_key,
     password,
@@ -3900,15 +3925,15 @@ Module.ecc_opaque_ristretto255_sha512_FinalizeRequestWithNonce = (
     mhf,
     nonce,
 ) => {
-    const ptr_record = mput(record, ecc_opaque_ristretto255_sha512_REGISTRATIONUPLOADSIZE);
+    const ptr_record = mput(record, ecc_opaque_ristretto255_sha512_REGISTRATIONRECORDSIZE);
     const ptr_export_key = mput(export_key, ecc_opaque_ristretto255_sha512_Nh);
     const ptr_password = mput(password, password_len);
-    const ptr_blind = mput(blind, ecc_opaque_ristretto255_sha512_Noe);
+    const ptr_blind = mput(blind, ecc_opaque_ristretto255_sha512_Ns);
     const ptr_response = mput(response, ecc_opaque_ristretto255_sha512_REGISTRATIONRESPONSESIZE);
     const ptr_server_identity = mput(server_identity, server_identity_len);
     const ptr_client_identity = mput(client_identity, client_identity_len);
     const ptr_nonce = mput(nonce, ecc_opaque_ristretto255_sha512_Nn);
-    _ecc_opaque_ristretto255_sha512_FinalizeRequestWithNonce(
+    _ecc_opaque_ristretto255_sha512_FinalizeRegistrationRequestWithNonce(
         ptr_record,
         ptr_export_key,
         ptr_password,
@@ -3922,12 +3947,12 @@ Module.ecc_opaque_ristretto255_sha512_FinalizeRequestWithNonce = (
         mhf,
         ptr_nonce,
     );
-    mget(record, ptr_record, ecc_opaque_ristretto255_sha512_REGISTRATIONUPLOADSIZE);
+    mget(record, ptr_record, ecc_opaque_ristretto255_sha512_REGISTRATIONRECORDSIZE);
     mget(export_key, ptr_export_key, ecc_opaque_ristretto255_sha512_Nh);
-    mfree(ptr_record, ecc_opaque_ristretto255_sha512_REGISTRATIONUPLOADSIZE);
+    mfree(ptr_record, ecc_opaque_ristretto255_sha512_REGISTRATIONRECORDSIZE);
     mfree(ptr_export_key, ecc_opaque_ristretto255_sha512_Nh);
     mfree(ptr_password, password_len);
-    mfree(ptr_blind, ecc_opaque_ristretto255_sha512_Noe);
+    mfree(ptr_blind, ecc_opaque_ristretto255_sha512_Ns);
     mfree(ptr_response, ecc_opaque_ristretto255_sha512_REGISTRATIONRESPONSESIZE);
     mfree(ptr_server_identity, server_identity_len);
     mfree(ptr_client_identity, client_identity_len);
@@ -3935,15 +3960,14 @@ Module.ecc_opaque_ristretto255_sha512_FinalizeRequestWithNonce = (
 }
 
 /**
- * To create the user record used for further authentication, the client
- * executes the following function. Since this works in the internal key mode, the
- * "client_private_key" is null.
+ * To create the user record used for subsequent authentication and complete the
+ * registration flow, the client executes the following function.
  *
- * @param {Uint8Array} record (output) a RegistrationUpload structure, size:ecc_opaque_ristretto255_sha512_REGISTRATIONUPLOADSIZE
+ * @param {Uint8Array} record (output) a RegistrationUpload structure, size:ecc_opaque_ristretto255_sha512_REGISTRATIONRECORDSIZE
  * @param {Uint8Array} export_key (output) an additional client key, size:ecc_opaque_ristretto255_sha512_Nh
  * @param {Uint8Array} password an opaque byte string containing the client's password, size:password_len
  * @param {number} password_len the length of `password`
- * @param {Uint8Array} blind the OPRF scalar value used for blinding, size:ecc_opaque_ristretto255_sha512_Noe
+ * @param {Uint8Array} blind an OPRF scalar value, size:ecc_opaque_ristretto255_sha512_Ns
  * @param {Uint8Array} response a RegistrationResponse structure, size:ecc_opaque_ristretto255_sha512_REGISTRATIONRESPONSESIZE
  * @param {Uint8Array} server_identity the optional encoded server identity, size:server_identity_len
  * @param {number} server_identity_len the length of `server_identity`
@@ -3951,7 +3975,7 @@ Module.ecc_opaque_ristretto255_sha512_FinalizeRequestWithNonce = (
  * @param {number} client_identity_len the length of `client_identity`
  * @param {number} mhf the memory hard function to use
  */
-Module.ecc_opaque_ristretto255_sha512_FinalizeRequest = (
+Module.ecc_opaque_ristretto255_sha512_FinalizeRegistrationRequest = (
     record,
     export_key,
     password,
@@ -3964,14 +3988,14 @@ Module.ecc_opaque_ristretto255_sha512_FinalizeRequest = (
     client_identity_len,
     mhf,
 ) => {
-    const ptr_record = mput(record, ecc_opaque_ristretto255_sha512_REGISTRATIONUPLOADSIZE);
+    const ptr_record = mput(record, ecc_opaque_ristretto255_sha512_REGISTRATIONRECORDSIZE);
     const ptr_export_key = mput(export_key, ecc_opaque_ristretto255_sha512_Nh);
     const ptr_password = mput(password, password_len);
-    const ptr_blind = mput(blind, ecc_opaque_ristretto255_sha512_Noe);
+    const ptr_blind = mput(blind, ecc_opaque_ristretto255_sha512_Ns);
     const ptr_response = mput(response, ecc_opaque_ristretto255_sha512_REGISTRATIONRESPONSESIZE);
     const ptr_server_identity = mput(server_identity, server_identity_len);
     const ptr_client_identity = mput(client_identity, client_identity_len);
-    _ecc_opaque_ristretto255_sha512_FinalizeRequest(
+    _ecc_opaque_ristretto255_sha512_FinalizeRegistrationRequest(
         ptr_record,
         ptr_export_key,
         ptr_password,
@@ -3984,24 +4008,24 @@ Module.ecc_opaque_ristretto255_sha512_FinalizeRequest = (
         client_identity_len,
         mhf,
     );
-    mget(record, ptr_record, ecc_opaque_ristretto255_sha512_REGISTRATIONUPLOADSIZE);
+    mget(record, ptr_record, ecc_opaque_ristretto255_sha512_REGISTRATIONRECORDSIZE);
     mget(export_key, ptr_export_key, ecc_opaque_ristretto255_sha512_Nh);
-    mfree(ptr_record, ecc_opaque_ristretto255_sha512_REGISTRATIONUPLOADSIZE);
+    mfree(ptr_record, ecc_opaque_ristretto255_sha512_REGISTRATIONRECORDSIZE);
     mfree(ptr_export_key, ecc_opaque_ristretto255_sha512_Nh);
     mfree(ptr_password, password_len);
-    mfree(ptr_blind, ecc_opaque_ristretto255_sha512_Noe);
+    mfree(ptr_blind, ecc_opaque_ristretto255_sha512_Ns);
     mfree(ptr_response, ecc_opaque_ristretto255_sha512_REGISTRATIONRESPONSESIZE);
     mfree(ptr_server_identity, server_identity_len);
     mfree(ptr_client_identity, client_identity_len);
 }
 
 /**
- * 
+ *
  *
  * @param {Uint8Array} request (output) a CredentialRequest structure, size:ecc_opaque_ristretto255_sha512_CREDENTIALREQUESTSIZE
  * @param {Uint8Array} password an opaque byte string containing the client's password, size:password_len
  * @param {number} password_len the length of `password`
- * @param {Uint8Array} blind an OPRF scalar value, size:ecc_opaque_ristretto255_sha512_Noe
+ * @param {Uint8Array} blind an OPRF scalar value, size:ecc_opaque_ristretto255_sha512_Ns
  */
 Module.ecc_opaque_ristretto255_sha512_CreateCredentialRequestWithBlind = (
     request,
@@ -4011,7 +4035,7 @@ Module.ecc_opaque_ristretto255_sha512_CreateCredentialRequestWithBlind = (
 ) => {
     const ptr_request = mput(request, ecc_opaque_ristretto255_sha512_CREDENTIALREQUESTSIZE);
     const ptr_password = mput(password, password_len);
-    const ptr_blind = mput(blind, ecc_opaque_ristretto255_sha512_Noe);
+    const ptr_blind = mput(blind, ecc_opaque_ristretto255_sha512_Ns);
     _ecc_opaque_ristretto255_sha512_CreateCredentialRequestWithBlind(
         ptr_request,
         ptr_password,
@@ -4021,14 +4045,14 @@ Module.ecc_opaque_ristretto255_sha512_CreateCredentialRequestWithBlind = (
     mget(request, ptr_request, ecc_opaque_ristretto255_sha512_CREDENTIALREQUESTSIZE);
     mfree(ptr_request, ecc_opaque_ristretto255_sha512_CREDENTIALREQUESTSIZE);
     mfree(ptr_password, password_len);
-    mfree(ptr_blind, ecc_opaque_ristretto255_sha512_Noe);
+    mfree(ptr_blind, ecc_opaque_ristretto255_sha512_Ns);
 }
 
 /**
- * 
+ *
  *
  * @param {Uint8Array} request (output) a CredentialRequest structure, size:ecc_opaque_ristretto255_sha512_CREDENTIALREQUESTSIZE
- * @param {Uint8Array} blind (output) an OPRF scalar value, size:ecc_opaque_ristretto255_sha512_Noe
+ * @param {Uint8Array} blind (output) an OPRF scalar value, size:ecc_opaque_ristretto255_sha512_Ns
  * @param {Uint8Array} password an opaque byte string containing the client's password, size:password_len
  * @param {number} password_len the length of `password`
  */
@@ -4039,7 +4063,7 @@ Module.ecc_opaque_ristretto255_sha512_CreateCredentialRequest = (
     password_len,
 ) => {
     const ptr_request = mput(request, ecc_opaque_ristretto255_sha512_CREDENTIALREQUESTSIZE);
-    const ptr_blind = mput(blind, ecc_opaque_ristretto255_sha512_Noe);
+    const ptr_blind = mput(blind, ecc_opaque_ristretto255_sha512_Ns);
     const ptr_password = mput(password, password_len);
     _ecc_opaque_ristretto255_sha512_CreateCredentialRequest(
         ptr_request,
@@ -4048,9 +4072,9 @@ Module.ecc_opaque_ristretto255_sha512_CreateCredentialRequest = (
         password_len,
     );
     mget(request, ptr_request, ecc_opaque_ristretto255_sha512_CREDENTIALREQUESTSIZE);
-    mget(blind, ptr_blind, ecc_opaque_ristretto255_sha512_Noe);
+    mget(blind, ptr_blind, ecc_opaque_ristretto255_sha512_Ns);
     mfree(ptr_request, ecc_opaque_ristretto255_sha512_CREDENTIALREQUESTSIZE);
-    mfree(ptr_blind, ecc_opaque_ristretto255_sha512_Noe);
+    mfree(ptr_blind, ecc_opaque_ristretto255_sha512_Ns);
     mfree(ptr_password, password_len);
 }
 
@@ -4059,16 +4083,16 @@ Module.ecc_opaque_ristretto255_sha512_CreateCredentialRequest = (
  * limit of credential_identifier_len
  * <
  * = 200.
- * 
+ *
  * There are two scenarios to handle for the construction of a
  * CredentialResponse object: either the record for the client exists
  * (corresponding to a properly registered client), or it was never
  * created (corresponding to a client that has yet to register).
- * 
+ *
  * In the case of a record that does not exist, the server SHOULD invoke
  * the CreateCredentialResponse function where the record argument is
  * configured so that:
- * 
+ *
  * - record.masking_key is set to a random byte string of length Nh, and
  * - record.envelope is set to the byte string consisting only of
  * zeros, of length Ne
@@ -4076,7 +4100,7 @@ Module.ecc_opaque_ristretto255_sha512_CreateCredentialRequest = (
  * @param {Uint8Array} response_raw (output) size:ecc_opaque_ristretto255_sha512_CREDENTIALRESPONSESIZE
  * @param {Uint8Array} request_raw size:ecc_opaque_ristretto255_sha512_CREDENTIALREQUESTSIZE
  * @param {Uint8Array} server_public_key size:ecc_opaque_ristretto255_sha512_Npk
- * @param {Uint8Array} record_raw size:ecc_opaque_ristretto255_sha512_REGISTRATIONUPLOADSIZE
+ * @param {Uint8Array} record_raw size:ecc_opaque_ristretto255_sha512_REGISTRATIONRECORDSIZE
  * @param {Uint8Array} credential_identifier size:credential_identifier_len
  * @param {number} credential_identifier_len the length of `credential_identifier`
  * @param {Uint8Array} oprf_seed size:ecc_opaque_ristretto255_sha512_Nh
@@ -4095,7 +4119,7 @@ Module.ecc_opaque_ristretto255_sha512_CreateCredentialResponseWithMasking = (
     const ptr_response_raw = mput(response_raw, ecc_opaque_ristretto255_sha512_CREDENTIALRESPONSESIZE);
     const ptr_request_raw = mput(request_raw, ecc_opaque_ristretto255_sha512_CREDENTIALREQUESTSIZE);
     const ptr_server_public_key = mput(server_public_key, ecc_opaque_ristretto255_sha512_Npk);
-    const ptr_record_raw = mput(record_raw, ecc_opaque_ristretto255_sha512_REGISTRATIONUPLOADSIZE);
+    const ptr_record_raw = mput(record_raw, ecc_opaque_ristretto255_sha512_REGISTRATIONRECORDSIZE);
     const ptr_credential_identifier = mput(credential_identifier, credential_identifier_len);
     const ptr_oprf_seed = mput(oprf_seed, ecc_opaque_ristretto255_sha512_Nh);
     const ptr_masking_nonce = mput(masking_nonce, ecc_opaque_ristretto255_sha512_Nn);
@@ -4113,7 +4137,7 @@ Module.ecc_opaque_ristretto255_sha512_CreateCredentialResponseWithMasking = (
     mfree(ptr_response_raw, ecc_opaque_ristretto255_sha512_CREDENTIALRESPONSESIZE);
     mfree(ptr_request_raw, ecc_opaque_ristretto255_sha512_CREDENTIALREQUESTSIZE);
     mfree(ptr_server_public_key, ecc_opaque_ristretto255_sha512_Npk);
-    mfree(ptr_record_raw, ecc_opaque_ristretto255_sha512_REGISTRATIONUPLOADSIZE);
+    mfree(ptr_record_raw, ecc_opaque_ristretto255_sha512_REGISTRATIONRECORDSIZE);
     mfree(ptr_credential_identifier, credential_identifier_len);
     mfree(ptr_oprf_seed, ecc_opaque_ristretto255_sha512_Nh);
     mfree(ptr_masking_nonce, ecc_opaque_ristretto255_sha512_Nn);
@@ -4124,16 +4148,16 @@ Module.ecc_opaque_ristretto255_sha512_CreateCredentialResponseWithMasking = (
  * limit of credential_identifier_len
  * <
  * = 200.
- * 
+ *
  * There are two scenarios to handle for the construction of a
  * CredentialResponse object: either the record for the client exists
  * (corresponding to a properly registered client), or it was never
  * created (corresponding to a client that has yet to register).
- * 
+ *
  * In the case of a record that does not exist, the server SHOULD invoke
  * the CreateCredentialResponse function where the record argument is
  * configured so that:
- * 
+ *
  * - record.masking_key is set to a random byte string of length Nh, and
  * - record.envelope is set to the byte string consisting only of
  * zeros, of length Ne
@@ -4141,7 +4165,7 @@ Module.ecc_opaque_ristretto255_sha512_CreateCredentialResponseWithMasking = (
  * @param {Uint8Array} response_raw (output) size:ecc_opaque_ristretto255_sha512_CREDENTIALRESPONSESIZE
  * @param {Uint8Array} request_raw size:ecc_opaque_ristretto255_sha512_CREDENTIALREQUESTSIZE
  * @param {Uint8Array} server_public_key size:ecc_opaque_ristretto255_sha512_Npk
- * @param {Uint8Array} record_raw size:ecc_opaque_ristretto255_sha512_REGISTRATIONUPLOADSIZE
+ * @param {Uint8Array} record_raw size:ecc_opaque_ristretto255_sha512_REGISTRATIONRECORDSIZE
  * @param {Uint8Array} credential_identifier size:credential_identifier_len
  * @param {number} credential_identifier_len the length of `credential_identifier`
  * @param {Uint8Array} oprf_seed size:ecc_opaque_ristretto255_sha512_Nh
@@ -4158,7 +4182,7 @@ Module.ecc_opaque_ristretto255_sha512_CreateCredentialResponse = (
     const ptr_response_raw = mput(response_raw, ecc_opaque_ristretto255_sha512_CREDENTIALRESPONSESIZE);
     const ptr_request_raw = mput(request_raw, ecc_opaque_ristretto255_sha512_CREDENTIALREQUESTSIZE);
     const ptr_server_public_key = mput(server_public_key, ecc_opaque_ristretto255_sha512_Npk);
-    const ptr_record_raw = mput(record_raw, ecc_opaque_ristretto255_sha512_REGISTRATIONUPLOADSIZE);
+    const ptr_record_raw = mput(record_raw, ecc_opaque_ristretto255_sha512_REGISTRATIONRECORDSIZE);
     const ptr_credential_identifier = mput(credential_identifier, credential_identifier_len);
     const ptr_oprf_seed = mput(oprf_seed, ecc_opaque_ristretto255_sha512_Nh);
     _ecc_opaque_ristretto255_sha512_CreateCredentialResponse(
@@ -4174,13 +4198,13 @@ Module.ecc_opaque_ristretto255_sha512_CreateCredentialResponse = (
     mfree(ptr_response_raw, ecc_opaque_ristretto255_sha512_CREDENTIALRESPONSESIZE);
     mfree(ptr_request_raw, ecc_opaque_ristretto255_sha512_CREDENTIALREQUESTSIZE);
     mfree(ptr_server_public_key, ecc_opaque_ristretto255_sha512_Npk);
-    mfree(ptr_record_raw, ecc_opaque_ristretto255_sha512_REGISTRATIONUPLOADSIZE);
+    mfree(ptr_record_raw, ecc_opaque_ristretto255_sha512_REGISTRATIONRECORDSIZE);
     mfree(ptr_credential_identifier, credential_identifier_len);
     mfree(ptr_oprf_seed, ecc_opaque_ristretto255_sha512_Nh);
 }
 
 /**
- * 
+ *
  *
  * @param {Uint8Array} client_private_key (output) size:ecc_opaque_ristretto255_sha512_Nsk
  * @param {Uint8Array} server_public_key (output) size:ecc_opaque_ristretto255_sha512_Npk
@@ -4247,7 +4271,7 @@ Module.ecc_opaque_ristretto255_sha512_RecoverCredentials = (
 }
 
 /**
- * 
+ *
  *
  * @param {Uint8Array} out (output) size:length
  * @param {Uint8Array} secret size:64
@@ -4287,7 +4311,7 @@ Module.ecc_opaque_ristretto255_sha512_3DH_Expand_Label = (
 }
 
 /**
- * 
+ *
  *
  * @param {Uint8Array} out (output) size:ecc_opaque_ristretto255_sha512_Nx
  * @param {Uint8Array} secret size:64
@@ -4325,7 +4349,7 @@ Module.ecc_opaque_ristretto255_sha512_3DH_Derive_Secret = (
 
 /**
  * The OPAQUE-3DH key schedule requires a preamble.
- * 
+ *
  * OPAQUE-3DH can optionally include shared "context" information in the
  * transcript, such as configuration parameters or application-specific
  * info, e.g. "appXYZ-v1.2.3".
@@ -4440,7 +4464,7 @@ Module.ecc_opaque_ristretto255_sha512_3DH_TripleDHIKM = (
 }
 
 /**
- * 
+ *
  *
  * @param {Uint8Array} km2 (output) size:64
  * @param {Uint8Array} km3 (output) size:64
@@ -4484,13 +4508,13 @@ Module.ecc_opaque_ristretto255_sha512_3DH_DeriveKeys = (
 }
 
 /**
- * 
+ *
  *
  * @param {Uint8Array} ke1 (output) a KE1 message structure, size:ecc_opaque_ristretto255_sha512_KE1SIZE
  * @param {Uint8Array} state (input, output) a ClientState structure, size:ecc_opaque_ristretto255_sha512_CLIENTSTATESIZE
  * @param {Uint8Array} password an opaque byte string containing the client's password, size:password_len
  * @param {number} password_len the length of `password`
- * @param {Uint8Array} blind size:ecc_opaque_ristretto255_sha512_Noe
+ * @param {Uint8Array} blind size:ecc_opaque_ristretto255_sha512_Ns
  * @param {Uint8Array} client_nonce size:ecc_opaque_ristretto255_sha512_Nn
  * @param {Uint8Array} client_secret size:ecc_opaque_ristretto255_sha512_Nsk
  * @param {Uint8Array} client_keyshare size:ecc_opaque_ristretto255_sha512_Npk
@@ -4508,7 +4532,7 @@ Module.ecc_opaque_ristretto255_sha512_3DH_ClientInitWithSecrets = (
     const ptr_ke1 = mput(ke1, ecc_opaque_ristretto255_sha512_KE1SIZE);
     const ptr_state = mput(state, ecc_opaque_ristretto255_sha512_CLIENTSTATESIZE);
     const ptr_password = mput(password, password_len);
-    const ptr_blind = mput(blind, ecc_opaque_ristretto255_sha512_Noe);
+    const ptr_blind = mput(blind, ecc_opaque_ristretto255_sha512_Ns);
     const ptr_client_nonce = mput(client_nonce, ecc_opaque_ristretto255_sha512_Nn);
     const ptr_client_secret = mput(client_secret, ecc_opaque_ristretto255_sha512_Nsk);
     const ptr_client_keyshare = mput(client_keyshare, ecc_opaque_ristretto255_sha512_Npk);
@@ -4527,14 +4551,14 @@ Module.ecc_opaque_ristretto255_sha512_3DH_ClientInitWithSecrets = (
     mfree(ptr_ke1, ecc_opaque_ristretto255_sha512_KE1SIZE);
     mfree(ptr_state, ecc_opaque_ristretto255_sha512_CLIENTSTATESIZE);
     mfree(ptr_password, password_len);
-    mfree(ptr_blind, ecc_opaque_ristretto255_sha512_Noe);
+    mfree(ptr_blind, ecc_opaque_ristretto255_sha512_Ns);
     mfree(ptr_client_nonce, ecc_opaque_ristretto255_sha512_Nn);
     mfree(ptr_client_secret, ecc_opaque_ristretto255_sha512_Nsk);
     mfree(ptr_client_keyshare, ecc_opaque_ristretto255_sha512_Npk);
 }
 
 /**
- * 
+ *
  *
  * @param {Uint8Array} ke1 (output) a KE1 message structure, size:ecc_opaque_ristretto255_sha512_KE1SIZE
  * @param {Uint8Array} state (input, output) a ClientState structure, size:ecc_opaque_ristretto255_sha512_CLIENTSTATESIZE
@@ -4564,14 +4588,12 @@ Module.ecc_opaque_ristretto255_sha512_3DH_ClientInit = (
 }
 
 /**
- * 
+ *
  *
  * @param {Uint8Array} ke3_raw (output) a KE3 message structure, size:ecc_opaque_ristretto255_sha512_KE3SIZE
  * @param {Uint8Array} session_key (output) the session's shared secret, size:64
  * @param {Uint8Array} export_key (output) an additional client key, size:64
- * @param {Uint8Array} state_raw (input, output) a ClientState structure, size:ecc_opaque_ristretto255_sha512_CLIENTSTATESIZE
- * @param {Uint8Array} password an opaque byte string containing the client's password, size:password_len
- * @param {number} password_len the length of `password`
+ * @param {Uint8Array} state (input, output) a ClientState structure, size:ecc_opaque_ristretto255_sha512_CLIENTSTATESIZE
  * @param {Uint8Array} client_identity the optional encoded client identity, which is set
  * to client_public_key if not specified, size:client_identity_len
  * @param {number} client_identity_len the length of `client_identity`
@@ -4588,9 +4610,7 @@ Module.ecc_opaque_ristretto255_sha512_3DH_ClientFinish = (
     ke3_raw,
     session_key,
     export_key,
-    state_raw,
-    password,
-    password_len,
+    state,
     client_identity,
     client_identity_len,
     server_identity,
@@ -4603,8 +4623,7 @@ Module.ecc_opaque_ristretto255_sha512_3DH_ClientFinish = (
     const ptr_ke3_raw = mput(ke3_raw, ecc_opaque_ristretto255_sha512_KE3SIZE);
     const ptr_session_key = mput(session_key, 64);
     const ptr_export_key = mput(export_key, 64);
-    const ptr_state_raw = mput(state_raw, ecc_opaque_ristretto255_sha512_CLIENTSTATESIZE);
-    const ptr_password = mput(password, password_len);
+    const ptr_state = mput(state, ecc_opaque_ristretto255_sha512_CLIENTSTATESIZE);
     const ptr_client_identity = mput(client_identity, client_identity_len);
     const ptr_server_identity = mput(server_identity, server_identity_len);
     const ptr_ke2 = mput(ke2, ecc_opaque_ristretto255_sha512_KE2SIZE);
@@ -4613,9 +4632,7 @@ Module.ecc_opaque_ristretto255_sha512_3DH_ClientFinish = (
         ptr_ke3_raw,
         ptr_session_key,
         ptr_export_key,
-        ptr_state_raw,
-        ptr_password,
-        password_len,
+        ptr_state,
         ptr_client_identity,
         client_identity_len,
         ptr_server_identity,
@@ -4628,12 +4645,11 @@ Module.ecc_opaque_ristretto255_sha512_3DH_ClientFinish = (
     mget(ke3_raw, ptr_ke3_raw, ecc_opaque_ristretto255_sha512_KE3SIZE);
     mget(session_key, ptr_session_key, 64);
     mget(export_key, ptr_export_key, 64);
-    mget(state_raw, ptr_state_raw, ecc_opaque_ristretto255_sha512_CLIENTSTATESIZE);
+    mget(state, ptr_state, ecc_opaque_ristretto255_sha512_CLIENTSTATESIZE);
     mfree(ptr_ke3_raw, ecc_opaque_ristretto255_sha512_KE3SIZE);
     mfree(ptr_session_key, 64);
     mfree(ptr_export_key, 64);
-    mfree(ptr_state_raw, ecc_opaque_ristretto255_sha512_CLIENTSTATESIZE);
-    mfree(ptr_password, password_len);
+    mfree(ptr_state, ecc_opaque_ristretto255_sha512_CLIENTSTATESIZE);
     mfree(ptr_client_identity, client_identity_len);
     mfree(ptr_server_identity, server_identity_len);
     mfree(ptr_ke2, ecc_opaque_ristretto255_sha512_KE2SIZE);
@@ -4642,7 +4658,7 @@ Module.ecc_opaque_ristretto255_sha512_3DH_ClientFinish = (
 }
 
 /**
- * 
+ *
  *
  * @param {Uint8Array} ke1 (output) size:ecc_opaque_ristretto255_sha512_KE1SIZE
  * @param {Uint8Array} state (input, output) size:ecc_opaque_ristretto255_sha512_CLIENTSTATESIZE
@@ -4684,7 +4700,7 @@ Module.ecc_opaque_ristretto255_sha512_3DH_StartWithSecrets = (
 }
 
 /**
- * 
+ *
  *
  * @param {Uint8Array} ke1 (output) size:ecc_opaque_ristretto255_sha512_KE1SIZE
  * @param {Uint8Array} state (input, output) size:ecc_opaque_ristretto255_sha512_CLIENTSTATESIZE
@@ -4711,7 +4727,7 @@ Module.ecc_opaque_ristretto255_sha512_3DH_Start = (
 }
 
 /**
- * 
+ *
  *
  * @param {Uint8Array} ke3_raw (output) size:ecc_opaque_ristretto255_sha512_KE3SIZE
  * @param {Uint8Array} session_key (output) size:64
@@ -4780,7 +4796,7 @@ Module.ecc_opaque_ristretto255_sha512_3DH_ClientFinalize = (
 }
 
 /**
- * 
+ *
  *
  * @param {Uint8Array} ke2_raw (output) a KE2 structure, size:ecc_opaque_ristretto255_sha512_KE2SIZE
  * @param {Uint8Array} state_raw (input, output) a ServerState structure, size:ecc_opaque_ristretto255_sha512_SERVERSTATESIZE
@@ -4792,7 +4808,7 @@ Module.ecc_opaque_ristretto255_sha512_3DH_ClientFinalize = (
  * @param {Uint8Array} client_identity the optional encoded server identity, which is set to
  * client_public_key if null, size:client_identity_len
  * @param {number} client_identity_len the length of `client_identity`
- * @param {Uint8Array} record_raw the client's RegistrationUpload structure, size:ecc_opaque_ristretto255_sha512_REGISTRATIONUPLOADSIZE
+ * @param {Uint8Array} record_raw the client's RegistrationUpload structure, size:ecc_opaque_ristretto255_sha512_REGISTRATIONRECORDSIZE
  * @param {Uint8Array} credential_identifier an identifier that uniquely represents the credential
  * being registered, size:credential_identifier_len
  * @param {number} credential_identifier_len the length of `credential_identifier`
@@ -4832,7 +4848,7 @@ Module.ecc_opaque_ristretto255_sha512_3DH_ServerInitWithSecrets = (
     const ptr_server_private_key = mput(server_private_key, ecc_opaque_ristretto255_sha512_Nsk);
     const ptr_server_public_key = mput(server_public_key, ecc_opaque_ristretto255_sha512_Npk);
     const ptr_client_identity = mput(client_identity, client_identity_len);
-    const ptr_record_raw = mput(record_raw, ecc_opaque_ristretto255_sha512_REGISTRATIONUPLOADSIZE);
+    const ptr_record_raw = mput(record_raw, ecc_opaque_ristretto255_sha512_REGISTRATIONRECORDSIZE);
     const ptr_credential_identifier = mput(credential_identifier, credential_identifier_len);
     const ptr_oprf_seed = mput(oprf_seed, ecc_opaque_ristretto255_sha512_Nh);
     const ptr_ke1_raw = mput(ke1_raw, ecc_opaque_ristretto255_sha512_KE1SIZE);
@@ -4870,7 +4886,7 @@ Module.ecc_opaque_ristretto255_sha512_3DH_ServerInitWithSecrets = (
     mfree(ptr_server_private_key, ecc_opaque_ristretto255_sha512_Nsk);
     mfree(ptr_server_public_key, ecc_opaque_ristretto255_sha512_Npk);
     mfree(ptr_client_identity, client_identity_len);
-    mfree(ptr_record_raw, ecc_opaque_ristretto255_sha512_REGISTRATIONUPLOADSIZE);
+    mfree(ptr_record_raw, ecc_opaque_ristretto255_sha512_REGISTRATIONRECORDSIZE);
     mfree(ptr_credential_identifier, credential_identifier_len);
     mfree(ptr_oprf_seed, ecc_opaque_ristretto255_sha512_Nh);
     mfree(ptr_ke1_raw, ecc_opaque_ristretto255_sha512_KE1SIZE);
@@ -4882,7 +4898,7 @@ Module.ecc_opaque_ristretto255_sha512_3DH_ServerInitWithSecrets = (
 }
 
 /**
- * 
+ *
  *
  * @param {Uint8Array} ke2_raw (output) a KE2 structure, size:ecc_opaque_ristretto255_sha512_KE2SIZE
  * @param {Uint8Array} state_raw (input, output) a ServerState structure, size:ecc_opaque_ristretto255_sha512_SERVERSTATESIZE
@@ -4894,7 +4910,7 @@ Module.ecc_opaque_ristretto255_sha512_3DH_ServerInitWithSecrets = (
  * @param {Uint8Array} client_identity the optional encoded server identity, which is set to
  * client_public_key if null, size:client_identity_len
  * @param {number} client_identity_len the length of `client_identity`
- * @param {Uint8Array} record_raw the client's RegistrationUpload structure, size:ecc_opaque_ristretto255_sha512_REGISTRATIONUPLOADSIZE
+ * @param {Uint8Array} record_raw the client's RegistrationUpload structure, size:ecc_opaque_ristretto255_sha512_REGISTRATIONRECORDSIZE
  * @param {Uint8Array} credential_identifier an identifier that uniquely represents the credential
  * being registered, size:credential_identifier_len
  * @param {number} credential_identifier_len the length of `credential_identifier`
@@ -4926,7 +4942,7 @@ Module.ecc_opaque_ristretto255_sha512_3DH_ServerInit = (
     const ptr_server_private_key = mput(server_private_key, ecc_opaque_ristretto255_sha512_Nsk);
     const ptr_server_public_key = mput(server_public_key, ecc_opaque_ristretto255_sha512_Npk);
     const ptr_client_identity = mput(client_identity, client_identity_len);
-    const ptr_record_raw = mput(record_raw, ecc_opaque_ristretto255_sha512_REGISTRATIONUPLOADSIZE);
+    const ptr_record_raw = mput(record_raw, ecc_opaque_ristretto255_sha512_REGISTRATIONRECORDSIZE);
     const ptr_credential_identifier = mput(credential_identifier, credential_identifier_len);
     const ptr_oprf_seed = mput(oprf_seed, ecc_opaque_ristretto255_sha512_Nh);
     const ptr_ke1_raw = mput(ke1_raw, ecc_opaque_ristretto255_sha512_KE1SIZE);
@@ -4956,7 +4972,7 @@ Module.ecc_opaque_ristretto255_sha512_3DH_ServerInit = (
     mfree(ptr_server_private_key, ecc_opaque_ristretto255_sha512_Nsk);
     mfree(ptr_server_public_key, ecc_opaque_ristretto255_sha512_Npk);
     mfree(ptr_client_identity, client_identity_len);
-    mfree(ptr_record_raw, ecc_opaque_ristretto255_sha512_REGISTRATIONUPLOADSIZE);
+    mfree(ptr_record_raw, ecc_opaque_ristretto255_sha512_REGISTRATIONRECORDSIZE);
     mfree(ptr_credential_identifier, credential_identifier_len);
     mfree(ptr_oprf_seed, ecc_opaque_ristretto255_sha512_Nh);
     mfree(ptr_ke1_raw, ecc_opaque_ristretto255_sha512_KE1SIZE);
@@ -4964,36 +4980,36 @@ Module.ecc_opaque_ristretto255_sha512_3DH_ServerInit = (
 }
 
 /**
- * 
+ *
  *
  * @param {Uint8Array} session_key (output) the shared session secret if and only if KE3 is valid, size:64
- * @param {Uint8Array} state_raw (input, output) a ServerState structure, size:ecc_opaque_ristretto255_sha512_SERVERSTATESIZE
- * @param {Uint8Array} ke3_raw a KE3 structure, size:ecc_opaque_ristretto255_sha512_KE3SIZE
+ * @param {Uint8Array} state (input, output) a ServerState structure, size:ecc_opaque_ristretto255_sha512_SERVERSTATESIZE
+ * @param {Uint8Array} ke3 a KE3 structure, size:ecc_opaque_ristretto255_sha512_KE3SIZE
  * @return {number} 0 if the user was authenticated, else -1
  */
 Module.ecc_opaque_ristretto255_sha512_3DH_ServerFinish = (
     session_key,
-    state_raw,
-    ke3_raw,
+    state,
+    ke3,
 ) => {
     const ptr_session_key = mput(session_key, 64);
-    const ptr_state_raw = mput(state_raw, ecc_opaque_ristretto255_sha512_SERVERSTATESIZE);
-    const ptr_ke3_raw = mput(ke3_raw, ecc_opaque_ristretto255_sha512_KE3SIZE);
+    const ptr_state = mput(state, ecc_opaque_ristretto255_sha512_SERVERSTATESIZE);
+    const ptr_ke3 = mput(ke3, ecc_opaque_ristretto255_sha512_KE3SIZE);
     const fun_ret = _ecc_opaque_ristretto255_sha512_3DH_ServerFinish(
         ptr_session_key,
-        ptr_state_raw,
-        ptr_ke3_raw,
+        ptr_state,
+        ptr_ke3,
     );
     mget(session_key, ptr_session_key, 64);
-    mget(state_raw, ptr_state_raw, ecc_opaque_ristretto255_sha512_SERVERSTATESIZE);
+    mget(state, ptr_state, ecc_opaque_ristretto255_sha512_SERVERSTATESIZE);
     mfree(ptr_session_key, 64);
-    mfree(ptr_state_raw, ecc_opaque_ristretto255_sha512_SERVERSTATESIZE);
-    mfree(ptr_ke3_raw, ecc_opaque_ristretto255_sha512_KE3SIZE);
+    mfree(ptr_state, ecc_opaque_ristretto255_sha512_SERVERSTATESIZE);
+    mfree(ptr_ke3, ecc_opaque_ristretto255_sha512_KE3SIZE);
     return fun_ret;
 }
 
 /**
- * 
+ *
  *
  * @param {Uint8Array} ke2_raw (output) size:ecc_opaque_ristretto255_sha512_KE2SIZE
  * @param {Uint8Array} state_raw (input, output) size:ecc_opaque_ristretto255_sha512_SERVERSTATESIZE
@@ -5079,7 +5095,7 @@ Module.ecc_opaque_ristretto255_sha512_3DH_ResponseWithSecrets = (
 }
 
 /**
- * 
+ *
  *
  * @param {Uint8Array} ke2_raw (output) size:ecc_opaque_ristretto255_sha512_KE2SIZE
  * @param {Uint8Array} state_raw (input, output) size:ecc_opaque_ristretto255_sha512_SERVERSTATESIZE
@@ -5363,7 +5379,7 @@ Module.ecc_sign_ed25519_SkToPk = (
 /**
  * Generates a secret key `sk` deterministically from a secret
  * octet string `ikm`. The secret key is guaranteed to be nonzero.
- * 
+ *
  * For security, `ikm` MUST be infeasible to guess, e.g., generated
  * by a trusted source of randomness and be at least 32 bytes long.
  *
@@ -5515,7 +5531,7 @@ Module.ecc_sign_eth_bls_Aggregate = (
 }
 
 /**
- * 
+ *
  *
  * @param {Uint8Array} pks size:n*ecc_sign_eth_bls_PUBLICKEYSIZE
  * @param {number} n the number of public keys in `pks`
@@ -5550,7 +5566,7 @@ Module.ecc_sign_eth_bls_FastAggregateVerify = (
 /**
  * Checks an aggregated signature over several (PK, message) pairs. The
  * messages are concatenated and in PASCAL-encoded form [size, chars].
- * 
+ *
  * In order to keep the API simple, the maximum length of a message is 255.
  *
  * @param {number} n number of pairs
@@ -5613,7 +5629,7 @@ Module.ecc_frost_ristretto255_sha512_POINTSIZE = ecc_frost_ristretto255_sha512_P
 
 const ecc_frost_ristretto255_sha512_COMMITMENTSIZE = 96;
 /**
- * *
+ *
  *
  * @type {number}
  */
@@ -5621,7 +5637,7 @@ Module.ecc_frost_ristretto255_sha512_COMMITMENTSIZE = ecc_frost_ristretto255_sha
 
 const ecc_frost_ristretto255_sha512_BINDINGFACTORSIZE = 64;
 /**
- * *
+ *
  *
  * @type {number}
  */
@@ -5670,7 +5686,7 @@ const ecc_frost_ristretto255_sha512_NONCECOMMITMENTPAIRSIZE = 64;
 Module.ecc_frost_ristretto255_sha512_NONCECOMMITMENTPAIRSIZE = ecc_frost_ristretto255_sha512_NONCECOMMITMENTPAIRSIZE;
 
 /**
- * 
+ *
  *
  * @param {Uint8Array} nonce (output) size:ecc_frost_ristretto255_sha512_SCALARSIZE
  * @param {Uint8Array} secret size:ecc_frost_ristretto255_sha512_SCALARSIZE
@@ -5696,7 +5712,7 @@ Module.ecc_frost_ristretto255_sha512_nonce_generate_with_randomness = (
 }
 
 /**
- * 
+ *
  *
  * @param {Uint8Array} nonce (output) size:ecc_frost_ristretto255_sha512_SCALARSIZE
  * @param {Uint8Array} secret size:ecc_frost_ristretto255_sha512_SCALARSIZE
@@ -5956,7 +5972,7 @@ Module.ecc_frost_ristretto255_sha512_compute_challenge = (
 }
 
 /**
- * 
+ *
  *
  * @param {Uint8Array} nonce (output) a nonce pair, size:ecc_frost_ristretto255_sha512_NONCEPAIRSIZE
  * @param {Uint8Array} comm (output) a nonce commitment pair, size:ecc_frost_ristretto255_sha512_NONCECOMMITMENTPAIRSIZE
@@ -5993,7 +6009,7 @@ Module.ecc_frost_ristretto255_sha512_commit_with_randomness = (
 }
 
 /**
- * 
+ *
  *
  * @param {Uint8Array} nonce (output) a nonce pair, size:ecc_frost_ristretto255_sha512_NONCEPAIRSIZE
  * @param {Uint8Array} comm (output) a nonce commitment pair, size:ecc_frost_ristretto255_sha512_NONCECOMMITMENTPAIRSIZE
@@ -6194,7 +6210,7 @@ Module.ecc_frost_ristretto255_sha512_H1 = (
 
 /**
  * Map arbitrary inputs to non-zero Scalar elements of the prime-order group scalar field.
- * 
+ *
  * This is a variant of H2 that folds internally all inputs in the same
  * hash calculation.
  *
@@ -6253,7 +6269,7 @@ Module.ecc_frost_ristretto255_sha512_H2 = (
 
 /**
  * Map arbitrary inputs to non-zero Scalar elements of the prime-order group scalar field.
- * 
+ *
  * This is a variant of H2 that folds internally all inputs in the same
  * hash calculation.
  *
@@ -6322,7 +6338,7 @@ Module.ecc_frost_ristretto255_sha512_H3 = (
 /**
  * This is an alias for the ciphersuite hash function with
  * domain separation applied.
- * 
+ *
  * This is a variant of H3 that folds internally all inputs in the same
  * hash calculation.
  *
@@ -6463,7 +6479,7 @@ Module.ecc_frost_ristretto255_sha512_prime_order_verify = (
 }
 
 /**
- * 
+ *
  *
  * @param {Uint8Array} participant_private_keys (output) MAX_PARTICIPANTS shares of the secret key s, each a tuple consisting of the participant identifier (a NonZeroScalar) and the key share (a Scalar), size:n*ecc_frost_ristretto255_sha512_POINTSIZE
  * @param {Uint8Array} group_public_key (output) public key corresponding to the group signing key, an Element, size:ecc_frost_ristretto255_sha512_ELEMENTSIZE
@@ -6799,7 +6815,7 @@ Module.ecc_pre_schema1_REKEYSIZE = ecc_pre_schema1_REKEYSIZE;
 
 /**
  * Generates a random message suitable to use in the protocol.
- * 
+ *
  * The output can be used in other key derivation algorithms for other
  * symmetric encryption protocols.
  *
@@ -6919,7 +6935,7 @@ Module.ecc_pre_schema1_SigningKeyGen = (
 /**
  * Encrypt a message `m` to delegatee j, given j’s public key (pk_j) and the
  * sender i’s signing key pair (spk_i, ssk_i). Produces a ciphertext C_j.
- * 
+ *
  * This is also called encryption of level 1, since it's used to encrypt to
  * itself (i.e j == i), in order to have later the ciphertext re-encrypted
  * by the proxy with the re-encryption key (level 2).
@@ -6965,7 +6981,7 @@ Module.ecc_pre_schema1_EncryptWithSeed = (
 /**
  * Encrypt a message `m` to delegatee j, given j’s public key (pk_j) and the
  * sender i’s signing key pair (spk_i, ssk_i). Produces a ciphertext C_j.
- * 
+ *
  * This is also called encryption of level 1, since it's used to encrypt to
  * itself (i.e j == i), in order to have later the ciphertext re-encrypted
  * by the proxy with the re-encryption key (level 2).
@@ -7005,7 +7021,7 @@ Module.ecc_pre_schema1_Encrypt = (
 
 /**
  * Generate a re-encryption key from user i (the delegator) to user j (the delegatee).
- * 
+ *
  * Requires the delegator’s private key (sk_i), the delegatee’s public key (pk_j), and
  * the delegator’s signing key pair (spk_i, ssk_i).
  *
@@ -7046,10 +7062,10 @@ Module.ecc_pre_schema1_ReKeyGen = (
  * Re-encrypt a ciphertext encrypted to i (C_i) into a ciphertext encrypted
  * to j (C_j), given a re-encryption key (tk_i_j) and the proxy’s signing key
  * pair (spk, ssk).
- * 
+ *
  * This operation is performed by the proxy and is also called encryption of
  * level 2, since it takes a ciphertext from a level 1 and re-encrypt it.
- * 
+ *
  * It also validate the signature on the encrypted ciphertext and re-encryption key.
  *
  * @param {Uint8Array} C_j_raw (output) a CiphertextLevel2_t structure, size:ecc_pre_schema1_CIPHERTEXTLEVEL2SIZE
@@ -7100,10 +7116,10 @@ Module.ecc_pre_schema1_ReEncrypt = (
 /**
  * Decrypt a signed ciphertext (C_i) given the private key of the recipient
  * i (sk_i). Returns the original message that was encrypted, m.
- * 
+ *
  * This operations is usually performed by the delegator, since it encrypted
  * the message just to be stored and later be re-encrypted by the proxy.
- * 
+ *
  * It also validate the signature on the encrypted ciphertext.
  *
  * @param {Uint8Array} m (output) the original plaintext message, size:ecc_pre_schema1_MESSAGESIZE
@@ -7139,10 +7155,10 @@ Module.ecc_pre_schema1_DecryptLevel1 = (
 /**
  * Decrypt a signed ciphertext (C_j) given the private key of the recipient
  * j (sk_j). Returns the original message that was encrypted, m.
- * 
+ *
  * This operations is usually performed by the delegatee, since it is the proxy
  * that re-encrypt the message and send the ciphertext to the final recipient.
- * 
+ *
  * It also validate the signature on the encrypted ciphertext.
  *
  * @param {Uint8Array} m (output) the original plaintext message, size:ecc_pre_schema1_MESSAGESIZE

@@ -766,18 +766,8 @@ ffibuilder.cdef(
         int password_len
     );
 
-    void ecc_opaque_ristretto255_sha512_CreateRegistrationResponseWithOprfKey(
-        unsigned char *response,
-        unsigned char *request,
-        unsigned char *server_public_key,
-        unsigned char *credential_identifier,
-        int credential_identifier_len,
-        unsigned char *oprf_key
-    );
-
     void ecc_opaque_ristretto255_sha512_CreateRegistrationResponse(
         unsigned char *response,
-        unsigned char *oprf_key,
         unsigned char *request,
         unsigned char *server_public_key,
         unsigned char *credential_identifier,
@@ -785,7 +775,7 @@ ffibuilder.cdef(
         unsigned char *oprf_seed
     );
 
-    void ecc_opaque_ristretto255_sha512_FinalizeRequestWithNonce(
+    void ecc_opaque_ristretto255_sha512_FinalizeRegistrationRequestWithNonce(
         unsigned char *record,
         unsigned char *export_key,
         unsigned char *password,
@@ -800,7 +790,7 @@ ffibuilder.cdef(
         unsigned char *nonce
     );
 
-    void ecc_opaque_ristretto255_sha512_FinalizeRequest(
+    void ecc_opaque_ristretto255_sha512_FinalizeRegistrationRequest(
         unsigned char *record,
         unsigned char *export_key,
         unsigned char *password,
@@ -940,9 +930,7 @@ ffibuilder.cdef(
         unsigned char *ke3_raw,
         unsigned char *session_key,
         unsigned char *export_key,
-        unsigned char *state_raw,
-        unsigned char *password,
-        int password_len,
+        unsigned char *state,
         unsigned char *client_identity,
         int client_identity_len,
         unsigned char *server_identity,
@@ -1025,8 +1013,8 @@ ffibuilder.cdef(
 
     int ecc_opaque_ristretto255_sha512_3DH_ServerFinish(
         unsigned char *session_key,
-        unsigned char *state_raw,
-        unsigned char *ke3_raw
+        unsigned char *state,
+        unsigned char *ke3
     );
 
     void ecc_opaque_ristretto255_sha512_3DH_ResponseWithSecrets(

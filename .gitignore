@@ -6,6 +6,7 @@
 /cmake-build*
 node_modules/
 __pycache__/
+/bindings/js/.idea
 /bindings/js/dist
 /bindings/jvm/.gradle
 /bindings/jvm/.idea
