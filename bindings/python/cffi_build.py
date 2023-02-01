@@ -908,7 +908,7 @@ ffibuilder.cdef(
         int preamble_len
     );
 
-    void ecc_opaque_ristretto255_sha512_3DH_ClientInitWithSecrets(
+    void ecc_opaque_ristretto255_sha512_ClientInitWithSecrets(
         unsigned char *ke1,
         unsigned char *state,
         unsigned char *password,
@@ -919,14 +919,14 @@ ffibuilder.cdef(
         unsigned char *client_keyshare
     );
 
-    void ecc_opaque_ristretto255_sha512_3DH_ClientInit(
+    void ecc_opaque_ristretto255_sha512_ClientInit(
         unsigned char *ke1,
         unsigned char *state,
         unsigned char *password,
         int password_len
     );
 
-    int ecc_opaque_ristretto255_sha512_3DH_ClientFinish(
+    int ecc_opaque_ristretto255_sha512_ClientFinish(
         unsigned char *ke3_raw,
         unsigned char *session_key,
         unsigned char *export_key,
@@ -971,20 +971,20 @@ ffibuilder.cdef(
         int context_len
     );
 
-    void ecc_opaque_ristretto255_sha512_3DH_ServerInitWithSecrets(
+    void ecc_opaque_ristretto255_sha512_ServerInitWithSecrets(
         unsigned char *ke2_raw,
         unsigned char *state_raw,
         unsigned char *server_identity,
         int server_identity_len,
         unsigned char *server_private_key,
         unsigned char *server_public_key,
-        unsigned char *client_identity,
-        int client_identity_len,
         unsigned char *record_raw,
         unsigned char *credential_identifier,
         int credential_identifier_len,
         unsigned char *oprf_seed,
         unsigned char *ke1_raw,
+        unsigned char *client_identity,
+        int client_identity_len,
         unsigned char *context,
         int context_len,
         unsigned char *masking_nonce,
@@ -993,25 +993,25 @@ ffibuilder.cdef(
         unsigned char *server_keyshare
     );
 
-    void ecc_opaque_ristretto255_sha512_3DH_ServerInit(
+    void ecc_opaque_ristretto255_sha512_ServerInit(
         unsigned char *ke2_raw,
         unsigned char *state_raw,
         unsigned char *server_identity,
         int server_identity_len,
         unsigned char *server_private_key,
         unsigned char *server_public_key,
-        unsigned char *client_identity,
-        int client_identity_len,
         unsigned char *record_raw,
         unsigned char *credential_identifier,
         int credential_identifier_len,
         unsigned char *oprf_seed,
         unsigned char *ke1_raw,
+        unsigned char *client_identity,
+        int client_identity_len,
         unsigned char *context,
         int context_len
     );
 
-    int ecc_opaque_ristretto255_sha512_3DH_ServerFinish(
+    int ecc_opaque_ristretto255_sha512_ServerFinish(
         unsigned char *session_key,
         unsigned char *state,
         unsigned char *ke3

@@ -3855,7 +3855,7 @@ def ecc_opaque_ristretto255_sha512_3DH_DeriveKeys(
     return None
 
 
-def ecc_opaque_ristretto255_sha512_3DH_ClientInitWithSecrets(
+def ecc_opaque_ristretto255_sha512_ClientInitWithSecrets(
     ke1: bytearray,
     state: bytearray,
     password: bytes,
@@ -3884,7 +3884,7 @@ def ecc_opaque_ristretto255_sha512_3DH_ClientInitWithSecrets(
     ptr_client_nonce = ffi.from_buffer(client_nonce)
     ptr_client_secret = ffi.from_buffer(client_secret)
     ptr_client_keyshare = ffi.from_buffer(client_keyshare)
-    lib.ecc_opaque_ristretto255_sha512_3DH_ClientInitWithSecrets(
+    lib.ecc_opaque_ristretto255_sha512_ClientInitWithSecrets(
         ptr_ke1,
         ptr_state,
         ptr_password,
@@ -3897,7 +3897,7 @@ def ecc_opaque_ristretto255_sha512_3DH_ClientInitWithSecrets(
     return None
 
 
-def ecc_opaque_ristretto255_sha512_3DH_ClientInit(
+def ecc_opaque_ristretto255_sha512_ClientInit(
     ke1: bytearray,
     state: bytearray,
     password: bytes,
@@ -3914,7 +3914,7 @@ def ecc_opaque_ristretto255_sha512_3DH_ClientInit(
     ptr_ke1 = ffi.from_buffer(ke1)
     ptr_state = ffi.from_buffer(state)
     ptr_password = ffi.from_buffer(password)
-    lib.ecc_opaque_ristretto255_sha512_3DH_ClientInit(
+    lib.ecc_opaque_ristretto255_sha512_ClientInit(
         ptr_ke1,
         ptr_state,
         ptr_password,
@@ -3923,7 +3923,7 @@ def ecc_opaque_ristretto255_sha512_3DH_ClientInit(
     return None
 
 
-def ecc_opaque_ristretto255_sha512_3DH_ClientFinish(
+def ecc_opaque_ristretto255_sha512_ClientFinish(
     ke3_raw: bytearray,
     session_key: bytearray,
     export_key: bytearray,
@@ -3964,7 +3964,7 @@ def ecc_opaque_ristretto255_sha512_3DH_ClientFinish(
     ptr_server_identity = ffi.from_buffer(server_identity)
     ptr_ke2 = ffi.from_buffer(ke2)
     ptr_context = ffi.from_buffer(context)
-    fun_ret = lib.ecc_opaque_ristretto255_sha512_3DH_ClientFinish(
+    fun_ret = lib.ecc_opaque_ristretto255_sha512_ClientFinish(
         ptr_ke3_raw,
         ptr_session_key,
         ptr_export_key,
@@ -4096,20 +4096,20 @@ def ecc_opaque_ristretto255_sha512_3DH_ClientFinalize(
     return fun_ret
 
 
-def ecc_opaque_ristretto255_sha512_3DH_ServerInitWithSecrets(
+def ecc_opaque_ristretto255_sha512_ServerInitWithSecrets(
     ke2_raw: bytearray,
     state_raw: bytearray,
     server_identity: bytes,
     server_identity_len: int,
     server_private_key: bytes,
     server_public_key: bytes,
-    client_identity: bytes,
-    client_identity_len: int,
     record_raw: bytes,
     credential_identifier: bytes,
     credential_identifier_len: int,
     oprf_seed: bytes,
     ke1_raw: bytes,
+    client_identity: bytes,
+    client_identity_len: int,
     context: bytes,
     context_len: int,
     masking_nonce: bytes,
@@ -4127,15 +4127,15 @@ def ecc_opaque_ristretto255_sha512_3DH_ServerInitWithSecrets(
     server_identity_len -- the length of `server_identity`
     server_private_key -- the server's private key, size:ecc_opaque_ristretto255_sha512_Nsk
     server_public_key -- the server's public key, size:ecc_opaque_ristretto255_sha512_Npk
-    client_identity -- the optional encoded server identity, which is set to
-    client_public_key if null, size:client_identity_len
-    client_identity_len -- the length of `client_identity`
     record_raw -- the client's RegistrationUpload structure, size:ecc_opaque_ristretto255_sha512_REGISTRATIONRECORDSIZE
     credential_identifier -- an identifier that uniquely represents the credential
     being registered, size:credential_identifier_len
     credential_identifier_len -- the length of `credential_identifier`
     oprf_seed -- the server-side seed of Nh bytes used to generate an oprf_key, size:ecc_opaque_ristretto255_sha512_Nh
     ke1_raw -- a KE1 message structure, size:ecc_opaque_ristretto255_sha512_KE1SIZE
+    client_identity -- the optional encoded server identity, which is set to
+    client_public_key if null, size:client_identity_len
+    client_identity_len -- the length of `client_identity`
     context -- the application specific context, size:context_len
     context_len -- the length of `context`
     masking_nonce -- size:ecc_opaque_ristretto255_sha512_Nn
@@ -4148,30 +4148,30 @@ def ecc_opaque_ristretto255_sha512_3DH_ServerInitWithSecrets(
     ptr_server_identity = ffi.from_buffer(server_identity)
     ptr_server_private_key = ffi.from_buffer(server_private_key)
     ptr_server_public_key = ffi.from_buffer(server_public_key)
-    ptr_client_identity = ffi.from_buffer(client_identity)
     ptr_record_raw = ffi.from_buffer(record_raw)
     ptr_credential_identifier = ffi.from_buffer(credential_identifier)
     ptr_oprf_seed = ffi.from_buffer(oprf_seed)
     ptr_ke1_raw = ffi.from_buffer(ke1_raw)
+    ptr_client_identity = ffi.from_buffer(client_identity)
     ptr_context = ffi.from_buffer(context)
     ptr_masking_nonce = ffi.from_buffer(masking_nonce)
     ptr_server_nonce = ffi.from_buffer(server_nonce)
     ptr_server_secret = ffi.from_buffer(server_secret)
     ptr_server_keyshare = ffi.from_buffer(server_keyshare)
-    lib.ecc_opaque_ristretto255_sha512_3DH_ServerInitWithSecrets(
+    lib.ecc_opaque_ristretto255_sha512_ServerInitWithSecrets(
         ptr_ke2_raw,
         ptr_state_raw,
         ptr_server_identity,
         server_identity_len,
         ptr_server_private_key,
         ptr_server_public_key,
-        ptr_client_identity,
-        client_identity_len,
         ptr_record_raw,
         ptr_credential_identifier,
         credential_identifier_len,
         ptr_oprf_seed,
         ptr_ke1_raw,
+        ptr_client_identity,
+        client_identity_len,
         ptr_context,
         context_len,
         ptr_masking_nonce,
@@ -4182,20 +4182,20 @@ def ecc_opaque_ristretto255_sha512_3DH_ServerInitWithSecrets(
     return None
 
 
-def ecc_opaque_ristretto255_sha512_3DH_ServerInit(
+def ecc_opaque_ristretto255_sha512_ServerInit(
     ke2_raw: bytearray,
     state_raw: bytearray,
     server_identity: bytes,
     server_identity_len: int,
     server_private_key: bytes,
     server_public_key: bytes,
-    client_identity: bytes,
-    client_identity_len: int,
     record_raw: bytes,
     credential_identifier: bytes,
     credential_identifier_len: int,
     oprf_seed: bytes,
     ke1_raw: bytes,
+    client_identity: bytes,
+    client_identity_len: int,
     context: bytes,
     context_len: int
 ) -> None:
@@ -4209,15 +4209,15 @@ def ecc_opaque_ristretto255_sha512_3DH_ServerInit(
     server_identity_len -- the length of `server_identity`
     server_private_key -- the server's private key, size:ecc_opaque_ristretto255_sha512_Nsk
     server_public_key -- the server's public key, size:ecc_opaque_ristretto255_sha512_Npk
-    client_identity -- the optional encoded server identity, which is set to
-    client_public_key if null, size:client_identity_len
-    client_identity_len -- the length of `client_identity`
     record_raw -- the client's RegistrationUpload structure, size:ecc_opaque_ristretto255_sha512_REGISTRATIONRECORDSIZE
     credential_identifier -- an identifier that uniquely represents the credential
     being registered, size:credential_identifier_len
     credential_identifier_len -- the length of `credential_identifier`
     oprf_seed -- the server-side seed of Nh bytes used to generate an oprf_key, size:ecc_opaque_ristretto255_sha512_Nh
     ke1_raw -- a KE1 message structure, size:ecc_opaque_ristretto255_sha512_KE1SIZE
+    client_identity -- the optional encoded server identity, which is set to
+    client_public_key if null, size:client_identity_len
+    client_identity_len -- the length of `client_identity`
     context -- the application specific context, size:context_len
     context_len -- the length of `context`
     """
@@ -4226,33 +4226,33 @@ def ecc_opaque_ristretto255_sha512_3DH_ServerInit(
     ptr_server_identity = ffi.from_buffer(server_identity)
     ptr_server_private_key = ffi.from_buffer(server_private_key)
     ptr_server_public_key = ffi.from_buffer(server_public_key)
-    ptr_client_identity = ffi.from_buffer(client_identity)
     ptr_record_raw = ffi.from_buffer(record_raw)
     ptr_credential_identifier = ffi.from_buffer(credential_identifier)
     ptr_oprf_seed = ffi.from_buffer(oprf_seed)
     ptr_ke1_raw = ffi.from_buffer(ke1_raw)
+    ptr_client_identity = ffi.from_buffer(client_identity)
     ptr_context = ffi.from_buffer(context)
-    lib.ecc_opaque_ristretto255_sha512_3DH_ServerInit(
+    lib.ecc_opaque_ristretto255_sha512_ServerInit(
         ptr_ke2_raw,
         ptr_state_raw,
         ptr_server_identity,
         server_identity_len,
         ptr_server_private_key,
         ptr_server_public_key,
-        ptr_client_identity,
-        client_identity_len,
         ptr_record_raw,
         ptr_credential_identifier,
         credential_identifier_len,
         ptr_oprf_seed,
         ptr_ke1_raw,
+        ptr_client_identity,
+        client_identity_len,
         ptr_context,
         context_len
     )
     return None
 
 
-def ecc_opaque_ristretto255_sha512_3DH_ServerFinish(
+def ecc_opaque_ristretto255_sha512_ServerFinish(
     session_key: bytearray,
     state: bytearray,
     ke3: bytes
@@ -4268,7 +4268,7 @@ def ecc_opaque_ristretto255_sha512_3DH_ServerFinish(
     ptr_session_key = ffi.from_buffer(session_key)
     ptr_state = ffi.from_buffer(state)
     ptr_ke3 = ffi.from_buffer(ke3)
-    fun_ret = lib.ecc_opaque_ristretto255_sha512_3DH_ServerFinish(
+    fun_ret = lib.ecc_opaque_ristretto255_sha512_ServerFinish(
         ptr_session_key,
         ptr_state,
         ptr_ke3

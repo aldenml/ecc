@@ -205,9 +205,7 @@ static_assert(sizeof(KE3_t) == ecc_opaque_ristretto255_sha512_KE3SIZE, "");
 static_assert(sizeof(ClientState_t) == ecc_opaque_ristretto255_sha512_CLIENTSTATESIZE, "");
 static_assert(sizeof(ServerState_t) == ecc_opaque_ristretto255_sha512_SERVERSTATESIZE, "");
 
-int serializeCleartextCredentials(byte_t *out, const CleartextCredentials_t *credentials);
-
-int serializeCleartextCredentials(byte_t *out, const CleartextCredentials_t *credentials) {
+static int serializeCleartextCredentials(byte_t *out, const CleartextCredentials_t *credentials) {
     const int len = Npk + 2 + credentials->server_identity_len + 2 + credentials->client_identity_len;
 
     int offset = 0;
@@ -363,6 +361,12 @@ void ecc_opaque_ristretto255_sha512_EnvelopeStoreWithNonce(
     // 9. Create Envelope envelope with (envelope_nonce, auth_tag)
     memcpy(envelope->nonce, envelope_nonce, Nn);
 #if ECC_LOG
+    ecc_log("opaque:EnvelopeStoreWithNonce:server_identity", server_identity, server_identity_len);
+    ecc_log("opaque:EnvelopeStoreWithNonce:client_identity", client_identity, client_identity_len);
+    ecc_log("opaque:EnvelopeStoreWithNonce:cleartext_creds_buf", cleartext_creds_buf, cleartext_creds_len);
+    ecc_log("opaque:EnvelopeStoreWithNonce:auth_tag_mac_input", auth_tag_mac_input, auth_tag_mac_input_len);
+    ecc_log("opaque:EnvelopeStoreWithNonce:auth_key", auth_key, sizeof auth_key);
+    ecc_log("opaque:EnvelopeStoreWithNonce:envelope->auth_tag", envelope->auth_tag, sizeof envelope->auth_tag);
     ecc_log("opaque:EnvelopeStoreWithNonce:envelope_nonce", envelope_nonce, Nn);
 #endif
 
@@ -485,6 +489,15 @@ int ecc_opaque_ristretto255_sha512_EnvelopeRecover(
     );
     byte_t expected_tag[64];
     ecc_mac_hmac_sha512(expected_tag, expected_tag_mac_input, expected_tag_mac_input_input_len, auth_key, sizeof auth_key);
+#if ECC_LOG
+    ecc_log("opaque:EnvelopeRecover:server_identity", server_identity, server_identity_len);
+    ecc_log("opaque:EnvelopeRecover:client_identity", client_identity, client_identity_len);
+    ecc_log("opaque:EnvelopeRecover:cleartext_creds_buf", cleartext_creds_buf, cleartext_creds_len);
+    ecc_log("opaque:EnvelopeRecover:expected_tag_mac_input", expected_tag_mac_input, expected_tag_mac_input_input_len);
+    ecc_log("opaque:EnvelopeRecover:auth_key", auth_key, sizeof auth_key);
+    ecc_log("opaque:EnvelopeRecover:expected_tag", expected_tag, sizeof expected_tag);
+    ecc_log("opaque:EnvelopeRecover:envelope->auth_tag", envelope->auth_tag, sizeof envelope->auth_tag);
+#endif
 
     // cleanup stack memory
     ecc_memzero(auth_key_info, sizeof auth_key_info);
@@ -622,15 +635,24 @@ void ecc_opaque_ristretto255_sha512_CreateRegistrationResponse(
 
     // 3. Z = Evaluate(oprf_key, request.data)
     byte_t *Z = response->evaluated_message;
+#if ECC_LOG
+    ecc_log("opaque:CreateRegistrationResponse:request->blinded_message", request->blinded_message, sizeof request->blinded_message);
+#endif
     ecc_voprf_ristretto255_sha512_BlindEvaluate(
         Z,
         oprf_key,
         request->blinded_message
     );
+#if ECC_LOG
+    ecc_log("opaque:CreateRegistrationResponse:Z", Z, Noe);
+#endif
 
     // 4. Create RegistrationResponse response with (Z, server_public_key)
     // 5. Output (response, oprf_key)
     memcpy(response->server_public_key, server_public_key, Npk);
+#if ECC_LOG
+    ecc_log("opaque:CreateRegistrationResponse:server_public_key", server_public_key, Npk);
+#endif
 
     // cleanup stack memory
     ecc_memzero(ikm_info, sizeof ikm_info);
@@ -671,7 +693,7 @@ void ecc_opaque_ristretto255_sha512_FinalizeRegistrationRequestWithNonce(
         response->evaluated_message
     );
 #if ECC_LOG
-    ecc_log("opaque:FinalizeRequestWithNonce:response->data", response->data, sizeof response->data);
+    ecc_log("opaque:FinalizeRequestWithNonce:response->evaluated_message", response->evaluated_message, sizeof response->evaluated_message);
     ecc_log("opaque:FinalizeRequestWithNonce:y", y, sizeof y);
 #endif
 
@@ -1229,7 +1251,7 @@ void ecc_opaque_ristretto255_sha512_3DH_DeriveKeys(
     ecc_memzero(handshake_secret, sizeof handshake_secret);
 }
 
-void ecc_opaque_ristretto255_sha512_3DH_ClientInitWithSecrets(
+void ecc_opaque_ristretto255_sha512_ClientInitWithSecrets(
     byte_t *ke1,
     byte_t *state_ptr,
     const byte_t *password, const int password_len,
@@ -1269,7 +1291,7 @@ void ecc_opaque_ristretto255_sha512_3DH_ClientInitWithSecrets(
     );
 }
 
-void ecc_opaque_ristretto255_sha512_3DH_ClientInit(
+void ecc_opaque_ristretto255_sha512_ClientInit(
     byte_t *ke1,
     byte_t *state_ptr,
     const byte_t *password, const int password_len
@@ -1301,7 +1323,7 @@ void ecc_opaque_ristretto255_sha512_3DH_ClientInit(
     );
 }
 
-int ecc_opaque_ristretto255_sha512_3DH_ClientFinish(
+int ecc_opaque_ristretto255_sha512_ClientFinish(
     byte_t *ke3_raw,
     byte_t *session_key,
     byte_t *export_key, // 64
@@ -1340,6 +1362,10 @@ int ecc_opaque_ristretto255_sha512_3DH_ClientFinish(
         client_identity, client_identity_len,
         mhf
     );
+#if ECC_LOG
+    if (recover_ret != 0)
+        ecc_log("opaque:ClientFinish:RecoverCredentials:false", NULL, 0);
+#endif
 
     // 2. (ke3, session_key) =
     //     ClientFinalize(client_identity, client_private_key, server_identity,
@@ -1355,6 +1381,10 @@ int ecc_opaque_ristretto255_sha512_3DH_ClientFinish(
         ke2_raw,
         context, context_len
     );
+#if ECC_LOG
+    if (recover_ret != 0)
+        ecc_log("opaque:ClientFinish:ClientFinalize:false", NULL, 0);
+#endif
 
     // cleanup stack memory
     ecc_memzero(client_private_key, sizeof client_private_key);
@@ -1558,18 +1588,18 @@ int ecc_opaque_ristretto255_sha512_3DH_ClientFinalize(
     return 0;
 }
 
-void ecc_opaque_ristretto255_sha512_3DH_ServerInitWithSecrets(
+void ecc_opaque_ristretto255_sha512_ServerInitWithSecrets(
     byte_t *ke2_raw,
     byte_t *state_raw,
-    const byte_t *server_identity, int server_identity_len,
+    const byte_t *server_identity, const int server_identity_len,
     const byte_t *server_private_key,
     const byte_t *server_public_key,
-    const byte_t *client_identity, int client_identity_len,
     const byte_t *record_raw,
-    const byte_t *credential_identifier, int credential_identifier_len,
+    const byte_t *credential_identifier, const int credential_identifier_len,
     const byte_t *oprf_seed,
     const byte_t *ke1_raw,
-    const byte_t *context, int context_len,
+    const byte_t *client_identity, const int client_identity_len,
+    const byte_t *context, const int context_len,
     const byte_t *masking_nonce,
     const byte_t *server_nonce,
     const byte_t *server_secret,
@@ -1613,18 +1643,18 @@ void ecc_opaque_ristretto255_sha512_3DH_ServerInitWithSecrets(
     );
 }
 
-void ecc_opaque_ristretto255_sha512_3DH_ServerInit(
+void ecc_opaque_ristretto255_sha512_ServerInit(
     byte_t *ke2_raw,
     byte_t *state_raw,
-    const byte_t *server_identity, int server_identity_len,
+    const byte_t *server_identity, const int server_identity_len,
     const byte_t *server_private_key,
     const byte_t *server_public_key,
-    const byte_t *client_identity, int client_identity_len,
     const byte_t *record_raw,
-    const byte_t *credential_identifier, int credential_identifier_len,
+    const byte_t *credential_identifier, const int credential_identifier_len,
     const byte_t *oprf_seed,
     const byte_t *ke1_raw,
-    const byte_t *context, int context_len
+    const byte_t *client_identity, const int client_identity_len,
+    const byte_t *context, const int context_len
 ) {
     // Steps:
     // 1. response = CreateCredentialResponse(ke1.request, server_public_key, record,
@@ -1660,7 +1690,7 @@ void ecc_opaque_ristretto255_sha512_3DH_ServerInit(
     );
 }
 
-int ecc_opaque_ristretto255_sha512_3DH_ServerFinish(
+int ecc_opaque_ristretto255_sha512_ServerFinish(
     byte_t *session_key,
     byte_t *state_ptr,
     const byte_t *ke3_ptr

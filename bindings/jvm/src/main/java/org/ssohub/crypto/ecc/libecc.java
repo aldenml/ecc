@@ -2558,7 +2558,7 @@ public final class libecc {
      * @param client_secret size:ecc_opaque_ristretto255_sha512_Nsk
      * @param client_keyshare size:ecc_opaque_ristretto255_sha512_Npk
      */
-    public static native void ecc_opaque_ristretto255_sha512_3DH_ClientInitWithSecrets(
+    public static native void ecc_opaque_ristretto255_sha512_ClientInitWithSecrets(
         byte[] ke1,
         byte[] state,
         byte[] password,
@@ -2577,7 +2577,7 @@ public final class libecc {
      * @param password an opaque byte string containing the client's password, size:password_len
      * @param password_len the length of `password`
      */
-    public static native void ecc_opaque_ristretto255_sha512_3DH_ClientInit(
+    public static native void ecc_opaque_ristretto255_sha512_ClientInit(
         byte[] ke1,
         byte[] state,
         byte[] password,
@@ -2603,7 +2603,7 @@ public final class libecc {
      * @param context_len the length of `context`
      * @return 0 if is able to recover credentials and authenticate with the server, else -1
      */
-    public static native int ecc_opaque_ristretto255_sha512_3DH_ClientFinish(
+    public static native int ecc_opaque_ristretto255_sha512_ClientFinish(
         byte[] ke3_raw,
         byte[] session_key,
         byte[] export_key,
@@ -2692,15 +2692,15 @@ public final class libecc {
      * @param server_identity_len the length of `server_identity`
      * @param server_private_key the server's private key, size:ecc_opaque_ristretto255_sha512_Nsk
      * @param server_public_key the server's public key, size:ecc_opaque_ristretto255_sha512_Npk
-     * @param client_identity the optional encoded server identity, which is set to
-     * client_public_key if null, size:client_identity_len
-     * @param client_identity_len the length of `client_identity`
      * @param record_raw the client's RegistrationUpload structure, size:ecc_opaque_ristretto255_sha512_REGISTRATIONRECORDSIZE
      * @param credential_identifier an identifier that uniquely represents the credential
      * being registered, size:credential_identifier_len
      * @param credential_identifier_len the length of `credential_identifier`
      * @param oprf_seed the server-side seed of Nh bytes used to generate an oprf_key, size:ecc_opaque_ristretto255_sha512_Nh
      * @param ke1_raw a KE1 message structure, size:ecc_opaque_ristretto255_sha512_KE1SIZE
+     * @param client_identity the optional encoded server identity, which is set to
+     * client_public_key if null, size:client_identity_len
+     * @param client_identity_len the length of `client_identity`
      * @param context the application specific context, size:context_len
      * @param context_len the length of `context`
      * @param masking_nonce size:ecc_opaque_ristretto255_sha512_Nn
@@ -2708,20 +2708,20 @@ public final class libecc {
      * @param server_secret size:ecc_opaque_ristretto255_sha512_Nsk
      * @param server_keyshare size:ecc_opaque_ristretto255_sha512_Npk
      */
-    public static native void ecc_opaque_ristretto255_sha512_3DH_ServerInitWithSecrets(
+    public static native void ecc_opaque_ristretto255_sha512_ServerInitWithSecrets(
         byte[] ke2_raw,
         byte[] state_raw,
         byte[] server_identity,
         int server_identity_len,
         byte[] server_private_key,
         byte[] server_public_key,
-        byte[] client_identity,
-        int client_identity_len,
         byte[] record_raw,
         byte[] credential_identifier,
         int credential_identifier_len,
         byte[] oprf_seed,
         byte[] ke1_raw,
+        byte[] client_identity,
+        int client_identity_len,
         byte[] context,
         int context_len,
         byte[] masking_nonce,
@@ -2740,32 +2740,32 @@ public final class libecc {
      * @param server_identity_len the length of `server_identity`
      * @param server_private_key the server's private key, size:ecc_opaque_ristretto255_sha512_Nsk
      * @param server_public_key the server's public key, size:ecc_opaque_ristretto255_sha512_Npk
-     * @param client_identity the optional encoded server identity, which is set to
-     * client_public_key if null, size:client_identity_len
-     * @param client_identity_len the length of `client_identity`
      * @param record_raw the client's RegistrationUpload structure, size:ecc_opaque_ristretto255_sha512_REGISTRATIONRECORDSIZE
      * @param credential_identifier an identifier that uniquely represents the credential
      * being registered, size:credential_identifier_len
      * @param credential_identifier_len the length of `credential_identifier`
      * @param oprf_seed the server-side seed of Nh bytes used to generate an oprf_key, size:ecc_opaque_ristretto255_sha512_Nh
      * @param ke1_raw a KE1 message structure, size:ecc_opaque_ristretto255_sha512_KE1SIZE
+     * @param client_identity the optional encoded server identity, which is set to
+     * client_public_key if null, size:client_identity_len
+     * @param client_identity_len the length of `client_identity`
      * @param context the application specific context, size:context_len
      * @param context_len the length of `context`
      */
-    public static native void ecc_opaque_ristretto255_sha512_3DH_ServerInit(
+    public static native void ecc_opaque_ristretto255_sha512_ServerInit(
         byte[] ke2_raw,
         byte[] state_raw,
         byte[] server_identity,
         int server_identity_len,
         byte[] server_private_key,
         byte[] server_public_key,
-        byte[] client_identity,
-        int client_identity_len,
         byte[] record_raw,
         byte[] credential_identifier,
         int credential_identifier_len,
         byte[] oprf_seed,
         byte[] ke1_raw,
+        byte[] client_identity,
+        int client_identity_len,
         byte[] context,
         int context_len
     );
@@ -2778,7 +2778,7 @@ public final class libecc {
      * @param ke3 a KE3 structure, size:ecc_opaque_ristretto255_sha512_KE3SIZE
      * @return 0 if the user was authenticated, else -1
      */
-    public static native int ecc_opaque_ristretto255_sha512_3DH_ServerFinish(
+    public static native int ecc_opaque_ristretto255_sha512_ServerFinish(
         byte[] session_key,
         byte[] state,
         byte[] ke3

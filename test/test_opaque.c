@@ -183,7 +183,7 @@ static void test_opaque_ristretto255_sha512(void **state) {
 
         byte_t client_state[ecc_opaque_ristretto255_sha512_CLIENTSTATESIZE] = {0};
         byte_t ke1[ecc_opaque_ristretto255_sha512_KE1SIZE];
-        ecc_opaque_ristretto255_sha512_3DH_ClientInitWithSecrets(
+        ecc_opaque_ristretto255_sha512_ClientInitWithSecrets(
             ke1,
             client_state,
             password, password_len,
@@ -196,17 +196,17 @@ static void test_opaque_ristretto255_sha512(void **state) {
 
         byte_t server_state[ecc_opaque_ristretto255_sha512_SERVERSTATESIZE] = {0};
         byte_t ke2[ecc_opaque_ristretto255_sha512_KE2SIZE];
-        ecc_opaque_ristretto255_sha512_3DH_ServerInitWithSecrets(
+        ecc_opaque_ristretto255_sha512_ServerInitWithSecrets(
             ke2,
             server_state,
             server_identity, server_identity_len,
             server_private_key,
             server_public_key,
-            client_identity, client_identity_len,
             record,
             credential_identifier, credential_identifier_len,
             oprf_seed,
             ke1,
+            client_identity, client_identity_len,
             Context, ContextLen,
             masking_nonce,
             server_nonce,
@@ -218,7 +218,7 @@ static void test_opaque_ristretto255_sha512(void **state) {
         byte_t ke3[ecc_opaque_ristretto255_sha512_KE3SIZE];
         byte_t client_session_key[64];
         byte_t export_key2[64];
-        int client_finish_ret = ecc_opaque_ristretto255_sha512_3DH_ClientFinish(
+        int client_finish_ret = ecc_opaque_ristretto255_sha512_ClientFinish(
             ke3,
             client_session_key,
             export_key2,
@@ -233,7 +233,7 @@ static void test_opaque_ristretto255_sha512(void **state) {
         assert_int_equal(client_finish_ret, 0);
 
         byte_t server_session_key[64];
-        int server_finish_ret = ecc_opaque_ristretto255_sha512_3DH_ServerFinish(
+        int server_finish_ret = ecc_opaque_ristretto255_sha512_ServerFinish(
             server_session_key,
             server_state,
             ke3
@@ -301,7 +301,7 @@ static void test_opaque_ristretto255_sha512_random1(void **state) {
 
     byte_t client_state[ecc_opaque_ristretto255_sha512_CLIENTSTATESIZE] = {0};
     byte_t ke1[ecc_opaque_ristretto255_sha512_KE1SIZE];
-    ecc_opaque_ristretto255_sha512_3DH_ClientInit(
+    ecc_opaque_ristretto255_sha512_ClientInit(
         ke1,
         client_state,
         password, sizeof password
@@ -309,17 +309,17 @@ static void test_opaque_ristretto255_sha512_random1(void **state) {
 
     byte_t server_state[ecc_opaque_ristretto255_sha512_SERVERSTATESIZE] = {0};
     byte_t ke2[ecc_opaque_ristretto255_sha512_KE2SIZE];
-    ecc_opaque_ristretto255_sha512_3DH_ServerInit(
+    ecc_opaque_ristretto255_sha512_ServerInit(
         ke2,
         server_state,
         NULL, 0,
         server_private_key,
         server_public_key,
-        NULL, 0,
         record,
         credential_identifier, sizeof credential_identifier,
         oprf_seed,
         ke1,
+        NULL, 0,
         NULL, 0
     );
 //    ecc_log("ke2", ke2, sizeof ke2);
@@ -327,7 +327,7 @@ static void test_opaque_ristretto255_sha512_random1(void **state) {
     byte_t ke3[ecc_opaque_ristretto255_sha512_KE3SIZE];
     byte_t client_session_key[64];
     byte_t export_key2[64];
-    int client_finish_ret = ecc_opaque_ristretto255_sha512_3DH_ClientFinish(
+    int client_finish_ret = ecc_opaque_ristretto255_sha512_ClientFinish(
         ke3,
         client_session_key,
         export_key2,
@@ -347,7 +347,7 @@ static void test_opaque_ristretto255_sha512_random1(void **state) {
 //    ecc_log("export_key2", export_key2, sizeof export_key2);
 
     byte_t server_session_key[64];
-    int server_finish_ret = ecc_opaque_ristretto255_sha512_3DH_ServerFinish(
+    int server_finish_ret = ecc_opaque_ristretto255_sha512_ServerFinish(
         server_session_key,
         server_state,
         ke3

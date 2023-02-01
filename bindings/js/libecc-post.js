@@ -4519,7 +4519,7 @@ Module.ecc_opaque_ristretto255_sha512_3DH_DeriveKeys = (
  * @param {Uint8Array} client_secret size:ecc_opaque_ristretto255_sha512_Nsk
  * @param {Uint8Array} client_keyshare size:ecc_opaque_ristretto255_sha512_Npk
  */
-Module.ecc_opaque_ristretto255_sha512_3DH_ClientInitWithSecrets = (
+Module.ecc_opaque_ristretto255_sha512_ClientInitWithSecrets = (
     ke1,
     state,
     password,
@@ -4536,7 +4536,7 @@ Module.ecc_opaque_ristretto255_sha512_3DH_ClientInitWithSecrets = (
     const ptr_client_nonce = mput(client_nonce, ecc_opaque_ristretto255_sha512_Nn);
     const ptr_client_secret = mput(client_secret, ecc_opaque_ristretto255_sha512_Nsk);
     const ptr_client_keyshare = mput(client_keyshare, ecc_opaque_ristretto255_sha512_Npk);
-    _ecc_opaque_ristretto255_sha512_3DH_ClientInitWithSecrets(
+    _ecc_opaque_ristretto255_sha512_ClientInitWithSecrets(
         ptr_ke1,
         ptr_state,
         ptr_password,
@@ -4565,7 +4565,7 @@ Module.ecc_opaque_ristretto255_sha512_3DH_ClientInitWithSecrets = (
  * @param {Uint8Array} password an opaque byte string containing the client's password, size:password_len
  * @param {number} password_len the length of `password`
  */
-Module.ecc_opaque_ristretto255_sha512_3DH_ClientInit = (
+Module.ecc_opaque_ristretto255_sha512_ClientInit = (
     ke1,
     state,
     password,
@@ -4574,7 +4574,7 @@ Module.ecc_opaque_ristretto255_sha512_3DH_ClientInit = (
     const ptr_ke1 = mput(ke1, ecc_opaque_ristretto255_sha512_KE1SIZE);
     const ptr_state = mput(state, ecc_opaque_ristretto255_sha512_CLIENTSTATESIZE);
     const ptr_password = mput(password, password_len);
-    _ecc_opaque_ristretto255_sha512_3DH_ClientInit(
+    _ecc_opaque_ristretto255_sha512_ClientInit(
         ptr_ke1,
         ptr_state,
         ptr_password,
@@ -4606,7 +4606,7 @@ Module.ecc_opaque_ristretto255_sha512_3DH_ClientInit = (
  * @param {number} context_len the length of `context`
  * @return {number} 0 if is able to recover credentials and authenticate with the server, else -1
  */
-Module.ecc_opaque_ristretto255_sha512_3DH_ClientFinish = (
+Module.ecc_opaque_ristretto255_sha512_ClientFinish = (
     ke3_raw,
     session_key,
     export_key,
@@ -4628,7 +4628,7 @@ Module.ecc_opaque_ristretto255_sha512_3DH_ClientFinish = (
     const ptr_server_identity = mput(server_identity, server_identity_len);
     const ptr_ke2 = mput(ke2, ecc_opaque_ristretto255_sha512_KE2SIZE);
     const ptr_context = mput(context, context_len);
-    const fun_ret = _ecc_opaque_ristretto255_sha512_3DH_ClientFinish(
+    const fun_ret = _ecc_opaque_ristretto255_sha512_ClientFinish(
         ptr_ke3_raw,
         ptr_session_key,
         ptr_export_key,
@@ -4805,15 +4805,15 @@ Module.ecc_opaque_ristretto255_sha512_3DH_ClientFinalize = (
  * @param {number} server_identity_len the length of `server_identity`
  * @param {Uint8Array} server_private_key the server's private key, size:ecc_opaque_ristretto255_sha512_Nsk
  * @param {Uint8Array} server_public_key the server's public key, size:ecc_opaque_ristretto255_sha512_Npk
- * @param {Uint8Array} client_identity the optional encoded server identity, which is set to
- * client_public_key if null, size:client_identity_len
- * @param {number} client_identity_len the length of `client_identity`
  * @param {Uint8Array} record_raw the client's RegistrationUpload structure, size:ecc_opaque_ristretto255_sha512_REGISTRATIONRECORDSIZE
  * @param {Uint8Array} credential_identifier an identifier that uniquely represents the credential
  * being registered, size:credential_identifier_len
  * @param {number} credential_identifier_len the length of `credential_identifier`
  * @param {Uint8Array} oprf_seed the server-side seed of Nh bytes used to generate an oprf_key, size:ecc_opaque_ristretto255_sha512_Nh
  * @param {Uint8Array} ke1_raw a KE1 message structure, size:ecc_opaque_ristretto255_sha512_KE1SIZE
+ * @param {Uint8Array} client_identity the optional encoded server identity, which is set to
+ * client_public_key if null, size:client_identity_len
+ * @param {number} client_identity_len the length of `client_identity`
  * @param {Uint8Array} context the application specific context, size:context_len
  * @param {number} context_len the length of `context`
  * @param {Uint8Array} masking_nonce size:ecc_opaque_ristretto255_sha512_Nn
@@ -4821,20 +4821,20 @@ Module.ecc_opaque_ristretto255_sha512_3DH_ClientFinalize = (
  * @param {Uint8Array} server_secret size:ecc_opaque_ristretto255_sha512_Nsk
  * @param {Uint8Array} server_keyshare size:ecc_opaque_ristretto255_sha512_Npk
  */
-Module.ecc_opaque_ristretto255_sha512_3DH_ServerInitWithSecrets = (
+Module.ecc_opaque_ristretto255_sha512_ServerInitWithSecrets = (
     ke2_raw,
     state_raw,
     server_identity,
     server_identity_len,
     server_private_key,
     server_public_key,
-    client_identity,
-    client_identity_len,
     record_raw,
     credential_identifier,
     credential_identifier_len,
     oprf_seed,
     ke1_raw,
+    client_identity,
+    client_identity_len,
     context,
     context_len,
     masking_nonce,
@@ -4847,30 +4847,30 @@ Module.ecc_opaque_ristretto255_sha512_3DH_ServerInitWithSecrets = (
     const ptr_server_identity = mput(server_identity, server_identity_len);
     const ptr_server_private_key = mput(server_private_key, ecc_opaque_ristretto255_sha512_Nsk);
     const ptr_server_public_key = mput(server_public_key, ecc_opaque_ristretto255_sha512_Npk);
-    const ptr_client_identity = mput(client_identity, client_identity_len);
     const ptr_record_raw = mput(record_raw, ecc_opaque_ristretto255_sha512_REGISTRATIONRECORDSIZE);
     const ptr_credential_identifier = mput(credential_identifier, credential_identifier_len);
     const ptr_oprf_seed = mput(oprf_seed, ecc_opaque_ristretto255_sha512_Nh);
     const ptr_ke1_raw = mput(ke1_raw, ecc_opaque_ristretto255_sha512_KE1SIZE);
+    const ptr_client_identity = mput(client_identity, client_identity_len);
     const ptr_context = mput(context, context_len);
     const ptr_masking_nonce = mput(masking_nonce, ecc_opaque_ristretto255_sha512_Nn);
     const ptr_server_nonce = mput(server_nonce, ecc_opaque_ristretto255_sha512_Nn);
     const ptr_server_secret = mput(server_secret, ecc_opaque_ristretto255_sha512_Nsk);
     const ptr_server_keyshare = mput(server_keyshare, ecc_opaque_ristretto255_sha512_Npk);
-    _ecc_opaque_ristretto255_sha512_3DH_ServerInitWithSecrets(
+    _ecc_opaque_ristretto255_sha512_ServerInitWithSecrets(
         ptr_ke2_raw,
         ptr_state_raw,
         ptr_server_identity,
         server_identity_len,
         ptr_server_private_key,
         ptr_server_public_key,
-        ptr_client_identity,
-        client_identity_len,
         ptr_record_raw,
         ptr_credential_identifier,
         credential_identifier_len,
         ptr_oprf_seed,
         ptr_ke1_raw,
+        ptr_client_identity,
+        client_identity_len,
         ptr_context,
         context_len,
         ptr_masking_nonce,
@@ -4885,11 +4885,11 @@ Module.ecc_opaque_ristretto255_sha512_3DH_ServerInitWithSecrets = (
     mfree(ptr_server_identity, server_identity_len);
     mfree(ptr_server_private_key, ecc_opaque_ristretto255_sha512_Nsk);
     mfree(ptr_server_public_key, ecc_opaque_ristretto255_sha512_Npk);
-    mfree(ptr_client_identity, client_identity_len);
     mfree(ptr_record_raw, ecc_opaque_ristretto255_sha512_REGISTRATIONRECORDSIZE);
     mfree(ptr_credential_identifier, credential_identifier_len);
     mfree(ptr_oprf_seed, ecc_opaque_ristretto255_sha512_Nh);
     mfree(ptr_ke1_raw, ecc_opaque_ristretto255_sha512_KE1SIZE);
+    mfree(ptr_client_identity, client_identity_len);
     mfree(ptr_context, context_len);
     mfree(ptr_masking_nonce, ecc_opaque_ristretto255_sha512_Nn);
     mfree(ptr_server_nonce, ecc_opaque_ristretto255_sha512_Nn);
@@ -4907,32 +4907,32 @@ Module.ecc_opaque_ristretto255_sha512_3DH_ServerInitWithSecrets = (
  * @param {number} server_identity_len the length of `server_identity`
  * @param {Uint8Array} server_private_key the server's private key, size:ecc_opaque_ristretto255_sha512_Nsk
  * @param {Uint8Array} server_public_key the server's public key, size:ecc_opaque_ristretto255_sha512_Npk
- * @param {Uint8Array} client_identity the optional encoded server identity, which is set to
- * client_public_key if null, size:client_identity_len
- * @param {number} client_identity_len the length of `client_identity`
  * @param {Uint8Array} record_raw the client's RegistrationUpload structure, size:ecc_opaque_ristretto255_sha512_REGISTRATIONRECORDSIZE
  * @param {Uint8Array} credential_identifier an identifier that uniquely represents the credential
  * being registered, size:credential_identifier_len
  * @param {number} credential_identifier_len the length of `credential_identifier`
  * @param {Uint8Array} oprf_seed the server-side seed of Nh bytes used to generate an oprf_key, size:ecc_opaque_ristretto255_sha512_Nh
  * @param {Uint8Array} ke1_raw a KE1 message structure, size:ecc_opaque_ristretto255_sha512_KE1SIZE
+ * @param {Uint8Array} client_identity the optional encoded server identity, which is set to
+ * client_public_key if null, size:client_identity_len
+ * @param {number} client_identity_len the length of `client_identity`
  * @param {Uint8Array} context the application specific context, size:context_len
  * @param {number} context_len the length of `context`
  */
-Module.ecc_opaque_ristretto255_sha512_3DH_ServerInit = (
+Module.ecc_opaque_ristretto255_sha512_ServerInit = (
     ke2_raw,
     state_raw,
     server_identity,
     server_identity_len,
     server_private_key,
     server_public_key,
-    client_identity,
-    client_identity_len,
     record_raw,
     credential_identifier,
     credential_identifier_len,
     oprf_seed,
     ke1_raw,
+    client_identity,
+    client_identity_len,
     context,
     context_len,
 ) => {
@@ -4941,26 +4941,26 @@ Module.ecc_opaque_ristretto255_sha512_3DH_ServerInit = (
     const ptr_server_identity = mput(server_identity, server_identity_len);
     const ptr_server_private_key = mput(server_private_key, ecc_opaque_ristretto255_sha512_Nsk);
     const ptr_server_public_key = mput(server_public_key, ecc_opaque_ristretto255_sha512_Npk);
-    const ptr_client_identity = mput(client_identity, client_identity_len);
     const ptr_record_raw = mput(record_raw, ecc_opaque_ristretto255_sha512_REGISTRATIONRECORDSIZE);
     const ptr_credential_identifier = mput(credential_identifier, credential_identifier_len);
     const ptr_oprf_seed = mput(oprf_seed, ecc_opaque_ristretto255_sha512_Nh);
     const ptr_ke1_raw = mput(ke1_raw, ecc_opaque_ristretto255_sha512_KE1SIZE);
+    const ptr_client_identity = mput(client_identity, client_identity_len);
     const ptr_context = mput(context, context_len);
-    _ecc_opaque_ristretto255_sha512_3DH_ServerInit(
+    _ecc_opaque_ristretto255_sha512_ServerInit(
         ptr_ke2_raw,
         ptr_state_raw,
         ptr_server_identity,
         server_identity_len,
         ptr_server_private_key,
         ptr_server_public_key,
-        ptr_client_identity,
-        client_identity_len,
         ptr_record_raw,
         ptr_credential_identifier,
         credential_identifier_len,
         ptr_oprf_seed,
         ptr_ke1_raw,
+        ptr_client_identity,
+        client_identity_len,
         ptr_context,
         context_len,
     );
@@ -4971,11 +4971,11 @@ Module.ecc_opaque_ristretto255_sha512_3DH_ServerInit = (
     mfree(ptr_server_identity, server_identity_len);
     mfree(ptr_server_private_key, ecc_opaque_ristretto255_sha512_Nsk);
     mfree(ptr_server_public_key, ecc_opaque_ristretto255_sha512_Npk);
-    mfree(ptr_client_identity, client_identity_len);
     mfree(ptr_record_raw, ecc_opaque_ristretto255_sha512_REGISTRATIONRECORDSIZE);
     mfree(ptr_credential_identifier, credential_identifier_len);
     mfree(ptr_oprf_seed, ecc_opaque_ristretto255_sha512_Nh);
     mfree(ptr_ke1_raw, ecc_opaque_ristretto255_sha512_KE1SIZE);
+    mfree(ptr_client_identity, client_identity_len);
     mfree(ptr_context, context_len);
 }
 
@@ -4987,7 +4987,7 @@ Module.ecc_opaque_ristretto255_sha512_3DH_ServerInit = (
  * @param {Uint8Array} ke3 a KE3 structure, size:ecc_opaque_ristretto255_sha512_KE3SIZE
  * @return {number} 0 if the user was authenticated, else -1
  */
-Module.ecc_opaque_ristretto255_sha512_3DH_ServerFinish = (
+Module.ecc_opaque_ristretto255_sha512_ServerFinish = (
     session_key,
     state,
     ke3,
@@ -4995,7 +4995,7 @@ Module.ecc_opaque_ristretto255_sha512_3DH_ServerFinish = (
     const ptr_session_key = mput(session_key, 64);
     const ptr_state = mput(state, ecc_opaque_ristretto255_sha512_SERVERSTATESIZE);
     const ptr_ke3 = mput(ke3, ecc_opaque_ristretto255_sha512_KE3SIZE);
-    const fun_ret = _ecc_opaque_ristretto255_sha512_3DH_ServerFinish(
+    const fun_ret = _ecc_opaque_ristretto255_sha512_ServerFinish(
         ptr_session_key,
         ptr_state,
         ptr_ke3,
