@@ -9,212 +9,304 @@ import {
     hex2bin,
     bin2hex,
     randombytes,
+    libecc_promise,
+    libecc, str2bin,
 } from "./util.js";
-import libecc_module from "./libecc.js";
 import {
-    opaque_ristretto255_sha512_CreateRegistrationRequest,
-    opaque_ristretto255_sha512_CreateRegistrationResponse,
-    opaque_ristretto255_sha512_FinalizeRequest,
-    opaque_ristretto255_sha512_3DH_ClientInit,
-    opaque_ristretto255_sha512_3DH_ServerInit,
-    opaque_ristretto255_sha512_3DH_ClientFinish,
-    opaque_ristretto255_sha512_3DH_ServerFinish,
-    opaque_ristretto255_sha512_GenerateAuthKeyPair,
+    opaque_RecoverPublicKey,
+    opaque_CreateRegistrationRequestWithBlind,
+    opaque_CreateRegistrationRequest,
+    opaque_CreateRegistrationResponse,
+    opaque_FinalizeRegistrationRequestWithNonce,
+    opaque_FinalizeRegistrationRequest,
+    opaque_ClientInitWithSecrets,
+    opaque_ClientInit,
+    opaque_ServerInitWithSecrets,
+    opaque_ServerInit,
+    opaque_ClientFinish,
+    opaque_ServerFinish,
+    opaque_GenerateAuthKeyPair,
 } from "./opaque.js"
 import assert from "assert";
 
 describe("OPAQUE(ristretto255, SHA-512)", () => {
 
-    it("Test 1 (random input)", async () => {
-        // client
-        const password = await randombytes(10);
-
-        // server
-        const oprf_seed = await randombytes(64);
-        const keys = await opaque_ristretto255_sha512_GenerateAuthKeyPair();
-        const server_private_key = keys.private_key;
-        const server_public_key = keys.public_key;
-        const credential_identifier = await randombytes(10);
-
-        // registration flow
-        const regReq = await opaque_ristretto255_sha512_CreateRegistrationRequest(password);
-
-        const regRes = await opaque_ristretto255_sha512_CreateRegistrationResponse(
-            regReq.request,
-            server_public_key,
-            credential_identifier,
-            oprf_seed,
-        );
-
-        const regEnd = await opaque_ristretto255_sha512_FinalizeRequest(
-            password,
-            regReq.blind,
-            regRes.response,
-            null,
-            null,
-        );
-
-        // tinker with the password
-        //password[0] = 0;
-
-        // authentication flow
-        const client_state = new Uint8Array(361);
-        const ke1 = await opaque_ristretto255_sha512_3DH_ClientInit(
-            client_state,
-            password,
-        );
-
-        const server_state = new Uint8Array(128);
-        const ke2 = await opaque_ristretto255_sha512_3DH_ServerInit(
-            server_state,
-            null,
-            server_private_key,
-            server_public_key,
-            null,
-            regEnd.record,
-            credential_identifier,
-            oprf_seed,
-            ke1,
-            null,
-        );
-
-        const clientEnd = await opaque_ristretto255_sha512_3DH_ClientFinish(
-            client_state,
-            null,
-            null,
-            ke2,
-        );
-        assert.strictEqual(clientEnd.finish_ret, 0);
-
-        const serverEnd = await opaque_ristretto255_sha512_3DH_ServerFinish(
-            server_state,
-            clientEnd.ke3,
-        );
-        assert.strictEqual(serverEnd.finish_ret, 0);
-
-        assert.deepStrictEqual(clientEnd.session_key, serverEnd.session_key);
-
-        assert.deepStrictEqual(regEnd.export_key, clientEnd.export_key);
-    });
-
-    it("test vector 1", async () => {
-        const libecc = await libecc_module();
+    it("test protocol with known values", async () => {
+        await libecc_promise;
 
         const context = hex2bin("4f50415155452d504f43");
-        const oprf_seed = hex2bin("5c4f99877d253be5817b4b03f37b6da680b0d5671d1ec5351fa61c5d82eab28b9de4c4e170f27e433ba377c71c49aa62ad26391ee1cac17011d8a7e9406657c8");
-        const credential_identifier = hex2bin("31323334");
-        const password = hex2bin("436f7272656374486f72736542617474657279537461706c65");
-        const envelope_nonce = hex2bin("71b8f14b7a1059cdadc414c409064a22cf9e970b0ffc6f1fc6fdd539c4676775");
-        const masking_nonce = hex2bin("54f9341ca183700f6b6acf28dbfe4a86afad788805de49f2d680ab86ff39ed7f");
-        const server_private_key = hex2bin("16eb9dc74a3df2033cd738bf2cfb7a3670c569d7749f284b2b241cb237e7d10f");
-        const server_public_key = hex2bin("18d5035fd0a9c1d6412226df037125901a43f4dff660c0549d402f672bcc0933");
-        const server_nonce = hex2bin("f9c5ec75a8cd571370add249e99cb8a8c43f6ef05610ac6e354642bf4fedbf69");
-        const client_nonce = hex2bin("804133133e7ee6836c8515752e24bb44d323fef4ead34cde967798f2e9784f69");
-        const server_keyshare = hex2bin("6e77d4749eb304c4d74be9457c597546bc22aed699225499910fc913b3e90712");
-        const client_keyshare = hex2bin("f67926bd036c5dc4971816b9376e9f64737f361ef8269c18f69f1ab555e96d4a");
-        const server_private_keyshare = hex2bin("f8e3e31543dd6fc86833296726773d51158291ab9afd666bb55dce83474c1101");
-        const client_private_keyshare = hex2bin("4230d62ea740b13e178185fc517cf2c313e6908c4cd9fb42154870ff3490c608");
-        const blind_registration = hex2bin("c62937d17dc9aa213c9038f84fe8c5bf3d953356db01c4d48acb7cae48e6a504");
-        const blind_login = hex2bin("b5f458822ea11c900ad776e38e29d7be361f75b4d79b55ad74923299bf8d6503");
 
-        let registration_request = new Uint8Array(libecc.ecc_opaque_ristretto255_sha512_REGISTRATIONREQUESTSIZE);
-        libecc.ecc_opaque_ristretto255_sha512_CreateRegistrationRequestWithBlind(
-            registration_request,
-            password, password.length,
-            blind_registration
+        const clientInputs = {
+            serverIdentity: null,
+            clientIdentity: null,
+            password: hex2bin("436f7272656374486f72736542617474657279537461706c65"),
+        };
+
+        const serverInputs = {
+            serverPrivateKey: hex2bin("47451a85372f8b3537e249d7b54188091fb18edde78094b43e2ba42b5eb89f0d"),
+            serverPublicKey: hex2bin("b2fe7af9f48cc502d016729d2fe25cdd433f2c4bc904660b2a382c9b79df1a78"),
+            credentialIdentifier: hex2bin("31323334"),
+            serverIdentity: null,
+            clientIdentity: null,
+            oprfSeed: hex2bin("f433d0227b0b9dd54f7c4422b600e764e47fb503f1f9a0f0a47c6606b054a7fdc65347f1a08f277e22358bbabe26f823fca82c7848e9a75661f4ec5d5c1989ef"),
+
+        };
+
+        assert.deepStrictEqual(serverInputs.serverPublicKey, opaque_RecoverPublicKey(serverInputs.serverPrivateKey));
+
+        const blindRegistration = hex2bin("76cfbfe758db884bebb33582331ba9f159720ca8784a2a070a265d9c2d6abe01");
+        const request = opaque_CreateRegistrationRequestWithBlind(clientInputs.password, blindRegistration);
+        const registrationRequest = request.registrationRequest;
+
+        assert.strictEqual(bin2hex(registrationRequest), "62235332ae15911d69812e9eeb6ac8fe4fa0ffc7590831d5c5e1631e01049276");
+
+        const registrationResponse = opaque_CreateRegistrationResponse(
+            registrationRequest,
+            serverInputs.serverPublicKey,
+            serverInputs.credentialIdentifier,
+            serverInputs.oprfSeed,
         );
-        assert.strictEqual(bin2hex(registration_request), "7e4f1ab9fbd6bd61d85d3ccc2170513bc574aac7da4ec4d9c3e336f82788f86e");
 
-        let registration_response = new Uint8Array(libecc.ecc_opaque_ristretto255_sha512_REGISTRATIONRESPONSESIZE);
-        libecc.ecc_opaque_ristretto255_sha512_CreateRegistrationResponse(
-            registration_response,
-            registration_request,
-            server_public_key,
-            credential_identifier, credential_identifier.length,
-            oprf_seed
-        );
-        assert.strictEqual(bin2hex(registration_response), "2c5ee2986e4eeec3f2191d61292058cfb5b0d0cd6d356f19876fe5028ba6f74c18d5035fd0a9c1d6412226df037125901a43f4dff660c0549d402f672bcc0933");
+        assert.strictEqual(bin2hex(registrationResponse), "6268d13fea98ebc8e6b88d0b3cc8a78d2ac8fa8efc741cd2e966940c52c31c71b2fe7af9f48cc502d016729d2fe25cdd433f2c4bc904660b2a382c9b79df1a78");
 
-        let record = new Uint8Array(libecc.ecc_opaque_ristretto255_sha512_REGISTRATIONRECORDSIZE);
-        let export_key = new Uint8Array(64);
-        libecc.ecc_opaque_ristretto255_sha512_FinalizeRegistrationRequestWithNonce(
-            record,
-            export_key,
-            blind_registration,
-            registration_response,
-            new Uint8Array(0), 0,
-            new Uint8Array(0), 0,
+        const envelopeNonce = hex2bin("ac13171b2f17bc2c74997f0fce1e1f35bec6b91fe2e12dbd323d23ba7a38dfec");
+        const finalizeRequest = opaque_FinalizeRegistrationRequestWithNonce(
+            clientInputs.password,
+            blindRegistration,
+            registrationResponse,
+            clientInputs.serverIdentity,
+            clientInputs.clientIdentity,
             libecc.ecc_opaque_ristretto255_sha512_MHF_IDENTITY,
-            envelope_nonce
+            envelopeNonce,
+        );
+        const registrationRecord = finalizeRequest.registrationRecord;
+        const exportKey = finalizeRequest.exportKey;
+
+        assert.strictEqual(bin2hex(registrationRecord), "8e5e5c04b2154336fa52ac691eb6df5f59ec7315b8467b0bba1ed4f413043b449afea0ddedbbce5c083c5d5d02aa5218bcc7100f541d841bb5974f084f7aa0b929399feb39efd17e13ce1035cbb23251da3b5126a574b239c7b73519d8847e2fac13171b2f17bc2c74997f0fce1e1f35bec6b91fe2e12dbd323d23ba7a38dfec8e8bde8d4eb9e171240b3d2dfb43ef93efe5cd15412614b3df11ecb58890047e2fa31c283e7c58c40495226cfa0ed7756e493431b85c464aad7fdaaf1ab41ac7");
+
+        const clientState = new Uint8Array(libecc.ecc_opaque_ristretto255_sha512_CLIENTSTATESIZE);
+        const blindLogin = hex2bin("6ecc102d2e7a7cf49617aad7bbe188556792d4acd60a1a8a8d2b65d4b0790308");
+        const clientNonce = hex2bin("da7e07376d6d6f034cfa9bb537d11b8c6b4238c334333d1f0aebb380cae6a6cc");
+        const clientPrivateKeyshare = hex2bin("22c919134c9bdd9dc0c5ef3450f18b54820f43f646a95223bf4a85b2018c2001");
+        const clientKeyshare = hex2bin("0c3a00c961fead8a16f818929cc976f0475e4f723519318b96f4947a7a5f9663");
+        const ke1 = opaque_ClientInitWithSecrets(
+            clientState,
+            clientInputs.password,
+            blindLogin,
+            clientNonce,
+            clientPrivateKeyshare,
+            clientKeyshare
         );
 
-        assert.strictEqual(bin2hex(record), "a2da2ce00092a40575c5b1e62e21ac85c11a59384bd712bf64dc6bd1736bfc5941ebbefe623599f5f9b0992ddb5af4ef7f0ca6f7f2d64683134e1eba7bcf4daae10f174a22a050b3cd60917b3b527e3d3758c399f16c4dbefbffb0afd790eb220000000000000000000000000000000000000000000000000000000000000000f949f9f0ecb8875ea148d402e33571f504cf2d7c84157aa4faed419bf557a53de14d69bc3988aa08e75a04c6b5cac9640c06233a79f7b20a0faa23ec534002d5");
+        assert.strictEqual(bin2hex(ke1), "1670c409ebb699a6012629451d218d42a34eddba1d2978536c45e199c60a0b4eda7e07376d6d6f034cfa9bb537d11b8c6b4238c334333d1f0aebb380cae6a6cc0c3a00c961fead8a16f818929cc976f0475e4f723519318b96f4947a7a5f9663");
 
-        let client_state = new Uint8Array(libecc.ecc_opaque_ristretto255_sha512_CLIENTSTATESIZE);
-        let ke1 = new Uint8Array(libecc.ecc_opaque_ristretto255_sha512_KE1SIZE);
-        libecc.ecc_opaque_ristretto255_sha512_3DH_ClientInitWithSecrets(
+        const serverState = new Uint8Array(libecc.ecc_opaque_ristretto255_sha512_SERVERSTATESIZE);
+        const maskingNonce = hex2bin("38fe59af0df2c79f57b8780278f5ae47355fe1f817119041951c80f612fdfc6d");
+        const serverNonce = hex2bin("71cd9960ecef2fe0d0f7494986fa3d8b2bb01963537e60efb13981e138e3d4a1");
+        const serverPrivateKeyshare = hex2bin("2e842960258a95e28bcfef489cffd19d8ec99cc1375d840f96936da7dbb0b40d");
+        const serverKeyshare = hex2bin("c8c39f573135474c51660b02425bca633e339cec4e1acc69c94dd48497fe4028");
+        const ke2 = opaque_ServerInitWithSecrets(
+            serverState,
+            serverInputs.serverIdentity,
+            serverInputs.serverPrivateKey,
+            serverInputs.serverPublicKey,
+            registrationRecord,
+            serverInputs.credentialIdentifier,
+            serverInputs.oprfSeed,
             ke1,
-            client_state,
-            password, password.length,
-            blind_login,
-            client_nonce,
-            client_private_keyshare,
-            client_keyshare
+            serverInputs.clientIdentity,
+            context,
+            maskingNonce,
+            serverNonce,
+            serverPrivateKeyshare,
+            serverKeyshare,
         );
 
-        assert.strictEqual(bin2hex(ke1), "30380e85ebd3f712ecf3f3bb59505214c1fbabdeb98ea6f19d9ed499ac640c51804133133e7ee6836c8515752e24bb44d323fef4ead34cde967798f2e9784f69f67926bd036c5dc4971816b9376e9f64737f361ef8269c18f69f1ab555e96d4a");
+        assert.strictEqual(bin2hex(ke2), "36b4d06f413b72004392d7359cd6a998c667533203d6a671afe81ca09a282f7238fe59af0df2c79f57b8780278f5ae47355fe1f817119041951c80f612fdfc6d378cc6b0113bf0b6afd9e0728e62ba793d5d25bb97794c154d036bf09c98c472368bffc4e35b7dc48f5a32dd3fede3b9e563f7a170d0e082d02c0a105cdf1ee0ea1928202076ff37ce174f2c669d52d8adc424e925a3bc9a4ca5ce16d9b7a1791ff7e47a0d2fa42424e5476f8cfa7bb20b2796ad877295a996ffcb049313f4e971cd9960ecef2fe0d0f7494986fa3d8b2bb01963537e60efb13981e138e3d4a1c8c39f573135474c51660b02425bca633e339cec4e1acc69c94dd48497fe402848f3b062916ea7666973222944dabe1027e5bea84b1b5d46dab64b1c6eda3170d4c9adba8afa61eb4153061d528b39102f32ecda7d7625dbc229e6630a607e03");
 
-        let server_state = new Uint8Array(libecc.ecc_opaque_ristretto255_sha512_SERVERSTATESIZE);
-        let ke2 = new Uint8Array(libecc.ecc_opaque_ristretto255_sha512_KE2SIZE);
-        libecc.ecc_opaque_ristretto255_sha512_3DH_ServerInitWithSecrets(
-            ke2,
-            server_state,
-            null, 0,
-            server_private_key,
-            server_public_key,
-            null, 0,
-            record,
-            credential_identifier, credential_identifier.length,
-            oprf_seed,
-            ke1,
-            context, context.length,
-            masking_nonce,
-            server_nonce,
-            server_private_keyshare,
-            server_keyshare
-        );
-
-        assert.strictEqual(bin2hex(ke2), "bcb6f228b24fccedb96a754f9531ec696079951ac7661a070e77739c5779f40754f9341ca183700f6b6acf28dbfe4a86afad788805de49f2d680ab86ff39ed7f0062edf06de0176d5ee8b22dee02f960ad1a28546b6722a9a1504a8715d7c8f6f6e30e875b24b346c3c3c3cd5bee8fa78cceebb795a26331e7319799d3990e75318df9ac592479ad4028e0164a9c6e26058b6df67eae674abffbcb0b455e0c73381dcd7cb6da63c4bc969a95f6881e5411b4ef9a2671073018d5f2159a05ab1df9c5ec75a8cd571370add249e99cb8a8c43f6ef05610ac6e354642bf4fedbf696e77d4749eb304c4d74be9457c597546bc22aed699225499910fc913b3e90712a5909a4c80a7ab569f9c30e16482ddfea0d3027c6ee721e740209bf91dec5c6bd37d62a899d7578b9e6d7587aa0d58f88c97c6efadc810f203269aa76ad3de33");
-
-        let ke3 = new Uint8Array(libecc.ecc_opaque_ristretto255_sha512_KE3SIZE);
-        let client_session_key = new Uint8Array(64);
-        let export_key2 = new Uint8Array(64);
-        const client_finish_ret = libecc.ecc_opaque_ristretto255_sha512_3DH_ClientFinish(
-            ke3,
-            client_session_key,
-            export_key2,
-            client_state,
-            null, 0,
-            null, 0,
+        const clientFinishResult = opaque_ClientFinish(
+            clientState,
+            clientInputs.clientIdentity,
+            clientInputs.serverIdentity,
             ke2,
             libecc.ecc_opaque_ristretto255_sha512_MHF_IDENTITY,
-            context, context.length,
+            context,
         );
-        // assert.strictEqual(bin2hex(ke3), "93430894d8d91ac696b0573436e823ecc20e5e6771e6b8abd7a44a1a7c2709f50a9fc65ff5c1322b49b0dc8741d2e45da4fdf353b741ebd8adf5b9dcae02e42a");
-        // assert.strictEqual(client_finish_ret, 0);
 
-        let server_session_key = new Uint8Array(64);
-        const server_finish_ret = libecc.ecc_opaque_ristretto255_sha512_3DH_ServerFinish(
-            server_session_key,
-            server_state,
-            ke3
-        );
-        // assert.strictEqual(server_finish_ret, 0);
-        //
-        // assert.deepStrictEqual(client_session_key, server_session_key);
-        // assert.deepStrictEqual(export_key, export_key2);
-        //
-        // assert.strictEqual(bin2hex(client_session_key), "baaa4ff93aaa7e195600f7b8d49956d6929c84b43573f7617a4c4bae96030b5b1c85fea55ae4984883e0e74f95c14bc8734da220647a1948f19a30e8fd923d24");
-        // assert.strictEqual(bin2hex(export_key), "36596118f765de69bd6d5e9b8bf0e2c26dd2f64ea2a712e284614b6b90949d2ca1a647e9f0a131f88a9a28f54290b65bed006ae8d717c461ce9bddc109e44aed");
+        const ke3 = clientFinishResult.ke3;
+
+        assert.strictEqual(clientFinishResult.result, 0);
+        assert.deepStrictEqual(clientFinishResult.exportKey, exportKey);
+        assert.strictEqual(bin2hex(ke3), "4e23f0f84a5261918a7fc23bf1978a935cf4e320d56984079f8c7f4a54847b9e979f519928c5898927cf6aa8d51ac42dc2d0f5840956caa3a34dbc55ce74415f");
+
+        const serverFinishResult = opaque_ServerFinish(serverState, ke3);
+
+        assert.strictEqual(serverFinishResult.result, 0);
+        assert.deepStrictEqual(serverFinishResult.sessionKey, clientFinishResult.sessionKey);
     });
+
+    it("test protocol with random values", async () => {
+        await libecc_promise;
+
+        const context = randombytes(10);
+
+        const clientInputs = {
+            serverIdentity: str2bin("demo.ssohub.org"),
+            clientIdentity: str2bin("user1"),
+            password: randombytes(20),
+        };
+
+        const serverKeyPair = opaque_GenerateAuthKeyPair();
+
+        const serverInputs = {
+            serverPrivateKey: serverKeyPair.privateKey,
+            serverPublicKey: serverKeyPair.publicKey,
+            credentialIdentifier: randombytes(10),
+            serverIdentity: str2bin("demo.ssohub.org"),
+            clientIdentity: str2bin("user1"),
+            oprfSeed: randombytes(libecc.ecc_opaque_ristretto255_sha512_Nh),
+        };
+
+        const request = opaque_CreateRegistrationRequest(clientInputs.password);
+        const registrationRequest = request.registrationRequest;
+
+        const registrationResponse = opaque_CreateRegistrationResponse(
+            registrationRequest,
+            serverInputs.serverPublicKey,
+            serverInputs.credentialIdentifier,
+            serverInputs.oprfSeed,
+        );
+
+        const finalizeRequest = opaque_FinalizeRegistrationRequest(
+            clientInputs.password,
+            request.blind,
+            registrationResponse,
+            clientInputs.serverIdentity,
+            clientInputs.clientIdentity,
+            libecc.ecc_opaque_ristretto255_sha512_MHF_SCRYPT,
+        );
+        const registrationRecord = finalizeRequest.registrationRecord;
+
+        const clientState = new Uint8Array(libecc.ecc_opaque_ristretto255_sha512_CLIENTSTATESIZE);
+        const ke1 = opaque_ClientInit(
+            clientState,
+            clientInputs.password,
+        );
+
+        const serverState = new Uint8Array(libecc.ecc_opaque_ristretto255_sha512_SERVERSTATESIZE);
+        const ke2 = opaque_ServerInit(
+            serverState,
+            serverInputs.serverIdentity,
+            serverInputs.serverPrivateKey,
+            serverInputs.serverPublicKey,
+            registrationRecord,
+            serverInputs.credentialIdentifier,
+            serverInputs.oprfSeed,
+            ke1,
+            serverInputs.clientIdentity,
+            context,
+        );
+
+        const clientFinishResult = opaque_ClientFinish(
+            clientState,
+            clientInputs.clientIdentity,
+            clientInputs.serverIdentity,
+            ke2,
+            libecc.ecc_opaque_ristretto255_sha512_MHF_SCRYPT,
+            context,
+        );
+
+        const ke3 = clientFinishResult.ke3;
+
+        assert.strictEqual(clientFinishResult.result, 0);
+        assert.deepStrictEqual(clientFinishResult.exportKey, finalizeRequest.exportKey);
+
+        const serverFinishResult = opaque_ServerFinish(serverState, ke3);
+
+        assert.strictEqual(serverFinishResult.result, 0);
+        assert.deepStrictEqual(serverFinishResult.sessionKey, clientFinishResult.sessionKey);
+    });
+
+    it("test protocol with bad password", async () => {
+        await libecc_promise;
+
+        const context = randombytes(10);
+
+        const clientInputs = {
+            serverIdentity: str2bin("demo.ssohub.org"),
+            clientIdentity: str2bin("user1"),
+            password: randombytes(20),
+        };
+
+        const serverKeyPair = opaque_GenerateAuthKeyPair();
+
+        const serverInputs = {
+            serverPrivateKey: serverKeyPair.privateKey,
+            serverPublicKey: serverKeyPair.publicKey,
+            credentialIdentifier: randombytes(10),
+            serverIdentity: str2bin("demo.ssohub.org"),
+            clientIdentity: str2bin("user1"),
+            oprfSeed: randombytes(libecc.ecc_opaque_ristretto255_sha512_Nh),
+        };
+
+        const request = opaque_CreateRegistrationRequest(clientInputs.password);
+        const registrationRequest = request.registrationRequest;
+
+        const registrationResponse = opaque_CreateRegistrationResponse(
+            registrationRequest,
+            serverInputs.serverPublicKey,
+            serverInputs.credentialIdentifier,
+            serverInputs.oprfSeed,
+        );
+
+        const finalizeRequest = opaque_FinalizeRegistrationRequest(
+            clientInputs.password,
+            request.blind,
+            registrationResponse,
+            clientInputs.serverIdentity,
+            clientInputs.clientIdentity,
+            libecc.ecc_opaque_ristretto255_sha512_MHF_SCRYPT,
+        );
+        const registrationRecord = finalizeRequest.registrationRecord;
+
+        const clientState = new Uint8Array(libecc.ecc_opaque_ristretto255_sha512_CLIENTSTATESIZE);
+        const ke1 = opaque_ClientInit(
+            clientState,
+            randombytes(20),
+        );
+
+        const serverState = new Uint8Array(libecc.ecc_opaque_ristretto255_sha512_SERVERSTATESIZE);
+        const ke2 = opaque_ServerInit(
+            serverState,
+            serverInputs.serverIdentity,
+            serverInputs.serverPrivateKey,
+            serverInputs.serverPublicKey,
+            registrationRecord,
+            serverInputs.credentialIdentifier,
+            serverInputs.oprfSeed,
+            ke1,
+            serverInputs.clientIdentity,
+            context,
+        );
+
+        const clientFinishResult = opaque_ClientFinish(
+            clientState,
+            clientInputs.clientIdentity,
+            clientInputs.serverIdentity,
+            ke2,
+            libecc.ecc_opaque_ristretto255_sha512_MHF_SCRYPT,
+            context,
+        );
+
+        const ke3 = clientFinishResult.ke3;
+
+        assert.notStrictEqual(clientFinishResult.result, 0);
+        assert.notDeepStrictEqual(clientFinishResult.exportKey, finalizeRequest.exportKey);
+
+        const serverFinishResult = opaque_ServerFinish(serverState, ke3);
+
+        assert.notStrictEqual(serverFinishResult.result, 0);
+        assert.notDeepStrictEqual(serverFinishResult.sessionKey, clientFinishResult.sessionKey);
+    });
+
 });

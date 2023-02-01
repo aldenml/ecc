@@ -187,7 +187,7 @@ public class OpaqueTest {
             registrationResponse,
             clientInputs.getServerIdentity(),
             clientInputs.getClientIdentity(),
-            Opaque.MHF.IDENTITY
+            Opaque.MHF.SCRYPT
         );
         RegistrationRecord registrationRecord = finalizeRequest.getRegistrationRecord();
 
@@ -216,7 +216,7 @@ public class OpaqueTest {
             clientInputs.getClientIdentity(),
             clientInputs.getServerIdentity(),
             ke2,
-            Opaque.MHF.IDENTITY,
+            Opaque.MHF.SCRYPT,
             context
         );
 

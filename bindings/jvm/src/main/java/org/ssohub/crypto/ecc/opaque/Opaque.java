@@ -199,7 +199,7 @@ public final class Opaque {
 
         byte[] ke1 = new byte[ecc_opaque_ristretto255_sha512_KE1SIZE];
 
-        ecc_opaque_ristretto255_sha512_3DH_ClientInitWithSecrets(
+        ecc_opaque_ristretto255_sha512_ClientInitWithSecrets(
             ke1,
             state.data(),
             passwordBytes,
@@ -221,7 +221,7 @@ public final class Opaque {
 
         byte[] ke1 = new byte[ecc_opaque_ristretto255_sha512_KE1SIZE];
 
-        ecc_opaque_ristretto255_sha512_3DH_ClientInit(
+        ecc_opaque_ristretto255_sha512_ClientInit(
             ke1,
             state.data(),
             passwordBytes,
@@ -257,20 +257,20 @@ public final class Opaque {
 
         byte[] ke2 = new byte[ecc_opaque_ristretto255_sha512_KE2SIZE];
 
-        ecc_opaque_ristretto255_sha512_3DH_ServerInitWithSecrets(
+        ecc_opaque_ristretto255_sha512_ServerInitWithSecrets(
             ke2,
             state.data(),
             serverIdentityBytes,
             serverIdentityBytes.length,
             serverPrivateKey.toBytes(),
             serverPublicKey.toBytes(),
-            clientIdentityBytes,
-            clientIdentityBytes.length,
             record.toBytes(),
             credentialIdentifierBytes,
             credentialIdentifierBytes.length,
             oprfSeed.toBytes(),
             ke1.toBytes(),
+            clientIdentityBytes,
+            clientIdentityBytes.length,
             contextBytes,
             contextBytes.length,
             maskingNonce.toBytes(),
@@ -304,20 +304,20 @@ public final class Opaque {
 
         byte[] ke2 = new byte[ecc_opaque_ristretto255_sha512_KE2SIZE];
 
-        ecc_opaque_ristretto255_sha512_3DH_ServerInit(
+        ecc_opaque_ristretto255_sha512_ServerInit(
             ke2,
             state.data(),
             serverIdentityBytes,
             serverIdentityBytes.length,
             serverPrivateKey.toBytes(),
             serverPublicKey.toBytes(),
-            clientIdentityBytes,
-            clientIdentityBytes.length,
             record.toBytes(),
             credentialIdentifierBytes,
             credentialIdentifierBytes.length,
             oprfSeed.toBytes(),
             ke1.toBytes(),
+            clientIdentityBytes,
+            clientIdentityBytes.length,
             contextBytes,
             contextBytes.length
         );
@@ -341,7 +341,7 @@ public final class Opaque {
         byte[] sessionKey = new byte[64];
         byte[] exportKey = new byte[64];
 
-        int result = ecc_opaque_ristretto255_sha512_3DH_ClientFinish(
+        int result = ecc_opaque_ristretto255_sha512_ClientFinish(
             ke3,
             sessionKey,
             exportKey,
@@ -370,7 +370,7 @@ public final class Opaque {
     ) {
         byte[] sessionKey = new byte[64];
 
-        int result = ecc_opaque_ristretto255_sha512_3DH_ServerFinish(
+        int result = ecc_opaque_ristretto255_sha512_ServerFinish(
             sessionKey,
             state.data(),
             ke3.toBytes()

@@ -798,7 +798,7 @@ void ecc_opaque_ristretto255_sha512_3DH_DeriveKeys(
  * @param client_keyshare size:ecc_opaque_ristretto255_sha512_Npk
  */
 ECC_EXPORT
-void ecc_opaque_ristretto255_sha512_3DH_ClientInitWithSecrets(
+void ecc_opaque_ristretto255_sha512_ClientInitWithSecrets(
     byte_t *ke1,
     byte_t *state,
     const byte_t *password, int password_len,
@@ -816,7 +816,7 @@ void ecc_opaque_ristretto255_sha512_3DH_ClientInitWithSecrets(
  * @param password_len the length of `password`
  */
 ECC_EXPORT
-void ecc_opaque_ristretto255_sha512_3DH_ClientInit(
+void ecc_opaque_ristretto255_sha512_ClientInit(
     byte_t *ke1,
     byte_t *state,
     const byte_t *password, int password_len
@@ -841,7 +841,7 @@ void ecc_opaque_ristretto255_sha512_3DH_ClientInit(
  * @return 0 if is able to recover credentials and authenticate with the server, else -1
  */
 ECC_EXPORT
-int ecc_opaque_ristretto255_sha512_3DH_ClientFinish(
+int ecc_opaque_ristretto255_sha512_ClientFinish(
     byte_t *ke3_raw,
     byte_t *session_key,
     byte_t *export_key,
@@ -923,15 +923,15 @@ int ecc_opaque_ristretto255_sha512_3DH_ClientFinalize(
  * @param server_identity_len the length of `server_identity`
  * @param server_private_key the server's private key, size:ecc_opaque_ristretto255_sha512_Nsk
  * @param server_public_key the server's public key, size:ecc_opaque_ristretto255_sha512_Npk
- * @param client_identity the optional encoded server identity, which is set to
- * client_public_key if null, size:client_identity_len
- * @param client_identity_len the length of `client_identity`
  * @param record_raw the client's RegistrationUpload structure, size:ecc_opaque_ristretto255_sha512_REGISTRATIONRECORDSIZE
  * @param credential_identifier an identifier that uniquely represents the credential
  * being registered, size:credential_identifier_len
  * @param credential_identifier_len the length of `credential_identifier`
  * @param oprf_seed the server-side seed of Nh bytes used to generate an oprf_key, size:ecc_opaque_ristretto255_sha512_Nh
  * @param ke1_raw a KE1 message structure, size:ecc_opaque_ristretto255_sha512_KE1SIZE
+ * @param client_identity the optional encoded server identity, which is set to
+ * client_public_key if null, size:client_identity_len
+ * @param client_identity_len the length of `client_identity`
  * @param context the application specific context, size:context_len
  * @param context_len the length of `context`
  * @param masking_nonce size:ecc_opaque_ristretto255_sha512_Nn
@@ -940,17 +940,17 @@ int ecc_opaque_ristretto255_sha512_3DH_ClientFinalize(
  * @param server_keyshare size:ecc_opaque_ristretto255_sha512_Npk
  */
 ECC_EXPORT
-void ecc_opaque_ristretto255_sha512_3DH_ServerInitWithSecrets(
+void ecc_opaque_ristretto255_sha512_ServerInitWithSecrets(
     byte_t *ke2_raw,
     byte_t *state_raw,
     const byte_t *server_identity, int server_identity_len,
     const byte_t *server_private_key,
     const byte_t *server_public_key,
-    const byte_t *client_identity, int client_identity_len,
     const byte_t *record_raw,
     const byte_t *credential_identifier, int credential_identifier_len,
     const byte_t *oprf_seed,
     const byte_t *ke1_raw,
+    const byte_t *client_identity, int client_identity_len,
     const byte_t *context, int context_len,
     const byte_t *masking_nonce,
     const byte_t *server_nonce,
@@ -967,30 +967,30 @@ void ecc_opaque_ristretto255_sha512_3DH_ServerInitWithSecrets(
  * @param server_identity_len the length of `server_identity`
  * @param server_private_key the server's private key, size:ecc_opaque_ristretto255_sha512_Nsk
  * @param server_public_key the server's public key, size:ecc_opaque_ristretto255_sha512_Npk
- * @param client_identity the optional encoded server identity, which is set to
- * client_public_key if null, size:client_identity_len
- * @param client_identity_len the length of `client_identity`
  * @param record_raw the client's RegistrationUpload structure, size:ecc_opaque_ristretto255_sha512_REGISTRATIONRECORDSIZE
  * @param credential_identifier an identifier that uniquely represents the credential
  * being registered, size:credential_identifier_len
  * @param credential_identifier_len the length of `credential_identifier`
  * @param oprf_seed the server-side seed of Nh bytes used to generate an oprf_key, size:ecc_opaque_ristretto255_sha512_Nh
  * @param ke1_raw a KE1 message structure, size:ecc_opaque_ristretto255_sha512_KE1SIZE
+ * @param client_identity the optional encoded server identity, which is set to
+ * client_public_key if null, size:client_identity_len
+ * @param client_identity_len the length of `client_identity`
  * @param context the application specific context, size:context_len
  * @param context_len the length of `context`
  */
 ECC_EXPORT
-void ecc_opaque_ristretto255_sha512_3DH_ServerInit(
+void ecc_opaque_ristretto255_sha512_ServerInit(
     byte_t *ke2_raw,
     byte_t *state_raw,
     const byte_t *server_identity, int server_identity_len,
     const byte_t *server_private_key,
     const byte_t *server_public_key,
-    const byte_t *client_identity, int client_identity_len,
     const byte_t *record_raw,
     const byte_t *credential_identifier, int credential_identifier_len,
     const byte_t *oprf_seed,
     const byte_t *ke1_raw,
+    const byte_t *client_identity, int client_identity_len,
     const byte_t *context, int context_len
 );
 
@@ -1002,7 +1002,7 @@ void ecc_opaque_ristretto255_sha512_3DH_ServerInit(
  * @return 0 if the user was authenticated, else -1
  */
 ECC_EXPORT
-int ecc_opaque_ristretto255_sha512_3DH_ServerFinish(
+int ecc_opaque_ristretto255_sha512_ServerFinish(
     byte_t *session_key,
     byte_t *state,
     const byte_t *ke3
