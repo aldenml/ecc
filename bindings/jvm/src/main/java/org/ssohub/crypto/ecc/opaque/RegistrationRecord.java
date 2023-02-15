@@ -22,7 +22,7 @@ public final class RegistrationRecord extends BaseData {
      *
      * @param data raw data from the C api.
      */
-    RegistrationRecord(Data data) {
+    public RegistrationRecord(Data data) {
         super(data, ecc_opaque_ristretto255_sha512_REGISTRATIONRECORDSIZE);
     }
 

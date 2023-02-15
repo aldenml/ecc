@@ -8,7 +8,7 @@ public final class ServerFinishResult {
 
     private final int result;
 
-    ServerFinishResult(Data sessionKey, int result) {
+    public ServerFinishResult(Data sessionKey, int result) {
         this.sessionKey = sessionKey;
         this.result = result;
     }

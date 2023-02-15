@@ -79,6 +79,8 @@ export function strxor(str1: Uint8Array, str2: Uint8Array): Uint8Array;
  * Returns a buffer of length `n` with an unpredictable sequence of bytes.
  *
  * @param {number} n the length of the buffer to return
- * @return {Promise<Uint8Array>} the buffer with random elements
+ * @return {Uint8Array} the buffer with random elements
  */
-export function randombytes(n: number): Promise<Uint8Array>;
+export function randombytes(n: number): Uint8Array;
+export const libecc_promise: Promise<any>;
+export var libecc: any;

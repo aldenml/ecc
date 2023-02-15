@@ -19,7 +19,7 @@ public final class ClientFinishResult {
 
     private final int result;
 
-    ClientFinishResult(KE3 ke3, Data sessionKey, Data exportKey, int result) {
+    public ClientFinishResult(KE3 ke3, Data sessionKey, Data exportKey, int result) {
         this.ke3 = ke3;
         this.sessionKey = sessionKey;
         this.exportKey = exportKey;

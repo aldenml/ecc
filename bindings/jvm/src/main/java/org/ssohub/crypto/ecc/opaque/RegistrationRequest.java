@@ -25,7 +25,7 @@ public final class RegistrationRequest extends BaseData {
      *
      * @param data raw data from the C api.
      */
-    RegistrationRequest(Data data) {
+    public RegistrationRequest(Data data) {
         super(data, ecc_opaque_ristretto255_sha512_REGISTRATIONREQUESTSIZE);
     }
 
