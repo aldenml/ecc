@@ -25,7 +25,7 @@ public final class RegistrationResponse extends BaseData {
      *
      * @param data raw data from the C api.
      */
-    RegistrationResponse(Data data) {
+    public RegistrationResponse(Data data) {
         super(data, ecc_opaque_ristretto255_sha512_REGISTRATIONRESPONSESIZE);
     }
 

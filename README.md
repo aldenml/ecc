@@ -10,6 +10,7 @@
 [![Maintainability Rating](https://sonarcloud.io/api/project_badges/measure?project=aldenml_ecc&metric=sqale_rating)](https://sonarcloud.io/summary/new_code?id=aldenml_ecc)
 [![Security Rating](https://sonarcloud.io/api/project_badges/measure?project=aldenml_ecc&metric=security_rating)](https://sonarcloud.io/summary/new_code?id=aldenml_ecc)
 [![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=aldenml_ecc&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=aldenml_ecc)
+[![Sonatype Lift](https://lift.sonatype.com/api/badge/github.com/aldenml/ecc)](https://github.com/aldenml/ecc)
 
 Library to work with elliptic-curve cryptography based on [libsodium](https://github.com/jedisct1/libsodium)
 and [blst](https://github.com/supranational/blst).

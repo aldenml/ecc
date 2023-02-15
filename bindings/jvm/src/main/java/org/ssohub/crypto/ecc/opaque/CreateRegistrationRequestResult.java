@@ -14,7 +14,7 @@ public final class CreateRegistrationRequestResult {
     private final RegistrationRequest registrationRequest;
     private final R255Scalar blind;
 
-    CreateRegistrationRequestResult(RegistrationRequest registrationRequest, R255Scalar blind) {
+    public CreateRegistrationRequestResult(RegistrationRequest registrationRequest, R255Scalar blind) {
         this.registrationRequest = registrationRequest;
         this.blind = blind;
     }

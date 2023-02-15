@@ -7,7 +7,7 @@ public final class FinalizeRegistrationRequestResult {
     private final RegistrationRecord registrationRecord;
     private final Data exportKey;
 
-    FinalizeRegistrationRequestResult(RegistrationRecord registrationRecord, Data exportKey) {
+    public FinalizeRegistrationRequestResult(RegistrationRecord registrationRecord, Data exportKey) {
         this.registrationRecord = registrationRecord;
         this.exportKey = exportKey;
     }
