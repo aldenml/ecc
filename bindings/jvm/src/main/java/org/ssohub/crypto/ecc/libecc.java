@@ -1248,7 +1248,7 @@ public final class libecc {
     public static final int ecc_voprf_ristretto255_sha512_SCALARSIZE = 32;
 
     /**
-     * Size of a proof. Proof is a sequence of two scalars.
+     * Size of a proof. Proof is a tuple of two scalars.
      *
      */
     public static final int ecc_voprf_ristretto255_sha512_PROOFSIZE = 64;
@@ -1288,7 +1288,11 @@ public final class libecc {
     public static final int ecc_voprf_ristretto255_sha512_MAXINFOSIZE = 2000;
 
     /**
-     *
+     * Generates a proof using the specified scalar. Given elements A and B, two
+     * non-empty lists of elements C and D of length m, and a scalar k; this
+     * function produces a proof that k*A == B and k*C[i] == D[i] for each i in
+     * [0, ..., m - 1]. The output is a value of type Proof, which is a tuple of two
+     * scalar values.
      *
      * @param proof (output) size:ecc_voprf_ristretto255_sha512_PROOFSIZE
      * @param k size:ecc_voprf_ristretto255_sha512_SCALARSIZE
@@ -1313,7 +1317,11 @@ public final class libecc {
     );
 
     /**
-     *
+     * Generates a proof. Given elements A and B, two
+     * non-empty lists of elements C and D of length m, and a scalar k; this
+     * function produces a proof that k*A == B and k*C[i] == D[i] for each i in
+     * [0, ..., m - 1]. The output is a value of type Proof, which is a tuple of two
+     * scalar values.
      *
      * @param proof (output) size:ecc_voprf_ristretto255_sha512_PROOFSIZE
      * @param k size:ecc_voprf_ristretto255_sha512_SCALARSIZE
@@ -1336,7 +1344,9 @@ public final class libecc {
     );
 
     /**
-     *
+     * Helper function used in GenerateProof. It is an optimization of the
+     * ComputeComposites function for servers since they have knowledge of the
+     * private key.
      *
      * @param M (output) size:ecc_voprf_ristretto255_sha512_ELEMENTSIZE
      * @param Z (output) size:ecc_voprf_ristretto255_sha512_ELEMENTSIZE
@@ -1359,7 +1369,11 @@ public final class libecc {
     );
 
     /**
-     *
+     * This function takes elements A and B, two non-empty lists of elements C and D
+     * of length m, and a Proof value output from GenerateProof. It outputs a single
+     * boolean value indicating whether or not the proof is valid for the given DLEQ
+     * inputs. Note this function can verify proofs on lists of inputs whenever the
+     * proof was generated as a batched DLEQ proof with the same inputs.
      *
      * @param A size:ecc_voprf_ristretto255_sha512_ELEMENTSIZE
      * @param B size:ecc_voprf_ristretto255_sha512_ELEMENTSIZE
@@ -1381,7 +1395,7 @@ public final class libecc {
     );
 
     /**
-     *
+     * Helper function used in `VerifyProof`.
      *
      * @param M (output) size:ecc_voprf_ristretto255_sha512_ELEMENTSIZE
      * @param Z (output) size:ecc_voprf_ristretto255_sha512_ELEMENTSIZE
@@ -1456,7 +1470,8 @@ public final class libecc {
     );
 
     /**
-     *
+     * The OPRF protocol begins with the client blinding its input. Note that this
+     * function can fail for certain inputs that map to the group identity element.
      *
      * @param blind (output) scalar used in the blind operation, size:ecc_voprf_ristretto255_sha512_SCALARSIZE
      * @param blindedElement (output) blinded element, size:ecc_voprf_ristretto255_sha512_ELEMENTSIZE
@@ -1474,7 +1489,8 @@ public final class libecc {
     );
 
     /**
-     *
+     * Clients store blind locally, and send blindedElement to the server for
+     * evaluation. Upon receipt, servers process blindedElement using this function.
      *
      * @param evaluatedElement (output) blinded element, size:ecc_voprf_ristretto255_sha512_ELEMENTSIZE
      * @param skS scalar used in the blind operation, size:ecc_voprf_ristretto255_sha512_SCALARSIZE
@@ -1487,7 +1503,11 @@ public final class libecc {
     );
 
     /**
-     *
+     * Servers send the output evaluatedElement to clients for processing. Recall
+     * that servers may process multiple client inputs by applying the BlindEvaluate
+     * function to each blindedElement received, and returning an array with the
+     * corresponding evaluatedElement values. Upon receipt of evaluatedElement,
+     * clients process it to complete the OPRF evaluation with this function.
      *
      * @param output (output) size:ecc_voprf_ristretto255_sha512_Nh
      * @param input the input message, size:inputLen
@@ -1504,7 +1524,8 @@ public final class libecc {
     );
 
     /**
-     *
+     * An entity which knows both the secret key and the input can compute the PRF
+     * result using this function.
      *
      * @param output (output) size:ecc_voprf_ristretto255_sha512_Nh
      * @param skS size:ecc_voprf_ristretto255_sha512_SCALARSIZE
@@ -1522,7 +1543,8 @@ public final class libecc {
     );
 
     /**
-     *
+     * Same as calling ecc_voprf_ristretto255_sha512_VerifiableBlindEvaluate but
+     * using an specified scalar `r`.
      *
      * @param evaluatedElement (output) size:ecc_voprf_ristretto255_sha512_ELEMENTSIZE
      * @param proof (output) size:ecc_voprf_ristretto255_sha512_PROOFSIZE
@@ -1541,7 +1563,10 @@ public final class libecc {
     );
 
     /**
-     *
+     * The VOPRF protocol begins with the client blinding its input. Clients store
+     * the output blind locally and send blindedElement to the server for
+     * evaluation. Upon receipt, servers process blindedElement to compute an
+     * evaluated element and DLEQ proof using this function.
      *
      * @param evaluatedElement (output) size:ecc_voprf_ristretto255_sha512_ELEMENTSIZE
      * @param proof (output) size:ecc_voprf_ristretto255_sha512_PROOFSIZE
@@ -1558,7 +1583,9 @@ public final class libecc {
     );
 
     /**
-     *
+     * The server sends both evaluatedElement and proof back to the client. Upon
+     * receipt, the client processes both values to complete the VOPRF computation
+     * using this function below.
      *
      * @param output (output) size:ecc_voprf_ristretto255_sha512_Nh
      * @param input the input message, size:inputLen
@@ -1582,7 +1609,8 @@ public final class libecc {
     );
 
     /**
-     *
+     * Same as calling ecc_voprf_ristretto255_sha512_PartiallyBlind with an
+     * specified blind scalar.
      *
      * @param blindedElement (output) blinded element, size:ecc_voprf_ristretto255_sha512_ELEMENTSIZE
      * @param tweakedKey (output) blinded element, size:ecc_voprf_ristretto255_sha512_ELEMENTSIZE
@@ -1608,7 +1636,12 @@ public final class libecc {
     );
 
     /**
-     *
+     * The POPRF protocol begins with the client blinding its input, using the
+     * following modified Blind function. In this step, the client also binds a
+     * public info value, which produces an additional tweakedKey to be used later
+     * in the protocol. Note that this function can fail for certain private inputs
+     * that map to the group identity element, as well as certain public inputs
+     * that, if not detected at this point, will cause server evaluation to fail.
      *
      * @param blind (output) scalar used in the blind operation, size:ecc_voprf_ristretto255_sha512_SCALARSIZE
      * @param blindedElement (output) blinded element, size:ecc_voprf_ristretto255_sha512_ELEMENTSIZE
@@ -1634,7 +1667,8 @@ public final class libecc {
     );
 
     /**
-     *
+     * Same as calling ecc_voprf_ristretto255_sha512_PartiallyBlindEvaluate with an
+     * specified scalar r.
      *
      * @param evaluatedElement (output) size:ecc_voprf_ristretto255_sha512_ELEMENTSIZE
      * @param proof (output) size:ecc_voprf_ristretto255_sha512_PROOFSIZE
@@ -1658,7 +1692,10 @@ public final class libecc {
     );
 
     /**
-     *
+     * Clients store the outputs blind and tweakedKey locally and send
+     * blindedElement to the server for evaluation. Upon receipt, servers process
+     * blindedElement to compute an evaluated element and DLEQ proof using the
+     * this function.
      *
      * @param evaluatedElement (output) size:ecc_voprf_ristretto255_sha512_ELEMENTSIZE
      * @param proof (output) size:ecc_voprf_ristretto255_sha512_PROOFSIZE
@@ -1680,7 +1717,9 @@ public final class libecc {
     );
 
     /**
-     *
+     * The server sends both evaluatedElement and proof back to the client. Upon
+     * receipt, the client processes both values to complete the POPRF computation
+     * using this function.
      *
      * @param output (output) size:ecc_voprf_ristretto255_sha512_Nh
      * @param input the input message, size:inputLen
@@ -1767,7 +1806,8 @@ public final class libecc {
     );
 
     /**
-     *
+     * Same as calling ecc_voprf_ristretto255_sha512_HashToScalar with an specified
+     * DST.
      *
      * @param out (output) size:ecc_voprf_ristretto255_sha512_SCALARSIZE
      * @param input size:inputLen
@@ -1784,7 +1824,8 @@ public final class libecc {
     );
 
     /**
-     *
+     * Deterministically maps an array of bytes x to an element in GF(p) in
+     * the ristretto255 curve.
      *
      * @param out (output) size:ecc_voprf_ristretto255_sha512_SCALARSIZE
      * @param input size:inputLen

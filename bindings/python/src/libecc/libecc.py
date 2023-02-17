@@ -1853,7 +1853,7 @@ curve the size is 32 bytes.
 
 ecc_voprf_ristretto255_sha512_PROOFSIZE = 64
 """
-Size of a proof. Proof is a sequence of two scalars.
+Size of a proof. Proof is a tuple of two scalars.
 """
 
 ecc_voprf_ristretto255_sha512_Nh = 64
@@ -1897,7 +1897,11 @@ def ecc_voprf_ristretto255_sha512_GenerateProofWithScalar(
     r: bytes
 ) -> None:
     """
-    
+    Generates a proof using the specified scalar. Given elements A and B, two
+    non-empty lists of elements C and D of length m, and a scalar k; this
+    function produces a proof that k*A == B and k*C[i] == D[i] for each i in
+    [0, ..., m - 1]. The output is a value of type Proof, which is a tuple of two
+    scalar values.
     
     proof -- (output) size:ecc_voprf_ristretto255_sha512_PROOFSIZE
     k -- size:ecc_voprf_ristretto255_sha512_SCALARSIZE
@@ -1941,7 +1945,11 @@ def ecc_voprf_ristretto255_sha512_GenerateProof(
     mode: int
 ) -> None:
     """
-    
+    Generates a proof. Given elements A and B, two
+    non-empty lists of elements C and D of length m, and a scalar k; this
+    function produces a proof that k*A == B and k*C[i] == D[i] for each i in
+    [0, ..., m - 1]. The output is a value of type Proof, which is a tuple of two
+    scalar values.
     
     proof -- (output) size:ecc_voprf_ristretto255_sha512_PROOFSIZE
     k -- size:ecc_voprf_ristretto255_sha512_SCALARSIZE
@@ -1982,7 +1990,9 @@ def ecc_voprf_ristretto255_sha512_ComputeCompositesFast(
     mode: int
 ) -> None:
     """
-    
+    Helper function used in GenerateProof. It is an optimization of the
+    ComputeComposites function for servers since they have knowledge of the
+    private key.
     
     M -- (output) size:ecc_voprf_ristretto255_sha512_ELEMENTSIZE
     Z -- (output) size:ecc_voprf_ristretto255_sha512_ELEMENTSIZE
@@ -2022,7 +2032,11 @@ def ecc_voprf_ristretto255_sha512_VerifyProof(
     proof: bytes
 ) -> int:
     """
-    
+    This function takes elements A and B, two non-empty lists of elements C and D
+    of length m, and a Proof value output from GenerateProof. It outputs a single
+    boolean value indicating whether or not the proof is valid for the given DLEQ
+    inputs. Note this function can verify proofs on lists of inputs whenever the
+    proof was generated as a batched DLEQ proof with the same inputs.
     
     A -- size:ecc_voprf_ristretto255_sha512_ELEMENTSIZE
     B -- size:ecc_voprf_ristretto255_sha512_ELEMENTSIZE
@@ -2060,7 +2074,7 @@ def ecc_voprf_ristretto255_sha512_ComputeComposites(
     mode: int
 ) -> None:
     """
-    
+    Helper function used in `VerifyProof`.
     
     M -- (output) size:ecc_voprf_ristretto255_sha512_ELEMENTSIZE
     Z -- (output) size:ecc_voprf_ristretto255_sha512_ELEMENTSIZE
@@ -2183,7 +2197,8 @@ def ecc_voprf_ristretto255_sha512_Blind(
     mode: int
 ) -> int:
     """
-    
+    The OPRF protocol begins with the client blinding its input. Note that this
+    function can fail for certain inputs that map to the group identity element.
     
     blind -- (output) scalar used in the blind operation, size:ecc_voprf_ristretto255_sha512_SCALARSIZE
     blindedElement -- (output) blinded element, size:ecc_voprf_ristretto255_sha512_ELEMENTSIZE
@@ -2211,7 +2226,8 @@ def ecc_voprf_ristretto255_sha512_BlindEvaluate(
     blindedElement: bytes
 ) -> None:
     """
-    
+    Clients store blind locally, and send blindedElement to the server for
+    evaluation. Upon receipt, servers process blindedElement using this function.
     
     evaluatedElement -- (output) blinded element, size:ecc_voprf_ristretto255_sha512_ELEMENTSIZE
     skS -- scalar used in the blind operation, size:ecc_voprf_ristretto255_sha512_SCALARSIZE
@@ -2236,7 +2252,11 @@ def ecc_voprf_ristretto255_sha512_Finalize(
     evaluatedElement: bytes
 ) -> None:
     """
-    
+    Servers send the output evaluatedElement to clients for processing. Recall
+    that servers may process multiple client inputs by applying the BlindEvaluate
+    function to each blindedElement received, and returning an array with the
+    corresponding evaluatedElement values. Upon receipt of evaluatedElement,
+    clients process it to complete the OPRF evaluation with this function.
     
     output -- (output) size:ecc_voprf_ristretto255_sha512_Nh
     input -- the input message, size:inputLen
@@ -2266,7 +2286,8 @@ def ecc_voprf_ristretto255_sha512_Evaluate(
     mode: int
 ) -> int:
     """
-    
+    An entity which knows both the secret key and the input can compute the PRF
+    result using this function.
     
     output -- (output) size:ecc_voprf_ristretto255_sha512_Nh
     skS -- size:ecc_voprf_ristretto255_sha512_SCALARSIZE
@@ -2297,7 +2318,8 @@ def ecc_voprf_ristretto255_sha512_VerifiableBlindEvaluateWithScalar(
     r: bytes
 ) -> None:
     """
-    
+    Same as calling ecc_voprf_ristretto255_sha512_VerifiableBlindEvaluate but
+    using an specified scalar `r`.
     
     evaluatedElement -- (output) size:ecc_voprf_ristretto255_sha512_ELEMENTSIZE
     proof -- (output) size:ecc_voprf_ristretto255_sha512_PROOFSIZE
@@ -2331,7 +2353,10 @@ def ecc_voprf_ristretto255_sha512_VerifiableBlindEvaluate(
     blindedElement: bytes
 ) -> None:
     """
-    
+    The VOPRF protocol begins with the client blinding its input. Clients store
+    the output blind locally and send blindedElement to the server for
+    evaluation. Upon receipt, servers process blindedElement to compute an
+    evaluated element and DLEQ proof using this function.
     
     evaluatedElement -- (output) size:ecc_voprf_ristretto255_sha512_ELEMENTSIZE
     proof -- (output) size:ecc_voprf_ristretto255_sha512_PROOFSIZE
@@ -2365,7 +2390,9 @@ def ecc_voprf_ristretto255_sha512_VerifiableFinalize(
     proof: bytes
 ) -> int:
     """
-    
+    The server sends both evaluatedElement and proof back to the client. Upon
+    receipt, the client processes both values to complete the VOPRF computation
+    using this function below.
     
     output -- (output) size:ecc_voprf_ristretto255_sha512_Nh
     input -- the input message, size:inputLen
@@ -2408,7 +2435,8 @@ def ecc_voprf_ristretto255_sha512_PartiallyBlindWithScalar(
     blind: bytes
 ) -> int:
     """
-    
+    Same as calling ecc_voprf_ristretto255_sha512_PartiallyBlind with an
+    specified blind scalar.
     
     blindedElement -- (output) blinded element, size:ecc_voprf_ristretto255_sha512_ELEMENTSIZE
     tweakedKey -- (output) blinded element, size:ecc_voprf_ristretto255_sha512_ELEMENTSIZE
@@ -2452,7 +2480,12 @@ def ecc_voprf_ristretto255_sha512_PartiallyBlind(
     pkS: bytes
 ) -> int:
     """
-    
+    The POPRF protocol begins with the client blinding its input, using the
+    following modified Blind function. In this step, the client also binds a
+    public info value, which produces an additional tweakedKey to be used later
+    in the protocol. Note that this function can fail for certain private inputs
+    that map to the group identity element, as well as certain public inputs
+    that, if not detected at this point, will cause server evaluation to fail.
     
     blind -- (output) scalar used in the blind operation, size:ecc_voprf_ristretto255_sha512_SCALARSIZE
     blindedElement -- (output) blinded element, size:ecc_voprf_ristretto255_sha512_ELEMENTSIZE
@@ -2495,7 +2528,8 @@ def ecc_voprf_ristretto255_sha512_PartiallyBlindEvaluateWithScalar(
     r: bytes
 ) -> int:
     """
-    
+    Same as calling ecc_voprf_ristretto255_sha512_PartiallyBlindEvaluate with an
+    specified scalar r.
     
     evaluatedElement -- (output) size:ecc_voprf_ristretto255_sha512_ELEMENTSIZE
     proof -- (output) size:ecc_voprf_ristretto255_sha512_PROOFSIZE
@@ -2535,7 +2569,10 @@ def ecc_voprf_ristretto255_sha512_PartiallyBlindEvaluate(
     infoLen: int
 ) -> int:
     """
-    
+    Clients store the outputs blind and tweakedKey locally and send
+    blindedElement to the server for evaluation. Upon receipt, servers process
+    blindedElement to compute an evaluated element and DLEQ proof using the
+    this function.
     
     evaluatedElement -- (output) size:ecc_voprf_ristretto255_sha512_ELEMENTSIZE
     proof -- (output) size:ecc_voprf_ristretto255_sha512_PROOFSIZE
@@ -2576,7 +2613,9 @@ def ecc_voprf_ristretto255_sha512_PartiallyFinalize(
     tweakedKey: bytes
 ) -> int:
     """
-    
+    The server sends both evaluatedElement and proof back to the client. Upon
+    receipt, the client processes both values to complete the POPRF computation
+    using this function.
     
     output -- (output) size:ecc_voprf_ristretto255_sha512_Nh
     input -- the input message, size:inputLen
@@ -2716,7 +2755,8 @@ def ecc_voprf_ristretto255_sha512_HashToScalarWithDST(
     dstLen: int
 ) -> None:
     """
-    
+    Same as calling ecc_voprf_ristretto255_sha512_HashToScalar with an specified
+    DST.
     
     out -- (output) size:ecc_voprf_ristretto255_sha512_SCALARSIZE
     input -- size:inputLen
@@ -2744,7 +2784,8 @@ def ecc_voprf_ristretto255_sha512_HashToScalar(
     mode: int
 ) -> None:
     """
-    
+    Deterministically maps an array of bytes x to an element in GF(p) in
+    the ristretto255 curve.
     
     out -- (output) size:ecc_voprf_ristretto255_sha512_SCALARSIZE
     input -- size:inputLen
