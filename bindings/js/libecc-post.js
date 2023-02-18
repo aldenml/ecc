@@ -2134,7 +2134,7 @@ Module.ecc_voprf_ristretto255_sha512_SCALARSIZE = ecc_voprf_ristretto255_sha512_
 
 const ecc_voprf_ristretto255_sha512_PROOFSIZE = 64;
 /**
- * Size of a proof. Proof is a sequence of two scalars.
+ * Size of a proof. Proof is a tuple of two scalars.
  *
  * @type {number}
  */
@@ -2185,7 +2185,11 @@ const ecc_voprf_ristretto255_sha512_MAXINFOSIZE = 2000;
 Module.ecc_voprf_ristretto255_sha512_MAXINFOSIZE = ecc_voprf_ristretto255_sha512_MAXINFOSIZE;
 
 /**
- *
+ * Generates a proof using the specified scalar. Given elements A and B, two
+ * non-empty lists of elements C and D of length m, and a scalar k; this
+ * function produces a proof that k*A == B and k*C[i] == D[i] for each i in
+ * [0, ..., m - 1]. The output is a value of type Proof, which is a tuple of two
+ * scalar values.
  *
  * @param {Uint8Array} proof (output) size:ecc_voprf_ristretto255_sha512_PROOFSIZE
  * @param {Uint8Array} k size:ecc_voprf_ristretto255_sha512_SCALARSIZE
@@ -2237,7 +2241,11 @@ Module.ecc_voprf_ristretto255_sha512_GenerateProofWithScalar = (
 }
 
 /**
- *
+ * Generates a proof. Given elements A and B, two
+ * non-empty lists of elements C and D of length m, and a scalar k; this
+ * function produces a proof that k*A == B and k*C[i] == D[i] for each i in
+ * [0, ..., m - 1]. The output is a value of type Proof, which is a tuple of two
+ * scalar values.
  *
  * @param {Uint8Array} proof (output) size:ecc_voprf_ristretto255_sha512_PROOFSIZE
  * @param {Uint8Array} k size:ecc_voprf_ristretto255_sha512_SCALARSIZE
@@ -2284,7 +2292,9 @@ Module.ecc_voprf_ristretto255_sha512_GenerateProof = (
 }
 
 /**
- *
+ * Helper function used in GenerateProof. It is an optimization of the
+ * ComputeComposites function for servers since they have knowledge of the
+ * private key.
  *
  * @param {Uint8Array} M (output) size:ecc_voprf_ristretto255_sha512_ELEMENTSIZE
  * @param {Uint8Array} Z (output) size:ecc_voprf_ristretto255_sha512_ELEMENTSIZE
@@ -2332,7 +2342,11 @@ Module.ecc_voprf_ristretto255_sha512_ComputeCompositesFast = (
 }
 
 /**
- *
+ * This function takes elements A and B, two non-empty lists of elements C and D
+ * of length m, and a Proof value output from GenerateProof. It outputs a single
+ * boolean value indicating whether or not the proof is valid for the given DLEQ
+ * inputs. Note this function can verify proofs on lists of inputs whenever the
+ * proof was generated as a batched DLEQ proof with the same inputs.
  *
  * @param {Uint8Array} A size:ecc_voprf_ristretto255_sha512_ELEMENTSIZE
  * @param {Uint8Array} B size:ecc_voprf_ristretto255_sha512_ELEMENTSIZE
@@ -2375,7 +2389,7 @@ Module.ecc_voprf_ristretto255_sha512_VerifyProof = (
 }
 
 /**
- *
+ * Helper function used in `VerifyProof`.
  *
  * @param {Uint8Array} M (output) size:ecc_voprf_ristretto255_sha512_ELEMENTSIZE
  * @param {Uint8Array} Z (output) size:ecc_voprf_ristretto255_sha512_ELEMENTSIZE
@@ -2519,7 +2533,8 @@ Module.ecc_voprf_ristretto255_sha512_BlindWithScalar = (
 }
 
 /**
- *
+ * The OPRF protocol begins with the client blinding its input. Note that this
+ * function can fail for certain inputs that map to the group identity element.
  *
  * @param {Uint8Array} blind (output) scalar used in the blind operation, size:ecc_voprf_ristretto255_sha512_SCALARSIZE
  * @param {Uint8Array} blindedElement (output) blinded element, size:ecc_voprf_ristretto255_sha512_ELEMENTSIZE
@@ -2554,7 +2569,8 @@ Module.ecc_voprf_ristretto255_sha512_Blind = (
 }
 
 /**
- *
+ * Clients store blind locally, and send blindedElement to the server for
+ * evaluation. Upon receipt, servers process blindedElement using this function.
  *
  * @param {Uint8Array} evaluatedElement (output) blinded element, size:ecc_voprf_ristretto255_sha512_ELEMENTSIZE
  * @param {Uint8Array} skS scalar used in the blind operation, size:ecc_voprf_ristretto255_sha512_SCALARSIZE
@@ -2580,7 +2596,11 @@ Module.ecc_voprf_ristretto255_sha512_BlindEvaluate = (
 }
 
 /**
- *
+ * Servers send the output evaluatedElement to clients for processing. Recall
+ * that servers may process multiple client inputs by applying the BlindEvaluate
+ * function to each blindedElement received, and returning an array with the
+ * corresponding evaluatedElement values. Upon receipt of evaluatedElement,
+ * clients process it to complete the OPRF evaluation with this function.
  *
  * @param {Uint8Array} output (output) size:ecc_voprf_ristretto255_sha512_Nh
  * @param {Uint8Array} input the input message, size:inputLen
@@ -2614,7 +2634,8 @@ Module.ecc_voprf_ristretto255_sha512_Finalize = (
 }
 
 /**
- *
+ * An entity which knows both the secret key and the input can compute the PRF
+ * result using this function.
  *
  * @param {Uint8Array} output (output) size:ecc_voprf_ristretto255_sha512_Nh
  * @param {Uint8Array} skS size:ecc_voprf_ristretto255_sha512_SCALARSIZE
@@ -2648,7 +2669,8 @@ Module.ecc_voprf_ristretto255_sha512_Evaluate = (
 }
 
 /**
- *
+ * Same as calling ecc_voprf_ristretto255_sha512_VerifiableBlindEvaluate but
+ * using an specified scalar `r`.
  *
  * @param {Uint8Array} evaluatedElement (output) size:ecc_voprf_ristretto255_sha512_ELEMENTSIZE
  * @param {Uint8Array} proof (output) size:ecc_voprf_ristretto255_sha512_PROOFSIZE
@@ -2690,7 +2712,10 @@ Module.ecc_voprf_ristretto255_sha512_VerifiableBlindEvaluateWithScalar = (
 }
 
 /**
- *
+ * The VOPRF protocol begins with the client blinding its input. Clients store
+ * the output blind locally and send blindedElement to the server for
+ * evaluation. Upon receipt, servers process blindedElement to compute an
+ * evaluated element and DLEQ proof using this function.
  *
  * @param {Uint8Array} evaluatedElement (output) size:ecc_voprf_ristretto255_sha512_ELEMENTSIZE
  * @param {Uint8Array} proof (output) size:ecc_voprf_ristretto255_sha512_PROOFSIZE
@@ -2727,7 +2752,9 @@ Module.ecc_voprf_ristretto255_sha512_VerifiableBlindEvaluate = (
 }
 
 /**
- *
+ * The server sends both evaluatedElement and proof back to the client. Upon
+ * receipt, the client processes both values to complete the VOPRF computation
+ * using this function below.
  *
  * @param {Uint8Array} output (output) size:ecc_voprf_ristretto255_sha512_Nh
  * @param {Uint8Array} input the input message, size:inputLen
@@ -2778,7 +2805,8 @@ Module.ecc_voprf_ristretto255_sha512_VerifiableFinalize = (
 }
 
 /**
- *
+ * Same as calling ecc_voprf_ristretto255_sha512_PartiallyBlind with an
+ * specified blind scalar.
  *
  * @param {Uint8Array} blindedElement (output) blinded element, size:ecc_voprf_ristretto255_sha512_ELEMENTSIZE
  * @param {Uint8Array} tweakedKey (output) blinded element, size:ecc_voprf_ristretto255_sha512_ELEMENTSIZE
@@ -2830,7 +2858,12 @@ Module.ecc_voprf_ristretto255_sha512_PartiallyBlindWithScalar = (
 }
 
 /**
- *
+ * The POPRF protocol begins with the client blinding its input, using the
+ * following modified Blind function. In this step, the client also binds a
+ * public info value, which produces an additional tweakedKey to be used later
+ * in the protocol. Note that this function can fail for certain private inputs
+ * that map to the group identity element, as well as certain public inputs
+ * that, if not detected at this point, will cause server evaluation to fail.
  *
  * @param {Uint8Array} blind (output) scalar used in the blind operation, size:ecc_voprf_ristretto255_sha512_SCALARSIZE
  * @param {Uint8Array} blindedElement (output) blinded element, size:ecc_voprf_ristretto255_sha512_ELEMENTSIZE
@@ -2883,7 +2916,8 @@ Module.ecc_voprf_ristretto255_sha512_PartiallyBlind = (
 }
 
 /**
- *
+ * Same as calling ecc_voprf_ristretto255_sha512_PartiallyBlindEvaluate with an
+ * specified scalar r.
  *
  * @param {Uint8Array} evaluatedElement (output) size:ecc_voprf_ristretto255_sha512_ELEMENTSIZE
  * @param {Uint8Array} proof (output) size:ecc_voprf_ristretto255_sha512_PROOFSIZE
@@ -2932,7 +2966,10 @@ Module.ecc_voprf_ristretto255_sha512_PartiallyBlindEvaluateWithScalar = (
 }
 
 /**
- *
+ * Clients store the outputs blind and tweakedKey locally and send
+ * blindedElement to the server for evaluation. Upon receipt, servers process
+ * blindedElement to compute an evaluated element and DLEQ proof using the
+ * this function.
  *
  * @param {Uint8Array} evaluatedElement (output) size:ecc_voprf_ristretto255_sha512_ELEMENTSIZE
  * @param {Uint8Array} proof (output) size:ecc_voprf_ristretto255_sha512_PROOFSIZE
@@ -2976,7 +3013,9 @@ Module.ecc_voprf_ristretto255_sha512_PartiallyBlindEvaluate = (
 }
 
 /**
- *
+ * The server sends both evaluatedElement and proof back to the client. Upon
+ * receipt, the client processes both values to complete the POPRF computation
+ * using this function.
  *
  * @param {Uint8Array} output (output) size:ecc_voprf_ristretto255_sha512_Nh
  * @param {Uint8Array} input the input message, size:inputLen
@@ -3140,7 +3179,8 @@ Module.ecc_voprf_ristretto255_sha512_HashToGroup = (
 }
 
 /**
- *
+ * Same as calling ecc_voprf_ristretto255_sha512_HashToScalar with an specified
+ * DST.
  *
  * @param {Uint8Array} out (output) size:ecc_voprf_ristretto255_sha512_SCALARSIZE
  * @param {Uint8Array} input size:inputLen
@@ -3172,7 +3212,8 @@ Module.ecc_voprf_ristretto255_sha512_HashToScalarWithDST = (
 }
 
 /**
- *
+ * Deterministically maps an array of bytes x to an element in GF(p) in
+ * the ristretto255 curve.
  *
  * @param {Uint8Array} out (output) size:ecc_voprf_ristretto255_sha512_SCALARSIZE
  * @param {Uint8Array} input size:inputLen

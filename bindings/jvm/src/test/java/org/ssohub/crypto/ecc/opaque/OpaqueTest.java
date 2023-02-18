@@ -49,7 +49,7 @@ public class OpaqueTest {
         );
         RegistrationRequest registrationRequest = request.getRegistrationRequest();
 
-        assertEquals("62235332ae15911d69812e9eeb6ac8fe4fa0ffc7590831d5c5e1631e01049276", registrationRequest.toHex());
+        assertEquals("5059ff249eb1551b7ce4991f3336205bde44a105a032e747d21bf382e75f7a71", registrationRequest.toHex());
 
         RegistrationResponse registrationResponse = Opaque.createRegistrationResponse(
             registrationRequest,
@@ -58,7 +58,7 @@ public class OpaqueTest {
             serverInputs.getOprfSeed()
         );
 
-        assertEquals("6268d13fea98ebc8e6b88d0b3cc8a78d2ac8fa8efc741cd2e966940c52c31c71b2fe7af9f48cc502d016729d2fe25cdd433f2c4bc904660b2a382c9b79df1a78", registrationResponse.toHex());
+        assertEquals("7408a268083e03abc7097fc05b587834539065e86fb0c7b6342fcf5e01e5b019b2fe7af9f48cc502d016729d2fe25cdd433f2c4bc904660b2a382c9b79df1a78", registrationResponse.toHex());
 
         OpaqueSeed envelopeNonce = OpaqueSeed.fromHex("ac13171b2f17bc2c74997f0fce1e1f35bec6b91fe2e12dbd323d23ba7a38dfec");
         FinalizeRegistrationRequestResult finalizeRequest = Opaque.finalizeRegistrationRequestWithNonce(
@@ -73,7 +73,7 @@ public class OpaqueTest {
         RegistrationRecord registrationRecord = finalizeRequest.getRegistrationRecord();
         Data exportKey = finalizeRequest.getExportKey();
 
-        assertEquals("8e5e5c04b2154336fa52ac691eb6df5f59ec7315b8467b0bba1ed4f413043b449afea0ddedbbce5c083c5d5d02aa5218bcc7100f541d841bb5974f084f7aa0b929399feb39efd17e13ce1035cbb23251da3b5126a574b239c7b73519d8847e2fac13171b2f17bc2c74997f0fce1e1f35bec6b91fe2e12dbd323d23ba7a38dfec8e8bde8d4eb9e171240b3d2dfb43ef93efe5cd15412614b3df11ecb58890047e2fa31c283e7c58c40495226cfa0ed7756e493431b85c464aad7fdaaf1ab41ac7", registrationRecord.toHex());
+        assertEquals("2ec892bdbf9b3e2ea834be9eb11f5d187e64ba661ec041c0a3b66db8b7d6cc301ac5844383c7708077dea41cbefe2fa15724f449e535dd7dd562e66f5ecfb95864eadddec9db5874959905117dad40a4524111849799281fefe3c51fa82785c5ac13171b2f17bc2c74997f0fce1e1f35bec6b91fe2e12dbd323d23ba7a38dfecb9dbe7d48cf714fc3533becab6faf60b783c94d258477eb74ecc453413bf61c53fd58f0fb3c1175410b674c02e1b59b2d729a865b709db3dc4ee2bb45703d5a8", registrationRecord.toHex());
 
         ClientState clientState = new ClientState();
         R255Scalar blindLogin = R255Scalar.fromHex("6ecc102d2e7a7cf49617aad7bbe188556792d4acd60a1a8a8d2b65d4b0790308");
@@ -89,7 +89,7 @@ public class OpaqueTest {
             clientKeyshare
         );
 
-        assertEquals("1670c409ebb699a6012629451d218d42a34eddba1d2978536c45e199c60a0b4eda7e07376d6d6f034cfa9bb537d11b8c6b4238c334333d1f0aebb380cae6a6cc0c3a00c961fead8a16f818929cc976f0475e4f723519318b96f4947a7a5f9663", ke1.toHex());
+        assertEquals("c4dedb0ba6ed5d965d6f250fbe554cd45cba5dfcce3ce836e4aee778aa3cd44dda7e07376d6d6f034cfa9bb537d11b8c6b4238c334333d1f0aebb380cae6a6cc0c3a00c961fead8a16f818929cc976f0475e4f723519318b96f4947a7a5f9663", ke1.toHex());
 
         ServerState serverState = new ServerState();
         OpaqueSeed maskingNonce = OpaqueSeed.fromHex("38fe59af0df2c79f57b8780278f5ae47355fe1f817119041951c80f612fdfc6d");
@@ -113,7 +113,7 @@ public class OpaqueTest {
             serverKeyshare
         );
 
-        assertEquals("36b4d06f413b72004392d7359cd6a998c667533203d6a671afe81ca09a282f7238fe59af0df2c79f57b8780278f5ae47355fe1f817119041951c80f612fdfc6d378cc6b0113bf0b6afd9e0728e62ba793d5d25bb97794c154d036bf09c98c472368bffc4e35b7dc48f5a32dd3fede3b9e563f7a170d0e082d02c0a105cdf1ee0ea1928202076ff37ce174f2c669d52d8adc424e925a3bc9a4ca5ce16d9b7a1791ff7e47a0d2fa42424e5476f8cfa7bb20b2796ad877295a996ffcb049313f4e971cd9960ecef2fe0d0f7494986fa3d8b2bb01963537e60efb13981e138e3d4a1c8c39f573135474c51660b02425bca633e339cec4e1acc69c94dd48497fe402848f3b062916ea7666973222944dabe1027e5bea84b1b5d46dab64b1c6eda3170d4c9adba8afa61eb4153061d528b39102f32ecda7d7625dbc229e6630a607e03", ke2.toHex());
+        assertEquals("7e308140890bcde30cbcea28b01ea1ecfbd077cff62c4def8efa075aabcbb47138fe59af0df2c79f57b8780278f5ae47355fe1f817119041951c80f612fdfc6dd6ec60bcdb26dc455ddf3e718f1020490c192d70dfc7e403981179d8073d1146a4f9aa1ced4e4cd984c657eb3b54ced3848326f70331953d91b02535af44d9fe0610f003be80cb2098357928c8ea17bb065af33095f39d4e0b53b1687f02d522d96bad4ca354293d5c401177ccbd302cf565b96c327f71bc9eaf2890675d2fbb71cd9960ecef2fe0d0f7494986fa3d8b2bb01963537e60efb13981e138e3d4a1c8c39f573135474c51660b02425bca633e339cec4e1acc69c94dd48497fe40287f33611c2cf0eef57adbf48942737d9421e6b20e4b9d6e391d4168bf4bf96ea57aa42ad41c977605e027a9ef706a349f4b2919fe3562c8e86c4eeecf2f9457d4", ke2.toHex());
 
         ClientFinishResult clientFinishResult = Opaque.clientFinish(
             clientState,
@@ -128,7 +128,7 @@ public class OpaqueTest {
 
         assertEquals(0, clientFinishResult.getResult());
         assertEquals(exportKey, clientFinishResult.getExportKey());
-        assertEquals("4e23f0f84a5261918a7fc23bf1978a935cf4e320d56984079f8c7f4a54847b9e979f519928c5898927cf6aa8d51ac42dc2d0f5840956caa3a34dbc55ce74415f", ke3.toHex());
+        assertEquals("df9a13cd256091f90f0fcb2ef6b3411e4aebff07bb0813299c0ec7f5dedd33a7681231a001a82f1dece1777921f42abfeee551ee34392e1c9743c5cc1dc1ef8c", ke3.toHex());
 
         ServerFinishResult serverFinishResult = Opaque.serverFinish(serverState, ke3);
 

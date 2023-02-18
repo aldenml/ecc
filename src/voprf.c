@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2022, Alden Torres
+ * Copyright (c) 2021-2023, Alden Torres
  *
  * Licensed under the terms of the MIT license.
  * Copy of the license at https://opensource.org/licenses/MIT
@@ -56,9 +56,10 @@ static int createContextString(
     const byte_t *prefix,
     const int prefixLen
 ) {
-    // contextString = "${RFC_ID}-" || I2OSP(mode, 1) || I2OSP(suite_id, 2)
+    // contextString = "OPRFV1-" || I2OSP(mode, 1) || "-" || identifier
 
-    byte_t rfcId[7] = "VOPRF10"; // TODO: change to "RFCXXXX", where XXXX is the final number
+    byte_t id[6] = "OPRFV1";
+    byte_t identifier[19] = "ristretto255-SHA512";
     byte_t dash[1] = "-";
 
     byte_t *p = contextString;
@@ -68,18 +69,18 @@ static int createContextString(
         p += prefixLen;
     }
 
-    ecc_concat2(p, rfcId, sizeof rfcId, dash, 1);
-    p += sizeof rfcId + 1;
+    ecc_concat2(p, id, sizeof id, dash, 1);
+    p += sizeof id + 1;
     ecc_I2OSP(p, mode, 1);
     p += 1;
-    ecc_I2OSP(p, 0x0001, 2); // 0x0001 for OPRF(ristretto255, SHA-512)
-    p += 2;
+    ecc_concat2(p, dash, 1, identifier, sizeof identifier);
+    p += 1 + sizeof identifier;
 
     return (int)(p - contextString);
 }
 
 void ecc_voprf_ristretto255_sha512_GenerateProofWithScalar(
-    byte_t *proofPtr,
+    byte_t *proof_ptr,
     const byte_t *k,
     const byte_t *A,
     const byte_t *B,
@@ -113,7 +114,7 @@ void ecc_voprf_ristretto255_sha512_GenerateProofWithScalar(
     //
     // proof = [c, s]
 
-    Proof_t *proof = (Proof_t *) proofPtr;
+    Proof_t *proof = (Proof_t *) proof_ptr;
 
     // (M, Z) = ComputeCompositesFast(k, B, Cs, Ds)
     byte_t M[ELEMENTSIZE];
@@ -703,7 +704,7 @@ int ecc_voprf_ristretto255_sha512_DeriveKeyPair(
 }
 
 int ecc_voprf_ristretto255_sha512_BlindWithScalar(
-    byte_t *blindedElement, // 32
+    byte_t *blindedElement,
     const byte_t *input, const int inputLen,
     const byte_t *blind,
     const int mode
@@ -913,7 +914,7 @@ void ecc_voprf_ristretto255_sha512_VerifiableBlindEvaluate(
 
 int ecc_voprf_ristretto255_sha512_VerifiableFinalize(
     byte_t *output,
-    const byte_t *input, int inputLen,
+    const byte_t *input, const int inputLen,
     const byte_t *blind,
     const byte_t *evaluatedElement,
     const byte_t *blindedElement,
@@ -937,7 +938,7 @@ int ecc_voprf_ristretto255_sha512_VerifiableFinalize(
     byte_t generator[ELEMENTSIZE];
     ecc_ristretto255_generator(generator);
 
-    int verification = ecc_voprf_ristretto255_sha512_VerifyProof(
+    const int verification = ecc_voprf_ristretto255_sha512_VerifyProof(
         generator, pkS,
         blindedElement, evaluatedElement, 1,
         MODE_VOPRF,
@@ -962,7 +963,7 @@ int ecc_voprf_ristretto255_sha512_PartiallyBlindWithScalar(
     byte_t *tweakedKey,
     const byte_t *input, const int inputLen,
     const byte_t *info, const int infoLen,
-    byte_t *pkS,
+    const byte_t *pkS,
     const byte_t *blind
 ) {
     if (infoLen > ecc_voprf_ristretto255_sha512_MAXINFOSIZE)
@@ -1052,7 +1053,7 @@ int ecc_voprf_ristretto255_sha512_PartiallyBlind(
     byte_t *tweakedKey,
     const byte_t *input, const int inputLen,
     const byte_t *info, const int infoLen,
-    byte_t *pkS
+    const byte_t *pkS
 ) {
     ecc_ristretto255_scalar_random(blind);
     return ecc_voprf_ristretto255_sha512_PartiallyBlindWithScalar(
@@ -1070,7 +1071,7 @@ int ecc_voprf_ristretto255_sha512_PartiallyBlindEvaluateWithScalar(
     byte_t *proof,
     const byte_t *skS,
     const byte_t *blindedElement,
-    const byte_t *info, int infoLen,
+    const byte_t *info, const int infoLen,
     const byte_t *r
 ) {
     if (infoLen > ecc_voprf_ristretto255_sha512_MAXINFOSIZE)
@@ -1160,7 +1161,7 @@ int ecc_voprf_ristretto255_sha512_PartiallyBlindEvaluate(
     byte_t *proof,
     const byte_t *skS,
     const byte_t *blindedElement,
-    const byte_t *info, int infoLen
+    const byte_t *info, const int infoLen
 ) {
     byte_t r[SCALARSIZE];
     ecc_ristretto255_scalar_random(r);
@@ -1182,12 +1183,12 @@ int ecc_voprf_ristretto255_sha512_PartiallyBlindEvaluate(
 
 int ecc_voprf_ristretto255_sha512_PartiallyFinalize(
     byte_t *output,
-    const byte_t *input, int inputLen,
+    const byte_t *input, const int inputLen,
     const byte_t *blind,
     const byte_t *evaluatedElement,
     const byte_t *blindedElement,
     const byte_t *proof,
-    const byte_t *info, int infoLen,
+    const byte_t *info, const int infoLen,
     const byte_t *tweakedKey
 ) {
     if (infoLen > ecc_voprf_ristretto255_sha512_MAXINFOSIZE)
@@ -1270,8 +1271,8 @@ int ecc_voprf_ristretto255_sha512_PartiallyFinalize(
 int ecc_voprf_ristretto255_sha512_PartiallyEvaluate(
     byte_t *output,
     const byte_t *skS,
-    const byte_t *input, int inputLen,
-    const byte_t *info, int infoLen
+    const byte_t *input, const int inputLen,
+    const byte_t *info, const int infoLen
 ) {
     if (infoLen > ecc_voprf_ristretto255_sha512_MAXINFOSIZE)
         return -1;

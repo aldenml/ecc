@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2022, Alden Torres
+ * Copyright (c) 2021-2023, Alden Torres
  *
  * Licensed under the terms of the MIT license.
  * Copy of the license at https://opensource.org/licenses/MIT
@@ -7,7 +7,6 @@
 
 #include "ecc_test.h"
 
-// https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-voprf-16#appendix-A-1-1
 static void test_ecc_voprf_ristretto255_sha512_oprf(void **state) {
     ECC_UNUSED(state);
 
@@ -92,7 +91,6 @@ static void test_ecc_voprf_ristretto255_sha512_oprf(void **state) {
     ecc_json_destroy(json);
 }
 
-// https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-voprf-16#appendix-A-1-2
 static void test_ecc_voprf_ristretto255_sha512_voprf(void **state) {
     ECC_UNUSED(state);
 
