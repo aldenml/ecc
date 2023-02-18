@@ -7,51 +7,52 @@
 
 This is the python binding of the [ecc](https://github.com/aldenml/ecc) library.
 
-It is a WebAssembly compilation with a thin layer on
-top to expose the cryptographic primitives.
-
 ### Features
 
-- [OPRF](#oprf-oblivious-pseudo-random-functions-using-ristretto255)
+- [OPRF](#oprf-oblivious-pseudo-random-functions)
 - [OPAQUE](#opaque-the-opaque-asymmetric-pake-protocol)
 - [Two-Round Threshold Schnorr Signatures with FROST](#two-round-threshold-schnorr-signatures-with-frost)
 - [Ethereum BLS Signature](#ethereum-bls-signature)
 - [BLS12-381 Pairing](#bls12-381-pairing)
 - [Proxy Re-Encryption (PRE)](#proxy-re-encryption-pre)
 
-### OPRF Oblivious pseudo-random functions using ristretto255
+### OPRF Oblivious pseudo-random functions
 
-This is an implementation of [draft-irtf-cfrg-voprf-16](https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-voprf-16)
+This is an implementation of [draft-irtf-cfrg-voprf-20](https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-voprf-20)
 ciphersuite **OPRF(ristretto255, SHA-512)** using `libsodium`.
 
-There are two variants in this protocol: a *base* mode and *verifiable* mode. In the
-base mode, a client and server interact to compute `output = F(skS, input, info)`,
-where `input` is the client's private input, `skS` is the server's private key, `info`
-is the public input, and `output` is the computation output. The client learns `output`
-and the server learns nothing. In the verifiable mode, the client also receives proof
-that the server used `skS` in computing the function.
+An Oblivious Pseudorandom Function (OPRF) is a two-party protocol between client
+and server for computing the output of a Pseudorandom Function (PRF). The server
+provides the PRF secret key, and the client provides the PRF input. At the end
+of the protocol, the client learns the PRF output without learning anything
+about the PRF secret key, and the server learns neither the PRF input nor
+output.
 
-The flow is shown below (from the irtf draft):
+There are two variations of the basic protocol:
+
+- VOPRF: is OPRF with the notion of verifiability. Clients can verify that the
+  server used a specific private key during the execution of the protocol.
+- POPRF: is a partially-oblivious VOPRF that allows clients and servers to
+  provide public input to the PRF computation.
+
+The OPRF flow is shown below (from the IRTF draft):
 ```
-  Client(input, info)                               Server(skS, info)
-  ----------------------------------------------------------------------
+    Client(input)                                        Server(skS)
+  -------------------------------------------------------------------
   blind, blindedElement = Blind(input)
 
                              blindedElement
                                ---------->
 
-                 evaluatedElement = Evaluate(skS, blindedElement, info)
+                evaluatedElement = BlindEvaluate(skS, blindedElement)
 
                              evaluatedElement
                                <----------
 
-  output = Finalize(input, blind, evaluatedElement, blindedElement, info)
+  output = Finalize(input, blind, evaluatedElement)
 ```
 
-In the verifiable mode of the protocol, the server additionally
-computes a proof in Evaluate. The client verifies this proof using
-the server's expected public key before completing the protocol and
-producing the protocol output.
+For the advanced modes VOPRF and POPRF refer to the published draft.
 
 ### OPAQUE The OPAQUE Asymmetric PAKE Protocol
 
