@@ -1,4 +1,4 @@
-# ecc
+# elliptic-curve cryptography
 
 [![macOS](https://github.com/aldenml/ecc/actions/workflows/macos.yml/badge.svg?branch=master)](https://github.com/aldenml/ecc/actions/workflows/macos.yml)
 [![Linux](https://github.com/aldenml/ecc/actions/workflows/linux.yml/badge.svg?branch=master)](https://github.com/aldenml/ecc/actions/workflows/linux.yml)

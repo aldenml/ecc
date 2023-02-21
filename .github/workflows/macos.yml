@@ -15,9 +15,9 @@ concurrency:
 jobs:
 
   x86_64:
-    runs-on: macos-11
+    runs-on: macos-12
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           submodules: recursive
       - name: install packages
@@ -64,7 +64,7 @@ jobs:
           python3 -m unittest
           cd ../..
 
-      - uses: actions/upload-artifact@v2
+      - uses: actions/upload-artifact@v3
         with:
           name: ecc-macos-x86_64
           path: |

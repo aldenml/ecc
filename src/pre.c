@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2022, Alden Torres
+ * Copyright (c) 2021-2023, Alden Torres
  *
  * Licensed under the terms of the MIT license.
  * Copy of the license at https://opensource.org/licenses/MIT
@@ -8,33 +8,13 @@
 #include "pre.h"
 #include <string.h>
 #include <assert.h>
+#include <sodium.h>
 #include <blst.h>
 #include "util.h"
 #include "hash.h"
-#include "ed25519.h"
 #include "bls12_381.h"
 #include "h2c.h"
 #include "sign.h"
-
-#ifdef __GNUC__
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wcpp"
-#endif
-
-#ifdef __clang__
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wcpp"
-#endif
-
-#include <sodium.h>
-
-#ifdef __clang__
-#pragma clang diagnostic pop
-#endif
-
-#ifdef __GNUC__
-#pragma GCC diagnostic pop
-#endif
 
 typedef struct {
     byte_t epk[ecc_pre_schema1_PUBLICKEYSIZE];

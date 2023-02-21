@@ -1,4 +1,4 @@
-# ecc
+# elliptic-curve cryptography
 
 [![javascript](https://github.com/aldenml/ecc/actions/workflows/javascript.yml/badge.svg?branch=master)](https://github.com/aldenml/ecc/actions/workflows/javascript.yml)
 [![npm](https://img.shields.io/npm/v/@aldenml/ecc)](https://www.npmjs.com/package/@aldenml/ecc)

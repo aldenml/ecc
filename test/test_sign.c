@@ -1,17 +1,11 @@
 /*
- * Copyright (c) 2021-2022, Alden Torres
+ * Copyright (c) 2021-2023, Alden Torres
  *
  * Licensed under the terms of the MIT license.
  * Copy of the license at https://opensource.org/licenses/MIT
  */
 
 #include "ecc_test.h"
-#include <stdarg.h>
-#include <setjmp.h>
-#include <string.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <cmocka.h>
 
 // Test Vectors for BLS Signature taken from:
 // https://github.com/ethereum/bls12-381-tests
