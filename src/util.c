@@ -7,7 +7,6 @@
 
 #include "util.h"
 #include <string.h>
-
 #include <sodium.h>
 
 void ecc_memzero(byte_t *buf, const int len) {

@@ -8,29 +8,10 @@
 #include "frost.h"
 #include <string.h>
 #include <assert.h>
+#include <sodium.h>
 #include "util.h"
 #include "hash.h"
 #include "ristretto255.h"
-
-#ifdef __GNUC__
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wcpp"
-#endif
-
-#ifdef __clang__
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wcpp"
-#endif
-
-#include <sodium.h>
-
-#ifdef __clang__
-#pragma clang diagnostic pop
-#endif
-
-#ifdef __GNUC__
-#pragma GCC diagnostic pop
-#endif
 
 #define SCALARSIZE ecc_frost_ristretto255_sha512_SCALARSIZE // 32
 #define ELEMENTSIZE ecc_frost_ristretto255_sha512_ELEMENTSIZE // 32

@@ -8,12 +8,11 @@
 #include "voprf.h"
 #include <string.h>
 #include <assert.h>
+#include <sodium.h>
 #include "util.h"
 #include "hash.h"
 #include "h2c.h"
 #include "ristretto255.h"
-
-#include <sodium.h>
 
 #define ELEMENTSIZE ecc_voprf_ristretto255_sha512_ELEMENTSIZE
 #define SCALARSIZE ecc_voprf_ristretto255_sha512_SCALARSIZE

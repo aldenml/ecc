@@ -13,13 +13,13 @@ concurrency:
 jobs:
 
   scan:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     env:
-      SONAR_SCANNER_VERSION: 4.6.2.2472
+      SONAR_SCANNER_VERSION: 4.8.0.2856
       SONAR_SERVER_URL: "https://sonarcloud.io"
       BUILD_WRAPPER_OUT_DIR: build_wrapper_output_directory
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           submodules: recursive
       - name: install packages
@@ -32,7 +32,7 @@ jobs:
         with:
           java-version: 11
       - name: Cache SonarCloud packages
-        uses: actions/cache@v1
+        uses: actions/cache@v3
         with:
           path: ~/.sonar/cache
           key: ${{ runner.os }}-sonar

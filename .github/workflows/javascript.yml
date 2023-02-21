@@ -15,9 +15,9 @@ concurrency:
 jobs:
 
   tests:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           submodules: recursive
       - name: install packages
@@ -27,7 +27,7 @@ jobs:
       - name: install nodejs
         run: |
           sudo npm install -g n
-          sudo n 16.3.0
+          sudo n 18.14.1
           node --version
       - name: install emscripten
         run: |
