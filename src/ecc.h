@@ -1,12 +1,12 @@
 /*
- * Copyright (c) 2021-2022, Alden Torres
+ * Copyright (c) 2021-2023, Alden Torres
  *
  * Licensed under the terms of the MIT license.
  * Copy of the license at https://opensource.org/licenses/MIT
  */
 
-#ifndef ECC_ECC_H
-#define ECC_ECC_H
+#ifndef ECC_H
+#define ECC_H
 
 #include "export.h"
 #include "util.h"
@@ -23,4 +23,4 @@
 #include "frost.h"
 #include "pre.h"
 
-#endif // ECC_ECC_H
+#endif // ECC_H
