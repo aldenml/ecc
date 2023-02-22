@@ -18,7 +18,7 @@ This is the python binding of the [ecc](https://github.com/aldenml/ecc) library.
 
 ### OPRF Oblivious pseudo-random functions
 
-This is an implementation of [draft-irtf-cfrg-voprf-20](https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-voprf-20)
+This is an implementation of [draft-irtf-cfrg-voprf-21](https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-voprf-21)
 ciphersuite **OPRF(ristretto255, SHA-512)** using `libsodium`.
 
 An Oblivious Pseudorandom Function (OPRF) is a two-party protocol between client
