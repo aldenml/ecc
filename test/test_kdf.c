@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2022, Alden Torres
+ * Copyright (c) 2021-2023, Alden Torres
  *
  * Licensed under the terms of the MIT license.
  * Copy of the license at https://opensource.org/licenses/MIT
@@ -203,6 +203,28 @@ static void test_ecc_kdf_scrypt_4(void **state) {
                              "37304049e8a952fbcbf45c6fa77a41a4");
 }
 
+static void test_ecc_kdf_argon2id(void **state) {
+    ECC_UNUSED(state);
+
+    byte_t Password[17] = "WelcomePassphrase";
+    byte_t Salt[ecc_kdf_argon2id_SALTIZE] = "abcdabcdabcdabcd";
+
+    byte_t out[32];
+    const int r = ecc_kdf_argon2id(
+        out,
+        Password, sizeof Password,
+        Salt,
+        32, 3,
+        32
+    );
+
+    assert_int_equal(r, 0);
+
+    char hex[65];
+    ecc_bin2hex(hex, out, sizeof out);
+    assert_string_equal(hex, "38292f3f2cad1f2121bb8d236311e108d5d1826b9a04da31cb21c4791065079b");
+}
+
 int main(void) {
     const struct CMUnitTest tests[] = {
         cmocka_unit_test(test_ecc_kdf_hkdf_sha256),
@@ -212,6 +234,7 @@ int main(void) {
         cmocka_unit_test(test_ecc_kdf_scrypt_2),
         cmocka_unit_test(test_ecc_kdf_scrypt_3),
         cmocka_unit_test(test_ecc_kdf_scrypt_4),
+        cmocka_unit_test(test_ecc_kdf_argon2id),
     };
 
     return cmocka_run_group_tests(tests, NULL, NULL);

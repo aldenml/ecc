@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2022, Alden Torres
+ * Copyright (c) 2021-2023, Alden Torres
  *
  * Licensed under the terms of the MIT license.
  * Copy of the license at https://opensource.org/licenses/MIT
@@ -118,6 +118,34 @@ int ecc_kdf_scrypt(
     int cost,
     int block_size,
     int parallelization,
+    int len
+);
+
+// const
+/**
+ * Salt size for Argon2id.
+ */
+#define ecc_kdf_argon2id_SALTIZE 16
+
+/**
+ * See https://datatracker.ietf.org/doc/html/rfc9106
+ *
+ * @param[out] out size:len
+ * @param passphrase size:passphrase_len
+ * @param passphrase_len the length of `passphrase`
+ * @param salt size:ecc_kdf_argon2id_SALTIZE
+ * @param memory_size amount of memory (in kibibytes) to use
+ * @param iterations number of passes
+ * @param len intended output length
+ * @return 0 on success and -1 if the computation didn't complete
+ */
+ECC_EXPORT
+int ecc_kdf_argon2id(
+    byte_t *out,
+    const byte_t *passphrase, int passphrase_len,
+    const byte_t *salt,
+    int memory_size,
+    int iterations,
     int len
 );
 

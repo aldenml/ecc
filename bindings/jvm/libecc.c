@@ -424,6 +424,35 @@ JNIEXPORT int JNICALL Java_org_ssohub_crypto_ecc_libecc_ecc_1kdf_1scrypt(
     return fun_ret;
 }
 
+JNIEXPORT int JNICALL Java_org_ssohub_crypto_ecc_libecc_ecc_1kdf_1argon2id(
+    JNIEnv *env, jclass cls,
+    jbyteArray out,
+    jbyteArray passphrase,
+    jint passphrase_len,
+    jbyteArray salt,
+    jint memory_size,
+    jint iterations,
+    jint len
+) {
+    byte_t *ptr_out = mput(env, out, len);
+    byte_t *ptr_passphrase = mput(env, passphrase, passphrase_len);
+    byte_t *ptr_salt = mput(env, salt, ecc_kdf_argon2id_SALTIZE);
+    const int fun_ret = ecc_kdf_argon2id(
+        ptr_out,
+        ptr_passphrase,
+        passphrase_len,
+        ptr_salt,
+        memory_size,
+        iterations,
+        len
+    );
+    mget(env, out, ptr_out, len);
+    mfree(ptr_out, len);
+    mfree(ptr_passphrase, passphrase_len);
+    mfree(ptr_salt, ecc_kdf_argon2id_SALTIZE);
+    return fun_ret;
+}
+
 // ed25519
 
 JNIEXPORT int JNICALL Java_org_ssohub_crypto_ecc_libecc_ecc_1ed25519_1is_1valid_1point(

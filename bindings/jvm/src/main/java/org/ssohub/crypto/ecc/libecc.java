@@ -297,6 +297,12 @@ public final class libecc {
     public static final int ecc_kdf_hkdf_sha512_KEYSIZE = 64;
 
     /**
+     * Salt size for Argon2id.
+     *
+     */
+    public static final int ecc_kdf_argon2id_SALTIZE = 16;
+
+    /**
      * Computes the HKDF-SHA-256 extract of the input using a key material.
      *
      * See https://datatracker.ietf.org/doc/html/rfc5869
@@ -395,6 +401,28 @@ public final class libecc {
         int cost,
         int block_size,
         int parallelization,
+        int len
+    );
+
+    /**
+     * See https://datatracker.ietf.org/doc/html/rfc9106
+     *
+     * @param out (output) size:len
+     * @param passphrase size:passphrase_len
+     * @param passphrase_len the length of `passphrase`
+     * @param salt size:ecc_kdf_argon2id_SALTIZE
+     * @param memory_size amount of memory (in kibibytes) to use
+     * @param iterations number of passes
+     * @param len intended output length
+     * @return 0 on success and -1 if the computation didn't complete
+     */
+    public static native int ecc_kdf_argon2id(
+        byte[] out,
+        byte[] passphrase,
+        int passphrase_len,
+        byte[] salt,
+        int memory_size,
+        int iterations,
         int len
     );
 
@@ -1544,7 +1572,7 @@ public final class libecc {
 
     /**
      * Same as calling ecc_voprf_ristretto255_sha512_VerifiableBlindEvaluate but
-     * using an specified scalar `r`.
+     * using a specified scalar `r`.
      *
      * @param evaluatedElement (output) size:ecc_voprf_ristretto255_sha512_ELEMENTSIZE
      * @param proof (output) size:ecc_voprf_ristretto255_sha512_PROOFSIZE
@@ -1806,7 +1834,7 @@ public final class libecc {
     );
 
     /**
-     * Same as calling ecc_voprf_ristretto255_sha512_HashToScalar with an specified
+     * Same as calling ecc_voprf_ristretto255_sha512_HashToScalar with a specified
      * DST.
      *
      * @param out (output) size:ecc_voprf_ristretto255_sha512_SCALARSIZE

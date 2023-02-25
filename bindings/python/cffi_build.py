@@ -150,6 +150,16 @@ ffibuilder.cdef(
         int len
     );
 
+    int ecc_kdf_argon2id(
+        unsigned char *out,
+        unsigned char *passphrase,
+        int passphrase_len,
+        unsigned char *salt,
+        int memory_size,
+        int iterations,
+        int len
+    );
+
     // ed25519
 
     int ecc_ed25519_is_valid_point(

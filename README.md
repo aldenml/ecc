@@ -28,6 +28,7 @@ and [blst](https://github.com/supranational/blst).
 - [Ethereum BLS Signature](#ethereum-bls-signature)
 - [BLS12-381 Pairing](#bls12-381-pairing)
 - [Proxy Re-Encryption (PRE)](#proxy-re-encryption-pre)
+- [Cryptographic primitives and utilities](#cryptographic-primitives-and-utilities)
 
 ### OPRF Oblivious pseudo-random functions
 
@@ -273,6 +274,12 @@ Read more at:<br/>
 "A Multi-User CCA-Secure Proxy Re-Encryption Scheme" by Y. Cai and X. Liu, 2014 <br/>
 "Cryptographically Enforced Orthogonal Access Control at Scale" by B. Wall and P. Walsh, 2018 <br/>
 https://en.wikipedia.org/wiki/Proxy_re-encryption
+
+### Cryptographic primitives and utilities
+
+```
+ecc_kdf_argon2id
+```
 
 ### Bindings and building
 
