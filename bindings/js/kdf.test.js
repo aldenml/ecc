@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021, Alden Torres
+ * Copyright (c) 2021-2023, Alden Torres
  *
  * Licensed under the terms of the MIT license.
  * Copy of the license at https://opensource.org/licenses/MIT
@@ -9,7 +9,12 @@ import libecc_module from "./libecc.js";
 import {
     bin2hex,
     hex2bin,
+    str2bin,
+    libecc_promise,
 } from "./util.js";
+import {
+    kdf_argon2id,
+} from "./kdf.js"
 import assert from "assert";
 
 describe("ecc_kdf_hkdf_sha256", () => {
@@ -87,4 +92,24 @@ describe("ecc_kdf_hkdf_sha512", () => {
         libecc.ecc_kdf_hkdf_sha512_expand(okm, prk512, context, context.length, outLen);
         assert.strictEqual(bin2hex(okm), "046f63a1e2d606d7893e");
     });
+});
+
+describe("kdf_argon2id", () => {
+
+    it("test 1", async () => {
+        await libecc_promise;
+
+        const password = str2bin("WelcomePassphrase");
+        const salt = str2bin("abcdabcdabcdabcd");
+
+        const out = kdf_argon2id(
+            password,
+            salt,
+            32, 3,
+            32,
+        );
+
+        assert.strictEqual(bin2hex(out), "38292f3f2cad1f2121bb8d236311e108d5d1826b9a04da31cb21c4791065079b");
+    });
+
 });

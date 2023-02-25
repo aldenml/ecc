@@ -80,3 +80,21 @@ int ecc_kdf_scrypt(
         out, (size_t) len
     );
 }
+
+int ecc_kdf_argon2id(
+    byte_t *out,
+    const byte_t *passphrase, const int passphrase_len,
+    const byte_t *salt,
+    const int memory_size,
+    const int iterations,
+    const int len
+) {
+    return crypto_pwhash_argon2id(
+        out, (size_t) len,
+        (const char *) passphrase, (size_t) passphrase_len,
+        salt,
+        (size_t) iterations,
+        (size_t) memory_size * 1024,
+        crypto_pwhash_argon2id_ALG_ARGON2ID13
+    );
+}

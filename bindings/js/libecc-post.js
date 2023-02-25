@@ -469,6 +469,14 @@ const ecc_kdf_hkdf_sha512_KEYSIZE = 64;
  */
 Module.ecc_kdf_hkdf_sha512_KEYSIZE = ecc_kdf_hkdf_sha512_KEYSIZE;
 
+const ecc_kdf_argon2id_SALTIZE = 16;
+/**
+ * Salt size for Argon2id.
+ *
+ * @type {number}
+ */
+Module.ecc_kdf_argon2id_SALTIZE = ecc_kdf_argon2id_SALTIZE;
+
 /**
  * Computes the HKDF-SHA-256 extract of the input using a key material.
  *
@@ -648,6 +656,46 @@ Module.ecc_kdf_scrypt = (
     mfree(ptr_out, len);
     mfree(ptr_passphrase, passphrase_len);
     mfree(ptr_salt, salt_len);
+    return fun_ret;
+}
+
+/**
+ * See https://datatracker.ietf.org/doc/html/rfc9106
+ *
+ * @param {Uint8Array} out (output) size:len
+ * @param {Uint8Array} passphrase size:passphrase_len
+ * @param {number} passphrase_len the length of `passphrase`
+ * @param {Uint8Array} salt size:ecc_kdf_argon2id_SALTIZE
+ * @param {number} memory_size amount of memory (in kibibytes) to use
+ * @param {number} iterations number of passes
+ * @param {number} len intended output length
+ * @return {number} 0 on success and -1 if the computation didn't complete
+ */
+Module.ecc_kdf_argon2id = (
+    out,
+    passphrase,
+    passphrase_len,
+    salt,
+    memory_size,
+    iterations,
+    len,
+) => {
+    const ptr_out = mput(out, len);
+    const ptr_passphrase = mput(passphrase, passphrase_len);
+    const ptr_salt = mput(salt, ecc_kdf_argon2id_SALTIZE);
+    const fun_ret = _ecc_kdf_argon2id(
+        ptr_out,
+        ptr_passphrase,
+        passphrase_len,
+        ptr_salt,
+        memory_size,
+        iterations,
+        len,
+    );
+    mget(out, ptr_out, len);
+    mfree(ptr_out, len);
+    mfree(ptr_passphrase, passphrase_len);
+    mfree(ptr_salt, ecc_kdf_argon2id_SALTIZE);
     return fun_ret;
 }
 
@@ -2670,7 +2718,7 @@ Module.ecc_voprf_ristretto255_sha512_Evaluate = (
 
 /**
  * Same as calling ecc_voprf_ristretto255_sha512_VerifiableBlindEvaluate but
- * using an specified scalar `r`.
+ * using a specified scalar `r`.
  *
  * @param {Uint8Array} evaluatedElement (output) size:ecc_voprf_ristretto255_sha512_ELEMENTSIZE
  * @param {Uint8Array} proof (output) size:ecc_voprf_ristretto255_sha512_PROOFSIZE
@@ -3179,7 +3227,7 @@ Module.ecc_voprf_ristretto255_sha512_HashToGroup = (
 }
 
 /**
- * Same as calling ecc_voprf_ristretto255_sha512_HashToScalar with an specified
+ * Same as calling ecc_voprf_ristretto255_sha512_HashToScalar with a specified
  * DST.
  *
  * @param {Uint8Array} out (output) size:ecc_voprf_ristretto255_sha512_SCALARSIZE

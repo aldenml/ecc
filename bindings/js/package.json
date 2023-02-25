@@ -8,6 +8,7 @@
     "index.js",
     "libecc.js",
     "util.js",
+    "kdf.js",
     "oprf.js",
     "opaque.js",
     "pre.js",
@@ -31,6 +32,7 @@
     "dist/index.d.ts",
     "dist/libecc.d.ts",
     "dist/util.d.ts",
+    "dist/kdf.d.ts",
     "dist/oprf.d.ts",
     "dist/opaque.d.ts",
     "dist/pre.d.ts"

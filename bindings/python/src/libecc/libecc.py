@@ -390,6 +390,11 @@ ecc_kdf_hkdf_sha512_KEYSIZE = 64
 Key size for HKDF-SHA-512.
 """
 
+ecc_kdf_argon2id_SALTIZE = 16
+"""
+Salt size for Argon2id.
+"""
+
 def ecc_kdf_hkdf_sha256_extract(
     prk: bytearray,
     salt: bytes,
@@ -551,6 +556,42 @@ def ecc_kdf_scrypt(
         cost,
         block_size,
         parallelization,
+        len
+    )
+    return fun_ret
+
+
+def ecc_kdf_argon2id(
+    out: bytearray,
+    passphrase: bytes,
+    passphrase_len: int,
+    salt: bytes,
+    memory_size: int,
+    iterations: int,
+    len: int
+) -> int:
+    """
+    See https://datatracker.ietf.org/doc/html/rfc9106
+    
+    out -- (output) size:len
+    passphrase -- size:passphrase_len
+    passphrase_len -- the length of `passphrase`
+    salt -- size:ecc_kdf_argon2id_SALTIZE
+    memory_size -- amount of memory (in kibibytes) to use
+    iterations -- number of passes
+    len -- intended output length
+    return 0 on success and -1 if the computation didn't complete
+    """
+    ptr_out = ffi.from_buffer(out)
+    ptr_passphrase = ffi.from_buffer(passphrase)
+    ptr_salt = ffi.from_buffer(salt)
+    fun_ret = lib.ecc_kdf_argon2id(
+        ptr_out,
+        ptr_passphrase,
+        passphrase_len,
+        ptr_salt,
+        memory_size,
+        iterations,
         len
     )
     return fun_ret
@@ -2319,7 +2360,7 @@ def ecc_voprf_ristretto255_sha512_VerifiableBlindEvaluateWithScalar(
 ) -> None:
     """
     Same as calling ecc_voprf_ristretto255_sha512_VerifiableBlindEvaluate but
-    using an specified scalar `r`.
+    using a specified scalar `r`.
     
     evaluatedElement -- (output) size:ecc_voprf_ristretto255_sha512_ELEMENTSIZE
     proof -- (output) size:ecc_voprf_ristretto255_sha512_PROOFSIZE
@@ -2755,7 +2796,7 @@ def ecc_voprf_ristretto255_sha512_HashToScalarWithDST(
     dstLen: int
 ) -> None:
     """
-    Same as calling ecc_voprf_ristretto255_sha512_HashToScalar with an specified
+    Same as calling ecc_voprf_ristretto255_sha512_HashToScalar with a specified
     DST.
     
     out -- (output) size:ecc_voprf_ristretto255_sha512_SCALARSIZE

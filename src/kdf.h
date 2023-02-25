@@ -121,4 +121,32 @@ int ecc_kdf_scrypt(
     int len
 );
 
+// const
+/**
+ * Salt size for Argon2id.
+ */
+#define ecc_kdf_argon2id_SALTIZE 16
+
+/**
+ * See https://datatracker.ietf.org/doc/html/rfc9106
+ *
+ * @param[out] out size:len
+ * @param passphrase size:passphrase_len
+ * @param passphrase_len the length of `passphrase`
+ * @param salt size:ecc_kdf_argon2id_SALTIZE
+ * @param memory_size amount of memory (in kibibytes) to use
+ * @param iterations number of passes
+ * @param len intended output length
+ * @return 0 on success and -1 if the computation didn't complete
+ */
+ECC_EXPORT
+int ecc_kdf_argon2id(
+    byte_t *out,
+    const byte_t *passphrase, int passphrase_len,
+    const byte_t *salt,
+    int memory_size,
+    int iterations,
+    int len
+);
+
 #endif // ECC_KDF_H
