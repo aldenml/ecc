@@ -14,7 +14,7 @@ import {
 } from "./util.js";
 import {
     kdf_argon2id,
-} from "./kdf.js"
+} from "./kdf.js";
 import assert from "assert";
 
 describe("ecc_kdf_hkdf_sha256", () => {
