@@ -30,8 +30,8 @@ public final class Data implements DataLike {
      * Internally perform a copy of the array.
      */
     public Data(byte[] arr, int offset, int length) {
-        if (length < 0)
-            throw new IllegalArgumentException("length should be > 0");
+        if (offset < 0 || length < 0)
+            throw new IllegalArgumentException("both offset and length should be > 0");
         this.arr = Arrays.copyOfRange(arr, offset, offset + length);
     }
 

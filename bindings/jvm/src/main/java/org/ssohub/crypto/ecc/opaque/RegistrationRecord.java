@@ -37,5 +37,7 @@ public final class RegistrationRecord extends BaseData {
         return data.copy(ecc_opaque_ristretto255_sha512_Npk, ecc_opaque_ristretto255_sha512_Nh);
     }
 
-    // TODO: add envelope getter
+    public static RegistrationRecord fromHex(String hex) {
+        return new RegistrationRecord(Data.fromHex(hex));
+    }
 }

@@ -1,5 +1,15 @@
+/*
+ * Copyright (c) 2023, Alden Torres
+ *
+ * Licensed under the terms of the MIT license.
+ * Copy of the license at https://opensource.org/licenses/MIT
+ */
+
 package org.ssohub.crypto.ecc;
 
+/**
+ * @author aldenml
+ */
 public abstract class BaseData implements DataLike {
 
     protected final Data data;

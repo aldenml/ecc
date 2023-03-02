@@ -20,6 +20,14 @@ public final class Opaque {
     private Opaque() {
     }
 
+    /**
+     * Returns a randomly generated private and public key pair.
+     * <p>
+     * This is implemented by generating a random "seed", then
+     * calling internally DeriveAuthKeyPair.
+     *
+     * @return a new key pair.
+     */
     public static GenerateAuthKeyPairResult generateAuthKeyPair() {
 
         byte[] privateKey = new byte[ecc_opaque_ristretto255_sha512_Nsk];
@@ -36,6 +44,12 @@ public final class Opaque {
         );
     }
 
+    /**
+     * Recover the public key related to the input `privateKey`.
+     *
+     * @param privateKey the private key
+     * @return the corresponding public key.
+     */
     public static OpaquePk recoverPublicKey(OpaqueSk privateKey) {
 
         byte[] publicKey = new byte[ecc_opaque_ristretto255_sha512_Npk];
