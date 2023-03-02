@@ -301,4 +301,15 @@ public class OpaqueTest {
         assertNotEquals(0, serverFinishResult.getResult());
         assertNotEquals(clientFinishResult.getSessionKey(), serverFinishResult.getSessionKey());
     }
+
+    @Test
+    void testKeyPairGeneration() {
+
+        GenerateAuthKeyPairResult keyPairResult = Opaque.generateAuthKeyPair();
+        System.out.println("Opaque sk=" + keyPairResult.getPrivateKey().toHex());
+        System.out.println("Opaque pk=" + keyPairResult.getPublicKey().toHex());
+
+        OpaquePk pk = Opaque.recoverPublicKey(keyPairResult.getPrivateKey());
+        assertEquals(keyPairResult.getPublicKey(), pk);
+    }
 }

@@ -42,4 +42,8 @@ public final class RegistrationResponse extends BaseData {
     public OpaquePk getServerPublicKey() {
         return new OpaquePk(data.copy(ecc_opaque_ristretto255_sha512_Noe, ecc_opaque_ristretto255_sha512_Npk));
     }
+
+    public static RegistrationResponse fromHex(String hex) {
+        return new RegistrationResponse(Data.fromHex(hex));
+    }
 }

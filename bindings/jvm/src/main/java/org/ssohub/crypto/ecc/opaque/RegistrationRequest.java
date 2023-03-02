@@ -35,4 +35,8 @@ public final class RegistrationRequest extends BaseData {
     public R255Element getBlindedMessage() {
         return new R255Element(data);
     }
+
+    public static RegistrationRequest fromHex(String hex) {
+        return new RegistrationRequest(Data.fromHex(hex));
+    }
 }
