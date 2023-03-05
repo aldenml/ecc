@@ -2085,6 +2085,19 @@ public final class libecc {
     public static final int ecc_opaque_ristretto255_sha512_MHF_SCRYPT = 1;
 
     /**
+     * Use Argon2id(t=3,p=1,m=2^16) for the Memory Hard Function (MHF). With this
+     * option, the salt should always be of length ecc_opaque_ristretto255_sha512_MHF_ARGON2ID_SALTSIZE.
+     *
+     */
+    public static final int ecc_opaque_ristretto255_sha512_MHF_ARGON2ID = 2;
+
+    /**
+     * The length of the salt when using ecc_opaque_ristretto255_sha512_MHF_ARGON2ID.
+     *
+     */
+    public static final int ecc_opaque_ristretto255_sha512_MHF_ARGON2ID_SALTSIZE = 16;
+
+    /**
      * Derive a private and public key pair deterministically from a seed.
      *
      * @param private_key (output) a private key, size:ecc_opaque_ristretto255_sha512_Nsk
@@ -2311,6 +2324,8 @@ public final class libecc {
      * @param client_identity the optional encoded client identity, size:client_identity_len
      * @param client_identity_len the length of `client_identity`
      * @param mhf the memory hard function to use
+     * @param mhf_salt the salt to use in the memory hard function computation, size:mhf_salt_len
+     * @param mhf_salt_len the length of `mhf_salt`
      * @param nonce size:ecc_opaque_ristretto255_sha512_Nn
      */
     public static native void ecc_opaque_ristretto255_sha512_FinalizeRegistrationRequestWithNonce(
@@ -2325,6 +2340,8 @@ public final class libecc {
         byte[] client_identity,
         int client_identity_len,
         int mhf,
+        byte[] mhf_salt,
+        int mhf_salt_len,
         byte[] nonce
     );
 
@@ -2343,6 +2360,8 @@ public final class libecc {
      * @param client_identity the optional encoded client identity, size:client_identity_len
      * @param client_identity_len the length of `client_identity`
      * @param mhf the memory hard function to use
+     * @param mhf_salt the salt to use in the memory hard function computation, size:mhf_salt_len
+     * @param mhf_salt_len the length of `mhf_salt`
      */
     public static native void ecc_opaque_ristretto255_sha512_FinalizeRegistrationRequest(
         byte[] record,
@@ -2355,7 +2374,9 @@ public final class libecc {
         int server_identity_len,
         byte[] client_identity,
         int client_identity_len,
-        int mhf
+        int mhf,
+        byte[] mhf_salt,
+        int mhf_salt_len
     );
 
     /**
@@ -2479,6 +2500,8 @@ public final class libecc {
      * @param client_identity size:client_identity_len
      * @param client_identity_len the length of `client_identity`
      * @param mhf the memory hard function to use
+     * @param mhf_salt the salt to use in the memory hard function computation, size:mhf_salt_len
+     * @param mhf_salt_len the length of `mhf_salt`
      * @return on success returns 0, else -1.
      */
     public static native int ecc_opaque_ristretto255_sha512_RecoverCredentials(
@@ -2493,7 +2516,9 @@ public final class libecc {
         int server_identity_len,
         byte[] client_identity,
         int client_identity_len,
-        int mhf
+        int mhf,
+        byte[] mhf_salt,
+        int mhf_salt_len
     );
 
     /**
@@ -2668,6 +2693,8 @@ public final class libecc {
      * @param server_identity_len the length of `server_identity`
      * @param ke2 a KE2 message structure, size:ecc_opaque_ristretto255_sha512_KE2SIZE
      * @param mhf the memory hard function to use
+     * @param mhf_salt the salt to use in the memory hard function computation, size:mhf_salt_len
+     * @param mhf_salt_len the length of `mhf_salt`
      * @param context the application specific context, size:context_len
      * @param context_len the length of `context`
      * @return 0 if is able to recover credentials and authenticate with the server, else -1
@@ -2683,6 +2710,8 @@ public final class libecc {
         int server_identity_len,
         byte[] ke2,
         int mhf,
+        byte[] mhf_salt,
+        int mhf_salt_len,
         byte[] context,
         int context_len
     );

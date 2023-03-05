@@ -12,8 +12,7 @@ import org.ssohub.crypto.ecc.Data;
 import org.ssohub.crypto.ecc.Util;
 import org.ssohub.crypto.ecc.ristretto255.R255Scalar;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.ssohub.crypto.ecc.libecc.ecc_opaque_ristretto255_sha512_Nh;
 
 /**
@@ -68,6 +67,7 @@ public class OpaqueTest {
             clientInputs.getServerIdentity(),
             clientInputs.getClientIdentity(),
             Opaque.MHF.IDENTITY,
+            null,
             envelopeNonce
         );
         RegistrationRecord registrationRecord = finalizeRequest.getRegistrationRecord();
@@ -121,6 +121,7 @@ public class OpaqueTest {
             clientInputs.getServerIdentity(),
             ke2,
             Opaque.MHF.IDENTITY,
+            null,
             context
         );
 
@@ -160,8 +161,10 @@ public class OpaqueTest {
         );
     }
 
-    @Test
-    void testProtocolWithRandomValues() {
+    private boolean protocolWithRandomValues(
+        Opaque.MHF mhf,
+        Data mhfSalt
+    ) {
 
         Data context = Util.randomData(10);
 
@@ -187,7 +190,8 @@ public class OpaqueTest {
             registrationResponse,
             clientInputs.getServerIdentity(),
             clientInputs.getClientIdentity(),
-            Opaque.MHF.SCRYPT
+            mhf,
+            mhfSalt
         );
         RegistrationRecord registrationRecord = finalizeRequest.getRegistrationRecord();
 
@@ -216,7 +220,8 @@ public class OpaqueTest {
             clientInputs.getClientIdentity(),
             clientInputs.getServerIdentity(),
             ke2,
-            Opaque.MHF.SCRYPT,
+            mhf,
+            mhfSalt,
             context
         );
 
@@ -229,6 +234,28 @@ public class OpaqueTest {
 
         assertEquals(0, serverFinishResult.getResult());
         assertEquals(clientFinishResult.getSessionKey(), serverFinishResult.getSessionKey());
+
+        return true;
+    }
+
+    @Test
+    void testProtocolWithRandomValuesAndScrypt() {
+        boolean result = protocolWithRandomValues(
+            Opaque.MHF.SCRYPT,
+            null
+        );
+
+        assertTrue(result);
+    }
+
+    @Test
+    void testProtocolWithRandomValuesAndArgon2id() {
+        boolean result = protocolWithRandomValues(
+            Opaque.MHF.ARGON2ID,
+            new Data(Util.str2bin("abcdabcdabcdabcd"))
+        );
+
+        assertTrue(result);
     }
 
     @Test
@@ -258,7 +285,8 @@ public class OpaqueTest {
             registrationResponse,
             clientInputs.getServerIdentity(),
             clientInputs.getClientIdentity(),
-            Opaque.MHF.IDENTITY
+            Opaque.MHF.IDENTITY,
+            null
         );
         RegistrationRecord registrationRecord = finalizeRequest.getRegistrationRecord();
 
@@ -288,6 +316,7 @@ public class OpaqueTest {
             clientInputs.getServerIdentity(),
             ke2,
             Opaque.MHF.IDENTITY,
+            null,
             context
         );
 

@@ -2497,6 +2497,8 @@ JNIEXPORT void JNICALL Java_org_ssohub_crypto_ecc_libecc_ecc_1opaque_1ristretto2
     jbyteArray client_identity,
     jint client_identity_len,
     jint mhf,
+    jbyteArray mhf_salt,
+    jint mhf_salt_len,
     jbyteArray nonce
 ) {
     byte_t *ptr_record = mput(env, record, ecc_opaque_ristretto255_sha512_REGISTRATIONRECORDSIZE);
@@ -2506,6 +2508,7 @@ JNIEXPORT void JNICALL Java_org_ssohub_crypto_ecc_libecc_ecc_1opaque_1ristretto2
     byte_t *ptr_response = mput(env, response, ecc_opaque_ristretto255_sha512_REGISTRATIONRESPONSESIZE);
     byte_t *ptr_server_identity = mput(env, server_identity, server_identity_len);
     byte_t *ptr_client_identity = mput(env, client_identity, client_identity_len);
+    byte_t *ptr_mhf_salt = mput(env, mhf_salt, mhf_salt_len);
     byte_t *ptr_nonce = mput(env, nonce, ecc_opaque_ristretto255_sha512_Nn);
     ecc_opaque_ristretto255_sha512_FinalizeRegistrationRequestWithNonce(
         ptr_record,
@@ -2519,6 +2522,8 @@ JNIEXPORT void JNICALL Java_org_ssohub_crypto_ecc_libecc_ecc_1opaque_1ristretto2
         ptr_client_identity,
         client_identity_len,
         mhf,
+        ptr_mhf_salt,
+        mhf_salt_len,
         ptr_nonce
     );
     mget(env, record, ptr_record, ecc_opaque_ristretto255_sha512_REGISTRATIONRECORDSIZE);
@@ -2530,6 +2535,7 @@ JNIEXPORT void JNICALL Java_org_ssohub_crypto_ecc_libecc_ecc_1opaque_1ristretto2
     mfree(ptr_response, ecc_opaque_ristretto255_sha512_REGISTRATIONRESPONSESIZE);
     mfree(ptr_server_identity, server_identity_len);
     mfree(ptr_client_identity, client_identity_len);
+    mfree(ptr_mhf_salt, mhf_salt_len);
     mfree(ptr_nonce, ecc_opaque_ristretto255_sha512_Nn);
 }
 
@@ -2545,7 +2551,9 @@ JNIEXPORT void JNICALL Java_org_ssohub_crypto_ecc_libecc_ecc_1opaque_1ristretto2
     jint server_identity_len,
     jbyteArray client_identity,
     jint client_identity_len,
-    jint mhf
+    jint mhf,
+    jbyteArray mhf_salt,
+    jint mhf_salt_len
 ) {
     byte_t *ptr_record = mput(env, record, ecc_opaque_ristretto255_sha512_REGISTRATIONRECORDSIZE);
     byte_t *ptr_export_key = mput(env, export_key, ecc_opaque_ristretto255_sha512_Nh);
@@ -2554,6 +2562,7 @@ JNIEXPORT void JNICALL Java_org_ssohub_crypto_ecc_libecc_ecc_1opaque_1ristretto2
     byte_t *ptr_response = mput(env, response, ecc_opaque_ristretto255_sha512_REGISTRATIONRESPONSESIZE);
     byte_t *ptr_server_identity = mput(env, server_identity, server_identity_len);
     byte_t *ptr_client_identity = mput(env, client_identity, client_identity_len);
+    byte_t *ptr_mhf_salt = mput(env, mhf_salt, mhf_salt_len);
     ecc_opaque_ristretto255_sha512_FinalizeRegistrationRequest(
         ptr_record,
         ptr_export_key,
@@ -2565,7 +2574,9 @@ JNIEXPORT void JNICALL Java_org_ssohub_crypto_ecc_libecc_ecc_1opaque_1ristretto2
         server_identity_len,
         ptr_client_identity,
         client_identity_len,
-        mhf
+        mhf,
+        ptr_mhf_salt,
+        mhf_salt_len
     );
     mget(env, record, ptr_record, ecc_opaque_ristretto255_sha512_REGISTRATIONRECORDSIZE);
     mget(env, export_key, ptr_export_key, ecc_opaque_ristretto255_sha512_Nh);
@@ -2576,6 +2587,7 @@ JNIEXPORT void JNICALL Java_org_ssohub_crypto_ecc_libecc_ecc_1opaque_1ristretto2
     mfree(ptr_response, ecc_opaque_ristretto255_sha512_REGISTRATIONRESPONSESIZE);
     mfree(ptr_server_identity, server_identity_len);
     mfree(ptr_client_identity, client_identity_len);
+    mfree(ptr_mhf_salt, mhf_salt_len);
 }
 
 JNIEXPORT void JNICALL Java_org_ssohub_crypto_ecc_libecc_ecc_1opaque_1ristretto255_1sha512_1CreateCredentialRequestWithBlind(
@@ -2708,7 +2720,9 @@ JNIEXPORT int JNICALL Java_org_ssohub_crypto_ecc_libecc_ecc_1opaque_1ristretto25
     jint server_identity_len,
     jbyteArray client_identity,
     jint client_identity_len,
-    jint mhf
+    jint mhf,
+    jbyteArray mhf_salt,
+    jint mhf_salt_len
 ) {
     byte_t *ptr_client_private_key = mput(env, client_private_key, ecc_opaque_ristretto255_sha512_Nsk);
     byte_t *ptr_server_public_key = mput(env, server_public_key, ecc_opaque_ristretto255_sha512_Npk);
@@ -2718,6 +2732,7 @@ JNIEXPORT int JNICALL Java_org_ssohub_crypto_ecc_libecc_ecc_1opaque_1ristretto25
     byte_t *ptr_response = mput(env, response, ecc_opaque_ristretto255_sha512_CREDENTIALRESPONSESIZE);
     byte_t *ptr_server_identity = mput(env, server_identity, server_identity_len);
     byte_t *ptr_client_identity = mput(env, client_identity, client_identity_len);
+    byte_t *ptr_mhf_salt = mput(env, mhf_salt, mhf_salt_len);
     const int fun_ret = ecc_opaque_ristretto255_sha512_RecoverCredentials(
         ptr_client_private_key,
         ptr_server_public_key,
@@ -2730,7 +2745,9 @@ JNIEXPORT int JNICALL Java_org_ssohub_crypto_ecc_libecc_ecc_1opaque_1ristretto25
         server_identity_len,
         ptr_client_identity,
         client_identity_len,
-        mhf
+        mhf,
+        ptr_mhf_salt,
+        mhf_salt_len
     );
     mget(env, client_private_key, ptr_client_private_key, ecc_opaque_ristretto255_sha512_Nsk);
     mget(env, server_public_key, ptr_server_public_key, ecc_opaque_ristretto255_sha512_Npk);
@@ -2743,6 +2760,7 @@ JNIEXPORT int JNICALL Java_org_ssohub_crypto_ecc_libecc_ecc_1opaque_1ristretto25
     mfree(ptr_response, ecc_opaque_ristretto255_sha512_CREDENTIALRESPONSESIZE);
     mfree(ptr_server_identity, server_identity_len);
     mfree(ptr_client_identity, client_identity_len);
+    mfree(ptr_mhf_salt, mhf_salt_len);
     return fun_ret;
 }
 
@@ -2997,6 +3015,8 @@ JNIEXPORT int JNICALL Java_org_ssohub_crypto_ecc_libecc_ecc_1opaque_1ristretto25
     jint server_identity_len,
     jbyteArray ke2,
     jint mhf,
+    jbyteArray mhf_salt,
+    jint mhf_salt_len,
     jbyteArray context,
     jint context_len
 ) {
@@ -3007,6 +3027,7 @@ JNIEXPORT int JNICALL Java_org_ssohub_crypto_ecc_libecc_ecc_1opaque_1ristretto25
     byte_t *ptr_client_identity = mput(env, client_identity, client_identity_len);
     byte_t *ptr_server_identity = mput(env, server_identity, server_identity_len);
     byte_t *ptr_ke2 = mput(env, ke2, ecc_opaque_ristretto255_sha512_KE2SIZE);
+    byte_t *ptr_mhf_salt = mput(env, mhf_salt, mhf_salt_len);
     byte_t *ptr_context = mput(env, context, context_len);
     const int fun_ret = ecc_opaque_ristretto255_sha512_ClientFinish(
         ptr_ke3_raw,
@@ -3019,6 +3040,8 @@ JNIEXPORT int JNICALL Java_org_ssohub_crypto_ecc_libecc_ecc_1opaque_1ristretto25
         server_identity_len,
         ptr_ke2,
         mhf,
+        ptr_mhf_salt,
+        mhf_salt_len,
         ptr_context,
         context_len
     );
@@ -3033,6 +3056,7 @@ JNIEXPORT int JNICALL Java_org_ssohub_crypto_ecc_libecc_ecc_1opaque_1ristretto25
     mfree(ptr_client_identity, client_identity_len);
     mfree(ptr_server_identity, server_identity_len);
     mfree(ptr_ke2, ecc_opaque_ristretto255_sha512_KE2SIZE);
+    mfree(ptr_mhf_salt, mhf_salt_len);
     mfree(ptr_context, context_len);
     return fun_ret;
 }

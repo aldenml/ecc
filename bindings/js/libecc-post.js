@@ -3554,6 +3554,23 @@ const ecc_opaque_ristretto255_sha512_MHF_SCRYPT = 1;
  */
 Module.ecc_opaque_ristretto255_sha512_MHF_SCRYPT = ecc_opaque_ristretto255_sha512_MHF_SCRYPT;
 
+const ecc_opaque_ristretto255_sha512_MHF_ARGON2ID = 2;
+/**
+ * Use Argon2id(t=3,p=1,m=2^16) for the Memory Hard Function (MHF). With this
+ * option, the salt should always be of length ecc_opaque_ristretto255_sha512_MHF_ARGON2ID_SALTSIZE.
+ *
+ * @type {number}
+ */
+Module.ecc_opaque_ristretto255_sha512_MHF_ARGON2ID = ecc_opaque_ristretto255_sha512_MHF_ARGON2ID;
+
+const ecc_opaque_ristretto255_sha512_MHF_ARGON2ID_SALTSIZE = 16;
+/**
+ * The length of the salt when using ecc_opaque_ristretto255_sha512_MHF_ARGON2ID.
+ *
+ * @type {number}
+ */
+Module.ecc_opaque_ristretto255_sha512_MHF_ARGON2ID_SALTSIZE = ecc_opaque_ristretto255_sha512_MHF_ARGON2ID_SALTSIZE;
+
 /**
  * Derive a private and public key pair deterministically from a seed.
  *
@@ -3998,6 +4015,8 @@ Module.ecc_opaque_ristretto255_sha512_CreateRegistrationResponse = (
  * @param {Uint8Array} client_identity the optional encoded client identity, size:client_identity_len
  * @param {number} client_identity_len the length of `client_identity`
  * @param {number} mhf the memory hard function to use
+ * @param {Uint8Array} mhf_salt the salt to use in the memory hard function computation, size:mhf_salt_len
+ * @param {number} mhf_salt_len the length of `mhf_salt`
  * @param {Uint8Array} nonce size:ecc_opaque_ristretto255_sha512_Nn
  */
 Module.ecc_opaque_ristretto255_sha512_FinalizeRegistrationRequestWithNonce = (
@@ -4012,6 +4031,8 @@ Module.ecc_opaque_ristretto255_sha512_FinalizeRegistrationRequestWithNonce = (
     client_identity,
     client_identity_len,
     mhf,
+    mhf_salt,
+    mhf_salt_len,
     nonce,
 ) => {
     const ptr_record = mput(record, ecc_opaque_ristretto255_sha512_REGISTRATIONRECORDSIZE);
@@ -4021,6 +4042,7 @@ Module.ecc_opaque_ristretto255_sha512_FinalizeRegistrationRequestWithNonce = (
     const ptr_response = mput(response, ecc_opaque_ristretto255_sha512_REGISTRATIONRESPONSESIZE);
     const ptr_server_identity = mput(server_identity, server_identity_len);
     const ptr_client_identity = mput(client_identity, client_identity_len);
+    const ptr_mhf_salt = mput(mhf_salt, mhf_salt_len);
     const ptr_nonce = mput(nonce, ecc_opaque_ristretto255_sha512_Nn);
     _ecc_opaque_ristretto255_sha512_FinalizeRegistrationRequestWithNonce(
         ptr_record,
@@ -4034,6 +4056,8 @@ Module.ecc_opaque_ristretto255_sha512_FinalizeRegistrationRequestWithNonce = (
         ptr_client_identity,
         client_identity_len,
         mhf,
+        ptr_mhf_salt,
+        mhf_salt_len,
         ptr_nonce,
     );
     mget(record, ptr_record, ecc_opaque_ristretto255_sha512_REGISTRATIONRECORDSIZE);
@@ -4045,6 +4069,7 @@ Module.ecc_opaque_ristretto255_sha512_FinalizeRegistrationRequestWithNonce = (
     mfree(ptr_response, ecc_opaque_ristretto255_sha512_REGISTRATIONRESPONSESIZE);
     mfree(ptr_server_identity, server_identity_len);
     mfree(ptr_client_identity, client_identity_len);
+    mfree(ptr_mhf_salt, mhf_salt_len);
     mfree(ptr_nonce, ecc_opaque_ristretto255_sha512_Nn);
 }
 
@@ -4063,6 +4088,8 @@ Module.ecc_opaque_ristretto255_sha512_FinalizeRegistrationRequestWithNonce = (
  * @param {Uint8Array} client_identity the optional encoded client identity, size:client_identity_len
  * @param {number} client_identity_len the length of `client_identity`
  * @param {number} mhf the memory hard function to use
+ * @param {Uint8Array} mhf_salt the salt to use in the memory hard function computation, size:mhf_salt_len
+ * @param {number} mhf_salt_len the length of `mhf_salt`
  */
 Module.ecc_opaque_ristretto255_sha512_FinalizeRegistrationRequest = (
     record,
@@ -4076,6 +4103,8 @@ Module.ecc_opaque_ristretto255_sha512_FinalizeRegistrationRequest = (
     client_identity,
     client_identity_len,
     mhf,
+    mhf_salt,
+    mhf_salt_len,
 ) => {
     const ptr_record = mput(record, ecc_opaque_ristretto255_sha512_REGISTRATIONRECORDSIZE);
     const ptr_export_key = mput(export_key, ecc_opaque_ristretto255_sha512_Nh);
@@ -4084,6 +4113,7 @@ Module.ecc_opaque_ristretto255_sha512_FinalizeRegistrationRequest = (
     const ptr_response = mput(response, ecc_opaque_ristretto255_sha512_REGISTRATIONRESPONSESIZE);
     const ptr_server_identity = mput(server_identity, server_identity_len);
     const ptr_client_identity = mput(client_identity, client_identity_len);
+    const ptr_mhf_salt = mput(mhf_salt, mhf_salt_len);
     _ecc_opaque_ristretto255_sha512_FinalizeRegistrationRequest(
         ptr_record,
         ptr_export_key,
@@ -4096,6 +4126,8 @@ Module.ecc_opaque_ristretto255_sha512_FinalizeRegistrationRequest = (
         ptr_client_identity,
         client_identity_len,
         mhf,
+        ptr_mhf_salt,
+        mhf_salt_len,
     );
     mget(record, ptr_record, ecc_opaque_ristretto255_sha512_REGISTRATIONRECORDSIZE);
     mget(export_key, ptr_export_key, ecc_opaque_ristretto255_sha512_Nh);
@@ -4106,6 +4138,7 @@ Module.ecc_opaque_ristretto255_sha512_FinalizeRegistrationRequest = (
     mfree(ptr_response, ecc_opaque_ristretto255_sha512_REGISTRATIONRESPONSESIZE);
     mfree(ptr_server_identity, server_identity_len);
     mfree(ptr_client_identity, client_identity_len);
+    mfree(ptr_mhf_salt, mhf_salt_len);
 }
 
 /**
@@ -4307,6 +4340,8 @@ Module.ecc_opaque_ristretto255_sha512_CreateCredentialResponse = (
  * @param {Uint8Array} client_identity size:client_identity_len
  * @param {number} client_identity_len the length of `client_identity`
  * @param {number} mhf the memory hard function to use
+ * @param {Uint8Array} mhf_salt the salt to use in the memory hard function computation, size:mhf_salt_len
+ * @param {number} mhf_salt_len the length of `mhf_salt`
  * @return {number} on success returns 0, else -1.
  */
 Module.ecc_opaque_ristretto255_sha512_RecoverCredentials = (
@@ -4322,6 +4357,8 @@ Module.ecc_opaque_ristretto255_sha512_RecoverCredentials = (
     client_identity,
     client_identity_len,
     mhf,
+    mhf_salt,
+    mhf_salt_len,
 ) => {
     const ptr_client_private_key = mput(client_private_key, ecc_opaque_ristretto255_sha512_Nsk);
     const ptr_server_public_key = mput(server_public_key, ecc_opaque_ristretto255_sha512_Npk);
@@ -4331,6 +4368,7 @@ Module.ecc_opaque_ristretto255_sha512_RecoverCredentials = (
     const ptr_response = mput(response, ecc_opaque_ristretto255_sha512_CREDENTIALRESPONSESIZE);
     const ptr_server_identity = mput(server_identity, server_identity_len);
     const ptr_client_identity = mput(client_identity, client_identity_len);
+    const ptr_mhf_salt = mput(mhf_salt, mhf_salt_len);
     const fun_ret = _ecc_opaque_ristretto255_sha512_RecoverCredentials(
         ptr_client_private_key,
         ptr_server_public_key,
@@ -4344,6 +4382,8 @@ Module.ecc_opaque_ristretto255_sha512_RecoverCredentials = (
         ptr_client_identity,
         client_identity_len,
         mhf,
+        ptr_mhf_salt,
+        mhf_salt_len,
     );
     mget(client_private_key, ptr_client_private_key, ecc_opaque_ristretto255_sha512_Nsk);
     mget(server_public_key, ptr_server_public_key, ecc_opaque_ristretto255_sha512_Npk);
@@ -4356,6 +4396,7 @@ Module.ecc_opaque_ristretto255_sha512_RecoverCredentials = (
     mfree(ptr_response, ecc_opaque_ristretto255_sha512_CREDENTIALRESPONSESIZE);
     mfree(ptr_server_identity, server_identity_len);
     mfree(ptr_client_identity, client_identity_len);
+    mfree(ptr_mhf_salt, mhf_salt_len);
     return fun_ret;
 }
 
@@ -4691,6 +4732,8 @@ Module.ecc_opaque_ristretto255_sha512_ClientInit = (
  * @param {number} server_identity_len the length of `server_identity`
  * @param {Uint8Array} ke2 a KE2 message structure, size:ecc_opaque_ristretto255_sha512_KE2SIZE
  * @param {number} mhf the memory hard function to use
+ * @param {Uint8Array} mhf_salt the salt to use in the memory hard function computation, size:mhf_salt_len
+ * @param {number} mhf_salt_len the length of `mhf_salt`
  * @param {Uint8Array} context the application specific context, size:context_len
  * @param {number} context_len the length of `context`
  * @return {number} 0 if is able to recover credentials and authenticate with the server, else -1
@@ -4706,6 +4749,8 @@ Module.ecc_opaque_ristretto255_sha512_ClientFinish = (
     server_identity_len,
     ke2,
     mhf,
+    mhf_salt,
+    mhf_salt_len,
     context,
     context_len,
 ) => {
@@ -4716,6 +4761,7 @@ Module.ecc_opaque_ristretto255_sha512_ClientFinish = (
     const ptr_client_identity = mput(client_identity, client_identity_len);
     const ptr_server_identity = mput(server_identity, server_identity_len);
     const ptr_ke2 = mput(ke2, ecc_opaque_ristretto255_sha512_KE2SIZE);
+    const ptr_mhf_salt = mput(mhf_salt, mhf_salt_len);
     const ptr_context = mput(context, context_len);
     const fun_ret = _ecc_opaque_ristretto255_sha512_ClientFinish(
         ptr_ke3_raw,
@@ -4728,6 +4774,8 @@ Module.ecc_opaque_ristretto255_sha512_ClientFinish = (
         server_identity_len,
         ptr_ke2,
         mhf,
+        ptr_mhf_salt,
+        mhf_salt_len,
         ptr_context,
         context_len,
     );
@@ -4742,6 +4790,7 @@ Module.ecc_opaque_ristretto255_sha512_ClientFinish = (
     mfree(ptr_client_identity, client_identity_len);
     mfree(ptr_server_identity, server_identity_len);
     mfree(ptr_ke2, ecc_opaque_ristretto255_sha512_KE2SIZE);
+    mfree(ptr_mhf_salt, mhf_salt_len);
     mfree(ptr_context, context_len);
     return fun_ret;
 }

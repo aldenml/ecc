@@ -797,6 +797,8 @@ ffibuilder.cdef(
         unsigned char *client_identity,
         int client_identity_len,
         int mhf,
+        unsigned char *mhf_salt,
+        int mhf_salt_len,
         unsigned char *nonce
     );
 
@@ -811,7 +813,9 @@ ffibuilder.cdef(
         int server_identity_len,
         unsigned char *client_identity,
         int client_identity_len,
-        int mhf
+        int mhf,
+        unsigned char *mhf_salt,
+        int mhf_salt_len
     );
 
     void ecc_opaque_ristretto255_sha512_CreateCredentialRequestWithBlind(
@@ -861,7 +865,9 @@ ffibuilder.cdef(
         int server_identity_len,
         unsigned char *client_identity,
         int client_identity_len,
-        int mhf
+        int mhf,
+        unsigned char *mhf_salt,
+        int mhf_salt_len
     );
 
     void ecc_opaque_ristretto255_sha512_3DH_Expand_Label(
@@ -947,6 +953,8 @@ ffibuilder.cdef(
         int server_identity_len,
         unsigned char *ke2,
         int mhf,
+        unsigned char *mhf_salt,
+        int mhf_salt_len,
         unsigned char *context,
         int context_len
     );

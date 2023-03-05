@@ -78,6 +78,7 @@ describe("OPAQUE(ristretto255, SHA-512)", () => {
             clientInputs.serverIdentity,
             clientInputs.clientIdentity,
             libecc.ecc_opaque_ristretto255_sha512_MHF_IDENTITY,
+            null,
             envelopeNonce,
         );
         const registrationRecord = finalizeRequest.registrationRecord;
@@ -131,6 +132,7 @@ describe("OPAQUE(ristretto255, SHA-512)", () => {
             clientInputs.serverIdentity,
             ke2,
             libecc.ecc_opaque_ristretto255_sha512_MHF_IDENTITY,
+            null,
             context,
         );
 
@@ -146,7 +148,7 @@ describe("OPAQUE(ristretto255, SHA-512)", () => {
         assert.deepStrictEqual(serverFinishResult.sessionKey, clientFinishResult.sessionKey);
     });
 
-    it("test protocol with random values", async () => {
+    it("test protocol with random values and scrypt", async () => {
         await libecc_promise;
 
         const context = randombytes(10);
@@ -185,6 +187,7 @@ describe("OPAQUE(ristretto255, SHA-512)", () => {
             clientInputs.serverIdentity,
             clientInputs.clientIdentity,
             libecc.ecc_opaque_ristretto255_sha512_MHF_SCRYPT,
+            null,
         );
         const registrationRecord = finalizeRequest.registrationRecord;
 
@@ -214,6 +217,91 @@ describe("OPAQUE(ristretto255, SHA-512)", () => {
             clientInputs.serverIdentity,
             ke2,
             libecc.ecc_opaque_ristretto255_sha512_MHF_SCRYPT,
+            null,
+            context,
+        );
+
+        const ke3 = clientFinishResult.ke3;
+
+        assert.strictEqual(clientFinishResult.result, 0);
+        assert.deepStrictEqual(clientFinishResult.exportKey, finalizeRequest.exportKey);
+
+        const serverFinishResult = opaque_ServerFinish(serverState, ke3);
+
+        assert.strictEqual(serverFinishResult.result, 0);
+        assert.deepStrictEqual(serverFinishResult.sessionKey, clientFinishResult.sessionKey);
+    });
+
+    it("test protocol with random values and argon2id", async () => {
+        await libecc_promise;
+
+        const context = randombytes(10);
+
+        const clientInputs = {
+            serverIdentity: str2bin("demo.ssohub.org"),
+            clientIdentity: str2bin("user1"),
+            password: randombytes(20),
+        };
+
+        const serverKeyPair = opaque_GenerateAuthKeyPair();
+
+        const serverInputs = {
+            serverPrivateKey: serverKeyPair.privateKey,
+            serverPublicKey: serverKeyPair.publicKey,
+            credentialIdentifier: randombytes(10),
+            serverIdentity: str2bin("demo.ssohub.org"),
+            clientIdentity: str2bin("user1"),
+            oprfSeed: randombytes(libecc.ecc_opaque_ristretto255_sha512_Nh),
+        };
+
+        const request = opaque_CreateRegistrationRequest(clientInputs.password);
+        const registrationRequest = request.registrationRequest;
+
+        const registrationResponse = opaque_CreateRegistrationResponse(
+            registrationRequest,
+            serverInputs.serverPublicKey,
+            serverInputs.credentialIdentifier,
+            serverInputs.oprfSeed,
+        );
+
+        const finalizeRequest = opaque_FinalizeRegistrationRequest(
+            clientInputs.password,
+            request.blind,
+            registrationResponse,
+            clientInputs.serverIdentity,
+            clientInputs.clientIdentity,
+            libecc.ecc_opaque_ristretto255_sha512_MHF_ARGON2ID,
+            str2bin("abcdabcdabcdabcd"),
+        );
+        const registrationRecord = finalizeRequest.registrationRecord;
+
+        const clientState = new Uint8Array(libecc.ecc_opaque_ristretto255_sha512_CLIENTSTATESIZE);
+        const ke1 = opaque_ClientInit(
+            clientState,
+            clientInputs.password,
+        );
+
+        const serverState = new Uint8Array(libecc.ecc_opaque_ristretto255_sha512_SERVERSTATESIZE);
+        const ke2 = opaque_ServerInit(
+            serverState,
+            serverInputs.serverIdentity,
+            serverInputs.serverPrivateKey,
+            serverInputs.serverPublicKey,
+            registrationRecord,
+            serverInputs.credentialIdentifier,
+            serverInputs.oprfSeed,
+            ke1,
+            serverInputs.clientIdentity,
+            context,
+        );
+
+        const clientFinishResult = opaque_ClientFinish(
+            clientState,
+            clientInputs.clientIdentity,
+            clientInputs.serverIdentity,
+            ke2,
+            libecc.ecc_opaque_ristretto255_sha512_MHF_ARGON2ID,
+            str2bin("abcdabcdabcdabcd"),
             context,
         );
 
@@ -267,6 +355,7 @@ describe("OPAQUE(ristretto255, SHA-512)", () => {
             clientInputs.serverIdentity,
             clientInputs.clientIdentity,
             libecc.ecc_opaque_ristretto255_sha512_MHF_SCRYPT,
+            null,
         );
         const registrationRecord = finalizeRequest.registrationRecord;
 
@@ -296,6 +385,7 @@ describe("OPAQUE(ristretto255, SHA-512)", () => {
             clientInputs.serverIdentity,
             ke2,
             libecc.ecc_opaque_ristretto255_sha512_MHF_SCRYPT,
+            null,
             context,
         );
 
