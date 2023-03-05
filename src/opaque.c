@@ -173,6 +173,11 @@ static_assert(
     ecc_opaque_ristretto255_sha512_Nx,
     "");
 
+static_assert(
+    ecc_opaque_ristretto255_sha512_MHF_ARGON2ID_SALTSIZE ==
+    ecc_kdf_argon2id_SALTIZE,
+    "");
+
 static_assert(sizeof(CleartextCredentials_t) == ecc_opaque_ristretto255_sha512_CLEARTEXTCREDENTIALSSIZE, "");
 static_assert(sizeof(Envelope_t) == ecc_opaque_ristretto255_sha512_Ne, "");
 static_assert(sizeof(RegistrationRequest_t) == ecc_opaque_ristretto255_sha512_REGISTRATIONREQUESTSIZE, "");

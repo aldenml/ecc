@@ -233,9 +233,16 @@
 
 // const
 /**
- * Use Argon2id(t=1,p=4,m=2^21) for the Memory Hard Function (MHF).
+ * Use Argon2id(t=3,p=1,m=2^16) for the Memory Hard Function (MHF). With this
+ * option, the salt should always be of length ecc_opaque_ristretto255_sha512_MHF_ARGON2ID_SALTSIZE.
  */
 #define ecc_opaque_ristretto255_sha512_MHF_ARGON2ID 2
+
+// const
+/**
+ * The length of the salt when using ecc_opaque_ristretto255_sha512_MHF_ARGON2ID.
+ */
+#define ecc_opaque_ristretto255_sha512_MHF_ARGON2ID_SALTSIZE 16
 
 /**
  * Derive a private and public key pair deterministically from a seed.

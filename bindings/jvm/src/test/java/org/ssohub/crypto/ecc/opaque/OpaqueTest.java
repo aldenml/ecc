@@ -12,8 +12,7 @@ import org.ssohub.crypto.ecc.Data;
 import org.ssohub.crypto.ecc.Util;
 import org.ssohub.crypto.ecc.ristretto255.R255Scalar;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.ssohub.crypto.ecc.libecc.ecc_opaque_ristretto255_sha512_Nh;
 
 /**
@@ -162,7 +161,7 @@ public class OpaqueTest {
         );
     }
 
-    private void protocolWithRandomValues(
+    private boolean protocolWithRandomValues(
         Opaque.MHF mhf,
         Data mhfSalt
     ) {
@@ -235,22 +234,28 @@ public class OpaqueTest {
 
         assertEquals(0, serverFinishResult.getResult());
         assertEquals(clientFinishResult.getSessionKey(), serverFinishResult.getSessionKey());
+
+        return true;
     }
 
     @Test
     void testProtocolWithRandomValuesAndScrypt() {
-        protocolWithRandomValues(
+        boolean result = protocolWithRandomValues(
             Opaque.MHF.SCRYPT,
             null
         );
+
+        assertTrue(result);
     }
 
     @Test
     void testProtocolWithRandomValuesAndArgon2id() {
-        protocolWithRandomValues(
+        boolean result = protocolWithRandomValues(
             Opaque.MHF.ARGON2ID,
             new Data(Util.str2bin("abcdabcdabcdabcd"))
         );
+
+        assertTrue(result);
     }
 
     @Test
