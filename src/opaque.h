@@ -10,57 +10,8 @@
 
 #include "export.h"
 
-// See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-09
-//
-// This implements only the following configuration:
-//
-// OPRF(ristretto255, SHA-512), HKDF-SHA-512, HMAC-SHA-512, SHA-512,
-// MHF=Identity or Scrypt(32768,8,1), internal, ristretto255
-//
-// In order to work with stack allocated memory (i.e. fixed and not dynamic
-// allocation), it's necessary to add the restriction on the length of the
-// identities to less than 200 bytes.
-//
-// The OPAQUE workflow consist of two steps, registration and authentication
-// (you should read the draft/standard for a deep understanding).
-//
-// A high level overview.
-//
-// The registration flow is shown below:
-//
-//       creds                                   parameters
-//         |                                         |
-//         v                                         v
-//       Client                                    Server
-//       ------------------------------------------------
-//                   registration request
-//                ------------------------->
-//                   registration response
-//                <-------------------------
-//                         record
-//                ------------------------->
-//      ------------------------------------------------
-//         |                                         |
-//         v                                         v
-//     export_key                                 record
-//
-// The authenticated key exchange flow is shown below:
-//
-//       creds                             (parameters, record)
-//         |                                         |
-//         v                                         v
-//       Client                                    Server
-//       ------------------------------------------------
-//                      AKE message 1
-//                ------------------------->
-//                      AKE message 2
-//                <-------------------------
-//                      AKE message 3
-//                ------------------------->
-//      ------------------------------------------------
-//         |                                         |
-//         v                                         v
-//   (export_key, session_key)                  session_key
+// https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-09
+// https://github.com/cfrg/draft-irtf-cfrg-opaque
 
 // const
 /**
@@ -279,6 +230,12 @@
  * Use Scrypt(32768,8,1) for the Memory Hard Function (MHF).
  */
 #define ecc_opaque_ristretto255_sha512_MHF_SCRYPT 1
+
+// const
+/**
+ * Use Argon2id(t=1,p=4,m=2^21) for the Memory Hard Function (MHF).
+ */
+#define ecc_opaque_ristretto255_sha512_MHF_ARGON2ID 2
 
 /**
  * Derive a private and public key pair deterministically from a seed.
@@ -505,6 +462,8 @@ void ecc_opaque_ristretto255_sha512_CreateRegistrationResponse(
  * @param client_identity the optional encoded client identity, size:client_identity_len
  * @param client_identity_len the length of `client_identity`
  * @param mhf the memory hard function to use
+ * @param mhf_salt the salt to use in the memory hard function computation, size:mhf_salt_len
+ * @param mhf_salt_len the length of `mhf_salt`
  * @param nonce size:ecc_opaque_ristretto255_sha512_Nn
  */
 ECC_EXPORT
@@ -517,6 +476,7 @@ void ecc_opaque_ristretto255_sha512_FinalizeRegistrationRequestWithNonce(
     const byte_t *server_identity, int server_identity_len,
     const byte_t *client_identity, int client_identity_len,
     int mhf,
+    const byte_t *mhf_salt, int mhf_salt_len,
     const byte_t *nonce
 );
 
@@ -535,6 +495,8 @@ void ecc_opaque_ristretto255_sha512_FinalizeRegistrationRequestWithNonce(
  * @param client_identity the optional encoded client identity, size:client_identity_len
  * @param client_identity_len the length of `client_identity`
  * @param mhf the memory hard function to use
+ * @param mhf_salt the salt to use in the memory hard function computation, size:mhf_salt_len
+ * @param mhf_salt_len the length of `mhf_salt`
  */
 ECC_EXPORT
 void ecc_opaque_ristretto255_sha512_FinalizeRegistrationRequest(
@@ -545,7 +507,8 @@ void ecc_opaque_ristretto255_sha512_FinalizeRegistrationRequest(
     const byte_t *response,
     const byte_t *server_identity, int server_identity_len,
     const byte_t *client_identity, int client_identity_len,
-    int mhf
+    int mhf,
+    const byte_t *mhf_salt, int mhf_salt_len
 );
 
 /**
@@ -662,6 +625,8 @@ void ecc_opaque_ristretto255_sha512_CreateCredentialResponse(
  * @param client_identity size:client_identity_len
  * @param client_identity_len the length of `client_identity`
  * @param mhf the memory hard function to use
+ * @param mhf_salt the salt to use in the memory hard function computation, size:mhf_salt_len
+ * @param mhf_salt_len the length of `mhf_salt`
  * @return on success returns 0, else -1.
  */
 ECC_EXPORT
@@ -674,7 +639,8 @@ int ecc_opaque_ristretto255_sha512_RecoverCredentials(
     const byte_t *response,
     const byte_t *server_identity, int server_identity_len,
     const byte_t *client_identity, int client_identity_len,
-    int mhf
+    int mhf,
+    const byte_t *mhf_salt, int mhf_salt_len
 );
 
 /**
@@ -836,6 +802,8 @@ void ecc_opaque_ristretto255_sha512_ClientInit(
  * @param server_identity_len the length of `server_identity`
  * @param ke2 a KE2 message structure, size:ecc_opaque_ristretto255_sha512_KE2SIZE
  * @param mhf the memory hard function to use
+ * @param mhf_salt the salt to use in the memory hard function computation, size:mhf_salt_len
+ * @param mhf_salt_len the length of `mhf_salt`
  * @param context the application specific context, size:context_len
  * @param context_len the length of `context`
  * @return 0 if is able to recover credentials and authenticate with the server, else -1
@@ -850,6 +818,7 @@ int ecc_opaque_ristretto255_sha512_ClientFinish(
     const byte_t *server_identity, int server_identity_len,
     const byte_t *ke2,
     int mhf,
+    const byte_t *mhf_salt, int mhf_salt_len,
     const byte_t *context, int context_len
 );
 

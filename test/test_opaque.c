@@ -177,6 +177,7 @@ static void test_opaque_ristretto255_sha512(void **state) {
             server_identity, server_identity_len,
             client_identity, client_identity_len,
             ecc_opaque_ristretto255_sha512_MHF_IDENTITY,
+            NULL, 0,
             envelope_nonce
         );
         assert_memory_equal(record, outputs_registration_upload, sizeof outputs_registration_upload);
@@ -227,6 +228,7 @@ static void test_opaque_ristretto255_sha512(void **state) {
             server_identity, server_identity_len,
             ke2,
             ecc_opaque_ristretto255_sha512_MHF_IDENTITY,
+            NULL, 0,
             Context, ContextLen
         );
         assert_memory_equal(ke3, outputs_KE3, sizeof outputs_KE3);
@@ -249,9 +251,10 @@ static void test_opaque_ristretto255_sha512(void **state) {
     ecc_json_destroy(json);
 }
 
-static void test_opaque_ristretto255_sha512_random1(void **state) {
-    ECC_UNUSED(state);
-
+static void opaque_ristretto255_sha512_random(
+    int mhf,
+    const byte_t *mhf_salt, const int mhf_salt_len
+) {
     // client
     byte_t password[25];
     ecc_hex2bin(password, "436f7272656374486f72736542617474657279537461706c65", 50);
@@ -293,7 +296,8 @@ static void test_opaque_ristretto255_sha512_random1(void **state) {
         registration_response,
         NULL, 0,
         NULL, 0,
-        ecc_opaque_ristretto255_sha512_MHF_IDENTITY
+        mhf,
+        mhf_salt, mhf_salt_len
     );
 
     // tinker with password
@@ -335,7 +339,8 @@ static void test_opaque_ristretto255_sha512_random1(void **state) {
         NULL, 0,
         NULL, 0,
         ke2,
-        ecc_opaque_ristretto255_sha512_MHF_IDENTITY,
+        mhf,
+        mhf_salt, mhf_salt_len,
         NULL, 0
     );
     assert_int_equal(client_finish_ret, 0);
@@ -360,11 +365,42 @@ static void test_opaque_ristretto255_sha512_random1(void **state) {
     assert_memory_equal(export_key, export_key2, 64);
 }
 
+static void test_opaque_ristretto255_sha512_random1_mhf_identity(void **state) {
+    ECC_UNUSED(state);
+
+    opaque_ristretto255_sha512_random(
+        ecc_opaque_ristretto255_sha512_MHF_IDENTITY,
+        NULL, 0
+    );
+}
+
+static void test_opaque_ristretto255_sha512_random1_mhf_scrypt(void **state) {
+    ECC_UNUSED(state);
+
+    opaque_ristretto255_sha512_random(
+        ecc_opaque_ristretto255_sha512_MHF_SCRYPT,
+        NULL, 0
+    );
+}
+
+static void test_opaque_ristretto255_sha512_random1_mhf_argon2id(void **state) {
+    ECC_UNUSED(state);
+
+    byte_t mhf_salt[ecc_kdf_argon2id_SALTIZE] = "abcdabcdabcdabcd";
+
+    opaque_ristretto255_sha512_random(
+        ecc_opaque_ristretto255_sha512_MHF_ARGON2ID,
+        mhf_salt, ecc_kdf_argon2id_SALTIZE
+    );
+}
+
 int main(void) {
     const struct CMUnitTest tests[] = {
         cmocka_unit_test(test_opaque_ristretto255_sha512),
         // protocol
-        cmocka_unit_test(test_opaque_ristretto255_sha512_random1),
+        cmocka_unit_test(test_opaque_ristretto255_sha512_random1_mhf_identity),
+        cmocka_unit_test(test_opaque_ristretto255_sha512_random1_mhf_scrypt),
+        cmocka_unit_test(test_opaque_ristretto255_sha512_random1_mhf_argon2id),
     };
 
     return cmocka_run_group_tests(tests, NULL, NULL);

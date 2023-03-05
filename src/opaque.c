@@ -651,6 +651,7 @@ void ecc_opaque_ristretto255_sha512_FinalizeRegistrationRequestWithNonce(
     const byte_t *server_identity, const int server_identity_len,
     const byte_t *client_identity, const int client_identity_len,
     const int mhf,
+    const byte_t *mhf_salt, int mhf_salt_len,
     const byte_t *nonce
 ) {
     // Steps:
@@ -682,7 +683,9 @@ void ecc_opaque_ristretto255_sha512_FinalizeRegistrationRequestWithNonce(
     // - Harden(y, params)
     byte_t harden_result[Nh];
     if (mhf == ecc_opaque_ristretto255_sha512_MHF_SCRYPT) {
-        ecc_kdf_scrypt(harden_result, password, password_len, NULL, 0, 32768, 8, 1, Nh);
+        ecc_kdf_scrypt(harden_result, password, password_len, mhf_salt, mhf_salt_len, 32768, 8, 1, Nh);
+    } else if (mhf == ecc_opaque_ristretto255_sha512_MHF_ARGON2ID) {
+        ecc_kdf_argon2id(harden_result, password, password_len, mhf_salt, 64 * 1024, 3, Nh);
     } else {
         memcpy(harden_result, y, Nh);
     }
@@ -734,7 +737,8 @@ void ecc_opaque_ristretto255_sha512_FinalizeRegistrationRequest(
     const byte_t *response, // RegistrationResponse_t
     const byte_t *server_identity, const int server_identity_len,
     const byte_t *client_identity, const int client_identity_len,
-    const int mhf
+    const int mhf,
+    const byte_t *mhf_salt, int mhf_salt_len
 ) {
     byte_t nonce[Nn];
     ecc_randombytes(nonce, Nn);
@@ -748,6 +752,7 @@ void ecc_opaque_ristretto255_sha512_FinalizeRegistrationRequest(
         server_identity, server_identity_len,
         client_identity, client_identity_len,
         mhf,
+        mhf_salt, mhf_salt_len,
         nonce
     );
 
@@ -915,7 +920,8 @@ int ecc_opaque_ristretto255_sha512_RecoverCredentials(
     const byte_t *response,
     const byte_t *server_identity, const int server_identity_len,
     const byte_t *client_identity, const int client_identity_len,
-    const int mhf
+    const int mhf,
+    const byte_t *mhf_salt, const int mhf_salt_len
 ) {
     // Steps:
     // 1. y = Finalize(password, blind, response.data)
@@ -948,7 +954,9 @@ int ecc_opaque_ristretto255_sha512_RecoverCredentials(
     // - Harden(y, params)
     byte_t harden_result[Nh];
     if (mhf == ecc_opaque_ristretto255_sha512_MHF_SCRYPT) {
-        ecc_kdf_scrypt(harden_result, password, password_len, NULL, 0, 32768, 8, 1, Nh);
+        ecc_kdf_scrypt(harden_result, password, password_len, mhf_salt, mhf_salt_len, 32768, 8, 1, Nh);
+    } else if (mhf == ecc_opaque_ristretto255_sha512_MHF_ARGON2ID) {
+        ecc_kdf_argon2id(harden_result, password, password_len, mhf_salt, 64 * 1024, 3, Nh);
     } else {
         memcpy(harden_result, y, Nh);
     }
@@ -1313,6 +1321,7 @@ int ecc_opaque_ristretto255_sha512_ClientFinish(
     const byte_t *server_identity, const int server_identity_len,
     const byte_t *ke2_raw,
     const int mhf,
+    const byte_t *mhf_salt, int mhf_salt_len,
     const byte_t *context, const int context_len
 ) {
     // Steps:
@@ -1341,7 +1350,8 @@ int ecc_opaque_ristretto255_sha512_ClientFinish(
         (const byte_t *) &ke2->credential_response,
         server_identity, server_identity_len,
         client_identity, client_identity_len,
-        mhf
+        mhf,
+        mhf_salt, mhf_salt_len
     );
 #if ECC_LOG
     if (recover_ret != 0)

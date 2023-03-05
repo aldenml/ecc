@@ -136,11 +136,13 @@ public final class Opaque {
         Data serverIdentity,
         Data clientIdentity,
         MHF mhf,
+        Data mhfSalt,
         OpaqueSeed nonce
     ) {
         byte[] passwordBytes = password.toBytes();
         byte[] serverIdentityBytes = serverIdentity != null ? serverIdentity.toBytes() : new byte[0];
         byte[] clientIdentityBytes = clientIdentity != null ? clientIdentity.toBytes() : new byte[0];
+        byte[] mhfSaltBytes = mhfSalt != null ? mhfSalt.toBytes() : new byte[0];
 
         byte[] record = new byte[ecc_opaque_ristretto255_sha512_REGISTRATIONRECORDSIZE];
         byte[] exportKey = new byte[ecc_opaque_ristretto255_sha512_Nh];
@@ -157,6 +159,7 @@ public final class Opaque {
             clientIdentityBytes,
             clientIdentityBytes.length,
             mhf.intValue,
+            mhfSaltBytes, mhfSaltBytes.length,
             nonce.toBytes()
         );
 
@@ -172,11 +175,13 @@ public final class Opaque {
         RegistrationResponse registrationResponse,
         Data serverIdentity,
         Data clientIdentity,
-        MHF mhf
+        MHF mhf,
+        Data mhfSalt
     ) {
         byte[] passwordBytes = password.toBytes();
         byte[] serverIdentityBytes = serverIdentity != null ? serverIdentity.toBytes() : new byte[0];
         byte[] clientIdentityBytes = clientIdentity != null ? clientIdentity.toBytes() : new byte[0];
+        byte[] mhfSaltBytes = mhfSalt != null ? mhfSalt.toBytes() : new byte[0];
 
         byte[] record = new byte[ecc_opaque_ristretto255_sha512_REGISTRATIONRECORDSIZE];
         byte[] exportKey = new byte[ecc_opaque_ristretto255_sha512_Nh];
@@ -192,7 +197,8 @@ public final class Opaque {
             serverIdentityBytes.length,
             clientIdentityBytes,
             clientIdentityBytes.length,
-            mhf.intValue
+            mhf.intValue,
+            mhfSaltBytes, mhfSaltBytes.length
         );
 
         return new FinalizeRegistrationRequestResult(
@@ -345,10 +351,12 @@ public final class Opaque {
         Data serverIdentity,
         KE2 ke2,
         MHF mhf,
+        Data mhfSalt,
         Data context
     ) {
         byte[] serverIdentityBytes = serverIdentity != null ? serverIdentity.toBytes() : new byte[0];
         byte[] clientIdentityBytes = clientIdentity != null ? clientIdentity.toBytes() : new byte[0];
+        byte[] mhfSaltBytes = mhfSalt != null ? mhfSalt.toBytes() : new byte[0];
         byte[] contextBytes = context.toBytes();
 
         byte[] ke3 = new byte[ecc_opaque_ristretto255_sha512_KE3SIZE];
@@ -366,6 +374,7 @@ public final class Opaque {
             serverIdentityBytes.length,
             ke2.toBytes(),
             mhf.intValue,
+            mhfSaltBytes, mhfSaltBytes.length,
             contextBytes,
             contextBytes.length
         );
@@ -398,7 +407,8 @@ public final class Opaque {
 
     public enum MHF {
         IDENTITY(0),
-        SCRYPT(1);
+        SCRYPT(1),
+        ARGON2ID(2);
 
         final int intValue;
 

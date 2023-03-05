@@ -68,6 +68,7 @@ public class OpaqueTest {
             clientInputs.getServerIdentity(),
             clientInputs.getClientIdentity(),
             Opaque.MHF.IDENTITY,
+            null,
             envelopeNonce
         );
         RegistrationRecord registrationRecord = finalizeRequest.getRegistrationRecord();
@@ -121,6 +122,7 @@ public class OpaqueTest {
             clientInputs.getServerIdentity(),
             ke2,
             Opaque.MHF.IDENTITY,
+            null,
             context
         );
 
@@ -160,8 +162,10 @@ public class OpaqueTest {
         );
     }
 
-    @Test
-    void testProtocolWithRandomValues() {
+    private void protocolWithRandomValues(
+        Opaque.MHF mhf,
+        Data mhfSalt
+    ) {
 
         Data context = Util.randomData(10);
 
@@ -187,7 +191,8 @@ public class OpaqueTest {
             registrationResponse,
             clientInputs.getServerIdentity(),
             clientInputs.getClientIdentity(),
-            Opaque.MHF.SCRYPT
+            mhf,
+            mhfSalt
         );
         RegistrationRecord registrationRecord = finalizeRequest.getRegistrationRecord();
 
@@ -216,7 +221,8 @@ public class OpaqueTest {
             clientInputs.getClientIdentity(),
             clientInputs.getServerIdentity(),
             ke2,
-            Opaque.MHF.SCRYPT,
+            mhf,
+            mhfSalt,
             context
         );
 
@@ -229,6 +235,22 @@ public class OpaqueTest {
 
         assertEquals(0, serverFinishResult.getResult());
         assertEquals(clientFinishResult.getSessionKey(), serverFinishResult.getSessionKey());
+    }
+
+    @Test
+    void testProtocolWithRandomValuesAndScrypt() {
+        protocolWithRandomValues(
+            Opaque.MHF.SCRYPT,
+            null
+        );
+    }
+
+    @Test
+    void testProtocolWithRandomValuesAndArgon2id() {
+        protocolWithRandomValues(
+            Opaque.MHF.ARGON2ID,
+            new Data(Util.str2bin("abcdabcdabcdabcd"))
+        );
     }
 
     @Test
@@ -258,7 +280,8 @@ public class OpaqueTest {
             registrationResponse,
             clientInputs.getServerIdentity(),
             clientInputs.getClientIdentity(),
-            Opaque.MHF.IDENTITY
+            Opaque.MHF.IDENTITY,
+            null
         );
         RegistrationRecord registrationRecord = finalizeRequest.getRegistrationRecord();
 
@@ -288,6 +311,7 @@ public class OpaqueTest {
             clientInputs.getServerIdentity(),
             ke2,
             Opaque.MHF.IDENTITY,
+            null,
             context
         );
 

@@ -137,6 +137,7 @@ export function opaque_CreateRegistrationResponse(
  * @param {Uint8Array} server_identity the optional encoded server identity
  * @param {Uint8Array} client_identity the optional encoded client identity
  * @param {number} mhf the memory hard function to use
+ * @param {Uint8Array} mhf_salt the salt to use in the memory hard function computation
  * @param {Uint8Array} nonce size:ecc_opaque_ristretto255_sha512_Nn
  * @return object {record, exportKey}
  */
@@ -147,10 +148,12 @@ export function opaque_FinalizeRegistrationRequestWithNonce(
     server_identity,
     client_identity,
     mhf,
+    mhf_salt,
     nonce,
 ) {
     server_identity = server_identity || new Uint8Array(0);
     client_identity = client_identity || new Uint8Array(0);
+    mhf_salt = mhf_salt || new Uint8Array(0);
 
     let record_raw = new Uint8Array(libecc.ecc_opaque_ristretto255_sha512_REGISTRATIONRECORDSIZE);
     let export_key = new Uint8Array(64);
@@ -164,6 +167,7 @@ export function opaque_FinalizeRegistrationRequestWithNonce(
         server_identity, server_identity.length,
         client_identity, client_identity.length,
         mhf,
+        mhf_salt, mhf_salt.length,
         nonce,
     );
 
@@ -183,6 +187,7 @@ export function opaque_FinalizeRegistrationRequestWithNonce(
  * @param {Uint8Array} server_identity the optional encoded server identity
  * @param {Uint8Array} client_identity the optional encoded client identity
  * @param {number} mhf the memory hard function to use
+ * @param {Uint8Array} mhf_salt the salt to use in the memory hard function computation
  * @return object {record, exportKey}
  */
 export function opaque_FinalizeRegistrationRequest(
@@ -192,9 +197,11 @@ export function opaque_FinalizeRegistrationRequest(
     server_identity,
     client_identity,
     mhf,
+    mhf_salt,
 ) {
     server_identity = server_identity || new Uint8Array(0);
     client_identity = client_identity || new Uint8Array(0);
+    mhf_salt = mhf_salt || new Uint8Array(0);
 
     let record_raw = new Uint8Array(libecc.ecc_opaque_ristretto255_sha512_REGISTRATIONRECORDSIZE);
     let export_key = new Uint8Array(64);
@@ -208,6 +215,7 @@ export function opaque_FinalizeRegistrationRequest(
         server_identity, server_identity.length,
         client_identity, client_identity.length,
         mhf,
+        mhf_salt, mhf_salt.length,
     );
 
     return {
@@ -279,6 +287,7 @@ export function opaque_ClientInit(
  * to server_public_key if not specified
  * @param {Uint8Array} ke2_raw a KE2 message structure
  * @param {number} mhf
+ * @param {Uint8Array} mhf_salt the salt to use in the memory hard function computation
  * @param {Uint8Array} context
  * @return object {ke3, sessionKey, exportKey, finishRet}
  */
@@ -288,10 +297,12 @@ export function opaque_ClientFinish(
     server_identity,
     ke2_raw,
     mhf,
+    mhf_salt,
     context,
 ) {
     client_identity = client_identity || new Uint8Array(0);
     server_identity = server_identity || new Uint8Array(0);
+    mhf_salt = mhf_salt || new Uint8Array(0);
 
     let ke3_raw = new Uint8Array(libecc.ecc_opaque_ristretto255_sha512_KE3SIZE);
     let session_key = new Uint8Array(64);
@@ -306,6 +317,7 @@ export function opaque_ClientFinish(
         server_identity, server_identity.length,
         ke2_raw,
         mhf,
+        mhf_salt, mhf_salt.length,
         context, context.length,
     );
 

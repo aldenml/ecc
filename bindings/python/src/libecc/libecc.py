@@ -3036,6 +3036,11 @@ ecc_opaque_ristretto255_sha512_MHF_SCRYPT = 1
 Use Scrypt(32768,8,1) for the Memory Hard Function (MHF).
 """
 
+ecc_opaque_ristretto255_sha512_MHF_ARGON2ID = 2
+"""
+Use Argon2id(t=1,p=4,m=2^21) for the Memory Hard Function (MHF).
+"""
+
 def ecc_opaque_ristretto255_sha512_DeriveKeyPair(
     private_key: bytearray,
     public_key: bytearray,
@@ -3415,6 +3420,8 @@ def ecc_opaque_ristretto255_sha512_FinalizeRegistrationRequestWithNonce(
     client_identity: bytes,
     client_identity_len: int,
     mhf: int,
+    mhf_salt: bytes,
+    mhf_salt_len: int,
     nonce: bytes
 ) -> None:
     """
@@ -3432,6 +3439,8 @@ def ecc_opaque_ristretto255_sha512_FinalizeRegistrationRequestWithNonce(
     client_identity -- the optional encoded client identity, size:client_identity_len
     client_identity_len -- the length of `client_identity`
     mhf -- the memory hard function to use
+    mhf_salt -- the salt to use in the memory hard function computation, size:mhf_salt_len
+    mhf_salt_len -- the length of `mhf_salt`
     nonce -- size:ecc_opaque_ristretto255_sha512_Nn
     """
     ptr_record = ffi.from_buffer(record)
@@ -3441,6 +3450,7 @@ def ecc_opaque_ristretto255_sha512_FinalizeRegistrationRequestWithNonce(
     ptr_response = ffi.from_buffer(response)
     ptr_server_identity = ffi.from_buffer(server_identity)
     ptr_client_identity = ffi.from_buffer(client_identity)
+    ptr_mhf_salt = ffi.from_buffer(mhf_salt)
     ptr_nonce = ffi.from_buffer(nonce)
     lib.ecc_opaque_ristretto255_sha512_FinalizeRegistrationRequestWithNonce(
         ptr_record,
@@ -3454,6 +3464,8 @@ def ecc_opaque_ristretto255_sha512_FinalizeRegistrationRequestWithNonce(
         ptr_client_identity,
         client_identity_len,
         mhf,
+        ptr_mhf_salt,
+        mhf_salt_len,
         ptr_nonce
     )
     return None
@@ -3470,7 +3482,9 @@ def ecc_opaque_ristretto255_sha512_FinalizeRegistrationRequest(
     server_identity_len: int,
     client_identity: bytes,
     client_identity_len: int,
-    mhf: int
+    mhf: int,
+    mhf_salt: bytes,
+    mhf_salt_len: int
 ) -> None:
     """
     To create the user record used for subsequent authentication and complete the
@@ -3487,6 +3501,8 @@ def ecc_opaque_ristretto255_sha512_FinalizeRegistrationRequest(
     client_identity -- the optional encoded client identity, size:client_identity_len
     client_identity_len -- the length of `client_identity`
     mhf -- the memory hard function to use
+    mhf_salt -- the salt to use in the memory hard function computation, size:mhf_salt_len
+    mhf_salt_len -- the length of `mhf_salt`
     """
     ptr_record = ffi.from_buffer(record)
     ptr_export_key = ffi.from_buffer(export_key)
@@ -3495,6 +3511,7 @@ def ecc_opaque_ristretto255_sha512_FinalizeRegistrationRequest(
     ptr_response = ffi.from_buffer(response)
     ptr_server_identity = ffi.from_buffer(server_identity)
     ptr_client_identity = ffi.from_buffer(client_identity)
+    ptr_mhf_salt = ffi.from_buffer(mhf_salt)
     lib.ecc_opaque_ristretto255_sha512_FinalizeRegistrationRequest(
         ptr_record,
         ptr_export_key,
@@ -3506,7 +3523,9 @@ def ecc_opaque_ristretto255_sha512_FinalizeRegistrationRequest(
         server_identity_len,
         ptr_client_identity,
         client_identity_len,
-        mhf
+        mhf,
+        ptr_mhf_salt,
+        mhf_salt_len
     )
     return None
 
@@ -3687,7 +3706,9 @@ def ecc_opaque_ristretto255_sha512_RecoverCredentials(
     server_identity_len: int,
     client_identity: bytes,
     client_identity_len: int,
-    mhf: int
+    mhf: int,
+    mhf_salt: bytes,
+    mhf_salt_len: int
 ) -> int:
     """
     
@@ -3704,6 +3725,8 @@ def ecc_opaque_ristretto255_sha512_RecoverCredentials(
     client_identity -- size:client_identity_len
     client_identity_len -- the length of `client_identity`
     mhf -- the memory hard function to use
+    mhf_salt -- the salt to use in the memory hard function computation, size:mhf_salt_len
+    mhf_salt_len -- the length of `mhf_salt`
     return on success returns 0, else -1.
     """
     ptr_client_private_key = ffi.from_buffer(client_private_key)
@@ -3714,6 +3737,7 @@ def ecc_opaque_ristretto255_sha512_RecoverCredentials(
     ptr_response = ffi.from_buffer(response)
     ptr_server_identity = ffi.from_buffer(server_identity)
     ptr_client_identity = ffi.from_buffer(client_identity)
+    ptr_mhf_salt = ffi.from_buffer(mhf_salt)
     fun_ret = lib.ecc_opaque_ristretto255_sha512_RecoverCredentials(
         ptr_client_private_key,
         ptr_server_public_key,
@@ -3726,7 +3750,9 @@ def ecc_opaque_ristretto255_sha512_RecoverCredentials(
         server_identity_len,
         ptr_client_identity,
         client_identity_len,
-        mhf
+        mhf,
+        ptr_mhf_salt,
+        mhf_salt_len
     )
     return fun_ret
 
@@ -4016,6 +4042,8 @@ def ecc_opaque_ristretto255_sha512_ClientFinish(
     server_identity_len: int,
     ke2: bytes,
     mhf: int,
+    mhf_salt: bytes,
+    mhf_salt_len: int,
     context: bytes,
     context_len: int
 ) -> int:
@@ -4034,6 +4062,8 @@ def ecc_opaque_ristretto255_sha512_ClientFinish(
     server_identity_len -- the length of `server_identity`
     ke2 -- a KE2 message structure, size:ecc_opaque_ristretto255_sha512_KE2SIZE
     mhf -- the memory hard function to use
+    mhf_salt -- the salt to use in the memory hard function computation, size:mhf_salt_len
+    mhf_salt_len -- the length of `mhf_salt`
     context -- the application specific context, size:context_len
     context_len -- the length of `context`
     return 0 if is able to recover credentials and authenticate with the server, else -1
@@ -4045,6 +4075,7 @@ def ecc_opaque_ristretto255_sha512_ClientFinish(
     ptr_client_identity = ffi.from_buffer(client_identity)
     ptr_server_identity = ffi.from_buffer(server_identity)
     ptr_ke2 = ffi.from_buffer(ke2)
+    ptr_mhf_salt = ffi.from_buffer(mhf_salt)
     ptr_context = ffi.from_buffer(context)
     fun_ret = lib.ecc_opaque_ristretto255_sha512_ClientFinish(
         ptr_ke3_raw,
@@ -4057,6 +4088,8 @@ def ecc_opaque_ristretto255_sha512_ClientFinish(
         server_identity_len,
         ptr_ke2,
         mhf,
+        ptr_mhf_salt,
+        mhf_salt_len,
         ptr_context,
         context_len
     )
