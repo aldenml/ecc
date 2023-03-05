@@ -55,10 +55,11 @@ export function opaque_CreateRegistrationResponse(request: Uint8Array, server_pu
  * @param {Uint8Array} server_identity the optional encoded server identity
  * @param {Uint8Array} client_identity the optional encoded client identity
  * @param {number} mhf the memory hard function to use
+ * @param {Uint8Array} mhf_salt the salt to use in the memory hard function computation
  * @param {Uint8Array} nonce size:ecc_opaque_ristretto255_sha512_Nn
  * @return object {record, exportKey}
  */
-export function opaque_FinalizeRegistrationRequestWithNonce(password: Uint8Array, blind: Uint8Array, response_raw: Uint8Array, server_identity: Uint8Array, client_identity: Uint8Array, mhf: number, nonce: Uint8Array): {
+export function opaque_FinalizeRegistrationRequestWithNonce(password: Uint8Array, blind: Uint8Array, response_raw: Uint8Array, server_identity: Uint8Array, client_identity: Uint8Array, mhf: number, mhf_salt: Uint8Array, nonce: Uint8Array): {
     registrationRecord: Uint8Array;
     exportKey: Uint8Array;
 };
@@ -72,9 +73,10 @@ export function opaque_FinalizeRegistrationRequestWithNonce(password: Uint8Array
  * @param {Uint8Array} server_identity the optional encoded server identity
  * @param {Uint8Array} client_identity the optional encoded client identity
  * @param {number} mhf the memory hard function to use
+ * @param {Uint8Array} mhf_salt the salt to use in the memory hard function computation
  * @return object {record, exportKey}
  */
-export function opaque_FinalizeRegistrationRequest(password: Uint8Array, blind: Uint8Array, response_raw: Uint8Array, server_identity: Uint8Array, client_identity: Uint8Array, mhf: number): {
+export function opaque_FinalizeRegistrationRequest(password: Uint8Array, blind: Uint8Array, response_raw: Uint8Array, server_identity: Uint8Array, client_identity: Uint8Array, mhf: number, mhf_salt: Uint8Array): {
     registrationRecord: Uint8Array;
     exportKey: Uint8Array;
 };
@@ -105,10 +107,11 @@ export function opaque_ClientInit(state: Uint8Array, password: Uint8Array): Uint
  * to server_public_key if not specified
  * @param {Uint8Array} ke2_raw a KE2 message structure
  * @param {number} mhf
+ * @param {Uint8Array} mhf_salt the salt to use in the memory hard function computation
  * @param {Uint8Array} context
  * @return object {ke3, sessionKey, exportKey, finishRet}
  */
-export function opaque_ClientFinish(state_raw: Uint8Array, client_identity: Uint8Array, server_identity: Uint8Array, ke2_raw: Uint8Array, mhf: number, context: Uint8Array): {
+export function opaque_ClientFinish(state_raw: Uint8Array, client_identity: Uint8Array, server_identity: Uint8Array, ke2_raw: Uint8Array, mhf: number, mhf_salt: Uint8Array, context: Uint8Array): {
     ke3: Uint8Array;
     sessionKey: Uint8Array;
     exportKey: Uint8Array;
