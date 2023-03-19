@@ -574,7 +574,7 @@ void ecc_opaque_ristretto255_sha512_CreateRegistrationResponse(
     byte_t *response_ptr,
     const byte_t *request_ptr,
     const byte_t *server_public_key,
-    const byte_t *credential_identifier, int credential_identifier_len,
+    const byte_t *credential_identifier, const int credential_identifier_len,
     const byte_t *oprf_seed
 ) {
     // Steps:
@@ -656,7 +656,7 @@ void ecc_opaque_ristretto255_sha512_FinalizeRegistrationRequestWithNonce(
     const byte_t *server_identity, const int server_identity_len,
     const byte_t *client_identity, const int client_identity_len,
     const int mhf,
-    const byte_t *mhf_salt, int mhf_salt_len,
+    const byte_t *mhf_salt, const int mhf_salt_len,
     const byte_t *nonce
 ) {
     // Steps:
@@ -743,7 +743,7 @@ void ecc_opaque_ristretto255_sha512_FinalizeRegistrationRequest(
     const byte_t *server_identity, const int server_identity_len,
     const byte_t *client_identity, const int client_identity_len,
     const int mhf,
-    const byte_t *mhf_salt, int mhf_salt_len
+    const byte_t *mhf_salt, const int mhf_salt_len
 ) {
     byte_t nonce[Nn];
     ecc_randombytes(nonce, Nn);
@@ -1027,7 +1027,7 @@ void ecc_opaque_ristretto255_sha512_3DH_Expand_Label(
     const byte_t *secret,
     const byte_t *label, const int label_len,
     const byte_t *context, const int context_len,
-    int length
+    const int length
 ) {
     // Expand-Label(Secret, Label, Context, Length) =
     //     Expand(Secret, CustomLabel, Length)
@@ -1064,8 +1064,8 @@ void ecc_opaque_ristretto255_sha512_3DH_Expand_Label(
 void ecc_opaque_ristretto255_sha512_3DH_Derive_Secret(
     byte_t *out, // 64
     const byte_t *secret,
-    const byte_t *label, int label_len,
-    const byte_t *transcript_hash, int transcript_hash_len
+    const byte_t *label, const int label_len,
+    const byte_t *transcript_hash, const int transcript_hash_len
 ) {
     ecc_opaque_ristretto255_sha512_3DH_Expand_Label(
         out,
@@ -1326,7 +1326,7 @@ int ecc_opaque_ristretto255_sha512_ClientFinish(
     const byte_t *server_identity, const int server_identity_len,
     const byte_t *ke2_raw,
     const int mhf,
-    const byte_t *mhf_salt, int mhf_salt_len,
+    const byte_t *mhf_salt, const int mhf_salt_len,
     const byte_t *context, const int context_len
 ) {
     // Steps:
@@ -1469,12 +1469,12 @@ int ecc_opaque_ristretto255_sha512_3DH_ClientFinalize(
     byte_t *ke3_raw, // 64
     byte_t *session_key,
     byte_t *state_raw,
-    const byte_t *client_identity, int client_identity_len,
+    const byte_t *client_identity, const int client_identity_len,
     const byte_t *client_private_key,
-    const byte_t *server_identity, int server_identity_len,
+    const byte_t *server_identity, const int server_identity_len,
     const byte_t *server_public_key,
     const byte_t *ke2_raw,
-    const byte_t *context, int context_len
+    const byte_t *context, const int context_len
 ) {
     // Steps:
     // 1. ikm = TripleDHIKM(state.client_secret, ke2.server_keyshare,
@@ -1710,14 +1710,14 @@ int ecc_opaque_ristretto255_sha512_ServerFinish(
 void ecc_opaque_ristretto255_sha512_3DH_ResponseWithSecrets(
     byte_t *ke2_raw,
     byte_t *state_raw,
-    const byte_t *server_identity, int server_identity_len,
+    const byte_t *server_identity, const int server_identity_len,
     const byte_t *server_private_key,
     const byte_t *server_public_key,
-    const byte_t *client_identity, int client_identity_len,
+    const byte_t *client_identity, const int client_identity_len,
     const byte_t *client_public_key,
     const byte_t *ke1_raw,
     const byte_t *credential_response_raw,
-    const byte_t *context, int context_len,
+    const byte_t *context, const int context_len,
     const byte_t *server_nonce,
     const byte_t *server_secret,
     const byte_t *server_keyshare
@@ -1830,14 +1830,14 @@ void ecc_opaque_ristretto255_sha512_3DH_ResponseWithSecrets(
 void ecc_opaque_ristretto255_sha512_3DH_Response(
     byte_t *ke2_raw,
     byte_t *state_raw,
-    const byte_t *server_identity, int server_identity_len,
+    const byte_t *server_identity, const int server_identity_len,
     const byte_t *server_private_key,
     const byte_t *server_public_key,
-    const byte_t *client_identity, int client_identity_len,
+    const byte_t *client_identity, const int client_identity_len,
     const byte_t *client_public_key,
     const byte_t *ke1_raw,
     const byte_t *credential_response_raw,
-    const byte_t *context, int context_len
+    const byte_t *context, const int context_len
 ) {
     // Steps:
     // 1. server_nonce = random(Nn)
