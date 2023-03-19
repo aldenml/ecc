@@ -260,5 +260,8 @@ https://en.wikipedia.org/wiki/Proxy_re-encryption
 ### Cryptographic primitives and utilities
 
 ```
+ecc_hash_sha256
+ecc_hash_sha512
+
 ecc_kdf_argon2id
 ```
