@@ -3,6 +3,69 @@ var ecc;
 /******/ 	"use strict";
 /******/ 	var __webpack_modules__ = ({
 
+/***/ 37:
+/***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "hash_sha256": () => (/* binding */ hash_sha256),
+/* harmony export */   "hash_sha512": () => (/* binding */ hash_sha512)
+/* harmony export */ });
+/* harmony import */ var _util_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(179);
+/*
+ * Copyright (c) 2023, Alden Torres
+ *
+ * Licensed under the terms of the MIT license.
+ * Copy of the license at https://opensource.org/licenses/MIT
+ */
+
+
+
+/**
+ * Computes the SHA-256 of a given input.
+ *
+ * See https://en.wikipedia.org/wiki/SHA-2
+ *
+ * @param {Uint8Array} input the input message
+ * @return {Uint8Array} the SHA-256 of the input
+ */
+function hash_sha256(
+    input,
+) {
+
+    let digest = new Uint8Array(_util_js__WEBPACK_IMPORTED_MODULE_0__.libecc.ecc_hash_sha256_HASHSIZE);
+    _util_js__WEBPACK_IMPORTED_MODULE_0__.libecc.ecc_hash_sha256(
+        digest,
+        input, input.length,
+    );
+
+    return digest;
+}
+
+/**
+ * Computes the SHA-512 of a given input.
+ *
+ * See https://en.wikipedia.org/wiki/SHA-2
+ *
+ * @param {Uint8Array} input the input message
+ * @return {Uint8Array} the SHA-512 of the input
+ */
+function hash_sha512(
+    input,
+) {
+
+    let digest = new Uint8Array(_util_js__WEBPACK_IMPORTED_MODULE_0__.libecc.ecc_hash_sha512_HASHSIZE);
+    _util_js__WEBPACK_IMPORTED_MODULE_0__.libecc.ecc_hash_sha512(
+        digest,
+        input, input.length,
+    );
+
+    return digest;
+}
+
+
+/***/ }),
+
 /***/ 18:
 /***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
 
@@ -79,19 +142,19 @@ var Module=typeof libecc_module!="undefined"?libecc_module:{};var readyPromiseRe
 
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   "opaque_RecoverPublicKey": () => (/* binding */ opaque_RecoverPublicKey),
-/* harmony export */   "opaque_GenerateAuthKeyPair": () => (/* binding */ opaque_GenerateAuthKeyPair),
-/* harmony export */   "opaque_CreateRegistrationRequestWithBlind": () => (/* binding */ opaque_CreateRegistrationRequestWithBlind),
-/* harmony export */   "opaque_CreateRegistrationRequest": () => (/* binding */ opaque_CreateRegistrationRequest),
-/* harmony export */   "opaque_CreateRegistrationResponse": () => (/* binding */ opaque_CreateRegistrationResponse),
-/* harmony export */   "opaque_FinalizeRegistrationRequestWithNonce": () => (/* binding */ opaque_FinalizeRegistrationRequestWithNonce),
-/* harmony export */   "opaque_FinalizeRegistrationRequest": () => (/* binding */ opaque_FinalizeRegistrationRequest),
-/* harmony export */   "opaque_ClientInitWithSecrets": () => (/* binding */ opaque_ClientInitWithSecrets),
-/* harmony export */   "opaque_ClientInit": () => (/* binding */ opaque_ClientInit),
 /* harmony export */   "opaque_ClientFinish": () => (/* binding */ opaque_ClientFinish),
-/* harmony export */   "opaque_ServerInitWithSecrets": () => (/* binding */ opaque_ServerInitWithSecrets),
+/* harmony export */   "opaque_ClientInit": () => (/* binding */ opaque_ClientInit),
+/* harmony export */   "opaque_ClientInitWithSecrets": () => (/* binding */ opaque_ClientInitWithSecrets),
+/* harmony export */   "opaque_CreateRegistrationRequest": () => (/* binding */ opaque_CreateRegistrationRequest),
+/* harmony export */   "opaque_CreateRegistrationRequestWithBlind": () => (/* binding */ opaque_CreateRegistrationRequestWithBlind),
+/* harmony export */   "opaque_CreateRegistrationResponse": () => (/* binding */ opaque_CreateRegistrationResponse),
+/* harmony export */   "opaque_FinalizeRegistrationRequest": () => (/* binding */ opaque_FinalizeRegistrationRequest),
+/* harmony export */   "opaque_FinalizeRegistrationRequestWithNonce": () => (/* binding */ opaque_FinalizeRegistrationRequestWithNonce),
+/* harmony export */   "opaque_GenerateAuthKeyPair": () => (/* binding */ opaque_GenerateAuthKeyPair),
+/* harmony export */   "opaque_RecoverPublicKey": () => (/* binding */ opaque_RecoverPublicKey),
+/* harmony export */   "opaque_ServerFinish": () => (/* binding */ opaque_ServerFinish),
 /* harmony export */   "opaque_ServerInit": () => (/* binding */ opaque_ServerInit),
-/* harmony export */   "opaque_ServerFinish": () => (/* binding */ opaque_ServerFinish)
+/* harmony export */   "opaque_ServerInitWithSecrets": () => (/* binding */ opaque_ServerInitWithSecrets)
 /* harmony export */ });
 /* harmony import */ var _util_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(179);
 /*
@@ -568,9 +631,9 @@ function opaque_ServerFinish(
 
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   "oprf_Evaluate": () => (/* binding */ oprf_Evaluate),
-/* harmony export */   "oprf_BlindWithScalar": () => (/* binding */ oprf_BlindWithScalar),
 /* harmony export */   "oprf_Blind": () => (/* binding */ oprf_Blind),
+/* harmony export */   "oprf_BlindWithScalar": () => (/* binding */ oprf_BlindWithScalar),
+/* harmony export */   "oprf_Evaluate": () => (/* binding */ oprf_Evaluate),
 /* harmony export */   "oprf_Finalize": () => (/* binding */ oprf_Finalize)
 /* harmony export */ });
 /* harmony import */ var _util_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(179);
@@ -675,14 +738,14 @@ function oprf_Finalize(input, blind, evaluatedElement, info) {
 
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   "pre_schema1_MessageGen": () => (/* binding */ pre_schema1_MessageGen),
-/* harmony export */   "pre_schema1_KeyGen": () => (/* binding */ pre_schema1_KeyGen),
-/* harmony export */   "pre_schema1_SigningKeyGen": () => (/* binding */ pre_schema1_SigningKeyGen),
-/* harmony export */   "pre_schema1_Encrypt": () => (/* binding */ pre_schema1_Encrypt),
-/* harmony export */   "pre_schema1_ReKeyGen": () => (/* binding */ pre_schema1_ReKeyGen),
-/* harmony export */   "pre_schema1_ReEncrypt": () => (/* binding */ pre_schema1_ReEncrypt),
 /* harmony export */   "pre_schema1_DecryptLevel1": () => (/* binding */ pre_schema1_DecryptLevel1),
-/* harmony export */   "pre_schema1_DecryptLevel2": () => (/* binding */ pre_schema1_DecryptLevel2)
+/* harmony export */   "pre_schema1_DecryptLevel2": () => (/* binding */ pre_schema1_DecryptLevel2),
+/* harmony export */   "pre_schema1_Encrypt": () => (/* binding */ pre_schema1_Encrypt),
+/* harmony export */   "pre_schema1_KeyGen": () => (/* binding */ pre_schema1_KeyGen),
+/* harmony export */   "pre_schema1_MessageGen": () => (/* binding */ pre_schema1_MessageGen),
+/* harmony export */   "pre_schema1_ReEncrypt": () => (/* binding */ pre_schema1_ReEncrypt),
+/* harmony export */   "pre_schema1_ReKeyGen": () => (/* binding */ pre_schema1_ReKeyGen),
+/* harmony export */   "pre_schema1_SigningKeyGen": () => (/* binding */ pre_schema1_SigningKeyGen)
 /* harmony export */ });
 /* harmony import */ var _libecc_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(748);
 /*
@@ -910,17 +973,17 @@ async function pre_schema1_DecryptLevel2(
 
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   "libecc_promise": () => (/* binding */ libecc_promise),
-/* harmony export */   "libecc": () => (/* binding */ libecc),
-/* harmony export */   "str2bin": () => (/* binding */ str2bin),
-/* harmony export */   "bin2hex": () => (/* binding */ bin2hex),
-/* harmony export */   "hex2bin": () => (/* binding */ hex2bin),
-/* harmony export */   "len": () => (/* binding */ len),
-/* harmony export */   "concat": () => (/* binding */ concat),
 /* harmony export */   "I2OSP": () => (/* binding */ I2OSP),
 /* harmony export */   "OS2IP": () => (/* binding */ OS2IP),
-/* harmony export */   "strxor": () => (/* binding */ strxor),
-/* harmony export */   "randombytes": () => (/* binding */ randombytes)
+/* harmony export */   "bin2hex": () => (/* binding */ bin2hex),
+/* harmony export */   "concat": () => (/* binding */ concat),
+/* harmony export */   "hex2bin": () => (/* binding */ hex2bin),
+/* harmony export */   "len": () => (/* binding */ len),
+/* harmony export */   "libecc": () => (/* binding */ libecc),
+/* harmony export */   "libecc_promise": () => (/* binding */ libecc_promise),
+/* harmony export */   "randombytes": () => (/* binding */ randombytes),
+/* harmony export */   "str2bin": () => (/* binding */ str2bin),
+/* harmony export */   "strxor": () => (/* binding */ strxor)
 /* harmony export */ });
 /* harmony import */ var _libecc_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(748);
 /*
@@ -1227,7 +1290,6 @@ function randombytes(n) {
 /******/ 				doneFns && doneFns.forEach((fn) => (fn(event)));
 /******/ 				if(prev) return prev(event);
 /******/ 			}
-/******/ 			;
 /******/ 			var timeout = setTimeout(onScriptComplete.bind(null, undefined, { type: 'timeout', target: script }), 120000);
 /******/ 			script.onerror = onScriptComplete.bind(null, script.onerror);
 /******/ 			script.onload = onScriptComplete.bind(null, script.onload);
@@ -1354,21 +1416,25 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony reexport (unknown) */ var __WEBPACK_REEXPORT_OBJECT__ = {};
 /* harmony reexport (unknown) */ for(const __WEBPACK_IMPORT_KEY__ in _util_js__WEBPACK_IMPORTED_MODULE_1__) if(["default","libecc_module"].indexOf(__WEBPACK_IMPORT_KEY__) < 0) __WEBPACK_REEXPORT_OBJECT__[__WEBPACK_IMPORT_KEY__] = () => _util_js__WEBPACK_IMPORTED_MODULE_1__[__WEBPACK_IMPORT_KEY__]
 /* harmony reexport (unknown) */ __webpack_require__.d(__webpack_exports__, __WEBPACK_REEXPORT_OBJECT__);
-/* harmony import */ var _kdf_js__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(18);
+/* harmony import */ var _hash_js__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(37);
 /* harmony reexport (unknown) */ var __WEBPACK_REEXPORT_OBJECT__ = {};
-/* harmony reexport (unknown) */ for(const __WEBPACK_IMPORT_KEY__ in _kdf_js__WEBPACK_IMPORTED_MODULE_2__) if(["default","libecc_module"].indexOf(__WEBPACK_IMPORT_KEY__) < 0) __WEBPACK_REEXPORT_OBJECT__[__WEBPACK_IMPORT_KEY__] = () => _kdf_js__WEBPACK_IMPORTED_MODULE_2__[__WEBPACK_IMPORT_KEY__]
+/* harmony reexport (unknown) */ for(const __WEBPACK_IMPORT_KEY__ in _hash_js__WEBPACK_IMPORTED_MODULE_2__) if(["default","libecc_module"].indexOf(__WEBPACK_IMPORT_KEY__) < 0) __WEBPACK_REEXPORT_OBJECT__[__WEBPACK_IMPORT_KEY__] = () => _hash_js__WEBPACK_IMPORTED_MODULE_2__[__WEBPACK_IMPORT_KEY__]
 /* harmony reexport (unknown) */ __webpack_require__.d(__webpack_exports__, __WEBPACK_REEXPORT_OBJECT__);
-/* harmony import */ var _oprf_js__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(40);
+/* harmony import */ var _kdf_js__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(18);
 /* harmony reexport (unknown) */ var __WEBPACK_REEXPORT_OBJECT__ = {};
-/* harmony reexport (unknown) */ for(const __WEBPACK_IMPORT_KEY__ in _oprf_js__WEBPACK_IMPORTED_MODULE_3__) if(["default","libecc_module"].indexOf(__WEBPACK_IMPORT_KEY__) < 0) __WEBPACK_REEXPORT_OBJECT__[__WEBPACK_IMPORT_KEY__] = () => _oprf_js__WEBPACK_IMPORTED_MODULE_3__[__WEBPACK_IMPORT_KEY__]
+/* harmony reexport (unknown) */ for(const __WEBPACK_IMPORT_KEY__ in _kdf_js__WEBPACK_IMPORTED_MODULE_3__) if(["default","libecc_module"].indexOf(__WEBPACK_IMPORT_KEY__) < 0) __WEBPACK_REEXPORT_OBJECT__[__WEBPACK_IMPORT_KEY__] = () => _kdf_js__WEBPACK_IMPORTED_MODULE_3__[__WEBPACK_IMPORT_KEY__]
 /* harmony reexport (unknown) */ __webpack_require__.d(__webpack_exports__, __WEBPACK_REEXPORT_OBJECT__);
-/* harmony import */ var _opaque_js__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(230);
+/* harmony import */ var _oprf_js__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(40);
 /* harmony reexport (unknown) */ var __WEBPACK_REEXPORT_OBJECT__ = {};
-/* harmony reexport (unknown) */ for(const __WEBPACK_IMPORT_KEY__ in _opaque_js__WEBPACK_IMPORTED_MODULE_4__) if(["default","libecc_module"].indexOf(__WEBPACK_IMPORT_KEY__) < 0) __WEBPACK_REEXPORT_OBJECT__[__WEBPACK_IMPORT_KEY__] = () => _opaque_js__WEBPACK_IMPORTED_MODULE_4__[__WEBPACK_IMPORT_KEY__]
+/* harmony reexport (unknown) */ for(const __WEBPACK_IMPORT_KEY__ in _oprf_js__WEBPACK_IMPORTED_MODULE_4__) if(["default","libecc_module"].indexOf(__WEBPACK_IMPORT_KEY__) < 0) __WEBPACK_REEXPORT_OBJECT__[__WEBPACK_IMPORT_KEY__] = () => _oprf_js__WEBPACK_IMPORTED_MODULE_4__[__WEBPACK_IMPORT_KEY__]
 /* harmony reexport (unknown) */ __webpack_require__.d(__webpack_exports__, __WEBPACK_REEXPORT_OBJECT__);
-/* harmony import */ var _pre_js__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(292);
+/* harmony import */ var _opaque_js__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(230);
 /* harmony reexport (unknown) */ var __WEBPACK_REEXPORT_OBJECT__ = {};
-/* harmony reexport (unknown) */ for(const __WEBPACK_IMPORT_KEY__ in _pre_js__WEBPACK_IMPORTED_MODULE_5__) if(["default","libecc_module"].indexOf(__WEBPACK_IMPORT_KEY__) < 0) __WEBPACK_REEXPORT_OBJECT__[__WEBPACK_IMPORT_KEY__] = () => _pre_js__WEBPACK_IMPORTED_MODULE_5__[__WEBPACK_IMPORT_KEY__]
+/* harmony reexport (unknown) */ for(const __WEBPACK_IMPORT_KEY__ in _opaque_js__WEBPACK_IMPORTED_MODULE_5__) if(["default","libecc_module"].indexOf(__WEBPACK_IMPORT_KEY__) < 0) __WEBPACK_REEXPORT_OBJECT__[__WEBPACK_IMPORT_KEY__] = () => _opaque_js__WEBPACK_IMPORTED_MODULE_5__[__WEBPACK_IMPORT_KEY__]
+/* harmony reexport (unknown) */ __webpack_require__.d(__webpack_exports__, __WEBPACK_REEXPORT_OBJECT__);
+/* harmony import */ var _pre_js__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(292);
+/* harmony reexport (unknown) */ var __WEBPACK_REEXPORT_OBJECT__ = {};
+/* harmony reexport (unknown) */ for(const __WEBPACK_IMPORT_KEY__ in _pre_js__WEBPACK_IMPORTED_MODULE_6__) if(["default","libecc_module"].indexOf(__WEBPACK_IMPORT_KEY__) < 0) __WEBPACK_REEXPORT_OBJECT__[__WEBPACK_IMPORT_KEY__] = () => _pre_js__WEBPACK_IMPORTED_MODULE_6__[__WEBPACK_IMPORT_KEY__]
 /* harmony reexport (unknown) */ __webpack_require__.d(__webpack_exports__, __WEBPACK_REEXPORT_OBJECT__);
 /*
  * Copyright (c) 2021-2023, Alden Torres
@@ -1380,6 +1446,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 const libecc_module = _libecc_js__WEBPACK_IMPORTED_MODULE_0__["default"];
+
 
 
 
