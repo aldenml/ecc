@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2022, Alden Torres
+ * Copyright (c) 2021-2023, Alden Torres
  *
  * Licensed under the terms of the MIT license.
  * Copy of the license at https://opensource.org/licenses/MIT
@@ -130,12 +130,13 @@ ECC_EXPORT
 void ecc_bls12_381_g1_add(byte_t *r, const byte_t *p, const byte_t *q);
 
 /**
+ * Returns neg so that neg + p = O in the G1 group.
  *
  * @param[out] neg size:ecc_bls12_381_G1SIZE
  * @param p size:ecc_bls12_381_G1SIZE
  */
 ECC_EXPORT
-void ecc_bls12_381_g1_negate(byte_t *neg, byte_t *p);
+void ecc_bls12_381_g1_negate(byte_t *neg, const byte_t *p);
 
 /**
  *
@@ -143,6 +144,14 @@ void ecc_bls12_381_g1_negate(byte_t *neg, byte_t *p);
  */
 ECC_EXPORT
 void ecc_bls12_381_g1_generator(byte_t *g);
+
+/**
+ * Fills p with the representation of a random group element.
+ *
+ * @param[out] p random group element, size:ecc_bls12_381_G1SIZE
+ */
+ECC_EXPORT
+void ecc_bls12_381_g1_random(byte_t *p);
 
 /**
  * Multiplies an element represented by p by a valid scalar n
@@ -177,12 +186,13 @@ ECC_EXPORT
 void ecc_bls12_381_g2_add(byte_t *r, const byte_t *p, const byte_t *q);
 
 /**
+ * Returns neg so that neg + p = O in the G2 group.
  *
  * @param[out] neg size:ecc_bls12_381_G2SIZE
  * @param p size:ecc_bls12_381_G2SIZE
  */
 ECC_EXPORT
-void ecc_bls12_381_g2_negate(byte_t *neg, byte_t *p);
+void ecc_bls12_381_g2_negate(byte_t *neg, const byte_t *p);
 
 /**
  *
@@ -190,6 +200,25 @@ void ecc_bls12_381_g2_negate(byte_t *neg, byte_t *p);
  */
 ECC_EXPORT
 void ecc_bls12_381_g2_generator(byte_t *g);
+
+/**
+ * Fills p with the representation of a random group element.
+ *
+ * @param[out] p random group element, size:ecc_bls12_381_G2SIZE
+ */
+ECC_EXPORT
+void ecc_bls12_381_g2_random(byte_t *p);
+
+/**
+ * Multiplies an element represented by p by a valid scalar n
+ * and puts the resulting element into q.
+ *
+ * @param[out] q the result, size:ecc_bls12_381_G2SIZE
+ * @param n the valid input scalar, size:ecc_bls12_381_SCALARSIZE
+ * @param p the point on the curve, size:ecc_bls12_381_G2SIZE
+ */
+ECC_EXPORT
+void ecc_bls12_381_g2_scalarmult(byte_t *q, const byte_t *n, const byte_t *p);
 
 /**
  * Multiplies the generator by a valid scalar n and puts the resulting

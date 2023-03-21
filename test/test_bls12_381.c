@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2022, Alden Torres
+ * Copyright (c) 2021-2023, Alden Torres
  *
  * Licensed under the terms of the MIT license.
  * Copy of the license at https://opensource.org/licenses/MIT
@@ -216,7 +216,99 @@ static void test_ecc_bls12_381_pairing_g2_inverse(void **state) {
     assert_int_equal(r, 1);
 }
 
-int main() {
+static void test_ecc_bls12_381_g1_negate(void **state) {
+    ECC_UNUSED(state);
+
+    byte_t A[ecc_bls12_381_G1SIZE];
+    ecc_bls12_381_g1_random(A);
+    byte_t B[ecc_bls12_381_G1SIZE];
+    ecc_bls12_381_g1_random(B);
+
+    byte_t A_neg[ecc_bls12_381_G1SIZE];
+    ecc_bls12_381_g1_negate(A_neg, A);
+
+    byte_t B_neg[ecc_bls12_381_G1SIZE];
+    ecc_bls12_381_g1_negate(B_neg, B);
+
+    byte_t S1[ecc_bls12_381_G1SIZE];
+    ecc_bls12_381_g1_add(S1, A, B);
+
+    byte_t S1_neg[ecc_bls12_381_G1SIZE];
+    ecc_bls12_381_g1_negate(S1_neg, S1);
+
+    byte_t S2[ecc_bls12_381_G1SIZE];
+    ecc_bls12_381_g1_add(S2, A_neg, B_neg);
+
+    int r = ecc_compare(S1_neg, S2, ecc_bls12_381_G1SIZE);
+    assert_int_equal(r, 0);
+}
+
+static void test_ecc_bls12_381_g2_negate(void **state) {
+    ECC_UNUSED(state);
+
+    byte_t A[ecc_bls12_381_G2SIZE];
+    ecc_bls12_381_g2_random(A);
+    byte_t B[ecc_bls12_381_G2SIZE];
+    ecc_bls12_381_g2_random(B);
+
+    byte_t A_neg[ecc_bls12_381_G2SIZE];
+    ecc_bls12_381_g2_negate(A_neg, A);
+
+    byte_t B_neg[ecc_bls12_381_G2SIZE];
+    ecc_bls12_381_g2_negate(B_neg, B);
+
+    byte_t S1[ecc_bls12_381_G2SIZE];
+    ecc_bls12_381_g2_add(S1, A, B);
+
+    byte_t S1_neg[ecc_bls12_381_G2SIZE];
+    ecc_bls12_381_g2_negate(S1_neg, S1);
+
+    byte_t S2[ecc_bls12_381_G2SIZE];
+    ecc_bls12_381_g2_add(S2, A_neg, B_neg);
+
+    int r = ecc_compare(S1_neg, S2, ecc_bls12_381_G2SIZE);
+    assert_int_equal(r, 0);
+}
+
+static void test_ecc_bls12_381_g1_scalarmult(void **state) {
+    ECC_UNUSED(state);
+
+    byte_t g1[ecc_bls12_381_G1SIZE];
+    ecc_bls12_381_g1_generator(g1);
+
+    byte_t a[ecc_bls12_381_SCALARSIZE];
+    ecc_bls12_381_scalar_random(a);
+
+    byte_t A[ecc_bls12_381_G1SIZE];
+    ecc_bls12_381_g1_scalarmult(A, a, g1);
+
+    byte_t B[ecc_bls12_381_G1SIZE];
+    ecc_bls12_381_g1_scalarmult_base(B, a);
+
+    int r = ecc_compare(A, B, ecc_bls12_381_G1SIZE);
+    assert_int_equal(r, 0);
+}
+
+static void test_ecc_bls12_381_g2_scalarmult(void **state) {
+    ECC_UNUSED(state);
+
+    byte_t g2[ecc_bls12_381_G2SIZE];
+    ecc_bls12_381_g2_generator(g2);
+
+    byte_t a[ecc_bls12_381_SCALARSIZE];
+    ecc_bls12_381_scalar_random(a);
+
+    byte_t A[ecc_bls12_381_G2SIZE];
+    ecc_bls12_381_g2_scalarmult(A, a, g2);
+
+    byte_t B[ecc_bls12_381_G2SIZE];
+    ecc_bls12_381_g2_scalarmult_base(B, a);
+
+    int r = ecc_compare(A, B, ecc_bls12_381_G2SIZE);
+    assert_int_equal(r, 0);
+}
+
+int main(void) {
     const struct CMUnitTest tests[] = {
         cmocka_unit_test(test_ecc_bls12_381_fp12_one),
         cmocka_unit_test(test_ecc_bls12_381_fp12_one_rand),
@@ -227,6 +319,10 @@ int main() {
         cmocka_unit_test(test_ecc_bls12_381_pairing_perform),
         cmocka_unit_test(test_ecc_bls12_381_pairing_miller_loop),
         cmocka_unit_test(test_ecc_bls12_381_pairing_g2_inverse),
+        cmocka_unit_test(test_ecc_bls12_381_g1_negate),
+        cmocka_unit_test(test_ecc_bls12_381_g2_negate),
+        cmocka_unit_test(test_ecc_bls12_381_g1_scalarmult),
+        cmocka_unit_test(test_ecc_bls12_381_g2_scalarmult),
     };
 
     return cmocka_run_group_tests(tests, NULL, NULL);
