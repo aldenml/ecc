@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2022, Alden Torres
+ * Copyright (c) 2021-2023, Alden Torres
  *
  * Licensed under the terms of the MIT license.
  * Copy of the license at https://opensource.org/licenses/MIT
@@ -182,7 +182,7 @@ void ecc_bls12_381_g1_add(byte_t *r, const byte_t *p, const byte_t *q) {
     ecc_memzero((byte_t *) &out, sizeof out);
 }
 
-void ecc_bls12_381_g1_negate(byte_t *neg, byte_t *p) {
+void ecc_bls12_381_g1_negate(byte_t *neg, const byte_t *p) {
     blst_p1_affine p1_affine;
     blst_p1_uncompress(&p1_affine, p);
 
@@ -199,6 +199,15 @@ void ecc_bls12_381_g1_negate(byte_t *neg, byte_t *p) {
 
 void ecc_bls12_381_g1_generator(byte_t *g) {
     blst_p1_compress(g, blst_p1_generator());
+}
+
+void ecc_bls12_381_g1_random(byte_t *p) {
+    byte_t a[ecc_bls12_381_SCALARSIZE];
+    ecc_bls12_381_scalar_random(a);
+    ecc_bls12_381_g1_scalarmult_base(p, a);
+
+    // cleanup stack memory
+    ecc_memzero(a, sizeof a);
 }
 
 void ecc_bls12_381_g1_scalarmult(byte_t *q, const byte_t *n, const byte_t *p) {
@@ -252,7 +261,7 @@ void ecc_bls12_381_g2_add(byte_t *r, const byte_t *p, const byte_t *q) {
     ecc_memzero((byte_t *) &out, sizeof out);
 }
 
-void ecc_bls12_381_g2_negate(byte_t *neg, byte_t *p) {
+void ecc_bls12_381_g2_negate(byte_t *neg, const byte_t *p) {
     blst_p2_affine p2_affine;
     blst_p2_uncompress(&p2_affine, p);
 
@@ -269,6 +278,32 @@ void ecc_bls12_381_g2_negate(byte_t *neg, byte_t *p) {
 
 void ecc_bls12_381_g2_generator(byte_t *g) {
     blst_p2_compress(g, blst_p2_generator());
+}
+
+void ecc_bls12_381_g2_random(byte_t *p) {
+    byte_t a[ecc_bls12_381_SCALARSIZE];
+    ecc_bls12_381_scalar_random(a);
+    ecc_bls12_381_g2_scalarmult_base(p, a);
+
+    // cleanup stack memory
+    ecc_memzero(a, sizeof a);
+}
+
+void ecc_bls12_381_g2_scalarmult(byte_t *q, const byte_t *n, const byte_t *p) {
+    blst_p2_affine p1_affine;
+    blst_p2_uncompress(&p1_affine, p);
+
+    blst_p2 p1;
+    blst_p2_from_affine(&p1, &p1_affine);
+
+    blst_p2 out;
+    blst_p2_mult(&out, &p1, n, ecc_bls12_381_SCALARSIZE * 8);
+    blst_p2_compress(q, &out);
+
+    // cleanup stack memory
+    ecc_memzero((byte_t *) &p1_affine, sizeof p1_affine);
+    ecc_memzero((byte_t *) &p1, sizeof p1);
+    ecc_memzero((byte_t *) &out, sizeof out);
 }
 
 void ecc_bls12_381_g2_scalarmult_base(byte_t *q, const byte_t *n) {
