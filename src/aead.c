@@ -16,14 +16,14 @@ static_assert(ecc_aead_chacha20poly1305_MACSIZE == crypto_aead_chacha20poly1305_
 void ecc_aead_chacha20poly1305_encrypt(
     byte_t *ciphertext,
     const byte_t *plaintext, int plaintext_len,
-    const byte_t *ad, int ad_len,
+    const byte_t *aad, int aad_len,
     const byte_t *nonce,
     const byte_t *key
 ) {
     crypto_aead_chacha20poly1305_ietf_encrypt(
         ciphertext, NULL,
         plaintext, (unsigned long long) plaintext_len,
-        ad, (unsigned long long) ad_len,
+        aad, (unsigned long long) aad_len,
         NULL,
         nonce,
         key
@@ -33,7 +33,7 @@ void ecc_aead_chacha20poly1305_encrypt(
 int ecc_aead_chacha20poly1305_decrypt(
     byte_t *plaintext,
     const byte_t *ciphertext, int ciphertext_len,
-    const byte_t *ad, int ad_len,
+    const byte_t *aad, int aad_len,
     const byte_t *nonce,
     const byte_t *key
 ) {
@@ -41,7 +41,7 @@ int ecc_aead_chacha20poly1305_decrypt(
         plaintext, NULL,
         NULL,
         ciphertext, (unsigned long long) ciphertext_len,
-        ad, (unsigned long long) ad_len,
+        aad, (unsigned long long) aad_len,
         nonce,
         key
     );
