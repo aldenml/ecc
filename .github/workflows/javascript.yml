@@ -27,7 +27,7 @@ jobs:
       - name: install nodejs
         run: |
           sudo npm install -g n
-          sudo n 18.14.1
+          sudo n 18.16.0
           node --version
       - name: install emscripten
         run: |
