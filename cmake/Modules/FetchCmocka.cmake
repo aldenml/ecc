@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2021, Alden Torres
+# Copyright (c) 2021-2023, Alden Torres
 #
 # Licensed under the terms of the MIT license.
 # Copy of the license at https://opensource.org/licenses/MIT
@@ -10,7 +10,7 @@ include(FetchContent)
 FetchContent_Declare(
     cmocka
     GIT_REPOSITORY https://git.cryptomilk.org/projects/cmocka.git
-    GIT_TAG cmocka-1.1.5
+    GIT_TAG cmocka-1.1.7
     GIT_SHALLOW 1
 )
 
