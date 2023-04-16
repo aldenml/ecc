@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2022, Alden Torres
+ * Copyright (c) 2021-2023, Alden Torres
  *
  * Licensed under the terms of the MIT license.
  * Copy of the license at https://opensource.org/licenses/MIT
@@ -24,7 +24,7 @@
  *
  * @param[out] digest the HMAC-SHA-256 of the input, size:ecc_mac_hmac_sha256_HASHSIZE
  * @param text the input message, size:text_len
- * @param text_len the length of `input`
+ * @param text_len the length of `text`
  * @param key authentication key, size:key_len
  * @param key_len the length of `key`
  */
@@ -49,7 +49,7 @@ void ecc_mac_hmac_sha256(
  *
  * @param[out] digest the HMAC-SHA-512 of the input, size:ecc_mac_hmac_sha512_HASHSIZE
  * @param text the input message, size:text_len
- * @param text_len the length of `input`
+ * @param text_len the length of `text`
  * @param key authentication key, size:key_len
  * @param key_len the length of `key`
  */

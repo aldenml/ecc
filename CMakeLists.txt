@@ -153,6 +153,7 @@ set(ecc_src_files
     src/hash.h src/hash.c
     src/mac.h src/mac.c
     src/kdf.h src/kdf.c
+    src/aead.h src/aead.c
     src/ed25519.h src/ed25519.c
     src/ristretto255.h src/ristretto255.c
     src/bls12_381.h src/bls12_381.c
