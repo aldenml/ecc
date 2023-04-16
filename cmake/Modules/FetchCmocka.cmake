@@ -21,3 +21,9 @@ set(UNIT_TESTING OFF CACHE BOOL "cmocka with unit testing" FORCE)
 set(PICKY_DEVELOPER OFF CACHE BOOL "cmocka with picky developer flags" FORCE)
 
 FetchContent_MakeAvailable(cmocka)
+
+add_library(libcmocka STATIC IMPORTED GLOBAL)
+set_target_properties(libcmocka PROPERTIES
+    INTERFACE_INCLUDE_DIRECTORIES ${cmocka_SOURCE_DIR}/include
+    IMPORTED_LOCATION ${cmocka_BINARY_DIR}/src/libcmocka-static.a
+)

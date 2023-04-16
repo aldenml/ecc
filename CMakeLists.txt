@@ -29,6 +29,7 @@ function(SET_EXTRA_COMPILER_FLAGS TARGET_ARG)
         target_compile_options(${TARGET_ARG} PRIVATE
             -Weverything
             -Werror
+            -Wno-declaration-after-statement
         )
         target_compile_definitions(${TARGET_ARG} PRIVATE _FORTIFY_SOURCE=2)
     elseif(CMAKE_CXX_COMPILER_ID MATCHES GNU)
@@ -216,7 +217,7 @@ if(NOT DEFINED EMSCRIPTEN)
         test/ecc_test.h test/ecc_test.c
         test/cJSON.h test/cJSON.c
     )
-    target_link_libraries(ecc_test PUBLIC ecc cmocka-static)
+    target_link_libraries(ecc_test PUBLIC ecc libcmocka)
     set_extra_compiler_flags(ecc_test)
 
     # setup coverage
