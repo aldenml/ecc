@@ -27,6 +27,7 @@ function(SET_EXTRA_COMPILER_FLAGS TARGET_ARG)
         target_compile_options(${TARGET_ARG} PRIVATE
             -Weverything
             -Werror
+            -Wno-declaration-after-statement
         )
         target_compile_definitions(${TARGET_ARG} PRIVATE _FORTIFY_SOURCE=2)
     elseif(CMAKE_CXX_COMPILER_ID MATCHES GNU)
