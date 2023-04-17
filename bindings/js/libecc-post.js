@@ -389,7 +389,7 @@ Module.ecc_mac_hmac_sha512_HASHSIZE = ecc_mac_hmac_sha512_HASHSIZE;
  *
  * @param {Uint8Array} digest (output) the HMAC-SHA-256 of the input, size:ecc_mac_hmac_sha256_HASHSIZE
  * @param {Uint8Array} text the input message, size:text_len
- * @param {number} text_len the length of `input`
+ * @param {number} text_len the length of `text`
  * @param {Uint8Array} key authentication key, size:key_len
  * @param {number} key_len the length of `key`
  */
@@ -424,7 +424,7 @@ Module.ecc_mac_hmac_sha256 = (
  *
  * @param {Uint8Array} digest (output) the HMAC-SHA-512 of the input, size:ecc_mac_hmac_sha512_HASHSIZE
  * @param {Uint8Array} text the input message, size:text_len
- * @param {number} text_len the length of `input`
+ * @param {number} text_len the length of `text`
  * @param {Uint8Array} key authentication key, size:key_len
  * @param {number} key_len the length of `key`
  */
@@ -696,6 +696,122 @@ Module.ecc_kdf_argon2id = (
     mfree(ptr_out, len);
     mfree(ptr_passphrase, passphrase_len);
     mfree(ptr_salt, ecc_kdf_argon2id_SALTIZE);
+    return fun_ret;
+}
+
+// aead
+
+const ecc_aead_chacha20poly1305_NONCESIZE = 12;
+/**
+ * Size of the ChaCha20-Poly1305 nonce.
+ *
+ * @type {number}
+ */
+Module.ecc_aead_chacha20poly1305_NONCESIZE = ecc_aead_chacha20poly1305_NONCESIZE;
+
+const ecc_aead_chacha20poly1305_KEYSIZE = 32;
+/**
+ * Size of the ChaCha20-Poly1305 private key.
+ *
+ * @type {number}
+ */
+Module.ecc_aead_chacha20poly1305_KEYSIZE = ecc_aead_chacha20poly1305_KEYSIZE;
+
+const ecc_aead_chacha20poly1305_MACSIZE = 16;
+/**
+ * Size of the ChaCha20-Poly1305 authentication tag.
+ *
+ * @type {number}
+ */
+Module.ecc_aead_chacha20poly1305_MACSIZE = ecc_aead_chacha20poly1305_MACSIZE;
+
+/**
+ * Encrypt a plaintext message using ChaCha20-Poly1305.
+ *
+ * See https://datatracker.ietf.org/doc/html/rfc8439
+ *
+ * @param {Uint8Array} ciphertext (output) the encrypted form of the input, size:plaintext_len+ecc_aead_chacha20poly1305_MACSIZE
+ * @param {Uint8Array} plaintext the input message, size:plaintext_len
+ * @param {number} plaintext_len the length of `plaintext`
+ * @param {Uint8Array} aad the associated additional authenticated data, size:aad_len
+ * @param {number} aad_len the length of `aad`
+ * @param {Uint8Array} nonce public nonce, should never ever be reused with the same key, size:ecc_aead_chacha20poly1305_NONCESIZE
+ * @param {Uint8Array} key the secret key, size:ecc_aead_chacha20poly1305_KEYSIZE
+ */
+Module.ecc_aead_chacha20poly1305_encrypt = (
+    ciphertext,
+    plaintext,
+    plaintext_len,
+    aad,
+    aad_len,
+    nonce,
+    key,
+) => {
+    const ptr_ciphertext = mput(ciphertext, plaintext_len+ecc_aead_chacha20poly1305_MACSIZE);
+    const ptr_plaintext = mput(plaintext, plaintext_len);
+    const ptr_aad = mput(aad, aad_len);
+    const ptr_nonce = mput(nonce, ecc_aead_chacha20poly1305_NONCESIZE);
+    const ptr_key = mput(key, ecc_aead_chacha20poly1305_KEYSIZE);
+    _ecc_aead_chacha20poly1305_encrypt(
+        ptr_ciphertext,
+        ptr_plaintext,
+        plaintext_len,
+        ptr_aad,
+        aad_len,
+        ptr_nonce,
+        ptr_key,
+    );
+    mget(ciphertext, ptr_ciphertext, plaintext_len+ecc_aead_chacha20poly1305_MACSIZE);
+    mfree(ptr_ciphertext, plaintext_len+ecc_aead_chacha20poly1305_MACSIZE);
+    mfree(ptr_plaintext, plaintext_len);
+    mfree(ptr_aad, aad_len);
+    mfree(ptr_nonce, ecc_aead_chacha20poly1305_NONCESIZE);
+    mfree(ptr_key, ecc_aead_chacha20poly1305_KEYSIZE);
+}
+
+/**
+ * Decrypt a ciphertext message using ChaCha20-Poly1305.
+ *
+ * See https://datatracker.ietf.org/doc/html/rfc8439
+ *
+ * @param {Uint8Array} plaintext (output) the decrypted form of the input, size:ciphertext_len-ecc_aead_chacha20poly1305_MACSIZE
+ * @param {Uint8Array} ciphertext the input encrypted message, size:ciphertext_len
+ * @param {number} ciphertext_len the length of `ciphertext`
+ * @param {Uint8Array} aad the associated additional authenticated data, size:aad_len
+ * @param {number} aad_len the length of `aad`
+ * @param {Uint8Array} nonce public nonce, should never ever be reused with the same key, size:ecc_aead_chacha20poly1305_NONCESIZE
+ * @param {Uint8Array} key the secret key, size:ecc_aead_chacha20poly1305_KEYSIZE
+ * @return {number} 0 on success, or -1 if the verification fails.
+ */
+Module.ecc_aead_chacha20poly1305_decrypt = (
+    plaintext,
+    ciphertext,
+    ciphertext_len,
+    aad,
+    aad_len,
+    nonce,
+    key,
+) => {
+    const ptr_plaintext = mput(plaintext, ciphertext_len-ecc_aead_chacha20poly1305_MACSIZE);
+    const ptr_ciphertext = mput(ciphertext, ciphertext_len);
+    const ptr_aad = mput(aad, aad_len);
+    const ptr_nonce = mput(nonce, ecc_aead_chacha20poly1305_NONCESIZE);
+    const ptr_key = mput(key, ecc_aead_chacha20poly1305_KEYSIZE);
+    const fun_ret = _ecc_aead_chacha20poly1305_decrypt(
+        ptr_plaintext,
+        ptr_ciphertext,
+        ciphertext_len,
+        ptr_aad,
+        aad_len,
+        ptr_nonce,
+        ptr_key,
+    );
+    mget(plaintext, ptr_plaintext, ciphertext_len-ecc_aead_chacha20poly1305_MACSIZE);
+    mfree(ptr_plaintext, ciphertext_len-ecc_aead_chacha20poly1305_MACSIZE);
+    mfree(ptr_ciphertext, ciphertext_len);
+    mfree(ptr_aad, aad_len);
+    mfree(ptr_nonce, ecc_aead_chacha20poly1305_NONCESIZE);
+    mfree(ptr_key, ecc_aead_chacha20poly1305_KEYSIZE);
     return fun_ret;
 }
 
@@ -1755,7 +1871,7 @@ Module.ecc_bls12_381_g1_add = (
 }
 
 /**
- *
+ * Returns neg so that neg + p = O in the G1 group.
  *
  * @param {Uint8Array} neg (output) size:ecc_bls12_381_G1SIZE
  * @param {Uint8Array} p size:ecc_bls12_381_G1SIZE
@@ -1789,6 +1905,22 @@ Module.ecc_bls12_381_g1_generator = (
     );
     mget(g, ptr_g, ecc_bls12_381_G1SIZE);
     mfree(ptr_g, ecc_bls12_381_G1SIZE);
+}
+
+/**
+ * Fills p with the representation of a random group element.
+ *
+ * @param {Uint8Array} p (output) random group element, size:ecc_bls12_381_G1SIZE
+ */
+Module.ecc_bls12_381_g1_random = (
+    p,
+) => {
+    const ptr_p = mput(p, ecc_bls12_381_G1SIZE);
+    _ecc_bls12_381_g1_random(
+        ptr_p,
+    );
+    mget(p, ptr_p, ecc_bls12_381_G1SIZE);
+    mfree(ptr_p, ecc_bls12_381_G1SIZE);
 }
 
 /**
@@ -1867,7 +1999,7 @@ Module.ecc_bls12_381_g2_add = (
 }
 
 /**
- *
+ * Returns neg so that neg + p = O in the G2 group.
  *
  * @param {Uint8Array} neg (output) size:ecc_bls12_381_G2SIZE
  * @param {Uint8Array} p size:ecc_bls12_381_G2SIZE
@@ -1901,6 +2033,49 @@ Module.ecc_bls12_381_g2_generator = (
     );
     mget(g, ptr_g, ecc_bls12_381_G2SIZE);
     mfree(ptr_g, ecc_bls12_381_G2SIZE);
+}
+
+/**
+ * Fills p with the representation of a random group element.
+ *
+ * @param {Uint8Array} p (output) random group element, size:ecc_bls12_381_G2SIZE
+ */
+Module.ecc_bls12_381_g2_random = (
+    p,
+) => {
+    const ptr_p = mput(p, ecc_bls12_381_G2SIZE);
+    _ecc_bls12_381_g2_random(
+        ptr_p,
+    );
+    mget(p, ptr_p, ecc_bls12_381_G2SIZE);
+    mfree(ptr_p, ecc_bls12_381_G2SIZE);
+}
+
+/**
+ * Multiplies an element represented by p by a valid scalar n
+ * and puts the resulting element into q.
+ *
+ * @param {Uint8Array} q (output) the result, size:ecc_bls12_381_G2SIZE
+ * @param {Uint8Array} n the valid input scalar, size:ecc_bls12_381_SCALARSIZE
+ * @param {Uint8Array} p the point on the curve, size:ecc_bls12_381_G2SIZE
+ */
+Module.ecc_bls12_381_g2_scalarmult = (
+    q,
+    n,
+    p,
+) => {
+    const ptr_q = mput(q, ecc_bls12_381_G2SIZE);
+    const ptr_n = mput(n, ecc_bls12_381_SCALARSIZE);
+    const ptr_p = mput(p, ecc_bls12_381_G2SIZE);
+    _ecc_bls12_381_g2_scalarmult(
+        ptr_q,
+        ptr_n,
+        ptr_p,
+    );
+    mget(q, ptr_q, ecc_bls12_381_G2SIZE);
+    mfree(ptr_q, ecc_bls12_381_G2SIZE);
+    mfree(ptr_n, ecc_bls12_381_SCALARSIZE);
+    mfree(ptr_p, ecc_bls12_381_G2SIZE);
 }
 
 /**

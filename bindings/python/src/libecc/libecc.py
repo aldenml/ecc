@@ -329,7 +329,7 @@ def ecc_mac_hmac_sha256(
     
     digest -- (output) the HMAC-SHA-256 of the input, size:ecc_mac_hmac_sha256_HASHSIZE
     text -- the input message, size:text_len
-    text_len -- the length of `input`
+    text_len -- the length of `text`
     key -- authentication key, size:key_len
     key_len -- the length of `key`
     """
@@ -361,7 +361,7 @@ def ecc_mac_hmac_sha512(
     
     digest -- (output) the HMAC-SHA-512 of the input, size:ecc_mac_hmac_sha512_HASHSIZE
     text -- the input message, size:text_len
-    text_len -- the length of `input`
+    text_len -- the length of `text`
     key -- authentication key, size:key_len
     key_len -- the length of `key`
     """
@@ -593,6 +593,102 @@ def ecc_kdf_argon2id(
         memory_size,
         iterations,
         len
+    )
+    return fun_ret
+
+
+# aead
+
+ecc_aead_chacha20poly1305_NONCESIZE = 12
+"""
+Size of the ChaCha20-Poly1305 nonce.
+"""
+
+ecc_aead_chacha20poly1305_KEYSIZE = 32
+"""
+Size of the ChaCha20-Poly1305 private key.
+"""
+
+ecc_aead_chacha20poly1305_MACSIZE = 16
+"""
+Size of the ChaCha20-Poly1305 authentication tag.
+"""
+
+def ecc_aead_chacha20poly1305_encrypt(
+    ciphertext: bytearray,
+    plaintext: bytes,
+    plaintext_len: int,
+    aad: bytes,
+    aad_len: int,
+    nonce: bytes,
+    key: bytes
+) -> None:
+    """
+    Encrypt a plaintext message using ChaCha20-Poly1305.
+    
+    See https://datatracker.ietf.org/doc/html/rfc8439
+    
+    ciphertext -- (output) the encrypted form of the input, size:plaintext_len+ecc_aead_chacha20poly1305_MACSIZE
+    plaintext -- the input message, size:plaintext_len
+    plaintext_len -- the length of `plaintext`
+    aad -- the associated additional authenticated data, size:aad_len
+    aad_len -- the length of `aad`
+    nonce -- public nonce, should never ever be reused with the same key, size:ecc_aead_chacha20poly1305_NONCESIZE
+    key -- the secret key, size:ecc_aead_chacha20poly1305_KEYSIZE
+    """
+    ptr_ciphertext = ffi.from_buffer(ciphertext)
+    ptr_plaintext = ffi.from_buffer(plaintext)
+    ptr_aad = ffi.from_buffer(aad)
+    ptr_nonce = ffi.from_buffer(nonce)
+    ptr_key = ffi.from_buffer(key)
+    lib.ecc_aead_chacha20poly1305_encrypt(
+        ptr_ciphertext,
+        ptr_plaintext,
+        plaintext_len,
+        ptr_aad,
+        aad_len,
+        ptr_nonce,
+        ptr_key
+    )
+    return None
+
+
+def ecc_aead_chacha20poly1305_decrypt(
+    plaintext: bytearray,
+    ciphertext: bytes,
+    ciphertext_len: int,
+    aad: bytes,
+    aad_len: int,
+    nonce: bytes,
+    key: bytes
+) -> int:
+    """
+    Decrypt a ciphertext message using ChaCha20-Poly1305.
+    
+    See https://datatracker.ietf.org/doc/html/rfc8439
+    
+    plaintext -- (output) the decrypted form of the input, size:ciphertext_len-ecc_aead_chacha20poly1305_MACSIZE
+    ciphertext -- the input encrypted message, size:ciphertext_len
+    ciphertext_len -- the length of `ciphertext`
+    aad -- the associated additional authenticated data, size:aad_len
+    aad_len -- the length of `aad`
+    nonce -- public nonce, should never ever be reused with the same key, size:ecc_aead_chacha20poly1305_NONCESIZE
+    key -- the secret key, size:ecc_aead_chacha20poly1305_KEYSIZE
+    return 0 on success, or -1 if the verification fails.
+    """
+    ptr_plaintext = ffi.from_buffer(plaintext)
+    ptr_ciphertext = ffi.from_buffer(ciphertext)
+    ptr_aad = ffi.from_buffer(aad)
+    ptr_nonce = ffi.from_buffer(nonce)
+    ptr_key = ffi.from_buffer(key)
+    fun_ret = lib.ecc_aead_chacha20poly1305_decrypt(
+        ptr_plaintext,
+        ptr_ciphertext,
+        ciphertext_len,
+        ptr_aad,
+        aad_len,
+        ptr_nonce,
+        ptr_key
     )
     return fun_ret
 
@@ -1524,7 +1620,7 @@ def ecc_bls12_381_g1_negate(
     p: bytes
 ) -> None:
     """
-    
+    Returns neg so that neg + p = O in the G1 group.
     
     neg -- (output) size:ecc_bls12_381_G1SIZE
     p -- size:ecc_bls12_381_G1SIZE
@@ -1549,6 +1645,21 @@ def ecc_bls12_381_g1_generator(
     ptr_g = ffi.from_buffer(g)
     lib.ecc_bls12_381_g1_generator(
         ptr_g
+    )
+    return None
+
+
+def ecc_bls12_381_g1_random(
+    p: bytearray
+) -> None:
+    """
+    Fills p with the representation of a random group element.
+    
+    p -- (output) random group element, size:ecc_bls12_381_G1SIZE
+    """
+    ptr_p = ffi.from_buffer(p)
+    lib.ecc_bls12_381_g1_random(
+        ptr_p
     )
     return None
 
@@ -1625,7 +1736,7 @@ def ecc_bls12_381_g2_negate(
     p: bytes
 ) -> None:
     """
-    
+    Returns neg so that neg + p = O in the G2 group.
     
     neg -- (output) size:ecc_bls12_381_G2SIZE
     p -- size:ecc_bls12_381_G2SIZE
@@ -1650,6 +1761,45 @@ def ecc_bls12_381_g2_generator(
     ptr_g = ffi.from_buffer(g)
     lib.ecc_bls12_381_g2_generator(
         ptr_g
+    )
+    return None
+
+
+def ecc_bls12_381_g2_random(
+    p: bytearray
+) -> None:
+    """
+    Fills p with the representation of a random group element.
+    
+    p -- (output) random group element, size:ecc_bls12_381_G2SIZE
+    """
+    ptr_p = ffi.from_buffer(p)
+    lib.ecc_bls12_381_g2_random(
+        ptr_p
+    )
+    return None
+
+
+def ecc_bls12_381_g2_scalarmult(
+    q: bytearray,
+    n: bytes,
+    p: bytes
+) -> None:
+    """
+    Multiplies an element represented by p by a valid scalar n
+    and puts the resulting element into q.
+    
+    q -- (output) the result, size:ecc_bls12_381_G2SIZE
+    n -- the valid input scalar, size:ecc_bls12_381_SCALARSIZE
+    p -- the point on the curve, size:ecc_bls12_381_G2SIZE
+    """
+    ptr_q = ffi.from_buffer(q)
+    ptr_n = ffi.from_buffer(n)
+    ptr_p = ffi.from_buffer(p)
+    lib.ecc_bls12_381_g2_scalarmult(
+        ptr_q,
+        ptr_n,
+        ptr_p
     )
     return None
 
