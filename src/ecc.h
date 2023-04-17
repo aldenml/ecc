@@ -13,6 +13,7 @@
 #include "hash.h"
 #include "mac.h"
 #include "kdf.h"
+#include "aead.h"
 #include "ed25519.h"
 #include "ristretto255.h"
 #include "bls12_381.h"
