@@ -1,4 +1,4 @@
-export const libecc_module: (libecc_module: any) => Promise<any>;
+export const libecc_module: (libecc_module?: {}) => Promise<any>;
 export * from "./util.js";
 export * from "./hash.js";
 export * from "./kdf.js";
