@@ -10,6 +10,7 @@
     "util.js",
     "hash.js",
     "kdf.js",
+    "aead.js",
     "oprf.js",
     "opaque.js",
     "pre.js",
@@ -20,6 +21,7 @@
     "hash.test.js",
     "mac.test.js",
     "kdf.test.js",
+    "aead.test.js",
     "ed25519.test.js",
     "bls12_381.test.js",
     "oprf.test.js",
@@ -34,6 +36,7 @@
     "dist/libecc.d.ts",
     "dist/util.d.ts",
     "dist/kdf.d.ts",
+    "dist/aead.d.ts",
     "dist/oprf.d.ts",
     "dist/opaque.d.ts",
     "dist/pre.d.ts"

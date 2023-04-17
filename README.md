@@ -281,7 +281,11 @@ https://en.wikipedia.org/wiki/Proxy_re-encryption
 ecc_hash_sha256
 ecc_hash_sha512
 
+ecc_kdf_scrypt
 ecc_kdf_argon2id
+
+ecc_aead_chacha20poly1305_encrypt
+ecc_aead_chacha20poly1305_decrypt
 ```
 
 ### Bindings and building
