@@ -160,6 +160,28 @@ ffibuilder.cdef(
         int len
     );
 
+    // aead
+
+    void ecc_aead_chacha20poly1305_encrypt(
+        unsigned char *ciphertext,
+        unsigned char *plaintext,
+        int plaintext_len,
+        unsigned char *aad,
+        int aad_len,
+        unsigned char *nonce,
+        unsigned char *key
+    );
+
+    int ecc_aead_chacha20poly1305_decrypt(
+        unsigned char *plaintext,
+        unsigned char *ciphertext,
+        int ciphertext_len,
+        unsigned char *aad,
+        int aad_len,
+        unsigned char *nonce,
+        unsigned char *key
+    );
+
     // ed25519
 
     int ecc_ed25519_is_valid_point(
@@ -383,6 +405,10 @@ ffibuilder.cdef(
         unsigned char *g
     );
 
+    void ecc_bls12_381_g1_random(
+        unsigned char *p
+    );
+
     void ecc_bls12_381_g1_scalarmult(
         unsigned char *q,
         unsigned char *n,
@@ -407,6 +433,16 @@ ffibuilder.cdef(
 
     void ecc_bls12_381_g2_generator(
         unsigned char *g
+    );
+
+    void ecc_bls12_381_g2_random(
+        unsigned char *p
+    );
+
+    void ecc_bls12_381_g2_scalarmult(
+        unsigned char *q,
+        unsigned char *n,
+        unsigned char *p
     );
 
     void ecc_bls12_381_g2_scalarmult_base(

@@ -57,7 +57,6 @@ class ParmVarDecl:
     def __init__(self, ast, comment):
         self.ast = ast
         self.name = ast["name"]
-        self.mangledName = ast["mangledName"]
         self.type = ast["type"]["qualType"]
         self.comment = comment
         if comment is None:
@@ -468,7 +467,7 @@ def read_header(header):
         return f.read()
 
 
-ecc_headers = ["util", "hash", "mac", "kdf", "ed25519", "ristretto255", "bls12_381",
+ecc_headers = ["util", "hash", "mac", "kdf", "aead", "ed25519", "ristretto255", "bls12_381",
                "h2c", "voprf", "opaque", "sign", "frost", "pre"]
 ecc_ignore = ["ecc_memzero", "ecc_bin2hex", "ecc_hex2bin", "ecc_malloc", "ecc_free", "ecc_log"]
 

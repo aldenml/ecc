@@ -225,7 +225,7 @@ static void test_ecc_sign_eth_bls_AggregateVerify(void **state) {
     ecc_json_destroy(json);
 }
 
-int main() {
+int main(void) {
     const struct CMUnitTest tests[] = {
         cmocka_unit_test(test_ecc_sign_eth_bls_SkToPk),
         cmocka_unit_test(test_ecc_sign_eth_bls_KeyValidate),

@@ -250,7 +250,7 @@ public final class libecc {
      *
      * @param digest (output) the HMAC-SHA-256 of the input, size:ecc_mac_hmac_sha256_HASHSIZE
      * @param text the input message, size:text_len
-     * @param text_len the length of `input`
+     * @param text_len the length of `text`
      * @param key authentication key, size:key_len
      * @param key_len the length of `key`
      */
@@ -270,7 +270,7 @@ public final class libecc {
      *
      * @param digest (output) the HMAC-SHA-512 of the input, size:ecc_mac_hmac_sha512_HASHSIZE
      * @param text the input message, size:text_len
-     * @param text_len the length of `input`
+     * @param text_len the length of `text`
      * @param key authentication key, size:key_len
      * @param key_len the length of `key`
      */
@@ -424,6 +424,73 @@ public final class libecc {
         int memory_size,
         int iterations,
         int len
+    );
+
+    // aead
+
+    /**
+     * Size of the ChaCha20-Poly1305 nonce.
+     *
+     */
+    public static final int ecc_aead_chacha20poly1305_NONCESIZE = 12;
+
+    /**
+     * Size of the ChaCha20-Poly1305 private key.
+     *
+     */
+    public static final int ecc_aead_chacha20poly1305_KEYSIZE = 32;
+
+    /**
+     * Size of the ChaCha20-Poly1305 authentication tag.
+     *
+     */
+    public static final int ecc_aead_chacha20poly1305_MACSIZE = 16;
+
+    /**
+     * Encrypt a plaintext message using ChaCha20-Poly1305.
+     *
+     * See https://datatracker.ietf.org/doc/html/rfc8439
+     *
+     * @param ciphertext (output) the encrypted form of the input, size:plaintext_len+ecc_aead_chacha20poly1305_MACSIZE
+     * @param plaintext the input message, size:plaintext_len
+     * @param plaintext_len the length of `plaintext`
+     * @param aad the associated additional authenticated data, size:aad_len
+     * @param aad_len the length of `aad`
+     * @param nonce public nonce, should never ever be reused with the same key, size:ecc_aead_chacha20poly1305_NONCESIZE
+     * @param key the secret key, size:ecc_aead_chacha20poly1305_KEYSIZE
+     */
+    public static native void ecc_aead_chacha20poly1305_encrypt(
+        byte[] ciphertext,
+        byte[] plaintext,
+        int plaintext_len,
+        byte[] aad,
+        int aad_len,
+        byte[] nonce,
+        byte[] key
+    );
+
+    /**
+     * Decrypt a ciphertext message using ChaCha20-Poly1305.
+     *
+     * See https://datatracker.ietf.org/doc/html/rfc8439
+     *
+     * @param plaintext (output) the decrypted form of the input, size:ciphertext_len-ecc_aead_chacha20poly1305_MACSIZE
+     * @param ciphertext the input encrypted message, size:ciphertext_len
+     * @param ciphertext_len the length of `ciphertext`
+     * @param aad the associated additional authenticated data, size:aad_len
+     * @param aad_len the length of `aad`
+     * @param nonce public nonce, should never ever be reused with the same key, size:ecc_aead_chacha20poly1305_NONCESIZE
+     * @param key the secret key, size:ecc_aead_chacha20poly1305_KEYSIZE
+     * @return 0 on success, or -1 if the verification fails.
+     */
+    public static native int ecc_aead_chacha20poly1305_decrypt(
+        byte[] plaintext,
+        byte[] ciphertext,
+        int ciphertext_len,
+        byte[] aad,
+        int aad_len,
+        byte[] nonce,
+        byte[] key
     );
 
     // ed25519
@@ -1029,7 +1096,7 @@ public final class libecc {
     );
 
     /**
-     *
+     * Returns neg so that neg + p = O in the G1 group.
      *
      * @param neg (output) size:ecc_bls12_381_G1SIZE
      * @param p size:ecc_bls12_381_G1SIZE
@@ -1046,6 +1113,15 @@ public final class libecc {
      */
     public static native void ecc_bls12_381_g1_generator(
         byte[] g
+    );
+
+    /**
+     * Fills p with the representation of a random group element.
+     *
+     * @param p (output) random group element, size:ecc_bls12_381_G1SIZE
+     */
+    public static native void ecc_bls12_381_g1_random(
+        byte[] p
     );
 
     /**
@@ -1088,7 +1164,7 @@ public final class libecc {
     );
 
     /**
-     *
+     * Returns neg so that neg + p = O in the G2 group.
      *
      * @param neg (output) size:ecc_bls12_381_G2SIZE
      * @param p size:ecc_bls12_381_G2SIZE
@@ -1105,6 +1181,29 @@ public final class libecc {
      */
     public static native void ecc_bls12_381_g2_generator(
         byte[] g
+    );
+
+    /**
+     * Fills p with the representation of a random group element.
+     *
+     * @param p (output) random group element, size:ecc_bls12_381_G2SIZE
+     */
+    public static native void ecc_bls12_381_g2_random(
+        byte[] p
+    );
+
+    /**
+     * Multiplies an element represented by p by a valid scalar n
+     * and puts the resulting element into q.
+     *
+     * @param q (output) the result, size:ecc_bls12_381_G2SIZE
+     * @param n the valid input scalar, size:ecc_bls12_381_SCALARSIZE
+     * @param p the point on the curve, size:ecc_bls12_381_G2SIZE
+     */
+    public static native void ecc_bls12_381_g2_scalarmult(
+        byte[] q,
+        byte[] n,
+        byte[] p
     );
 
     /**

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2022, Alden Torres
+ * Copyright (c) 2021-2023, Alden Torres
  *
  * Licensed under the terms of the MIT license.
  * Copy of the license at https://opensource.org/licenses/MIT
@@ -176,7 +176,7 @@ static void ecc_pre_schema1_derive_signingkey_test(void **state) {
                                  "5abc08049f70630732a966ac79eec17b05346aa1e4883a496a6fa4c6ef88a4a");
 }
 
-int main() {
+int main(void) {
     const struct CMUnitTest tests[] = {
         cmocka_unit_test(ecc_pre_schema1_random_encrypt_level1_test),
         cmocka_unit_test(ecc_pre_schema1_re_encrypt_test),

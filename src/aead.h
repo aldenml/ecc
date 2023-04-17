@@ -36,8 +36,8 @@
  * @param[out] ciphertext the encrypted form of the input, size:plaintext_len+ecc_aead_chacha20poly1305_MACSIZE
  * @param plaintext the input message, size:plaintext_len
  * @param plaintext_len the length of `plaintext`
- * @param aad the associated additional authenticated data, size:ad_len
- * @param aad_len the length of `ad`
+ * @param aad the associated additional authenticated data, size:aad_len
+ * @param aad_len the length of `aad`
  * @param nonce public nonce, should never ever be reused with the same key, size:ecc_aead_chacha20poly1305_NONCESIZE
  * @param key the secret key, size:ecc_aead_chacha20poly1305_KEYSIZE
  */
@@ -58,8 +58,8 @@ void ecc_aead_chacha20poly1305_encrypt(
  * @param[out] plaintext the decrypted form of the input, size:ciphertext_len-ecc_aead_chacha20poly1305_MACSIZE
  * @param ciphertext the input encrypted message, size:ciphertext_len
  * @param ciphertext_len the length of `ciphertext`
- * @param aad the associated additional authenticated data, size:ad_len
- * @param aad_len the length of `ad`
+ * @param aad the associated additional authenticated data, size:aad_len
+ * @param aad_len the length of `aad`
  * @param nonce public nonce, should never ever be reused with the same key, size:ecc_aead_chacha20poly1305_NONCESIZE
  * @param key the secret key, size:ecc_aead_chacha20poly1305_KEYSIZE
  * @return 0 on success, or -1 if the verification fails.
