@@ -69,7 +69,7 @@ public final class Aead {
      * @param aad       the associated additional authenticated data
      * @param nonce     public nonce, should never ever be reused with the same key, size:ecc_aead_chacha20poly1305_NONCESIZE
      * @param key       number of passes, size:ecc_aead_chacha20poly1305_KEYSIZE
-     * @return the encrypted form of the input
+     * @return the decrypted form of the input or null if the verification fails.
      */
     public static Data chacha20poly1305Decrypt(
         Data ciphertext,

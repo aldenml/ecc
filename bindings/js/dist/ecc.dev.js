@@ -3,6 +3,87 @@ var ecc;
 /******/ 	"use strict";
 /******/ 	var __webpack_modules__ = ({
 
+/***/ 738:
+/***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "aead_chacha20poly1305_decrypt": () => (/* binding */ aead_chacha20poly1305_decrypt),
+/* harmony export */   "aead_chacha20poly1305_encrypt": () => (/* binding */ aead_chacha20poly1305_encrypt)
+/* harmony export */ });
+/* harmony import */ var _util_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(179);
+/*
+ * Copyright (c) 2023, Alden Torres
+ *
+ * Licensed under the terms of the MIT license.
+ * Copy of the license at https://opensource.org/licenses/MIT
+ */
+
+
+
+/**
+ * Encrypt a plaintext message using ChaCha20-Poly1305.
+ *
+ * See https://datatracker.ietf.org/doc/html/rfc8439
+ *
+ * @param {Uint8Array} plaintext the input message
+ * @param {Uint8Array} aad the associated additional authenticated data
+ * @param {Uint8Array} nonce public nonce, should never ever be reused with the same key, size:ecc_aead_chacha20poly1305_NONCESIZE
+ * @param {Uint8Array} key the secret key, size:ecc_aead_chacha20poly1305_KEYSIZE
+ * @return {Uint8Array} the encrypted form of the input
+ */
+function aead_chacha20poly1305_encrypt(
+    plaintext,
+    aad,
+    nonce,
+    key,
+) {
+
+    let out = new Uint8Array(plaintext.length + _util_js__WEBPACK_IMPORTED_MODULE_0__.libecc.ecc_aead_chacha20poly1305_MACSIZE);
+    _util_js__WEBPACK_IMPORTED_MODULE_0__.libecc.ecc_aead_chacha20poly1305_encrypt(
+        out,
+        plaintext, plaintext.length,
+        aad, aad.length,
+        nonce,
+        key,
+    );
+
+    return out;
+}
+
+/**
+ * Decrypt a ciphertext message using ChaCha20-Poly1305.
+ *
+ * See https://datatracker.ietf.org/doc/html/rfc8439
+ *
+ * @param {Uint8Array} ciphertext the input encrypted message
+ * @param {Uint8Array}  aad the associated additional authenticated data
+ * @param {Uint8Array} nonce public nonce, should never ever be reused with the same key, size:ecc_aead_chacha20poly1305_NONCESIZE
+ * @param {Uint8Array} key the secret key, size:ecc_aead_chacha20poly1305_KEYSIZE
+ * @return {Uint8Array} the decrypted form of the input or null if the verification fails.
+ */
+function aead_chacha20poly1305_decrypt(
+    ciphertext,
+    aad,
+    nonce,
+    key,
+) {
+
+    let out = new Uint8Array(ciphertext.length - _util_js__WEBPACK_IMPORTED_MODULE_0__.libecc.ecc_aead_chacha20poly1305_MACSIZE);
+    const r = _util_js__WEBPACK_IMPORTED_MODULE_0__.libecc.ecc_aead_chacha20poly1305_decrypt(
+        out,
+        ciphertext, ciphertext.length,
+        aad, aad.length,
+        nonce,
+        key,
+    );
+
+    return r === 0 ? out : null;
+}
+
+
+/***/ }),
+
 /***/ 37:
 /***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
 
@@ -1424,17 +1505,21 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony reexport (unknown) */ var __WEBPACK_REEXPORT_OBJECT__ = {};
 /* harmony reexport (unknown) */ for(const __WEBPACK_IMPORT_KEY__ in _kdf_js__WEBPACK_IMPORTED_MODULE_3__) if(["default","libecc_module"].indexOf(__WEBPACK_IMPORT_KEY__) < 0) __WEBPACK_REEXPORT_OBJECT__[__WEBPACK_IMPORT_KEY__] = () => _kdf_js__WEBPACK_IMPORTED_MODULE_3__[__WEBPACK_IMPORT_KEY__]
 /* harmony reexport (unknown) */ __webpack_require__.d(__webpack_exports__, __WEBPACK_REEXPORT_OBJECT__);
-/* harmony import */ var _oprf_js__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(40);
+/* harmony import */ var _aead_js__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(738);
 /* harmony reexport (unknown) */ var __WEBPACK_REEXPORT_OBJECT__ = {};
-/* harmony reexport (unknown) */ for(const __WEBPACK_IMPORT_KEY__ in _oprf_js__WEBPACK_IMPORTED_MODULE_4__) if(["default","libecc_module"].indexOf(__WEBPACK_IMPORT_KEY__) < 0) __WEBPACK_REEXPORT_OBJECT__[__WEBPACK_IMPORT_KEY__] = () => _oprf_js__WEBPACK_IMPORTED_MODULE_4__[__WEBPACK_IMPORT_KEY__]
+/* harmony reexport (unknown) */ for(const __WEBPACK_IMPORT_KEY__ in _aead_js__WEBPACK_IMPORTED_MODULE_4__) if(["default","libecc_module"].indexOf(__WEBPACK_IMPORT_KEY__) < 0) __WEBPACK_REEXPORT_OBJECT__[__WEBPACK_IMPORT_KEY__] = () => _aead_js__WEBPACK_IMPORTED_MODULE_4__[__WEBPACK_IMPORT_KEY__]
 /* harmony reexport (unknown) */ __webpack_require__.d(__webpack_exports__, __WEBPACK_REEXPORT_OBJECT__);
-/* harmony import */ var _opaque_js__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(230);
+/* harmony import */ var _oprf_js__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(40);
 /* harmony reexport (unknown) */ var __WEBPACK_REEXPORT_OBJECT__ = {};
-/* harmony reexport (unknown) */ for(const __WEBPACK_IMPORT_KEY__ in _opaque_js__WEBPACK_IMPORTED_MODULE_5__) if(["default","libecc_module"].indexOf(__WEBPACK_IMPORT_KEY__) < 0) __WEBPACK_REEXPORT_OBJECT__[__WEBPACK_IMPORT_KEY__] = () => _opaque_js__WEBPACK_IMPORTED_MODULE_5__[__WEBPACK_IMPORT_KEY__]
+/* harmony reexport (unknown) */ for(const __WEBPACK_IMPORT_KEY__ in _oprf_js__WEBPACK_IMPORTED_MODULE_5__) if(["default","libecc_module"].indexOf(__WEBPACK_IMPORT_KEY__) < 0) __WEBPACK_REEXPORT_OBJECT__[__WEBPACK_IMPORT_KEY__] = () => _oprf_js__WEBPACK_IMPORTED_MODULE_5__[__WEBPACK_IMPORT_KEY__]
 /* harmony reexport (unknown) */ __webpack_require__.d(__webpack_exports__, __WEBPACK_REEXPORT_OBJECT__);
-/* harmony import */ var _pre_js__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(292);
+/* harmony import */ var _opaque_js__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(230);
 /* harmony reexport (unknown) */ var __WEBPACK_REEXPORT_OBJECT__ = {};
-/* harmony reexport (unknown) */ for(const __WEBPACK_IMPORT_KEY__ in _pre_js__WEBPACK_IMPORTED_MODULE_6__) if(["default","libecc_module"].indexOf(__WEBPACK_IMPORT_KEY__) < 0) __WEBPACK_REEXPORT_OBJECT__[__WEBPACK_IMPORT_KEY__] = () => _pre_js__WEBPACK_IMPORTED_MODULE_6__[__WEBPACK_IMPORT_KEY__]
+/* harmony reexport (unknown) */ for(const __WEBPACK_IMPORT_KEY__ in _opaque_js__WEBPACK_IMPORTED_MODULE_6__) if(["default","libecc_module"].indexOf(__WEBPACK_IMPORT_KEY__) < 0) __WEBPACK_REEXPORT_OBJECT__[__WEBPACK_IMPORT_KEY__] = () => _opaque_js__WEBPACK_IMPORTED_MODULE_6__[__WEBPACK_IMPORT_KEY__]
+/* harmony reexport (unknown) */ __webpack_require__.d(__webpack_exports__, __WEBPACK_REEXPORT_OBJECT__);
+/* harmony import */ var _pre_js__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(292);
+/* harmony reexport (unknown) */ var __WEBPACK_REEXPORT_OBJECT__ = {};
+/* harmony reexport (unknown) */ for(const __WEBPACK_IMPORT_KEY__ in _pre_js__WEBPACK_IMPORTED_MODULE_7__) if(["default","libecc_module"].indexOf(__WEBPACK_IMPORT_KEY__) < 0) __WEBPACK_REEXPORT_OBJECT__[__WEBPACK_IMPORT_KEY__] = () => _pre_js__WEBPACK_IMPORTED_MODULE_7__[__WEBPACK_IMPORT_KEY__]
 /* harmony reexport (unknown) */ __webpack_require__.d(__webpack_exports__, __WEBPACK_REEXPORT_OBJECT__);
 /*
  * Copyright (c) 2021-2023, Alden Torres
@@ -1446,6 +1531,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 const libecc_module = _libecc_js__WEBPACK_IMPORTED_MODULE_0__["default"];
+
 
 
 
