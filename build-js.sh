@@ -25,7 +25,6 @@ EMCC_FLAGS="-Oz -flto --no-entry \
   -sMODULARIZE=1 \
   -sEXPORT_ES6=1 \
   -sFILESYSTEM=0 \
-  -sUSES_DYNAMIC_ALLOC=1 \
   -sMALLOC=emmalloc \
   -sALLOW_MEMORY_GROWTH=1 \
   -sSTACK_SIZE=65536 \
