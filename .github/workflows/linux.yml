@@ -66,4 +66,4 @@ jobs:
             build/libecc.so
             build/libecc-jvm.so
             bindings/python/src/libecc/_libecc_cffi.*.so
-          retention-days: 5
+          retention-days: 10

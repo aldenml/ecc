@@ -101,4 +101,4 @@ jobs:
             build/libecc.dll
             build/libecc-jvm.dll
             bindings/python/src/libecc/_libecc_cffi.*.pyd
-          retention-days: 5
+          retention-days: 10

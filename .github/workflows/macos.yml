@@ -71,4 +71,4 @@ jobs:
             build/libecc.dylib
             build/libecc-jvm.dylib
             bindings/python/src/libecc/_libecc_cffi.*.so
-          retention-days: 5
+          retention-days: 10
