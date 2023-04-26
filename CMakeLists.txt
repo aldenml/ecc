@@ -10,6 +10,14 @@ cmake_minimum_required(VERSION 3.16)
 set(CMAKE_C_STANDARD 11)
 set(CMAKE_C_VISIBILITY_PRESET hidden)
 
+if(APPLE)
+    if($ENV{ECC_CFLAGS} MATCHES "-arch x86_64")
+        set(CMAKE_OSX_ARCHITECTURES "x86_64" CACHE STRING "" FORCE)
+    elseif($ENV{ECC_CFLAGS} MATCHES "-arch arm64")
+        set(CMAKE_OSX_ARCHITECTURES "arm64" CACHE STRING "" FORCE)
+    endif()
+endif()
+
 if(EMSCRIPTEN)
     set(BUILD_SHARED_LIBS OFF)
 else()
@@ -92,7 +100,7 @@ elseif(NOT WIN32)
         libsodium_external
         SOURCE_DIR ${LIBSODIUM_DEPS_DIR}
         CONFIGURE_COMMAND ${LIBSODIUM_DEPS_DIR}/configure
-            "CFLAGS=-DSODIUM_STATIC=1 -O2 -Wno-cpp"
+            "CFLAGS=-DSODIUM_STATIC=1 -O2 -Wno-cpp $ENV{ECC_CFLAGS}"
             --prefix=${LIBSODIUM_BUILD_DIR}
             --disable-ssp
             --disable-shared
@@ -106,7 +114,7 @@ elseif(NOT WIN32)
         blst_external
         SOURCE_DIR ${BLST_DEPS_DIR}
         CONFIGURE_COMMAND ""
-        BUILD_COMMAND ./build.sh -O2
+        BUILD_COMMAND ./build.sh -O2 "$ENV{ECC_CFLAGS}"
         BUILD_IN_SOURCE 1
         BUILD_BYPRODUCTS ${BLST_DEPS_DIR}/libblst.a
         INSTALL_COMMAND ""

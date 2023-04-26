@@ -17,7 +17,7 @@ and [blst](https://github.com/supranational/blst).
 
 | Bindings   |                                  |   |
 |------------|----------------------------------|---|
-| Java       | [jvm/ecc](bindings/jvm)          | [![maven](https://img.shields.io/maven-central/v/org.ssohub/ecc.svg?label=maven)](https://search.maven.org/search?q=g:%22org.ssohub%22%20AND%20a:%22ecc%22) |
+| Java       | [jvm/ecc](bindings/jvm)          | [![maven](https://img.shields.io/maven-central/v/org.ssohub/ecc.svg?label=maven)](https://central.sonatype.com/artifact/org.ssohub/ecc) |
 | Javascript | [js/ecc](bindings/js)            | [![npm](https://img.shields.io/npm/v/@aldenml/ecc)](https://www.npmjs.com/package/@aldenml/ecc) |
 
 ### Features
