@@ -89,7 +89,7 @@ jobs:
 
       - name: c build
         run: |
-          export ECC_CFLAGS="-arch arm64"
+          export ECC_CFLAGS="-arch arm64 -Wno-unused-command-line-argument"
           ./build-c.sh
 
       - name: python wheel
