@@ -13,8 +13,12 @@ set(CMAKE_C_VISIBILITY_PRESET hidden)
 if(APPLE)
     if($ENV{ECC_CFLAGS} MATCHES "-arch x86_64")
         set(CMAKE_OSX_ARCHITECTURES "x86_64" CACHE STRING "" FORCE)
+        set(CONFIGURE_HOST_OPTION "--host=x86_64-apple-darwin" CACHE STRING "" FORCE)
     elseif($ENV{ECC_CFLAGS} MATCHES "-arch arm64")
         set(CMAKE_OSX_ARCHITECTURES "arm64" CACHE STRING "" FORCE)
+        set(CONFIGURE_HOST_OPTION "--host=arm64-apple-darwin" CACHE STRING "" FORCE)
+    else()
+        set(CONFIGURE_HOST_OPTION "" CACHE STRING "" FORCE)
     endif()
 endif()
 
@@ -99,7 +103,7 @@ elseif(NOT WIN32)
     ExternalProject_Add(
         libsodium_external
         SOURCE_DIR ${LIBSODIUM_DEPS_DIR}
-        CONFIGURE_COMMAND ${LIBSODIUM_DEPS_DIR}/configure
+        CONFIGURE_COMMAND ${LIBSODIUM_DEPS_DIR}/configure ${CONFIGURE_HOST_OPTION}
             "CFLAGS=-DSODIUM_STATIC=1 -O2 -Wno-cpp $ENV{ECC_CFLAGS}"
             --prefix=${LIBSODIUM_BUILD_DIR}
             --disable-ssp
