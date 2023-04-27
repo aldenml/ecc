@@ -41,6 +41,7 @@ jobs:
 
       - name: c build
         run: |
+          export ECC_CFLAGS="-arch x86_64 -mmacosx-version-min=11"
           ./build-c.sh
           otool -L build/libecc.dylib
 
@@ -53,6 +54,9 @@ jobs:
 
       - name: python wheel
         run: |
+          export CFLAGS="-arch x86_64 -mmacosx-version-min=11"
+          export LDFLAGS="-arch x86_64"
+          export ARCHFLAGS="-arch x86_64"
           cd bindings/python
           python3 cffi_build.py
           python3 -m build --wheel
@@ -67,6 +71,43 @@ jobs:
       - uses: actions/upload-artifact@v3
         with:
           name: ecc-macos-x86_64
+          path: |
+            build/libecc.dylib
+            build/libecc-jvm.dylib
+            bindings/python/src/libecc/_libecc_cffi.*.so
+          retention-days: 10
+
+  arm64:
+    runs-on: macos-12
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          submodules: recursive
+      - name: install packages
+        run: |
+          brew install ninja doxygen graphviz autoconf automake
+          brew install python
+          pip3 install --upgrade build
+          pip3 install cffi
+
+      - name: c build
+        run: |
+          export ECC_CFLAGS="-arch arm64 -mmacosx-version-min=11 -Wno-unused-command-line-argument"
+          ./build-c.sh
+
+      - name: python wheel
+        run: |
+          export CFLAGS="-arch arm64 -mmacosx-version-min=11"
+          export LDFLAGS="-arch arm64"
+          export ARCHFLAGS="-arch arm64"
+          cd bindings/python
+          python3 cffi_build.py
+          python3 -m build --wheel
+          cd ../..
+
+      - uses: actions/upload-artifact@v3
+        with:
+          name: ecc-macos-arm64
           path: |
             build/libecc.dylib
             build/libecc-jvm.dylib
