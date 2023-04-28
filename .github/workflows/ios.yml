@@ -1,0 +1,96 @@
+name: iOS
+
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    branches:
+      - master
+
+concurrency:
+  group: ${{ github.ref }}-${{ github.workflow }}-${{ github.event_name }}
+  cancel-in-progress: true
+
+jobs:
+
+  arm64:
+    runs-on: macos-12
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          submodules: recursive
+      - name: install packages
+        run: |
+          brew install ninja doxygen graphviz autoconf automake
+
+      - name: cmake configure
+        run: |
+          export ECC_CFLAGS="-arch arm64 -mmacosx-version-min=11"
+          cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_SYSTEM_NAME=iOS -DCMAKE_OSX_DEPLOYMENT_TARGET=11.0 -B build -G Xcode .
+
+      - name: c build
+        run: |
+          export ECC_CFLAGS="-arch arm64 -mmacosx-version-min=11"
+          cmake --build build --config Release --parallel 2 --target ecc_static
+
+      - uses: actions/upload-artifact@v3
+        with:
+          name: ecc-ios-arm64
+          path: |
+            build/Release-iphoneos/libecc_static.a
+          retention-days: 10
+
+  arm64-sim:
+    runs-on: macos-12
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          submodules: recursive
+      - name: install packages
+        run: |
+          brew install ninja doxygen graphviz autoconf automake
+
+      - name: cmake configure
+        run: |
+          export ECC_CFLAGS="-arch arm64 -mmacosx-version-min=11"
+          cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_SYSTEM_NAME=iOS -DCMAKE_OSX_DEPLOYMENT_TARGET=11.0 -B build -G Xcode .
+
+      - name: c build
+        run: |
+          export ECC_CFLAGS="-arch arm64 -mmacosx-version-min=11"
+          cmake --build build --config Release --parallel 2 --target ecc_static -- -sdk iphonesimulator
+
+      - uses: actions/upload-artifact@v3
+        with:
+          name: ecc-ios-arm64-simulator
+          path: |
+            build/Release-iphonesimulator/libecc_static.a
+          retention-days: 10
+
+  x86_64-sim:
+    runs-on: macos-12
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          submodules: recursive
+      - name: install packages
+        run: |
+          brew install ninja doxygen graphviz autoconf automake
+
+      - name: cmake configure
+        run: |
+          export ECC_CFLAGS="-arch x86_64 -mmacosx-version-min=11"
+          cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_SYSTEM_NAME=iOS -DCMAKE_OSX_DEPLOYMENT_TARGET=11.0 -B build -G Xcode .
+
+      - name: c build
+        run: |
+          export ECC_CFLAGS="-arch x86_64 -mmacosx-version-min=11"
+          cmake --build build --config Release --parallel 2 --target ecc_static -- -sdk iphonesimulator
+
+      - uses: actions/upload-artifact@v3
+        with:
+          name: ecc-ios-x86_64-simulator
+          path: |
+            build/Release-iphonesimulator/libecc_static.a
+          retention-days: 10
