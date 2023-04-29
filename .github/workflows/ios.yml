@@ -32,7 +32,7 @@ jobs:
       - name: c build
         run: |
           export ECC_CFLAGS="-arch arm64 -mmacosx-version-min=11"
-          cmake --build build --config Release --parallel 2 --target ecc_static
+          cmake --build build --config Release --parallel 2 --target ecc_static -- -sdk iphoneos
 
       - uses: actions/upload-artifact@v3
         with:
