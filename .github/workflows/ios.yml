@@ -31,11 +31,12 @@ jobs:
 
       - name: build libsodium
         run: |
+          xcode-select --switch /Applications/Xcode.app
+          clang --version
           export XCODEDIR="$(xcode-select -p)"
           export BASEDIR="${XCODEDIR}/Platforms/iPhoneOS.platform/Developer"
           export PATH="${BASEDIR}/usr/bin:$BASEDIR/usr/sbin:$PATH"
           export SDK="${BASEDIR}/SDKs/iPhoneOS.sdk"
-          export CC="clang"
           export CFLAGS="-DSODIUM_STATIC=1 -Wno-cpp -Ofast -arch arm64 -isysroot ${SDK} --miphoneos-version-min=11.0"
           export LDFLAGS="-arch arm64 -isysroot ${SDK} --miphoneos-version-min=11.0"
           cd deps/libsodium
