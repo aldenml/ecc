@@ -31,8 +31,9 @@ jobs:
 
       - name: c build
         run: |
-          ln -sv "$(which clang)" /lib/cpp
           export ECC_CFLAGS="-arch arm64 -mios-version-min=9.0.0"
+          export CC="clang"
+          export CXX="clang++"
           cmake --build build --config Release --parallel 2 --target ecc_static -- -sdk iphoneos
 
       - uses: actions/upload-artifact@v3
@@ -54,12 +55,12 @@ jobs:
 
       - name: cmake configure
         run: |
-          export ECC_CFLAGS="-arch arm64 -mmacosx-version-min=11"
-          cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_SYSTEM_NAME=iOS -DCMAKE_OSX_DEPLOYMENT_TARGET=11.0 -B build -G Xcode .
+          export ECC_CFLAGS="-arch arm64 -mios-version-min=9.0.0"
+          cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_SYSTEM_NAME=iOS -B build -G Xcode .
 
       - name: c build
         run: |
-          export ECC_CFLAGS="-arch arm64 -mmacosx-version-min=11"
+          export ECC_CFLAGS="-arch arm64 -mios-version-min=9.0.0"
           cmake --build build --config Release --parallel 2 --target ecc_static -- -sdk iphonesimulator
 
       - uses: actions/upload-artifact@v3
@@ -81,12 +82,12 @@ jobs:
 
       - name: cmake configure
         run: |
-          export ECC_CFLAGS="-arch x86_64 -mmacosx-version-min=11"
-          cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_SYSTEM_NAME=iOS -DCMAKE_OSX_DEPLOYMENT_TARGET=11.0 -B build -G Xcode .
+          export ECC_CFLAGS="-arch x86_64 -mios-version-min=9.0.0"
+          cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_SYSTEM_NAME=iOS -B build -G Xcode .
 
       - name: c build
         run: |
-          export ECC_CFLAGS="-arch x86_64 -mmacosx-version-min=11"
+          export ECC_CFLAGS="-arch x86_64 -mios-version-min=9.0.0"
           cmake --build build --config Release --parallel 2 --target ecc_static -- -sdk iphonesimulator
 
       - uses: actions/upload-artifact@v3
