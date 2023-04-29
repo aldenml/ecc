@@ -29,21 +29,22 @@ jobs:
 
       - name: cmake configure
         run: |
-          export ECC_CFLAGS="-arch arm64 --miphoneos-version-min=11.0"
+          export ECC_CFLAGS="-arch arm64 -miphoneos-version-min=11.0"
           cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_SYSTEM_NAME=iOS -B build -G Xcode .
 
       - name: build libsodium
         run: |
           clang --version
+          gcc --version
           export XCODEDIR="$(xcode-select -p)"
           export BASEDIR="${XCODEDIR}/Platforms/iPhoneOS.platform/Developer"
           export PATH="${BASEDIR}/usr/bin:$BASEDIR/usr/sbin:$PATH"
           export SDK="${BASEDIR}/SDKs/iPhoneOS.sdk"
-          export CFLAGS="-DSODIUM_STATIC=1 -Wno-cpp -Ofast -arch arm64 -isysroot ${SDK} --miphoneos-version-min=11.0"
-          export LDFLAGS="-arch arm64 -isysroot ${SDK} --miphoneos-version-min=11.0"
+          export CFLAGS="-DSODIUM_STATIC=1 -Wno-cpp -Ofast -arch arm64 -isysroot ${SDK} -miphoneos-version-min=11.0"
+          export LDFLAGS="-arch arm64 -isysroot ${SDK} -miphoneos-version-min=11.0"
           cd deps/libsodium
           ./autogen.sh -s
-          ./configure --disable-ssp --disable-shared --without-pthreads --host=arm64-apple-darwin --prefix="${PWD}/build/libsodium"
+          ./configure --disable-ssp --disable-shared --without-pthreads --build=x86_64-apple-darwin20 --target=aarch64-apple-darwin20 --prefix="${PWD}/build/libsodium"
           make -j2
           make install
           cd ../..
