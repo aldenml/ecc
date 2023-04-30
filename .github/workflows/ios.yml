@@ -44,7 +44,7 @@ jobs:
           export LDFLAGS="-arch arm64 -isysroot ${SDK} -miphoneos-version-min=11.0"
           cd deps/libsodium
           ./autogen.sh -s
-          ./configure --disable-ssp --disable-shared --without-pthreads --build=x86_64-apple-darwin20 --target=aarch64-apple-darwin20 --prefix="${PWD}/build/libsodium"
+          ./configure --disable-ssp --disable-shared --without-pthreads --host=aarch64-apple-darwin20 --prefix="${PWD}/build/libsodium"
           make -j2
           make install
           cd ../..
