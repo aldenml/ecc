@@ -141,7 +141,7 @@ endif()
 # setup libsodium library
 file(MAKE_DIRECTORY ${LIBSODIUM_BUILD_DIR}/include)
 add_library(libsodium STATIC IMPORTED GLOBAL)
-if(NOT WIN32)
+if(NOT WIN32 AND (NOT ${CMAKE_SYSTEM_NAME} MATCHES "iOS"))
     add_dependencies(libsodium libsodium_external)
 endif()
 set_target_properties(libsodium PROPERTIES
@@ -151,7 +151,7 @@ set_target_properties(libsodium PROPERTIES
 
 # setup blst library
 add_library(blst STATIC IMPORTED GLOBAL)
-if(NOT WIN32)
+if(NOT WIN32 AND (NOT ${CMAKE_SYSTEM_NAME} MATCHES "iOS"))
     add_dependencies(blst blst_external)
 endif()
 set_target_properties(blst PROPERTIES
