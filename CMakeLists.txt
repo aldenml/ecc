@@ -210,10 +210,6 @@ if(NOT DEFINED EMSCRIPTEN)
     )
     set_extra_compiler_flags(ecc_static)
 
-    if($ENV{ECC_CFLAGS} MATCHES "-miphoneos-version-min=")
-        target_compile_options(ecc_static PRIVATE "$ENV{ECC_CFLAGS}")
-    endif()
-
     # jvm
     add_library(ecc_jvm SHARED
         bindings/jvm/jni.h bindings/jvm/libecc.c

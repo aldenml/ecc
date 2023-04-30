@@ -29,9 +29,8 @@ jobs:
           export XCODEDIR="$(xcode-select -p)"
           export BASEDIR="${XCODEDIR}/Platforms/iPhoneOS.platform/Developer"
           export PATH="${BASEDIR}/usr/bin:$BASEDIR/usr/sbin:$PATH"
-          export SDK="${BASEDIR}/SDKs/iPhoneOS.sdk"
-          export ECC_CFLAGS="-arch arm64 -isysroot ${SDK} -miphoneos-version-min=11.0 -Wno-unused-command-line-argument"
-          export LDFLAGS="-arch arm64 -isysroot ${SDK} -miphoneos-version-min=11.0"
+          export SDKROOT="${BASEDIR}/SDKs/iPhoneOS.sdk"
+          export ECC_CFLAGS="-arch arm64 -isysroot ${SDKROOT} -miphoneos-version-min=11.0 -Wno-unused-command-line-argument"
           cmake -DCMAKE_BUILD_TYPE=Release -B build -G Xcode .
 
 #      - name: build libsodium
@@ -65,9 +64,8 @@ jobs:
           export XCODEDIR="$(xcode-select -p)"
           export BASEDIR="${XCODEDIR}/Platforms/iPhoneOS.platform/Developer"
           export PATH="${BASEDIR}/usr/bin:$BASEDIR/usr/sbin:$PATH"
-          export SDK="${BASEDIR}/SDKs/iPhoneOS.sdk"
-          export ECC_CFLAGS="-arch arm64 -isysroot ${SDK} -miphoneos-version-min=11.0 -Wno-unused-command-line-argument"
-          export LDFLAGS="-arch arm64 -isysroot ${SDK} -miphoneos-version-min=11.0"
+          export SDKROOT="${BASEDIR}/SDKs/iPhoneOS.sdk"
+          export ECC_CFLAGS="-arch arm64 -isysroot ${SDKROOT} -miphoneos-version-min=11.0 -Wno-unused-command-line-argument"
           cmake --build build --config Release --parallel 2 --target ecc_static
 
       - uses: actions/upload-artifact@v3
