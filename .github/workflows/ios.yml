@@ -15,17 +15,14 @@ concurrency:
 jobs:
 
   arm64:
-    runs-on: macos-latest
+    runs-on: macos-12
     steps:
-      - uses: maxim-lobanov/setup-xcode@v1
-        with:
-          xcode-version: latest-stable
       - uses: actions/checkout@v3
         with:
           submodules: recursive
       - name: install packages
         run: |
-          brew install ninja doxygen graphviz autoconf automake
+          brew install doxygen graphviz autoconf automake
 
       - name: cmake configure
         run: |
@@ -34,8 +31,6 @@ jobs:
 
       - name: build libsodium
         run: |
-          clang --version
-          gcc --version
           export XCODEDIR="$(xcode-select -p)"
           export BASEDIR="${XCODEDIR}/Platforms/iPhoneOS.platform/Developer"
           export PATH="${BASEDIR}/usr/bin:$BASEDIR/usr/sbin:$PATH"
@@ -49,17 +44,28 @@ jobs:
           make install
           cd ../..
 
-#      - name: c build
-#        run: |
-#          export ECC_CFLAGS="-arch arm64 -mios-version-min=11.0"
-#          cmake --build build --config Release --parallel 2 --target ecc_static
-#
-#      - uses: actions/upload-artifact@v3
-#        with:
-#          name: ecc-ios-arm64
-#          path: |
-#            build/Release-iphoneos/libecc_static.a
-#          retention-days: 10
+      - name: build blst
+        run: |
+          export XCODEDIR="$(xcode-select -p)"
+          export BASEDIR="${XCODEDIR}/Platforms/iPhoneOS.platform/Developer"
+          export PATH="${BASEDIR}/usr/bin:$BASEDIR/usr/sbin:$PATH"
+          export SDK="${BASEDIR}/SDKs/iPhoneOS.sdk"
+          export LDFLAGS="-arch arm64 -isysroot ${SDK} -miphoneos-version-min=11.0"
+          cd deps/blst
+          ./build.sh -O2 "-arch arm64 -isysroot ${SDK} -miphoneos-version-min=11.0"
+          cd ../..
+
+      - name: c build
+        run: |
+          export ECC_CFLAGS="-arch arm64 -miphoneos-version-min=11.0"
+          cmake --build build --config Release --parallel 2 --target ecc_static
+
+      - uses: actions/upload-artifact@v3
+        with:
+          name: ecc-ios-arm64
+          path: |
+            build/Release-iphoneos/libecc_static.a
+          retention-days: 10
 
 #  arm64-sim:
 #    runs-on: macos-12
