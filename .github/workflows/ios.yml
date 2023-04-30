@@ -26,38 +26,46 @@ jobs:
 
       - name: cmake configure
         run: |
-          export ECC_CFLAGS="-arch arm64 -miphoneos-version-min=11.0"
+          export XCODEDIR="$(xcode-select -p)"
+          export BASEDIR="${XCODEDIR}/Platforms/iPhoneOS.platform/Developer"
+          export PATH="${BASEDIR}/usr/bin:$BASEDIR/usr/sbin:$PATH"
+          export SDK="${BASEDIR}/SDKs/iPhoneOS.sdk"
+          export ECC_CFLAGS="-arch arm64 -isysroot ${SDK} -miphoneos-version-min=11.0"
           cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_SYSTEM_NAME=iOS -B build -G Xcode .
 
-      - name: build libsodium
-        run: |
-          export XCODEDIR="$(xcode-select -p)"
-          export BASEDIR="${XCODEDIR}/Platforms/iPhoneOS.platform/Developer"
-          export PATH="${BASEDIR}/usr/bin:$BASEDIR/usr/sbin:$PATH"
-          export SDK="${BASEDIR}/SDKs/iPhoneOS.sdk"
-          export CFLAGS="-DSODIUM_STATIC=1 -Wno-cpp -O2 -arch arm64 -isysroot ${SDK} -miphoneos-version-min=11.0"
-          export LDFLAGS="-arch arm64 -isysroot ${SDK} -miphoneos-version-min=11.0"
-          cd deps/libsodium
-          ./autogen.sh -s
-          ./configure --disable-ssp --disable-shared --without-pthreads --host=aarch64-apple-darwin20 --prefix="${PWD}/build/libsodium"
-          make -j2
-          make install
-          cd ../..
-
-      - name: build blst
-        run: |
-          export XCODEDIR="$(xcode-select -p)"
-          export BASEDIR="${XCODEDIR}/Platforms/iPhoneOS.platform/Developer"
-          export PATH="${BASEDIR}/usr/bin:$BASEDIR/usr/sbin:$PATH"
-          export SDK="${BASEDIR}/SDKs/iPhoneOS.sdk"
-          export LDFLAGS="-arch arm64 -isysroot ${SDK} -miphoneos-version-min=11.0"
-          cd deps/blst
-          ./build.sh -O2 "-arch arm64 -isysroot ${SDK} -miphoneos-version-min=11.0 -Wno-unused-command-line-argument"
-          cd ../..
+#      - name: build libsodium
+#        run: |
+#          export XCODEDIR="$(xcode-select -p)"
+#          export BASEDIR="${XCODEDIR}/Platforms/iPhoneOS.platform/Developer"
+#          export PATH="${BASEDIR}/usr/bin:$BASEDIR/usr/sbin:$PATH"
+#          export SDK="${BASEDIR}/SDKs/iPhoneOS.sdk"
+#          export CFLAGS="-DSODIUM_STATIC=1 -Wno-cpp -O2 -arch arm64 -isysroot ${SDK} -miphoneos-version-min=11.0"
+#          export LDFLAGS="-arch arm64 -isysroot ${SDK} -miphoneos-version-min=11.0"
+#          cd deps/libsodium
+#          ./autogen.sh -s
+#          ./configure --disable-ssp --disable-shared --without-pthreads --host=aarch64-apple-darwin20 --prefix="${PWD}/build/libsodium"
+#          make -j2
+#          make install
+#          cd ../..
+#
+#      - name: build blst
+#        run: |
+#          export XCODEDIR="$(xcode-select -p)"
+#          export BASEDIR="${XCODEDIR}/Platforms/iPhoneOS.platform/Developer"
+#          export PATH="${BASEDIR}/usr/bin:$BASEDIR/usr/sbin:$PATH"
+#          export SDK="${BASEDIR}/SDKs/iPhoneOS.sdk"
+#          export LDFLAGS="-arch arm64 -isysroot ${SDK} -miphoneos-version-min=11.0"
+#          cd deps/blst
+#          ./build.sh -O2 "-arch arm64 -isysroot ${SDK} -miphoneos-version-min=11.0 -Wno-unused-command-line-argument"
+#          cd ../..
 
       - name: c build
         run: |
-          export ECC_CFLAGS="-arch arm64 -miphoneos-version-min=11.0"
+          export XCODEDIR="$(xcode-select -p)"
+          export BASEDIR="${XCODEDIR}/Platforms/iPhoneOS.platform/Developer"
+          export PATH="${BASEDIR}/usr/bin:$BASEDIR/usr/sbin:$PATH"
+          export SDK="${BASEDIR}/SDKs/iPhoneOS.sdk"
+          export ECC_CFLAGS="-arch arm64 -isysroot ${SDK} -miphoneos-version-min=11.0  -Wno-unused-command-line-argument"
           cmake --build build --config Release --parallel 2 --target ecc_static
 
       - uses: actions/upload-artifact@v3

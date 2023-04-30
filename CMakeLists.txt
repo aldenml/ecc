@@ -17,7 +17,11 @@ if(APPLE)
         set(CONFIGURE_HOST_OPTION "--host=x86_64-apple-darwin" CACHE STRING "" FORCE)
     elseif($ENV{ECC_CFLAGS} MATCHES "-arch arm64")
         set(CMAKE_OSX_ARCHITECTURES "arm64" CACHE STRING "" FORCE)
-        set(CONFIGURE_HOST_OPTION "--host=arm64-apple-darwin" CACHE STRING "" FORCE)
+        if (CMAKE_SYSTEM_NAME MATCHES "iOS")
+            set(CONFIGURE_HOST_OPTION "--host=aarch64-apple-darwin20" CACHE STRING "" FORCE)
+        else()
+            set(CONFIGURE_HOST_OPTION "--host=arm64-apple-darwin" CACHE STRING "" FORCE)
+        endif()
     else()
         set(CONFIGURE_HOST_OPTION "" CACHE STRING "" FORCE)
     endif()
@@ -141,7 +145,7 @@ endif()
 # setup libsodium library
 file(MAKE_DIRECTORY ${LIBSODIUM_BUILD_DIR}/include)
 add_library(libsodium STATIC IMPORTED GLOBAL)
-if(NOT WIN32 AND (NOT ${CMAKE_SYSTEM_NAME} MATCHES "iOS"))
+if(NOT WIN32)
     add_dependencies(libsodium libsodium_external)
 endif()
 set_target_properties(libsodium PROPERTIES
@@ -151,7 +155,7 @@ set_target_properties(libsodium PROPERTIES
 
 # setup blst library
 add_library(blst STATIC IMPORTED GLOBAL)
-if(NOT WIN32 AND (NOT ${CMAKE_SYSTEM_NAME} MATCHES "iOS"))
+if(NOT WIN32)
     add_dependencies(blst blst_external)
 endif()
 set_target_properties(blst PROPERTIES
