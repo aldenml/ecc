@@ -35,7 +35,7 @@ jobs:
           export BASEDIR="${XCODEDIR}/Platforms/iPhoneOS.platform/Developer"
           export PATH="${BASEDIR}/usr/bin:$BASEDIR/usr/sbin:$PATH"
           export SDK="${BASEDIR}/SDKs/iPhoneOS.sdk"
-          export CFLAGS="-DSODIUM_STATIC=1 -Wno-cpp -Ofast -arch arm64 -isysroot ${SDK} -miphoneos-version-min=11.0"
+          export CFLAGS="-DSODIUM_STATIC=1 -Wno-cpp -O2 -arch arm64 -isysroot ${SDK} -miphoneos-version-min=11.0"
           export LDFLAGS="-arch arm64 -isysroot ${SDK} -miphoneos-version-min=11.0"
           cd deps/libsodium
           ./autogen.sh -s
@@ -52,7 +52,7 @@ jobs:
           export SDK="${BASEDIR}/SDKs/iPhoneOS.sdk"
           export LDFLAGS="-arch arm64 -isysroot ${SDK} -miphoneos-version-min=11.0"
           cd deps/blst
-          ./build.sh -O2 "-arch arm64 -isysroot ${SDK} -miphoneos-version-min=11.0"
+          ./build.sh -O2 "-arch arm64 -isysroot ${SDK} -miphoneos-version-min=11.0 -Wno-unused-command-line-argument"
           cd ../..
 
       - name: c build
