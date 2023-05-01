@@ -1,4 +1,5 @@
 name: SonarScanner
+
 on:
   push:
     branches:
