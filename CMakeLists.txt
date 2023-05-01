@@ -17,11 +17,7 @@ if(APPLE)
         set(CONFIGURE_HOST_OPTION "--host=x86_64-apple-darwin" CACHE STRING "" FORCE)
     elseif($ENV{ECC_CFLAGS} MATCHES "-arch arm64")
         set(CMAKE_OSX_ARCHITECTURES "arm64" CACHE STRING "" FORCE)
-        if(CMAKE_SYSTEM_NAME MATCHES "iOS")
-            set(CONFIGURE_HOST_OPTION "--host=aarch64-apple-darwin20" CACHE STRING "" FORCE)
-        else()
-            set(CONFIGURE_HOST_OPTION "--host=arm64-apple-darwin" CACHE STRING "" FORCE)
-        endif()
+        set(CONFIGURE_HOST_OPTION "--host=arm64-apple-darwin" CACHE STRING "" FORCE)
     else()
         set(CONFIGURE_HOST_OPTION "" CACHE STRING "" FORCE)
     endif()
@@ -213,6 +209,10 @@ if(NOT DEFINED EMSCRIPTEN)
         $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
     )
     set_extra_compiler_flags(ecc_static)
+
+#    if(CMAKE_SYSTEM_NAME MATCHES "iOS")
+#
+#    endif()
 
     # jvm
     add_library(ecc_jvm SHARED
