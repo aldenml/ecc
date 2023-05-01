@@ -22,7 +22,7 @@ jobs:
           submodules: recursive
       - name: install packages
         run: |
-          brew install doxygen graphviz autoconf automake
+          brew install ninja doxygen graphviz autoconf automake
 
       - name: cmake configure
         run: |
@@ -57,7 +57,7 @@ jobs:
           submodules: recursive
       - name: install packages
         run: |
-          brew install doxygen graphviz autoconf automake
+          brew install ninja doxygen graphviz autoconf automake
 
       - name: cmake configure
         run: |
@@ -92,7 +92,7 @@ jobs:
           submodules: recursive
       - name: install packages
         run: |
-          brew install doxygen graphviz autoconf automake
+          brew install ninja doxygen graphviz autoconf automake
 
       - name: cmake configure
         run: |

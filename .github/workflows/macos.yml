@@ -73,6 +73,7 @@ jobs:
           name: ecc-macos-x86_64
           path: |
             build/libecc.dylib
+            build/libecc_static.a
             build/libecc-jvm.dylib
             bindings/python/src/libecc/_libecc_cffi.*.so
           retention-days: 10
@@ -110,6 +111,7 @@ jobs:
           name: ecc-macos-arm64
           path: |
             build/libecc.dylib
+            build/libecc_static.a
             build/libecc-jvm.dylib
             bindings/python/src/libecc/_libecc_cffi.*.so
           retention-days: 10
