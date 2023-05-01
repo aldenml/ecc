@@ -29,8 +29,8 @@ jobs:
           export XCODEDIR="$(xcode-select -p)"
           export BASEDIR="${XCODEDIR}/Platforms/iPhoneOS.platform/Developer"
           export PATH="${BASEDIR}/usr/bin:$BASEDIR/usr/sbin:$PATH"
-          export ECC_IOS_SYSROOT="${BASEDIR}/SDKs/iPhoneOS.sdk"
-          export ECC_CFLAGS="-arch arm64 -isysroot ${ECC_IOS_SYSROOT} -miphoneos-version-min=11.0 -Wno-unused-command-line-argument"
+          export SDKROOT="${BASEDIR}/SDKs/iPhoneOS.sdk"
+          export ECC_CFLAGS="-arch arm64 -isysroot ${SDKROOT} -miphoneos-version-min=11.0 -Wno-unused-command-line-argument"
           cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_SYSTEM_NAME=iOS -B build -G "Ninja" .
 
       - name: c build
@@ -38,8 +38,43 @@ jobs:
           export XCODEDIR="$(xcode-select -p)"
           export BASEDIR="${XCODEDIR}/Platforms/iPhoneOS.platform/Developer"
           export PATH="${BASEDIR}/usr/bin:$BASEDIR/usr/sbin:$PATH"
-          export ECC_IOS_SYSROOT="${BASEDIR}/SDKs/iPhoneOS.sdk"
-          export ECC_CFLAGS="-arch arm64 -isysroot ${ECC_IOS_SYSROOT} -miphoneos-version-min=11.0 -Wno-unused-command-line-argument"
+          export SDKROOT="${BASEDIR}/SDKs/iPhoneOS.sdk"
+          export ECC_CFLAGS="-arch arm64 -isysroot ${SDKROOT} -miphoneos-version-min=11.0 -Wno-unused-command-line-argument"
+          cmake --build build --config Release --parallel 2 --target ecc_static
+
+      - uses: actions/upload-artifact@v3
+        with:
+          name: ecc-ios-arm64
+          path: |
+            build/libecc_static.a
+          retention-days: 10
+
+  arm64-sim:
+    runs-on: macos-12
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          submodules: recursive
+      - name: install packages
+        run: |
+          brew install ninja doxygen graphviz autoconf automake
+
+      - name: cmake configure
+        run: |
+          export XCODEDIR="$(xcode-select -p)"
+          export BASEDIR="${XCODEDIR}/Platforms/iPhoneSimulator.platform/Developer"
+          export PATH="${BASEDIR}/usr/bin:$BASEDIR/usr/sbin:$PATH"
+          export SDKROOT="${BASEDIR}/SDKs/iPhoneSimulator.sdk"
+          export ECC_CFLAGS="-arch arm64 -isysroot ${SDKROOT} -mios-simulator-version-min=11.0 -Wno-unused-command-line-argument"
+          cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_SYSTEM_NAME=iOS -B build -G "Ninja" .
+
+      - name: c build
+        run: |
+          export XCODEDIR="$(xcode-select -p)"
+          export BASEDIR="${XCODEDIR}/Platforms/iPhoneSimulator.platform/Developer"
+          export PATH="${BASEDIR}/usr/bin:$BASEDIR/usr/sbin:$PATH"
+          export SDKROOT="${BASEDIR}/SDKs/iPhoneSimulator.sdk"
+          export ECC_CFLAGS="-arch arm64 -isysroot ${SDKROOT} -mios-simulator-version-min=11.0 -Wno-unused-command-line-argument"
           cmake --build build --config Release --parallel 2 --target ecc_static
 
       - uses: actions/upload-artifact@v3
