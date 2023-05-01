@@ -210,12 +210,14 @@ if(NOT DEFINED EMSCRIPTEN)
     )
     set_extra_compiler_flags(ecc_static)
 
-    if(NOT $ENV{ECC_IOS_SYSROOT} STREQUAL "")
-        target_compile_options(ecc_static PRIVATE
-            -isysroot $ENV{ECC_IOS_SYSROOT}
-            -miphoneos-version-min=11.0
-        )
-    endif()
+#    if(NOT $ENV{ECC_IOS_SYSROOT} STREQUAL "")
+#        set(CMAKE_SYSROOT $ENV{ECC_IOS_SYSROOT})
+#        if($ENV{ECC_IOS_SYSROOT} MATCHES "iPhoneOS.sdk")
+#            target_compile_options(ecc_static PRIVATE -miphoneos-version-min=11.0)
+#        elseif($ENV{ECC_IOS_SYSROOT} MATCHES "iPhoneSimulator.sdk")
+#            target_compile_options(ecc_static PRIVATE -mios-simulator-version-min=11.0)
+#        endif()
+#    endif()
 
     # jvm
     add_library(ecc_jvm SHARED
