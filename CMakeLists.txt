@@ -105,6 +105,8 @@ elseif(NOT WIN32)
         libsodium_external
         SOURCE_DIR ${LIBSODIUM_DEPS_DIR}
         CONFIGURE_COMMAND ${LIBSODIUM_DEPS_DIR}/configure ${CONFIGURE_HOST_OPTION}
+            "CC=/usr/bin/clang"
+            "CXX=/usr/bin/clang++"
             "CFLAGS=-DSODIUM_STATIC=1 -O2 -Wno-cpp $ENV{ECC_CFLAGS}"
             --prefix=${LIBSODIUM_BUILD_DIR}
             --disable-ssp
