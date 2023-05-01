@@ -31,7 +31,7 @@ jobs:
           export PATH="${BASEDIR}/usr/bin:$BASEDIR/usr/sbin:$PATH"
           export SDKROOT="${BASEDIR}/SDKs/iPhoneOS.sdk"
           export ECC_CFLAGS="-arch arm64 -isysroot ${SDKROOT} -miphoneos-version-min=11.0 -Wno-unused-command-line-argument"
-          cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_SYSTEM_NAME=iOS -B build -G "Ninja" .
+          cmake -DCMAKE_BUILD_TYPE=Release -B build -G "Ninja" .
 
       - name: c build
         run: |
@@ -40,7 +40,7 @@ jobs:
           export PATH="${BASEDIR}/usr/bin:$BASEDIR/usr/sbin:$PATH"
           export SDKROOT="${BASEDIR}/SDKs/iPhoneOS.sdk"
           export ECC_CFLAGS="-arch arm64 -isysroot ${SDKROOT} -miphoneos-version-min=11.0 -Wno-unused-command-line-argument"
-          cmake --build build --config Release --parallel 2 --target ecc_static
+          cmake --build build --config Release --parallel 2 --target ecc_static -- VERBOSE=1
 
       - uses: actions/upload-artifact@v3
         with:
@@ -66,7 +66,7 @@ jobs:
           export PATH="${BASEDIR}/usr/bin:$BASEDIR/usr/sbin:$PATH"
           export SDKROOT="${BASEDIR}/SDKs/iPhoneSimulator.sdk"
           export ECC_CFLAGS="-arch arm64 -isysroot ${SDKROOT} -mios-simulator-version-min=11.0 -Wno-unused-command-line-argument"
-          cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_SYSTEM_NAME=iOS -B build -G "Ninja" .
+          cmake -DCMAKE_BUILD_TYPE=Release -B build -G "Ninja" .
 
       - name: c build
         run: |
@@ -75,7 +75,7 @@ jobs:
           export PATH="${BASEDIR}/usr/bin:$BASEDIR/usr/sbin:$PATH"
           export SDKROOT="${BASEDIR}/SDKs/iPhoneSimulator.sdk"
           export ECC_CFLAGS="-arch arm64 -isysroot ${SDKROOT} -mios-simulator-version-min=11.0 -Wno-unused-command-line-argument"
-          cmake --build build --config Release --parallel 2 --target ecc_static
+          cmake --build build --config Release --parallel 2 --target ecc_static -- VERBOSE=1
 
       - uses: actions/upload-artifact@v3
         with:
