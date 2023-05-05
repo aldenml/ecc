@@ -47,16 +47,17 @@ jobs:
           export LD=$TOOLCHAIN/bin/$TARGET-ld
           export RANLIB=$TOOLCHAIN/bin/$TARGET-ranlib
           export STRIP=$TOOLCHAIN/bin/$TARGET-strip
+          export ECC_CFLAGS="-march=armv7-a"
           cmake -DCMAKE_TOOLCHAIN_FILE=$NDK/build/cmake/android.toolchain.cmake \
             -DANDROID_ABI=armeabi-v7a \
             -DANDROID_NATIVE_API_LEVEL=$API \
-            -DANDROID_STL=c++_static \
             -DCMAKE_BUILD_TYPE=Release -B build -G "Ninja" .
 
       - name: c build
         run: |
           export NDK=$PWD/android-ndk
           export TOOLCHAIN=$NDK/toolchains/llvm/prebuilt/linux-x86_64
+          export ECC_CFLAGS="-march=armv7-a"
           cmake --build build --config Release --parallel 2 --target ecc_jvm
           $TOOLCHAIN/bin/llvm-strip --strip-unneeded -x -g build/libecc-jvm.so
           readelf -d build/libecc-jvm.so
