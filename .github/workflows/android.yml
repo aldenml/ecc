@@ -14,8 +14,8 @@ concurrency:
 
 env:
   NDK_VERSION: r25c
-  NDK: ${{ PWD }}/android-ndk
-  TOOLCHAIN: ${{ NDK }}/toolchains/llvm/prebuilt/linux-x86_64
+  NDK: $PWD/android-ndk
+  TOOLCHAIN: $NDK/toolchains/llvm/prebuilt/linux-x86_64
   API: 24
   AR: ${{ TOOLCHAIN }}/bin/${{ TARGET }}-ar
   AS: ${{ TOOLCHAIN }}/bin/${{ TARGET }}-as
