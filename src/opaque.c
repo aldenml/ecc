@@ -253,9 +253,9 @@ void ecc_opaque_ristretto255_sha512_CreateCleartextCredentials(
     }
 
     memcpy(cleartext_credentials->server_public_key, server_public_key, Npk);
-    memcpy(cleartext_credentials->server_identity, server_identity, server_identity_len);
+    memcpy(cleartext_credentials->server_identity, server_identity, (size_t) server_identity_len);
     cleartext_credentials->server_identity_len = (byte_t) server_identity_len;
-    memcpy(cleartext_credentials->client_identity, client_identity, client_identity_len);
+    memcpy(cleartext_credentials->client_identity, client_identity, (size_t) client_identity_len);
     cleartext_credentials->client_identity_len = (byte_t) client_identity_len;
 }
 
@@ -1271,7 +1271,7 @@ void ecc_opaque_ristretto255_sha512_ClientInitWithSecrets(
         blind
     );
 
-    memcpy(state->password, password, password_len);
+    memcpy(state->password, password, (size_t) password_len);
     state->password_len = (byte_t) password_len;
     memcpy(state->blind, blind, Nok);
 
@@ -1307,7 +1307,7 @@ void ecc_opaque_ristretto255_sha512_ClientInit(
         password, password_len
     );
 
-    memcpy(state->password, password, password_len);
+    memcpy(state->password, password, (size_t) password_len);
     state->password_len = (byte_t) password_len;
 
     // 3. ke1 = Start(request)
