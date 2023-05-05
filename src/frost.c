@@ -196,7 +196,7 @@ void ecc_frost_ristretto255_sha512_encode_group_commitment_list(
     // return encoded_group_commitment
 
     // NOTE: this is the same as returning `commitment_list`
-    memcpy(out, commitment_list, commitment_list_len * ecc_frost_ristretto255_sha512_COMMITMENTSIZE);
+    memcpy(out, commitment_list, (size_t) (commitment_list_len * ecc_frost_ristretto255_sha512_COMMITMENTSIZE));
 }
 
 void ecc_frost_ristretto255_sha512_participants_from_commitment_list(
