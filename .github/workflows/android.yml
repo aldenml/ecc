@@ -1,0 +1,260 @@
+name: Android
+
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    branches:
+      - master
+
+concurrency:
+  group: ${{ github.ref }}-${{ github.workflow }}-${{ github.event_name }}
+  cancel-in-progress: true
+
+env:
+  NDK_VERSION: r25c
+  API: 24
+
+jobs:
+
+  arm:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          submodules: recursive
+      - name: install packages
+        run: |
+          sudo apt update
+          sudo apt install ninja-build autoconf automake
+
+      - name: setup ndk
+        run: |
+          wget -nv -O android-ndk.zip https://dl.google.com/android/repository/android-ndk-${NDK_VERSION}-linux.zip
+          unzip -qq android-ndk.zip
+          mv android-ndk-${NDK_VERSION} android-ndk
+
+      - name: cmake configure
+        run: |
+          export NDK=$PWD/android-ndk
+          export TOOLCHAIN=$NDK/toolchains/llvm/prebuilt/linux-x86_64
+          export TARGET=armv7a-linux-androideabi
+          export AR=$TOOLCHAIN/bin/llvm-ar
+          export AS=$TOOLCHAIN/bin/$TARGET-as
+          export CC=$TOOLCHAIN/bin/$TARGET$API-clang
+          export CXX=$TOOLCHAIN/bin/$TARGET$API-clang++
+          export LD=$TOOLCHAIN/bin/ld
+          export RANLIB=$TOOLCHAIN/bin/llvm-ranlib
+          export STRIP=$TOOLCHAIN/bin/llvm-strip
+          export ECC_CFLAGS="-march=armv7-a"
+          cmake -DCMAKE_TOOLCHAIN_FILE=$NDK/build/cmake/android.toolchain.cmake \
+            -DANDROID_ABI=armeabi-v7a \
+            -DANDROID_NATIVE_API_LEVEL=$API \
+            -DCMAKE_VERBOSE_MAKEFILE=ON \
+            -DCMAKE_BUILD_TYPE=Release -B build -G "Ninja" .
+
+      - name: c build
+        run: |
+          export NDK=$PWD/android-ndk
+          export TOOLCHAIN=$NDK/toolchains/llvm/prebuilt/linux-x86_64
+          export TARGET=armv7a-linux-androideabi
+          export AR=$TOOLCHAIN/bin/llvm-ar
+          export AS=$TOOLCHAIN/bin/$TARGET-as
+          export CC=$TOOLCHAIN/bin/$TARGET$API-clang
+          export CXX=$TOOLCHAIN/bin/$TARGET$API-clang++
+          export LD=$TOOLCHAIN/bin/ld
+          export RANLIB=$TOOLCHAIN/bin/llvm-ranlib
+          export STRIP=$TOOLCHAIN/bin/llvm-strip
+          export ECC_CFLAGS="-march=armv7-a"
+          cmake --build build --config Release --parallel 2 --target ecc_jvm
+          $TOOLCHAIN/bin/llvm-strip --strip-unneeded -x -g build/libecc-jvm.so
+          readelf -d build/libecc-jvm.so
+
+      - uses: actions/upload-artifact@v3
+        with:
+          name: ecc-android-arm
+          path: |
+            build/libecc-jvm.so
+          retention-days: 10
+
+  arm64:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          submodules: recursive
+      - name: install packages
+        run: |
+          sudo apt update
+          sudo apt install ninja-build autoconf automake
+
+      - name: setup ndk
+        run: |
+          wget -nv -O android-ndk.zip https://dl.google.com/android/repository/android-ndk-${NDK_VERSION}-linux.zip
+          unzip -qq android-ndk.zip
+          mv android-ndk-${NDK_VERSION} android-ndk
+          find . | grep arm_neon.h | xargs rm
+
+      - name: cmake configure
+        run: |
+          export NDK=$PWD/android-ndk
+          export TOOLCHAIN=$NDK/toolchains/llvm/prebuilt/linux-x86_64
+          export TARGET=aarch64-linux-android
+          export AR=$TOOLCHAIN/bin/llvm-ar
+          export AS=$TOOLCHAIN/bin/$TARGET-as
+          export CC=$TOOLCHAIN/bin/$TARGET$API-clang
+          export CXX=$TOOLCHAIN/bin/$TARGET$API-clang++
+          export LD=$TOOLCHAIN/bin/ld
+          export RANLIB=$TOOLCHAIN/bin/llvm-ranlib
+          export STRIP=$TOOLCHAIN/bin/llvm-strip
+          export ECC_CFLAGS="-march=armv8-a+crc -Wno-implicit-function-declaration"
+          cmake -DCMAKE_TOOLCHAIN_FILE=$NDK/build/cmake/android.toolchain.cmake \
+            -DANDROID_ABI=arm64-v8a \
+            -DANDROID_NATIVE_API_LEVEL=$API \
+            -DCMAKE_VERBOSE_MAKEFILE=ON \
+            -DCMAKE_BUILD_TYPE=Release -B build -G "Ninja" .
+
+      - name: c build
+        run: |
+          export NDK=$PWD/android-ndk
+          export TOOLCHAIN=$NDK/toolchains/llvm/prebuilt/linux-x86_64
+          export TARGET=aarch64-linux-android
+          export AR=$TOOLCHAIN/bin/llvm-ar
+          export AS=$TOOLCHAIN/bin/$TARGET-as
+          export CC=$TOOLCHAIN/bin/$TARGET$API-clang
+          export CXX=$TOOLCHAIN/bin/$TARGET$API-clang++
+          export LD=$TOOLCHAIN/bin/ld
+          export RANLIB=$TOOLCHAIN/bin/llvm-ranlib
+          export STRIP=$TOOLCHAIN/bin/llvm-strip
+          export ECC_CFLAGS="-march=armv8-a+crc -Wno-implicit-function-declaration"
+          cmake --build build --config Release --parallel 2 --target ecc_jvm
+          $TOOLCHAIN/bin/llvm-strip --strip-unneeded -x -g build/libecc-jvm.so
+          readelf -d build/libecc-jvm.so
+
+      - uses: actions/upload-artifact@v3
+        with:
+          name: ecc-android-arm64
+          path: |
+            build/libecc-jvm.so
+          retention-days: 10
+
+  x86:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          submodules: recursive
+      - name: install packages
+        run: |
+          sudo apt update
+          sudo apt install ninja-build autoconf automake
+
+      - name: setup ndk
+        run: |
+          wget -nv -O android-ndk.zip https://dl.google.com/android/repository/android-ndk-${NDK_VERSION}-linux.zip
+          unzip -qq android-ndk.zip
+          mv android-ndk-${NDK_VERSION} android-ndk
+
+      - name: cmake configure
+        run: |
+          export NDK=$PWD/android-ndk
+          export TOOLCHAIN=$NDK/toolchains/llvm/prebuilt/linux-x86_64
+          export TARGET=i686-linux-android
+          export AR=$TOOLCHAIN/bin/llvm-ar
+          export AS=$TOOLCHAIN/bin/$TARGET-as
+          export CC=$TOOLCHAIN/bin/$TARGET$API-clang
+          export CXX=$TOOLCHAIN/bin/$TARGET$API-clang++
+          export LD=$TOOLCHAIN/bin/ld
+          export RANLIB=$TOOLCHAIN/bin/llvm-ranlib
+          export STRIP=$TOOLCHAIN/bin/llvm-strip
+          export ECC_CFLAGS="-m32"
+          cmake -DCMAKE_TOOLCHAIN_FILE=$NDK/build/cmake/android.toolchain.cmake \
+            -DANDROID_ABI=x86 \
+            -DANDROID_NATIVE_API_LEVEL=$API \
+            -DCMAKE_VERBOSE_MAKEFILE=ON \
+            -DCMAKE_BUILD_TYPE=Release -B build -G "Ninja" .
+
+      - name: c build
+        run: |
+          export NDK=$PWD/android-ndk
+          export TOOLCHAIN=$NDK/toolchains/llvm/prebuilt/linux-x86_64
+          export TARGET=i686-linux-android
+          export AR=$TOOLCHAIN/bin/llvm-ar
+          export AS=$TOOLCHAIN/bin/$TARGET-as
+          export CC=$TOOLCHAIN/bin/$TARGET$API-clang
+          export CXX=$TOOLCHAIN/bin/$TARGET$API-clang++
+          export LD=$TOOLCHAIN/bin/ld
+          export RANLIB=$TOOLCHAIN/bin/llvm-ranlib
+          export STRIP=$TOOLCHAIN/bin/llvm-strip
+          export ECC_CFLAGS="-m32"
+          cmake --build build --config Release --parallel 2 --target ecc_jvm
+          $TOOLCHAIN/bin/llvm-strip --strip-unneeded -x -g build/libecc-jvm.so
+          readelf -d build/libecc-jvm.so
+
+      - uses: actions/upload-artifact@v3
+        with:
+          name: ecc-android-x86
+          path: |
+            build/libecc-jvm.so
+          retention-days: 10
+
+  x86_64:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          submodules: recursive
+      - name: install packages
+        run: |
+          sudo apt update
+          sudo apt install ninja-build autoconf automake
+
+      - name: setup ndk
+        run: |
+          wget -nv -O android-ndk.zip https://dl.google.com/android/repository/android-ndk-${NDK_VERSION}-linux.zip
+          unzip -qq android-ndk.zip
+          mv android-ndk-${NDK_VERSION} android-ndk
+
+      - name: cmake configure
+        run: |
+          export NDK=$PWD/android-ndk
+          export TOOLCHAIN=$NDK/toolchains/llvm/prebuilt/linux-x86_64
+          export TARGET=x86_64-linux-android
+          export AR=$TOOLCHAIN/bin/llvm-ar
+          export AS=$TOOLCHAIN/bin/$TARGET-as
+          export CC=$TOOLCHAIN/bin/$TARGET$API-clang
+          export CXX=$TOOLCHAIN/bin/$TARGET$API-clang++
+          export LD=$TOOLCHAIN/bin/ld
+          export RANLIB=$TOOLCHAIN/bin/llvm-ranlib
+          export STRIP=$TOOLCHAIN/bin/llvm-strip
+          export ECC_CFLAGS="-m64"
+          cmake -DCMAKE_TOOLCHAIN_FILE=$NDK/build/cmake/android.toolchain.cmake \
+            -DANDROID_ABI=x86_64 \
+            -DANDROID_NATIVE_API_LEVEL=$API \
+            -DCMAKE_VERBOSE_MAKEFILE=ON \
+            -DCMAKE_BUILD_TYPE=Release -B build -G "Ninja" .
+
+      - name: c build
+        run: |
+          export NDK=$PWD/android-ndk
+          export TOOLCHAIN=$NDK/toolchains/llvm/prebuilt/linux-x86_64
+          export TARGET=x86_64-linux-android
+          export AR=$TOOLCHAIN/bin/llvm-ar
+          export AS=$TOOLCHAIN/bin/$TARGET-as
+          export CC=$TOOLCHAIN/bin/$TARGET$API-clang
+          export CXX=$TOOLCHAIN/bin/$TARGET$API-clang++
+          export LD=$TOOLCHAIN/bin/ld
+          export RANLIB=$TOOLCHAIN/bin/llvm-ranlib
+          export STRIP=$TOOLCHAIN/bin/llvm-strip
+          export ECC_CFLAGS="-m64"
+          cmake --build build --config Release --parallel 2 --target ecc_jvm
+          $TOOLCHAIN/bin/llvm-strip --strip-unneeded -x -g build/libecc-jvm.so
+          readelf -d build/libecc-jvm.so
+
+      - uses: actions/upload-artifact@v3
+        with:
+          name: ecc-android-x86_64
+          path: |
+            build/libecc-jvm.so
+          retention-days: 10

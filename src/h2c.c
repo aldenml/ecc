@@ -139,7 +139,7 @@ int ecc_h2c_expand_message_xmd_sha256(
     }
 
     // 12. return substr(uniform_bytes, 0, len_in_bytes)
-    memcpy(out, uniform_bytes, len_in_bytes);
+    memcpy(out, uniform_bytes, (size_t) len_in_bytes);
 
     // stack memory cleanup
     ecc_memzero((byte_t *) &st, sizeof st);
@@ -276,7 +276,7 @@ int ecc_h2c_expand_message_xmd_sha512(
     }
 
     // 12. return substr(uniform_bytes, 0, len_in_bytes)
-    memcpy(out, uniform_bytes, len_in_bytes);
+    memcpy(out, uniform_bytes, (size_t) len_in_bytes);
 
     // stack memory cleanup
     ecc_memzero((byte_t *) &st, sizeof st);

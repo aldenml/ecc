@@ -5,6 +5,7 @@
 [![Windows](https://github.com/aldenml/ecc/actions/workflows/windows.yml/badge.svg?branch=master)](https://github.com/aldenml/ecc/actions/workflows/windows.yml)
 [![javascript](https://github.com/aldenml/ecc/actions/workflows/javascript.yml/badge.svg?branch=master)](https://github.com/aldenml/ecc/actions/workflows/javascript.yml)
 [![iOS](https://github.com/aldenml/ecc/actions/workflows/ios.yml/badge.svg?branch=master)](https://github.com/aldenml/ecc/actions/workflows/ios.yml)
+[![Android](https://github.com/aldenml/ecc/actions/workflows/android.yml/badge.svg?branch=master)](https://github.com/aldenml/ecc/actions/workflows/android.yml)
 [![Codacy Badge](https://app.codacy.com/project/badge/Grade/b805b9122f2e46d097eab8cefb0df48e)](https://app.codacy.com/gh/aldenml/ecc/dashboard)
 [![Codacy Badge](https://app.codacy.com/project/badge/Coverage/b805b9122f2e46d097eab8cefb0df48e)](https://www.codacy.com/gh/aldenml/ecc/dashboard)
 [![javadoc](https://javadoc.io/badge2/org.ssohub/ecc/javadoc.svg)](https://javadoc.io/doc/org.ssohub/ecc)
