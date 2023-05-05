@@ -23,7 +23,7 @@ if(APPLE)
     endif()
 endif()
 
-if(APPLE)
+if(ANDROID)
     if($ENV{ECC_CFLAGS} MATCHES "-march=armv7-a")
         set(CONFIGURE_HOST_OPTION "--host=armv7a-linux-androideabi" CACHE STRING "" FORCE)
     elseif($ENV{ECC_CFLAGS} MATCHES "-march=armv8-a+crc")
