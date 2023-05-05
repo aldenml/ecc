@@ -14,16 +14,16 @@ concurrency:
 
 env:
   NDK_VERSION: r25c
-  NDK: ${{ env.PWD }}/android-ndk
-  TOOLCHAIN: ${{ env.NDK }}/toolchains/llvm/prebuilt/linux-x86_64
+  NDK: ${{ PWD }}/android-ndk
+  TOOLCHAIN: ${{ NDK }}/toolchains/llvm/prebuilt/linux-x86_64
   API: 24
-  AR: ${{ env.TOOLCHAIN }}/bin/${{ env.TARGET }}-ar
-  AS: ${{ env.TOOLCHAIN }}/bin/${{ env.TARGET }}-as
-  CC: ${{ env.TOOLCHAIN }}/bin/${{ env.TARGET }}${{ env.API }}-clang
-  CXX: ${{ env.TOOLCHAIN }}/bin/${{ env.TARGET }}${{ env.API }}-clang++
-  LD: ${{ env.TOOLCHAIN }}/bin/${{ env.TARGET }}-ld
-  RANLIB: ${{ env.TOOLCHAIN }}/bin/${{ env.TARGET }}-ranlib
-  STRIP: ${{ env.TOOLCHAIN }}/bin/${{ env.TARGET }}-strip
+  AR: ${{ TOOLCHAIN }}/bin/${{ TARGET }}-ar
+  AS: ${{ TOOLCHAIN }}/bin/${{ TARGET }}-as
+  CC: ${{ TOOLCHAIN }}/bin/${{ TARGET }}${{ env.API }}-clang
+  CXX: ${{ TOOLCHAIN }}/bin/${{ TARGET }}${{ env.API }}-clang++
+  LD: ${{ TOOLCHAIN }}/bin/${{ TARGET }}-ld
+  RANLIB: ${{ TOOLCHAIN }}/bin/${{ TARGET }}-ranlib
+  STRIP: ${{ TOOLCHAIN }}/bin/${{ TARGET }}-strip
 
 jobs:
 
