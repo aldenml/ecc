@@ -55,7 +55,10 @@ jobs:
 
       - name: c build
         run: |
+          export NDK=$PWD/android-ndk
+          export TOOLCHAIN=$NDK/toolchains/llvm/prebuilt/linux-x86_64
           cmake --build build --config Release --parallel 2 --target ecc_jvm
+          $TOOLCHAIN/bin/llvm-strip --strip-unneeded -x -g build/libecc-jvm.so
           readelf -d build/libecc-jvm.so
 
       - uses: actions/upload-artifact@v3
