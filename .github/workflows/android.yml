@@ -39,11 +39,11 @@ jobs:
         run: |
           export NDK=$PWD/android-ndk
           export TOOLCHAIN=$NDK/toolchains/llvm/prebuilt/linux-x86_64
-          export TARGET=arm-linux-androideabi
+          export TARGET=armv7a-linux-androideabi
           export AR=$TOOLCHAIN/bin/$TARGET-ar
           export AS=$TOOLCHAIN/bin/$TARGET-as
-          export CC=$TOOLCHAIN/bin/armv7a-linux-androideabi$API-clang
-          export CXX=$TOOLCHAIN/bin/armv7a-linux-androideabi$API-clang++
+          export CC=$TOOLCHAIN/bin/$TARGET$API-clang
+          export CXX=$TOOLCHAIN/bin/$TARGET$API-clang++
           export LD=$TOOLCHAIN/bin/$TARGET-ld
           export RANLIB=$TOOLCHAIN/bin/$TARGET-ranlib
           export STRIP=$TOOLCHAIN/bin/$TARGET-strip
