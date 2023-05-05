@@ -40,13 +40,13 @@ jobs:
           export NDK=$PWD/android-ndk
           export TOOLCHAIN=$NDK/toolchains/llvm/prebuilt/linux-x86_64
           export TARGET=armv7a-linux-androideabi
-          export AR=$TOOLCHAIN/bin/$TARGET-ar
+          export AR=$TOOLCHAIN/bin/llvm-ar
           export AS=$TOOLCHAIN/bin/$TARGET-as
           export CC=$TOOLCHAIN/bin/$TARGET$API-clang
           export CXX=$TOOLCHAIN/bin/$TARGET$API-clang++
-          export LD=$TOOLCHAIN/bin/$TARGET-ld
-          export RANLIB=$TOOLCHAIN/bin/$TARGET-ranlib
-          export STRIP=$TOOLCHAIN/bin/$TARGET-strip
+          export LD=$TOOLCHAIN/bin/ld
+          export RANLIB=$TOOLCHAIN/bin/llvm-ranlib
+          export STRIP=$TOOLCHAIN/bin/llvm-strip
           export ECC_CFLAGS="-march=armv7-a"
           cmake -DCMAKE_TOOLCHAIN_FILE=$NDK/build/cmake/android.toolchain.cmake \
             -DANDROID_ABI=armeabi-v7a \
@@ -59,13 +59,13 @@ jobs:
           export NDK=$PWD/android-ndk
           export TOOLCHAIN=$NDK/toolchains/llvm/prebuilt/linux-x86_64
           export TARGET=armv7a-linux-androideabi
-          export AR=$TOOLCHAIN/bin/$TARGET-ar
+          export AR=$TOOLCHAIN/bin/llvm-ar
           export AS=$TOOLCHAIN/bin/$TARGET-as
           export CC=$TOOLCHAIN/bin/$TARGET$API-clang
           export CXX=$TOOLCHAIN/bin/$TARGET$API-clang++
-          export LD=$TOOLCHAIN/bin/$TARGET-ld
-          export RANLIB=$TOOLCHAIN/bin/$TARGET-ranlib
-          export STRIP=$TOOLCHAIN/bin/$TARGET-strip
+          export LD=$TOOLCHAIN/bin/ld
+          export RANLIB=$TOOLCHAIN/bin/llvm-ranlib
+          export STRIP=$TOOLCHAIN/bin/llvm-strip
           export ECC_CFLAGS="-march=armv7-a"
           cmake --build build --config Release --parallel 2 --target ecc_jvm
           $TOOLCHAIN/bin/llvm-strip --strip-unneeded -x -g build/libecc-jvm.so
