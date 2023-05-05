@@ -51,12 +51,21 @@ jobs:
           cmake -DCMAKE_TOOLCHAIN_FILE=$NDK/build/cmake/android.toolchain.cmake \
             -DANDROID_ABI=armeabi-v7a \
             -DANDROID_NATIVE_API_LEVEL=$API \
+            -DCMAKE_VERBOSE_MAKEFILE=ON \
             -DCMAKE_BUILD_TYPE=Release -B build -G "Ninja" .
 
       - name: c build
         run: |
           export NDK=$PWD/android-ndk
           export TOOLCHAIN=$NDK/toolchains/llvm/prebuilt/linux-x86_64
+          export TARGET=arm-linux-androideabi
+          export AR=$TOOLCHAIN/bin/$TARGET-ar
+          export AS=$TOOLCHAIN/bin/$TARGET-as
+          export CC=$TOOLCHAIN/bin/armv7a-linux-androideabi$API-clang
+          export CXX=$TOOLCHAIN/bin/armv7a-linux-androideabi$API-clang++
+          export LD=$TOOLCHAIN/bin/$TARGET-ld
+          export RANLIB=$TOOLCHAIN/bin/$TARGET-ranlib
+          export STRIP=$TOOLCHAIN/bin/$TARGET-strip
           export ECC_CFLAGS="-march=armv7-a"
           cmake --build build --config Release --parallel 2 --target ecc_jvm
           $TOOLCHAIN/bin/llvm-strip --strip-unneeded -x -g build/libecc-jvm.so
