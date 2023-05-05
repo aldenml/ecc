@@ -17,13 +17,13 @@ env:
   NDK: $PWD/android-ndk
   TOOLCHAIN: $NDK/toolchains/llvm/prebuilt/linux-x86_64
   API: 24
-  AR: ${{ TOOLCHAIN }}/bin/${{ TARGET }}-ar
-  AS: ${{ TOOLCHAIN }}/bin/${{ TARGET }}-as
-  CC: ${{ TOOLCHAIN }}/bin/${{ TARGET }}${{ env.API }}-clang
-  CXX: ${{ TOOLCHAIN }}/bin/${{ TARGET }}${{ env.API }}-clang++
-  LD: ${{ TOOLCHAIN }}/bin/${{ TARGET }}-ld
-  RANLIB: ${{ TOOLCHAIN }}/bin/${{ TARGET }}-ranlib
-  STRIP: ${{ TOOLCHAIN }}/bin/${{ TARGET }}-strip
+  AR: $TOOLCHAIN/bin/$TARGET-ar
+  AS: $TOOLCHAIN/bin/$TARGET-as
+  CC: $TOOLCHAIN/bin/$TARGET$API-clang
+  CXX: $TOOLCHAIN/bin/$TARGET$API-clang++
+  LD: $TOOLCHAIN/bin/$TARGET-ld
+  RANLIB: $TOOLCHAIN/bin/$TARGET-ranlib
+  STRIP: $TOOLCHAIN/bin/$TARGET-strip
 
 jobs:
 
@@ -47,6 +47,8 @@ jobs:
       - name: cmake configure
         run: |
           export TARGET=arm-linux-androideabi
+          export CC=$TOOLCHAIN/bin/armv7a-linux-androideabi$API-clang
+          export CXX=$TOOLCHAIN/bin/armv7a-linux-androideabi$API-clang++
           cmake -DCMAKE_TOOLCHAIN_FILE=$NDK/build/cmake/android.toolchain.cmake \
             -DANDROID_ABI=armeabi-v7a \
             -DANDROID_NATIVE_API_LEVEL=$API \
