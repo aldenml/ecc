@@ -14,16 +14,7 @@ concurrency:
 
 env:
   NDK_VERSION: r25c
-  NDK: $PWD/android-ndk
-  TOOLCHAIN: $NDK/toolchains/llvm/prebuilt/linux-x86_64
   API: 24
-  AR: $TOOLCHAIN/bin/$TARGET-ar
-  AS: $TOOLCHAIN/bin/$TARGET-as
-  CC: $TOOLCHAIN/bin/$TARGET$API-clang
-  CXX: $TOOLCHAIN/bin/$TARGET$API-clang++
-  LD: $TOOLCHAIN/bin/$TARGET-ld
-  RANLIB: $TOOLCHAIN/bin/$TARGET-ranlib
-  STRIP: $TOOLCHAIN/bin/$TARGET-strip
 
 jobs:
 
@@ -46,9 +37,16 @@ jobs:
 
       - name: cmake configure
         run: |
+          NDK: $PWD/android-ndk
+          export TOOLCHAIN: $NDK/toolchains/llvm/prebuilt/linux-x86_64
           export TARGET=arm-linux-androideabi
+          export AR=$TOOLCHAIN/bin/$TARGET-ar
+          export AS=$TOOLCHAIN/bin/$TARGET-as
           export CC=$TOOLCHAIN/bin/armv7a-linux-androideabi$API-clang
           export CXX=$TOOLCHAIN/bin/armv7a-linux-androideabi$API-clang++
+          export LD=$TOOLCHAIN/bin/$TARGET-ld
+          export RANLIB=$TOOLCHAIN/bin/$TARGET-ranlib
+          export STRIP=$TOOLCHAIN/bin/$TARGET-strip
           cmake -DCMAKE_TOOLCHAIN_FILE=$NDK/build/cmake/android.toolchain.cmake \
             -DANDROID_ABI=armeabi-v7a \
             -DANDROID_NATIVE_API_LEVEL=$API \
