@@ -30,8 +30,8 @@ void ecc_concat2(
     const byte_t *a1, const int a1_len,
     const byte_t *a2, const int a2_len
 ) {
-    memcpy(out, a1, a1_len); out += a1_len;
-    memcpy(out, a2, a2_len);
+    memcpy(out, a1, (size_t) a1_len); out += a1_len;
+    memcpy(out, a2, (size_t) a2_len);
 }
 
 void ecc_concat3(
@@ -40,9 +40,9 @@ void ecc_concat3(
     const byte_t *a2, const int a2_len,
     const byte_t *a3, const int a3_len
 ) {
-    memcpy(out, a1, a1_len); out += a1_len;
-    memcpy(out, a2, a2_len); out += a2_len;
-    memcpy(out, a3, a3_len);
+    memcpy(out, a1, (size_t) a1_len); out += a1_len;
+    memcpy(out, a2, (size_t) a2_len); out += a2_len;
+    memcpy(out, a3, (size_t) a3_len);
 }
 
 void ecc_concat4(
@@ -52,10 +52,10 @@ void ecc_concat4(
     const byte_t *a3, const int a3_len,
     const byte_t *a4, const int a4_len
 ) {
-    memcpy(out, a1, a1_len); out += a1_len;
-    memcpy(out, a2, a2_len); out += a2_len;
-    memcpy(out, a3, a3_len); out += a3_len;
-    memcpy(out, a4, a4_len);
+    memcpy(out, a1, (size_t) a1_len); out += a1_len;
+    memcpy(out, a2, (size_t) a2_len); out += a2_len;
+    memcpy(out, a3, (size_t) a3_len); out += a3_len;
+    memcpy(out, a4, (size_t) a4_len);
 }
 
 void ecc_strxor(byte_t *out, const byte_t *a, const byte_t *b, const int len) {
