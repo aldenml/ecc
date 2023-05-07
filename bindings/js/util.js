@@ -161,3 +161,17 @@ export function randombytes(n) {
     libecc.ecc_randombytes(buf, n);
     return buf;
 }
+
+/**
+ * Return the version of the library.
+ *
+ * @return {string} the library version.
+ */
+export function version() {
+    let buf = new Uint8Array(10);
+    const len = libecc.ecc_version(buf, buf.length);
+    return Array.from(buf)
+        .slice(0, len)
+        .map(c => String.fromCharCode(c))
+        .join('');
+}

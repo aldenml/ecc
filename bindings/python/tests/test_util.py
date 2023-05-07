@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022, Alden Torres
+# Copyright (c) 2022-2023, Alden Torres
 #
 # Licensed under the terms of the MIT license.
 # Copy of the license at https://opensource.org/licenses/MIT
@@ -20,6 +20,12 @@ class TestUtil(unittest.TestCase):
                 count = count + 1
         # what are the odds of having more than one 0 in a random of 10 elements
         self.assertTrue(count < 2)
+
+    def test_ecc_version(self):
+        buf = bytearray(10)
+        v_len = libecc.ecc_version(buf, len(buf))
+        v = buf[0:v_len].decode()
+        self.assertEqual(v, "1.0.20")
 
 
 if __name__ == '__main__':

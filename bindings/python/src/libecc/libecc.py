@@ -242,6 +242,28 @@ def ecc_is_zero(
     return fun_ret
 
 
+def ecc_version(
+    out: bytearray,
+    len: int
+) -> int:
+    """
+    Takes a byte array and fill it with the library
+    version (as a string). Use the returned value to
+    know the actual size of the version string and
+    determine if the buffer was big enough.
+    
+    out -- (output) the byte array to store the string, size:len
+    len -- the length of `out`
+    return the actual size of the version string
+    """
+    ptr_out = ffi.from_buffer(out)
+    fun_ret = lib.ecc_version(
+        ptr_out,
+        len
+    )
+    return fun_ret
+
+
 # hash
 
 ecc_hash_sha256_HASHSIZE = 32

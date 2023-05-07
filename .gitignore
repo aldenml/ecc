@@ -13,6 +13,7 @@ __pycache__/
 /bindings/jvm/build
 /bindings/jvm/libecc-jvm.dylib
 /bindings/jvm/bin/
+/bindings/python/.idea
 /bindings/python/build
 /bindings/python/dist
 /bindings/python/src/libecc.egg-info

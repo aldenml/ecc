@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021, Alden Torres
+ * Copyright (c) 2021-2023, Alden Torres
  *
  * Licensed under the terms of the MIT license.
  * Copy of the license at https://opensource.org/licenses/MIT
@@ -12,6 +12,7 @@ import {
     libecc_promise,
     libecc,
     randombytes,
+    version,
 } from "./util.js";
 
 describe("util",() => {
@@ -42,6 +43,13 @@ describe("util",() => {
         }
         // what are the odds of having more than one 0 in a random of 10 elements
         assert.strictEqual(count < 2, true);
+    });
+
+    it("test_version", async () => {
+        await libecc_promise;
+
+        const v = version();
+        assert.strictEqual(v, "1.0.20");
     });
 });
 

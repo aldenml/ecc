@@ -293,6 +293,30 @@ Module.ecc_is_zero = (
     return fun_ret;
 }
 
+/**
+ * Takes a byte array and fill it with the library
+ * version (as a string). Use the returned value to
+ * know the actual size of the version string and
+ * determine if the buffer was big enough.
+ *
+ * @param {Uint8Array} out (output) the byte array to store the string, size:len
+ * @param {number} len the length of `out`
+ * @return {number} the actual size of the version string
+ */
+Module.ecc_version = (
+    out,
+    len,
+) => {
+    const ptr_out = mput(out, len);
+    const fun_ret = _ecc_version(
+        ptr_out,
+        len,
+    );
+    mget(out, ptr_out, len);
+    mfree(ptr_out, len);
+    return fun_ret;
+}
+
 // hash
 
 const ecc_hash_sha256_HASHSIZE = 32;
