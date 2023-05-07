@@ -54,17 +54,78 @@ test {
     environment("LD_LIBRARY_PATH", file(".").absolutePath)
 }
 
-jar {
-
-    from("../build") {
-        include("libecc-jvm.dylib")
-        into("lib")
+tasks.register('nativeMacOSJar', Zip) {
+    destinationDirectory = file("$buildDir/libs")
+    archiveBaseName = 'ecc-macos'
+    archiveExtension = 'jar'
+    from('bin/macos') {
+        include "universal/libecc-jvm.dylib"
+        into 'lib/'
     }
+}
 
-    from("../build") {
-        include("libecc-jvm.so")
-        into("lib")
+tasks.register('nativeLinuxJar', Zip) {
+    destinationDirectory = file("$buildDir/libs")
+    archiveBaseName = 'ecc-linux'
+    archiveExtension = 'jar'
+    from('bin/linux') {
+        include "x86_64/libecc-jvm.so"
+        into 'lib/'
     }
+}
+
+tasks.register('nativeWindowsJar', Zip) {
+    destinationDirectory = file("$buildDir/libs")
+    archiveBaseName = 'ecc-windows'
+    archiveExtension = 'jar'
+    from('bin/windows') {
+        include "x86_64/libecc-jvm.dll"
+        into 'lib/'
+    }
+}
+
+tasks.register('nativeAndroidArmJar', Zip) {
+    destinationDirectory = file("$buildDir/libs")
+    archiveBaseName = 'ecc-android-arm'
+    archiveExtension = 'jar'
+    from('bin/android') {
+        include "armeabi-v7a/libecc-jvm.so"
+        into 'lib/'
+    }
+}
+
+tasks.register('nativeAndroidX86Jar', Zip) {
+    destinationDirectory = file("$buildDir/libs")
+    archiveBaseName = 'ecc-android-x86'
+    archiveExtension = 'jar'
+    from('bin/android') {
+        include "x86/libecc-jvm.so"
+        into 'lib/'
+    }
+}
+
+tasks.register('nativeAndroidArm64Jar', Zip) {
+    destinationDirectory = file("$buildDir/libs")
+    archiveBaseName = 'ecc-android-arm64'
+    archiveExtension = 'jar'
+    from('bin/android') {
+        include "arm64-v8a/libecc-jvm.so"
+        into 'lib/'
+    }
+}
+
+tasks.register('nativeAndroidX64Jar', Zip) {
+    destinationDirectory = file("$buildDir/libs")
+    archiveBaseName = 'ecc-android-x86_64'
+    archiveExtension = 'jar'
+    from('bin/android') {
+        include "x86_64/libecc-jvm.so"
+        into 'lib/'
+    }
+}
+
+tasks.withType(GenerateModuleMetadata) {
+    enabled = false
 }
 
 if (!hasProperty('ossrhUsername')) {
@@ -75,33 +136,83 @@ if (!hasProperty('ossrhPassword')) {
     ext.ossrhPassword = ''
 }
 
+def generatePom(pomName, addDeps) {
+    return {
+        name = pomName
+        description = "elliptic-curve cryptography"
+        url = "https://github.com/aldenml/ecc"
+        scm {
+            connection = "scm:git:git://github.com/aldenml/ecc.git"
+            developerConnection = "scm:git:ssh:git@github.com/aldenml/ecc.git"
+            url = "https://github.com/aldenml/ecc"
+        }
+        licenses {
+            license {
+                name = "The MIT License"
+                url = "https://github.com/aldenml/ecc/blob/master/LICENSE"
+            }
+        }
+        developers {
+            developer {
+                id = "aldenml"
+                name = "Alden Torres"
+                email = "aldenml@gmail.com"
+            }
+        }
+
+        if (addDeps)
+            withXml {
+                def root = asNode()
+                def dependenciesNode = root.appendNode("dependencies")
+                def depNode = dependenciesNode.appendNode("dependency")
+                depNode.appendNode("groupId", group)
+                depNode.appendNode("artifactId", "ecc")
+                depNode.appendNode("version", version)
+            }
+    }
+}
+
 publishing {
     publications {
         mavenJava(MavenPublication) {
+            artifactId = "ecc"
             from components.java
-            pom {
-                name = "ecc"
-                description = "elliptic-curve cryptography"
-                url = "https://github.com/aldenml/ecc"
-                scm {
-                    connection = "scm:git:git://github.com/aldenml/ecc.git"
-                    developerConnection = "scm:git:ssh:git@github.com/aldenml/ecc.git"
-                    url = "https://github.com/aldenml/ecc"
-                }
-                licenses {
-                    license {
-                        name = "The MIT License"
-                        url = "https://github.com/aldenml/ecc/blob/master/LICENSE"
-                    }
-                }
-                developers {
-                    developer {
-                        id = "aldenml"
-                        name = "Alden Torres"
-                        email = "aldenml@gmail.com"
-                    }
-                }
-            }
+            pom generatePom(artifactId, false)
+        }
+        mavenMacOS(MavenPublication) {
+            artifactId = "ecc-macos"
+            artifact tasks["nativeMacOSJar"]
+            pom generatePom(artifactId, true)
+        }
+        mavenLinux(MavenPublication) {
+            artifactId = "ecc-linux"
+            artifact tasks["nativeLinuxJar"]
+            pom generatePom(artifactId, true)
+        }
+        mavenWindows(MavenPublication) {
+            artifactId = "ecc-windows"
+            artifact tasks["nativeWindowsJar"]
+            pom generatePom(artifactId, true)
+        }
+        mavenAndroidArm(MavenPublication) {
+            artifactId = "ecc-android-arm"
+            artifact tasks["nativeAndroidArmJar"]
+            pom generatePom(artifactId, true)
+        }
+        mavenAndroidX86(MavenPublication) {
+            artifactId = "ecc-android-x86"
+            artifact tasks["nativeAndroidX86Jar"]
+            pom generatePom(artifactId, true)
+        }
+        mavenAndroidArm64(MavenPublication) {
+            artifactId = "ecc-android-arm64"
+            artifact tasks["nativeAndroidArm64Jar"]
+            pom generatePom(artifactId, true)
+        }
+        mavenAndroidX64(MavenPublication) {
+            artifactId = "ecc-android-x86_64"
+            artifact tasks["nativeAndroidX64Jar"]
+            pom generatePom(artifactId, true)
         }
     }
 
@@ -118,4 +229,11 @@ publishing {
 
 signing {
     sign publishing.publications.mavenJava
+    sign publishing.publications.mavenMacOS
+    sign publishing.publications.mavenLinux
+    sign publishing.publications.mavenWindows
+    sign publishing.publications.mavenAndroidArm
+    sign publishing.publications.mavenAndroidX86
+    sign publishing.publications.mavenAndroidArm64
+    sign publishing.publications.mavenAndroidX64
 }
