@@ -146,11 +146,11 @@ static void test_ecc_version(void **state) {
 
     byte_t buf2[7];
     ecc_version(buf2, sizeof buf2);
-    assert_string_equal(buf2, "1.0.20");
+    assert_string_equal(buf2, "1.0.21");
 
     byte_t buf3[10];
     ecc_version(buf3, sizeof buf3);
-    assert_string_equal(buf3, "1.0.20");
+    assert_string_equal(buf3, "1.0.21");
 }
 
 static void test_ecc_malloc(void **state) {
