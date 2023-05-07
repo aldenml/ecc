@@ -79,6 +79,16 @@ int ecc_is_zero(const byte_t *n, const int len) {
     return sodium_is_zero(n, (size_t) len);
 }
 
+int ecc_version(byte_t *out, const int len) {
+    const char *v = "1.0.20";
+    const int v_len = (int) strlen(v);
+
+    memcpy(out, v, (size_t) (v_len < len ? v_len : len));
+    if (v_len < len) out[v_len] = 0;
+
+    return v_len;
+}
+
 byte_t *ecc_malloc(const int size) {
     return malloc((size_t) size);
 }

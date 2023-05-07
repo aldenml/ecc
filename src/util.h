@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2022, Alden Torres
+ * Copyright (c) 2021-2023, Alden Torres
  *
  * Licensed under the terms of the MIT license.
  * Copy of the license at https://opensource.org/licenses/MIT
@@ -168,6 +168,19 @@ int ecc_compare(const byte_t *a, const byte_t *b, int len);
  */
 ECC_EXPORT
 int ecc_is_zero(const byte_t *n, int len);
+
+/**
+ * Takes a byte array and fill it with the library
+ * version (as a string). Use the returned value to
+ * know the actual size of the version string and
+ * determine if the buffer was big enough.
+ *
+ * @param[out] out the byte array to store the string, size:len
+ * @param len the length of `out`
+ * @return the actual size of the version string
+ */
+ECC_EXPORT
+int ecc_version(byte_t *out, int len);
 
 /**
  * Allocates `size` bytes of uninitialized storage.

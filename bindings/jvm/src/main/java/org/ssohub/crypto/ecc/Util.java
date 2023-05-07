@@ -118,4 +118,16 @@ public final class Util {
         }
         return sb.toString();
     }
+
+    /**
+     * Return the version of the library.
+     *
+     * @return the library version.
+     */
+    public static String version() {
+        byte[] buf = new byte[10];
+        int len = libecc.ecc_version(buf, buf.length);
+
+        return new String(buf, 0, len, UTF_8);
+    }
 }

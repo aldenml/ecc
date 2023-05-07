@@ -72,6 +72,11 @@ ffibuilder.cdef(
         int len
     );
 
+    int ecc_version(
+        unsigned char *out,
+        int len
+    );
+
     // hash
 
     void ecc_hash_sha256(

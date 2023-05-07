@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2022, Alden Torres
+ * Copyright (c) 2021-2023, Alden Torres
  *
  * Licensed under the terms of the MIT license.
  * Copy of the license at https://opensource.org/licenses/MIT
@@ -135,6 +135,24 @@ static void test_ecc_is_zero(void **state) {
     assert_false(r2);
 }
 
+static void test_ecc_version(void **state) {
+    ECC_UNUSED(state);
+
+    byte_t buf1[2];
+    const int len = ecc_version(buf1, sizeof buf1);
+    assert_int_equal(len, 6);
+    assert_int_equal(buf1[0], '1');
+    assert_int_equal(buf1[1], '.');
+
+    byte_t buf2[7];
+    ecc_version(buf2, sizeof buf2);
+    assert_string_equal(buf2, "1.0.20");
+
+    byte_t buf3[10];
+    ecc_version(buf3, sizeof buf3);
+    assert_string_equal(buf3, "1.0.20");
+}
+
 static void test_ecc_malloc(void **state) {
     ECC_UNUSED(state);
 
@@ -159,6 +177,7 @@ int main(void) {
         cmocka_unit_test(test_ecc_compare_different),
         cmocka_unit_test(test_ecc_is_zero),
         cmocka_unit_test(test_ecc_malloc),
+        cmocka_unit_test(test_ecc_version),
     };
 
     return cmocka_run_group_tests(tests, NULL, NULL);

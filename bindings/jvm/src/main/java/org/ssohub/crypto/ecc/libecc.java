@@ -184,6 +184,21 @@ public final class libecc {
         int len
     );
 
+    /**
+     * Takes a byte array and fill it with the library
+     * version (as a string). Use the returned value to
+     * know the actual size of the version string and
+     * determine if the buffer was big enough.
+     *
+     * @param out (output) the byte array to store the string, size:len
+     * @param len the length of `out`
+     * @return the actual size of the version string
+     */
+    public static native int ecc_version(
+        byte[] out,
+        int len
+    );
+
     // hash
 
     /**

@@ -205,6 +205,21 @@ JNIEXPORT int JNICALL Java_org_ssohub_crypto_ecc_libecc_ecc_1is_1zero(
     return fun_ret;
 }
 
+JNIEXPORT int JNICALL Java_org_ssohub_crypto_ecc_libecc_ecc_1version(
+    JNIEnv *env, jclass cls,
+    jbyteArray out,
+    jint len
+) {
+    byte_t *ptr_out = mput(env, out, len);
+    const int fun_ret = ecc_version(
+        ptr_out,
+        len
+    );
+    mget(env, out, ptr_out, len);
+    mfree(ptr_out, len);
+    return fun_ret;
+}
+
 // hash
 
 JNIEXPORT void JNICALL Java_org_ssohub_crypto_ecc_libecc_ecc_1hash_1sha256(
