@@ -173,5 +173,5 @@ export function version() {
     return Array.from(buf)
         .slice(0, len)
         .map(c => String.fromCharCode(c))
-        .join('');
+        .join("");
 }
