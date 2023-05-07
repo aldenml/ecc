@@ -49,7 +49,7 @@ describe("util",() => {
         await libecc_promise;
 
         const v = version();
-        assert.strictEqual(v, "1.0.20");
+        assert.strictEqual(v, "1.0.21");
     });
 });
 
