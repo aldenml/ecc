@@ -7,7 +7,7 @@
 
 #include "ecc_test.h"
 
-// https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-09#appendix-D.1.1.1
+// https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-10#appendix-D.1
 static void test_opaque_ristretto255_sha512(void **state) {
     ECC_UNUSED(state);
 
