@@ -143,7 +143,7 @@ opaque_ristretto255_sha512_3DH_ServerFinish
 
 ### Two-Round Threshold Schnorr Signatures with FROST
 
-This is an implementation of [draft-irtf-cfrg-frost-11](https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-frost-11)
+This is an implementation of [draft-irtf-cfrg-frost-13](https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-frost-13)
 using `libsodium`.
 
 The draft presents a two-round signing variant of FROST, a Flexible Round-Optimized Schnorr Threshold signature
