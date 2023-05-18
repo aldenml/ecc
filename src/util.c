@@ -80,7 +80,7 @@ int ecc_is_zero(const byte_t *n, const int len) {
 }
 
 int ecc_version(byte_t *out, const int len) {
-    const char *v = "1.0.21";
+    const char *v = "1.0.22";
     const int v_len = (int) strlen(v);
 
     memcpy(out, v, (size_t) (v_len < len ? v_len : len));

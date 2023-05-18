@@ -12,7 +12,7 @@ plugins {
 }
 
 group = "org.ssohub"
-version = "1.0.21"
+version = "1.0.22"
 
 java {
     sourceCompatibility = JavaVersion.VERSION_1_8
