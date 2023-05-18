@@ -10,7 +10,7 @@
 
 #include "export.h"
 
-// https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-09
+// https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-10
 // https://github.com/cfrg/draft-irtf-cfrg-opaque
 
 // const
