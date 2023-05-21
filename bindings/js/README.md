@@ -144,7 +144,7 @@ using Shamir and Verifiable Secret Sharing.
 ### Ethereum BLS Signature
 
 Ethereum uses BLS signatures as specified in the IETF
-draft [draft-irtf-cfrg-bls-signature-04](https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-bls-signature-04)
+draft [draft-irtf-cfrg-bls-signature-05](https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-bls-signature-05)
 ciphersuite `BLS_SIG_BLS12381G2_XMD:SHA-256_SSWU_RO_POP_`. This library provides the following API:
 
 ```

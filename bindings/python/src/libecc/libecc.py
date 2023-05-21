@@ -4877,25 +4877,43 @@ def ecc_sign_ed25519_SkToPk(
 def ecc_sign_eth_bls_KeyGen(
     sk: bytearray,
     ikm: bytes,
-    ikm_len: int
+    ikm_len: int,
+    salt: bytes,
+    salt_len: int,
+    key_info: bytes,
+    key_info_len: int
 ) -> None:
     """
     Generates a secret key `sk` deterministically from a secret
     octet string `ikm`. The secret key is guaranteed to be nonzero.
     
-    For security, `ikm` MUST be infeasible to guess, e.g., generated
+    For security, `ikm` must be infeasible to guess, e.g., generated
     by a trusted source of randomness and be at least 32 bytes long.
+    
+    KeyGen takes two parameters. The first parameter, `salt`, is required, the
+    second parameter, key_info, is optional; it may be used to derive multiple
+    independent keys from the same `ikm`.
     
     sk -- (output) a secret key, size:ecc_sign_eth_bls_PRIVATEKEYSIZE
     ikm -- a secret octet string, size:ikm_len
     ikm_len -- the length of `ikm`
+    salt -- a required octet string, size:salt_len
+    salt_len -- the length of `salt`
+    key_info -- an optional octet string, size:key_info_len
+    key_info_len -- the length of `key_info`
     """
     ptr_sk = ffi.from_buffer(sk)
     ptr_ikm = ffi.from_buffer(ikm)
+    ptr_salt = ffi.from_buffer(salt)
+    ptr_key_info = ffi.from_buffer(key_info)
     lib.ecc_sign_eth_bls_KeyGen(
         ptr_sk,
         ptr_ikm,
-        ikm_len
+        ikm_len,
+        ptr_salt,
+        salt_len,
+        ptr_key_info,
+        key_info_len
     )
     return None
 
@@ -5022,13 +5040,20 @@ def ecc_sign_eth_bls_FastAggregateVerify(
     signature: bytes
 ) -> int:
     """
+    Verification algorithm for the aggregate of multiple signatures on the same
+    message. This function is faster than AggregateVerify.
     
+    All public keys passed as arguments to this function must have a
+    corresponding proof of possession, and the result of evaluating PopVerify on
+    each public key and its proof must be valid. The caller is responsible for
+    ensuring that this precondition is met. If it is violated, this scheme
+    provides no security against aggregate signature forgery.
     
-    pks -- size:n*ecc_sign_eth_bls_PUBLICKEYSIZE
+    pks -- public keys in the format output by SkToPk, size:n*ecc_sign_eth_bls_PUBLICKEYSIZE
     n -- the number of public keys in `pks`
-    message -- size:message_len
+    message -- the input string, size:message_len
     message_len -- the length of `message`
-    signature -- size:ecc_sign_eth_bls_SIGNATURESIZE
+    signature -- the output by Aggregate, size:ecc_sign_eth_bls_SIGNATURESIZE
     return 0 if valid, -1 if invalid
     """
     ptr_pks = ffi.from_buffer(pks)

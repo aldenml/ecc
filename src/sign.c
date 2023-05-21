@@ -39,9 +39,19 @@ void ecc_sign_ed25519_SkToPk(byte_t *pk, const byte_t *sk) {
     crypto_sign_ed25519_sk_to_pk(pk, sk);
 }
 
-void ecc_sign_eth_bls_KeyGen(byte_t *sk, const byte_t *ikm, const int ikm_len) {
+void ecc_sign_eth_bls_KeyGen(
+    byte_t *sk,
+    const byte_t *ikm, const int ikm_len,
+    const byte_t *salt, const int salt_len,
+    const byte_t *key_info, const int key_info_len
+) {
     blst_scalar bsk;
-    blst_keygen(&bsk, ikm, (size_t) ikm_len, 0, 0);
+    blst_keygen_v5(
+        &bsk,
+        ikm, (size_t) ikm_len,
+        salt, (size_t) salt_len,
+        key_info, (size_t) key_info_len
+    );
     blst_bendian_from_scalar(sk, &bsk);
 
     // cleanup stack memory
@@ -162,6 +172,11 @@ int ecc_sign_eth_bls_FastAggregateVerify(
     const byte_t *message, const int message_len,
     const byte_t *signature
 ) {
+    if (n < 1)
+        return -1;
+    // NOTE: the caller MUST know a proof of possession for all PK_i, and the
+    // result of evaluating PopVerify on PK_i and this proof MUST be VALID.
+
     byte_t DST[43] = "BLS_SIG_BLS12381G2_XMD:SHA-256_SSWU_RO_POP_";
 
     blst_p2_affine sig;

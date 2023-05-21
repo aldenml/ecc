@@ -225,6 +225,43 @@ static void test_ecc_sign_eth_bls_AggregateVerify(void **state) {
     ecc_json_destroy(json);
 }
 
+static void test_ecc_sign_eth_bls_KeyGen(void **state) {
+    ECC_UNUSED(state);
+
+    byte_t sk[ecc_sign_eth_bls_PRIVATEKEYSIZE];
+    char sk_hex[2 * ecc_sign_eth_bls_PRIVATEKEYSIZE + 1];
+
+    ecc_sign_eth_bls_KeyGen(
+        sk,
+        (const byte_t *) "12345678123456781234567812345678", 32,
+        (const byte_t *) "1234", 4,
+        (const byte_t *) "12345", 5
+    );
+
+    ecc_bin2hex(sk_hex, sk, sizeof sk);
+    assert_string_equal(sk_hex, "459b943fc370970a43ae0fc9c4822f2ff894601528d83c8c998c40be23d933cf");
+
+    ecc_sign_eth_bls_KeyGen(
+        sk,
+        (const byte_t *) "12345678123456781234567812345678", 32,
+        (const byte_t *) "1234", 4,
+        NULL, 0
+    );
+
+    ecc_bin2hex(sk_hex, sk, sizeof sk);
+    assert_string_equal(sk_hex, "046e575a526101ba44c83586635665b3944024029be0f58d25d9382a4854c494");
+
+    ecc_sign_eth_bls_KeyGen(
+        sk,
+        (const byte_t *) "12345678123456781234567812345678", 32,
+        NULL, 0,
+        NULL, 0
+    );
+
+    ecc_bin2hex(sk_hex, sk, sizeof sk);
+    assert_string_equal(sk_hex, "0000000000000000000000000000000000000000000000000000000000000000");
+}
+
 int main(void) {
     const struct CMUnitTest tests[] = {
         cmocka_unit_test(test_ecc_sign_eth_bls_SkToPk),
@@ -234,6 +271,7 @@ int main(void) {
         cmocka_unit_test(test_ecc_sign_eth_bls_Aggregate),
         cmocka_unit_test(test_ecc_sign_eth_bls_FastAggregateVerify),
         cmocka_unit_test(test_ecc_sign_eth_bls_AggregateVerify),
+        cmocka_unit_test(test_ecc_sign_eth_bls_KeyGen),
     };
 
     return cmocka_run_group_tests(tests, NULL, NULL);

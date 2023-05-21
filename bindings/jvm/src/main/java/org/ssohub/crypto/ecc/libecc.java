@@ -3196,17 +3196,29 @@ public final class libecc {
      * Generates a secret key `sk` deterministically from a secret
      * octet string `ikm`. The secret key is guaranteed to be nonzero.
      *
-     * For security, `ikm` MUST be infeasible to guess, e.g., generated
+     * For security, `ikm` must be infeasible to guess, e.g., generated
      * by a trusted source of randomness and be at least 32 bytes long.
+     *
+     * KeyGen takes two parameters. The first parameter, `salt`, is required, the
+     * second parameter, key_info, is optional; it may be used to derive multiple
+     * independent keys from the same `ikm`.
      *
      * @param sk (output) a secret key, size:ecc_sign_eth_bls_PRIVATEKEYSIZE
      * @param ikm a secret octet string, size:ikm_len
      * @param ikm_len the length of `ikm`
+     * @param salt a required octet string, size:salt_len
+     * @param salt_len the length of `salt`
+     * @param key_info an optional octet string, size:key_info_len
+     * @param key_info_len the length of `key_info`
      */
     public static native void ecc_sign_eth_bls_KeyGen(
         byte[] sk,
         byte[] ikm,
-        int ikm_len
+        int ikm_len,
+        byte[] salt,
+        int salt_len,
+        byte[] key_info,
+        int key_info_len
     );
 
     /**
@@ -3279,13 +3291,20 @@ public final class libecc {
     );
 
     /**
+     * Verification algorithm for the aggregate of multiple signatures on the same
+     * message. This function is faster than AggregateVerify.
      *
+     * All public keys passed as arguments to this function must have a
+     * corresponding proof of possession, and the result of evaluating PopVerify on
+     * each public key and its proof must be valid. The caller is responsible for
+     * ensuring that this precondition is met. If it is violated, this scheme
+     * provides no security against aggregate signature forgery.
      *
-     * @param pks size:n*ecc_sign_eth_bls_PUBLICKEYSIZE
+     * @param pks public keys in the format output by SkToPk, size:n*ecc_sign_eth_bls_PUBLICKEYSIZE
      * @param n the number of public keys in `pks`
-     * @param message size:message_len
+     * @param message the input string, size:message_len
      * @param message_len the length of `message`
-     * @param signature size:ecc_sign_eth_bls_SIGNATURESIZE
+     * @param signature the output by Aggregate, size:ecc_sign_eth_bls_SIGNATURESIZE
      * @return 0 if valid, -1 if invalid
      */
     public static native int ecc_sign_eth_bls_FastAggregateVerify(

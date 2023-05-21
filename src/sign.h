@@ -112,7 +112,7 @@ void ecc_sign_ed25519_SkToPk(byte_t *pk, const byte_t *sk);
 
 // Compliant Ethereum BLS Signature API implementation.
 //
-// https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-bls-signature-04
+// https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-bls-signature-05
 // https://github.com/cfrg/draft-irtf-cfrg-bls-signature
 // https://github.com/ethereum/consensus-specs/blob/v1.0.0/specs/phase0/beacon-chain.md#bls-signatures
 // https://github.com/ethereum/py_ecc
@@ -141,15 +141,28 @@ void ecc_sign_ed25519_SkToPk(byte_t *pk, const byte_t *sk);
  * Generates a secret key `sk` deterministically from a secret
  * octet string `ikm`. The secret key is guaranteed to be nonzero.
  *
- * For security, `ikm` MUST be infeasible to guess, e.g., generated
+ * For security, `ikm` must be infeasible to guess, e.g., generated
  * by a trusted source of randomness and be at least 32 bytes long.
+ *
+ * KeyGen takes two parameters. The first parameter, `salt`, is required, the
+ * second parameter, key_info, is optional; it may be used to derive multiple
+ * independent keys from the same `ikm`.
  *
  * @param[out] sk a secret key, size:ecc_sign_eth_bls_PRIVATEKEYSIZE
  * @param ikm a secret octet string, size:ikm_len
  * @param ikm_len the length of `ikm`
+ * @param salt a required octet string, size:salt_len
+ * @param salt_len the length of `salt`
+ * @param key_info an optional octet string, size:key_info_len
+ * @param key_info_len the length of `key_info`
  */
 ECC_EXPORT
-void ecc_sign_eth_bls_KeyGen(byte_t *sk, const byte_t *ikm, int ikm_len);
+void ecc_sign_eth_bls_KeyGen(
+    byte_t *sk,
+    const byte_t *ikm, int ikm_len,
+    const byte_t *salt, int salt_len,
+    const byte_t *key_info, int key_info_len
+);
 
 /**
  * Takes a secret key `sk` and outputs the corresponding public key `pk`.
@@ -218,12 +231,20 @@ int ecc_sign_eth_bls_Aggregate(
 );
 
 /**
+ * Verification algorithm for the aggregate of multiple signatures on the same
+ * message. This function is faster than AggregateVerify.
  *
- * @param pks size:n*ecc_sign_eth_bls_PUBLICKEYSIZE
+ * All public keys passed as arguments to this function must have a
+ * corresponding proof of possession, and the result of evaluating PopVerify on
+ * each public key and its proof must be valid. The caller is responsible for
+ * ensuring that this precondition is met. If it is violated, this scheme
+ * provides no security against aggregate signature forgery.
+ *
+ * @param pks public keys in the format output by SkToPk, size:n*ecc_sign_eth_bls_PUBLICKEYSIZE
  * @param n the number of public keys in `pks`
- * @param message size:message_len
+ * @param message the input string, size:message_len
  * @param message_len the length of `message`
- * @param signature size:ecc_sign_eth_bls_SIGNATURESIZE
+ * @param signature the output by Aggregate, size:ecc_sign_eth_bls_SIGNATURESIZE
  * @return 0 if valid, -1 if invalid
  */
 ECC_EXPORT

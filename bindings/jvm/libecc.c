@@ -3696,18 +3696,30 @@ JNIEXPORT void JNICALL Java_org_ssohub_crypto_ecc_libecc_ecc_1sign_1eth_1bls_1Ke
     JNIEnv *env, jclass cls,
     jbyteArray sk,
     jbyteArray ikm,
-    jint ikm_len
+    jint ikm_len,
+    jbyteArray salt,
+    jint salt_len,
+    jbyteArray key_info,
+    jint key_info_len
 ) {
     byte_t *ptr_sk = mput(env, sk, ecc_sign_eth_bls_PRIVATEKEYSIZE);
     byte_t *ptr_ikm = mput(env, ikm, ikm_len);
+    byte_t *ptr_salt = mput(env, salt, salt_len);
+    byte_t *ptr_key_info = mput(env, key_info, key_info_len);
     ecc_sign_eth_bls_KeyGen(
         ptr_sk,
         ptr_ikm,
-        ikm_len
+        ikm_len,
+        ptr_salt,
+        salt_len,
+        ptr_key_info,
+        key_info_len
     );
     mget(env, sk, ptr_sk, ecc_sign_eth_bls_PRIVATEKEYSIZE);
     mfree(ptr_sk, ecc_sign_eth_bls_PRIVATEKEYSIZE);
     mfree(ptr_ikm, ikm_len);
+    mfree(ptr_salt, salt_len);
+    mfree(ptr_key_info, key_info_len);
 }
 
 JNIEXPORT void JNICALL Java_org_ssohub_crypto_ecc_libecc_ecc_1sign_1eth_1bls_1SkToPk(

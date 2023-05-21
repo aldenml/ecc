@@ -1151,7 +1151,11 @@ ffibuilder.cdef(
     void ecc_sign_eth_bls_KeyGen(
         unsigned char *sk,
         unsigned char *ikm,
-        int ikm_len
+        int ikm_len,
+        unsigned char *salt,
+        int salt_len,
+        unsigned char *key_info,
+        int key_info_len
     );
 
     void ecc_sign_eth_bls_SkToPk(
