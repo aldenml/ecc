@@ -34,6 +34,6 @@ public class UtilTest {
     @Test
     void test_version() {
         String v = version();
-        assertEquals("1.0.22", v);
+        assertEquals("1.0.23", v);
     }
 }
