@@ -82,5 +82,11 @@ export function strxor(str1: Uint8Array, str2: Uint8Array): Uint8Array;
  * @return {Uint8Array} the buffer with random elements
  */
 export function randombytes(n: number): Uint8Array;
+/**
+ * Return the version of the library.
+ *
+ * @return {string} the library version.
+ */
+export function version(): string;
 export const libecc_promise: Promise<any>;
 export var libecc: any;

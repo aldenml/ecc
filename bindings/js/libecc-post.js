@@ -5717,28 +5717,48 @@ Module.ecc_sign_ed25519_SkToPk = (
  * Generates a secret key `sk` deterministically from a secret
  * octet string `ikm`. The secret key is guaranteed to be nonzero.
  *
- * For security, `ikm` MUST be infeasible to guess, e.g., generated
+ * For security, `ikm` must be infeasible to guess, e.g., generated
  * by a trusted source of randomness and be at least 32 bytes long.
+ *
+ * KeyGen takes two parameters. The first parameter, `salt`, is required, the
+ * second parameter, key_info, is optional; it may be used to derive multiple
+ * independent keys from the same `ikm`.
  *
  * @param {Uint8Array} sk (output) a secret key, size:ecc_sign_eth_bls_PRIVATEKEYSIZE
  * @param {Uint8Array} ikm a secret octet string, size:ikm_len
  * @param {number} ikm_len the length of `ikm`
+ * @param {Uint8Array} salt a required octet string, size:salt_len
+ * @param {number} salt_len the length of `salt`
+ * @param {Uint8Array} key_info an optional octet string, size:key_info_len
+ * @param {number} key_info_len the length of `key_info`
  */
 Module.ecc_sign_eth_bls_KeyGen = (
     sk,
     ikm,
     ikm_len,
+    salt,
+    salt_len,
+    key_info,
+    key_info_len,
 ) => {
     const ptr_sk = mput(sk, ecc_sign_eth_bls_PRIVATEKEYSIZE);
     const ptr_ikm = mput(ikm, ikm_len);
+    const ptr_salt = mput(salt, salt_len);
+    const ptr_key_info = mput(key_info, key_info_len);
     _ecc_sign_eth_bls_KeyGen(
         ptr_sk,
         ptr_ikm,
         ikm_len,
+        ptr_salt,
+        salt_len,
+        ptr_key_info,
+        key_info_len,
     );
     mget(sk, ptr_sk, ecc_sign_eth_bls_PRIVATEKEYSIZE);
     mfree(ptr_sk, ecc_sign_eth_bls_PRIVATEKEYSIZE);
     mfree(ptr_ikm, ikm_len);
+    mfree(ptr_salt, salt_len);
+    mfree(ptr_key_info, key_info_len);
 }
 
 /**
@@ -5868,13 +5888,20 @@ Module.ecc_sign_eth_bls_Aggregate = (
 }
 
 /**
+ * Verification algorithm for the aggregate of multiple signatures on the same
+ * message. This function is faster than AggregateVerify.
  *
+ * All public keys passed as arguments to this function must have a
+ * corresponding proof of possession, and the result of evaluating PopVerify on
+ * each public key and its proof must be valid. The caller is responsible for
+ * ensuring that this precondition is met. If it is violated, this scheme
+ * provides no security against aggregate signature forgery.
  *
- * @param {Uint8Array} pks size:n*ecc_sign_eth_bls_PUBLICKEYSIZE
+ * @param {Uint8Array} pks public keys in the format output by SkToPk, size:n*ecc_sign_eth_bls_PUBLICKEYSIZE
  * @param {number} n the number of public keys in `pks`
- * @param {Uint8Array} message size:message_len
+ * @param {Uint8Array} message the input string, size:message_len
  * @param {number} message_len the length of `message`
- * @param {Uint8Array} signature size:ecc_sign_eth_bls_SIGNATURESIZE
+ * @param {Uint8Array} signature the output by Aggregate, size:ecc_sign_eth_bls_SIGNATURESIZE
  * @return {number} 0 if valid, -1 if invalid
  */
 Module.ecc_sign_eth_bls_FastAggregateVerify = (
