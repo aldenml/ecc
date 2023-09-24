@@ -40,6 +40,7 @@ jobs:
       - uses: actions/setup-python@v4
         with:
           python-version: '3.11'
+      - run: echo "${{ runner.temp }}/msys/msys64/mingw64/bin" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
 
       - name: install packages
         run: |
