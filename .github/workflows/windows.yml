@@ -36,12 +36,15 @@ jobs:
             autoconf
             automake
             libtool
-            mingw-w64-x86_64-python
-            mingw-w64-x86_64-python-pip
+
+      - uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
       - name: install packages
         run: |
           pip3 install --upgrade build
-          pip3 install cffi --plat-name win-amd64
+          pip3 install cffi
 
       - name: cmake configure
         run: |
