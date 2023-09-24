@@ -41,7 +41,7 @@ jobs:
       - name: install packages
         run: |
           pip3 install --upgrade build
-          pip3 install cffi
+          pip3 install cffi --plat-name win-amd64
 
       - name: cmake configure
         run: |
