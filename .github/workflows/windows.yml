@@ -43,8 +43,8 @@ jobs:
 
       - name: install packages
         run: |
-          pip3 install --upgrade build
-          pip3 install cffi
+          pip install --upgrade build
+          pip install cffi
 
       - name: cmake configure
         run: |
@@ -53,7 +53,6 @@ jobs:
       - name: build libsodium
         run: |
           cd deps/libsodium
-          ./autogen.sh -s
           ./configure "CFLAGS=-DSODIUM_STATIC=1 -O2 -Wno-cpp" --disable-dependency-tracking --prefix=/d/a/ecc/ecc/build/libsodium --disable-ssp --disable-shared --without-pthreads
           make -j2
           make install
