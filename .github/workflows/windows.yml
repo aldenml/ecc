@@ -43,8 +43,8 @@ jobs:
 
       - name: install packages
         run: |
-          python -m pip install --upgrade build
-          python -m pip install cffi
+          python3 -m pip install --upgrade build
+          python3 -m pip install cffi
 
       - name: cmake configure
         run: |
