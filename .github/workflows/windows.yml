@@ -25,9 +25,7 @@ jobs:
           submodules: recursive
       - uses: msys2/setup-msys2@v2
         with:
-          msystem: MINGW64
-          path-type: minimal
-          update: false
+          update: true
           install: >-
             mingw-w64-x86_64-gcc
             mingw-w64-x86_64-cmake
@@ -36,16 +34,13 @@ jobs:
             autoconf
             automake
             libtool
-
-      - uses: actions/setup-python@v4
-        with:
-          python-version: '3.11'
-      - run: echo "${{ runner.temp }}/msys/msys64/mingw64/bin" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
+            mingw-w64-x86_64-python
+            mingw-w64-x86_64-python-pip
 
       - name: install packages
         run: |
-          python3 -m pip install --upgrade build
-          python3 -m pip install cffi
+          pip3 install --upgrade build
+          pip3 install cffi
 
       - name: cmake configure
         run: |
