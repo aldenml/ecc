@@ -140,17 +140,17 @@ elseif(NOT WIN32)
     )
 endif()
 
-# since we are using libsodium master branch, autogen needs to be run
-if(NOT WIN32)
-    # setup build configure for libsodium
-    ExternalProject_Add_Step(
-        libsodium_external autogen
-        COMMAND ./autogen.sh -s
-        WORKING_DIRECTORY ${LIBSODIUM_DEPS_DIR}
-        COMMENT "Running autogen.sh tool"
-        DEPENDERS configure
-    )
-endif()
+# if using libsodium master branch, autogen needs to be run
+#if(NOT WIN32)
+#    # setup build configure for libsodium
+#    ExternalProject_Add_Step(
+#        libsodium_external autogen
+#        COMMAND ./autogen.sh -s
+#        WORKING_DIRECTORY ${LIBSODIUM_DEPS_DIR}
+#        COMMENT "Running autogen.sh tool"
+#        DEPENDERS configure
+#    )
+#endif()
 
 # setup libsodium library
 file(MAKE_DIRECTORY ${LIBSODIUM_BUILD_DIR}/include)
