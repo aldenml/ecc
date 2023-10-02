@@ -35,13 +35,17 @@ jobs:
             autoconf
             automake
             libtool
-            mingw-w64-x86_64-python
-            mingw-w64-x86_64-python-pip
+
+      - name: setup python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
 
       - name: install packages
         run: |
-          pip3 install --upgrade build
-          pip3 install cffi
+          python -m pip install --upgrade pip
+          pip install --upgrade build
+          pip install cffi
 
       - name: cmake configure
         run: |
@@ -83,14 +87,14 @@ jobs:
       - name: python wheel
         run: |
           cd bindings/python
-          python3 cffi_build.py
-          python3 -m build --wheel
+          python cffi_build.py
+          python -m build --wheel
           cd ../..
 
       - name: python tests
         run: |
           cd bindings/python
-          python3 -m unittest
+          python -m unittest
           cd ../..
 
       - uses: actions/upload-artifact@v3
