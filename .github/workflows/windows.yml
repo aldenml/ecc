@@ -24,23 +24,23 @@ jobs:
         with:
           submodules: recursive
 
-      - name: setup python
-        uses: actions/setup-python@v4
-        with:
-          python-version: '3.11'
-      - name: Display Python version
-        run: python --version
-
       - uses: msys2/setup-msys2@v2
         with:
+          msystem: UCRT64
+          update: true
           install: >-
-            mingw-w64-x86_64-gcc
-            mingw-w64-x86_64-cmake
-            mingw-w64-x86_64-ninja
+            gcc
+            cmake
+            ninja
             make
             autoconf
             automake
             libtool
+            python
+            python-pip
+
+      - name: Display Python version
+        run: python --version
 
       - name: install packages
         run: |
