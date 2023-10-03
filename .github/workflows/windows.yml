@@ -67,7 +67,7 @@ jobs:
 
       - name: c build
         run: |
-          cmake --build build --config Release --parallel 2
+          cmake --build build --config Release --parallel 2 --target ecc_jvm
           cp build/libecc-jvm.dll bindings/jvm/
           objdump -p build/libecc.dll | grep DLL
 
