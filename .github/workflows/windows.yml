@@ -25,7 +25,7 @@ jobs:
           submodules: recursive
       - uses: msys2/setup-msys2@v2
         with:
-          msystem: UCRT64
+          msystem: MINGW64
           update: true
           install: >-
             git
@@ -40,16 +40,15 @@ jobs:
             libffi-devel
             python
             python-pip
+      - uses: actions/setup-java@v3
+        with:
+          distribution: 'corretto'
+          java-version: '11'
 
       - name: install packages
         run: |
           pip install --upgrade build
           pip install cffi
-
-      - uses: actions/setup-java@v3
-        with:
-          distribution: 'corretto'
-          java-version: '11'
 
       - name: cmake configure
         run: |
