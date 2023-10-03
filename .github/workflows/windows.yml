@@ -29,6 +29,7 @@ jobs:
           msystem: UCRT64
           update: true
           install: >-
+            git
             gcc
             cmake
             ninja
@@ -36,10 +37,10 @@ jobs:
             autoconf
             automake
             libtool
-            python
-            python-pip
             libffi
             libffi-devel
+            python
+            python-pip
 
       - name: install packages
         run: |
