@@ -62,7 +62,7 @@ jobs:
       - name: build blst
         run: |
           cd deps/blst
-          ./build.sh -O2
+          ./build.sh -O2 -Wno-error
           cd ../..
 
       - name: c build
