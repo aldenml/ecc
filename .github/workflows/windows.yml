@@ -68,6 +68,8 @@ jobs:
       - name: c build
         run: |
           cmake --build build --config Release --parallel 2
+          cp build/libecc.so build/libecc.dll
+          cp build/libecc-jvm.so build/libecc-jvm.dll
           cp build/libecc-jvm.dll bindings/jvm/
           objdump -p build/libecc.dll | grep DLL
 
