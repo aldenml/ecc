@@ -26,7 +26,7 @@ jobs:
 
       - uses: msys2/setup-msys2@v2
         with:
-          msystem: UCRT64
+          msystem: MINGW64
           update: true
           install: >-
             git
@@ -67,8 +67,7 @@ jobs:
 
       - name: c build
         run: |
-          cmake --build build --config Release --parallel 2 --target ecc_jvm
-          file build/libecc-jvm.so
+          cmake --build build --config Release --parallel 2
           cp build/libecc-jvm.dll bindings/jvm/
           objdump -p build/libecc.dll | grep DLL
 
