@@ -133,7 +133,7 @@ elseif(NOT WIN32)
         blst_external
         SOURCE_DIR ${BLST_DEPS_DIR}
         CONFIGURE_COMMAND ""
-        BUILD_COMMAND ./build.sh -O2 "$ENV{ECC_CFLAGS}"
+        BUILD_COMMAND ./build.sh -O2 -Wno-error "$ENV{ECC_CFLAGS}"
         BUILD_IN_SOURCE 1
         BUILD_BYPRODUCTS ${BLST_DEPS_DIR}/libblst.a
         INSTALL_COMMAND ""
