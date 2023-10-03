@@ -39,9 +39,7 @@ jobs:
             python
             python-pip
             libffi
-
-      - name: Display Python version
-        run: python --version
+            libffi-devel
 
       - name: install packages
         run: |
