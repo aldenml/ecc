@@ -38,17 +38,17 @@ jobs:
             libtool
             libffi
             libffi-devel
-            python
-            python-pip
-      - uses: actions/setup-java@v3
-        with:
-          distribution: 'corretto'
-          java-version: '11'
+            mingw-w64-x86_64-python
+            mingw-w64-x86_64-python-pip
+#      - uses: actions/setup-java@v3
+#        with:
+#          distribution: 'corretto'
+#          java-version: '11'
 
       - name: install packages
         run: |
-          pip install --upgrade build
-          pip install cffi
+          pip3 install --upgrade build
+          pip3 install cffi
 
       - name: cmake configure
         run: |
