@@ -39,6 +39,7 @@ jobs:
             libtool
             mingw-w64-x86_64-python
             mingw-w64-x86_64-python-pip
+            mingw-w64-x86_64-python-build
             mingw-w64-x86_64-python-cffi
 
       - name: cmake configure
@@ -81,14 +82,14 @@ jobs:
       - name: python wheel
         run: |
           cd bindings/python
-          python cffi_build.py
-          python -m build --wheel
+          python3 cffi_build.py
+          python3 -m build --wheel
           cd ../..
 
       - name: python tests
         run: |
           cd bindings/python
-          python -m unittest
+          python3 -m unittest
           cd ../..
 
       - uses: actions/upload-artifact@v3
