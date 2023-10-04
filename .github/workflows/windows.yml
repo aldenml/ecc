@@ -32,16 +32,15 @@ jobs:
             mingw-w64-x86_64-gcc
             mingw-w64-x86_64-cmake
             mingw-w64-x86_64-ninja
+            git
             make
             autoconf
             automake
             libtool
             mingw-w64-x86_64-python
             mingw-w64-x86_64-python-pip
-      - name: install packages
-        run: |
-          pip3 install --upgrade build
-          pip3 install cffi
+            mingw-w64-x86_64-python-build
+            mingw-w64-x86_64-python-cffi
 
       - name: cmake configure
         run: |
@@ -50,7 +49,6 @@ jobs:
       - name: build libsodium
         run: |
           cd deps/libsodium
-          ./autogen.sh -s
           ./configure "CFLAGS=-DSODIUM_STATIC=1 -O2 -Wno-cpp" --disable-dependency-tracking --prefix=/d/a/ecc/ecc/build/libsodium --disable-ssp --disable-shared --without-pthreads
           make -j2
           make install
