@@ -37,19 +37,18 @@ jobs:
             autoconf
             automake
             libtool
-            mingw-w64-x86_64-libffi
-            mingw-w64-x86_64-libffi-devel
             mingw-w64-x86_64-python
             mingw-w64-x86_64-python-pip
+            mingw-w64-x86_64-python-cffi
 #      - uses: actions/setup-java@v3
 #        with:
 #          distribution: 'corretto'
 #          java-version: '11'
 
-      - name: install packages
-        run: |
-          /mingw64/bin/pip3.exe install --upgrade build
-          /mingw64/bin/pip3.exe install cffi
+#      - name: install packages
+#        run: |
+#          /mingw64/bin/pip3.exe install --upgrade build
+#          /mingw64/bin/pip3.exe install cffi
 
       - name: cmake configure
         run: |
