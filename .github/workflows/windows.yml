@@ -25,8 +25,9 @@ jobs:
           submodules: recursive
       - uses: msys2/setup-msys2@v2
         with:
-          msystem: CLANG64
-          update: true
+          msystem: MINGW64
+          path-type: minimal
+          update: false
           install: >-
             mingw-w64-x86_64-gcc
             mingw-w64-x86_64-cmake
@@ -36,8 +37,8 @@ jobs:
             autoconf
             automake
             libtool
-            libffi
-            libffi-devel
+            mingw-w64-x86_64-libffi
+            mingw-w64-x86_64-libffi-devel
             mingw-w64-x86_64-python
             mingw-w64-x86_64-python-pip
 #      - uses: actions/setup-java@v3
@@ -47,8 +48,8 @@ jobs:
 
       - name: install packages
         run: |
-          pip3 install --upgrade build
-          pip3 install cffi
+          /mingw64/bin/pip3.exe install --upgrade build
+          /mingw64/bin/pip3.exe install cffi
 
       - name: cmake configure
         run: |
