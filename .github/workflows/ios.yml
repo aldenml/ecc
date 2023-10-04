@@ -17,7 +17,7 @@ jobs:
   arm64:
     runs-on: macos-12
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           submodules: recursive
       - name: install packages
@@ -52,7 +52,7 @@ jobs:
   arm64-sim:
     runs-on: macos-12
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           submodules: recursive
       - name: install packages
@@ -87,7 +87,7 @@ jobs:
   x86_64-sim:
     runs-on: macos-12
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           submodules: recursive
       - name: install packages
