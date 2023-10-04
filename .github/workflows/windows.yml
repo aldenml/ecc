@@ -28,10 +28,10 @@ jobs:
           msystem: CLANG64
           update: true
           install: >-
+            mingw-w64-x86_64-gcc
+            mingw-w64-x86_64-cmake
+            mingw-w64-x86_64-ninja
             git
-            gcc
-            cmake
-            ninja
             make
             autoconf
             automake
