@@ -2045,7 +2045,7 @@ public final class libecc {
      * } Envelope;
      * </pre>
      *
-     * nonce: A unique nonce of length Nn, used to protect this Envelope.
+     * nonce: A randomly-sampled nonce of length Nn, used to protect this Envelope.
      * auth_tag: An authentication tag protecting the contents of the envelope, covering the envelope nonce and CleartextCredentials.
      *
      */
@@ -2254,7 +2254,7 @@ public final class libecc {
      * @param client_public_key (output) size:ecc_opaque_ristretto255_sha512_Npk
      * @param masking_key (output) size:ecc_opaque_ristretto255_sha512_Nh
      * @param export_key (output) size:ecc_opaque_ristretto255_sha512_Nh
-     * @param randomized_pwd size:64
+     * @param randomized_password a randomized password, size:64
      * @param server_public_key size:ecc_opaque_ristretto255_sha512_Npk
      * @param server_identity size:server_identity_len
      * @param server_identity_len the length of `server_identity`
@@ -2267,7 +2267,7 @@ public final class libecc {
         byte[] client_public_key,
         byte[] masking_key,
         byte[] export_key,
-        byte[] randomized_pwd,
+        byte[] randomized_password,
         byte[] server_public_key,
         byte[] server_identity,
         int server_identity_len,
@@ -2287,7 +2287,7 @@ public final class libecc {
      * @param client_public_key (output) size:ecc_opaque_ristretto255_sha512_Npk
      * @param masking_key (output) size:ecc_opaque_ristretto255_sha512_Nh
      * @param export_key (output) size:ecc_opaque_ristretto255_sha512_Nh
-     * @param randomized_pwd size:64
+     * @param randomized_password a randomized password, size:64
      * @param server_public_key size:ecc_opaque_ristretto255_sha512_Npk
      * @param server_identity size:server_identity_len
      * @param server_identity_len the length of `server_identity`
@@ -2299,7 +2299,7 @@ public final class libecc {
         byte[] client_public_key,
         byte[] masking_key,
         byte[] export_key,
-        byte[] randomized_pwd,
+        byte[] randomized_password,
         byte[] server_public_key,
         byte[] server_identity,
         int server_identity_len,
@@ -2313,7 +2313,7 @@ public final class libecc {
      *
      * @param client_private_key (output) size:ecc_opaque_ristretto255_sha512_Nsk
      * @param export_key (output) size:ecc_opaque_ristretto255_sha512_Nh
-     * @param randomized_pwd size:64
+     * @param randomized_password a randomized password, size:64
      * @param server_public_key size:ecc_opaque_ristretto255_sha512_Npk
      * @param envelope_raw size:ecc_opaque_ristretto255_sha512_Ne
      * @param server_identity size:server_identity_len
@@ -2325,7 +2325,7 @@ public final class libecc {
     public static native int ecc_opaque_ristretto255_sha512_EnvelopeRecover(
         byte[] client_private_key,
         byte[] export_key,
-        byte[] randomized_pwd,
+        byte[] randomized_password,
         byte[] server_public_key,
         byte[] envelope_raw,
         byte[] server_identity,
@@ -2343,6 +2343,19 @@ public final class libecc {
     public static native void ecc_opaque_ristretto255_sha512_RecoverPublicKey(
         byte[] public_key,
         byte[] private_key
+    );
+
+    /**
+     * Returns a randomly generated private and public key pair.
+     *
+     * @param private_key (output) a private key, size:ecc_opaque_ristretto255_sha512_Nsk
+     * @param public_key (output) the associated public key, size:ecc_opaque_ristretto255_sha512_Npk
+     * @param seed size:ecc_opaque_ristretto255_sha512_Nn
+     */
+    public static native void ecc_opaque_ristretto255_sha512_GenerateAuthKeyPairWithSeed(
+        byte[] private_key,
+        byte[] public_key,
+        byte[] seed
     );
 
     /**
@@ -2367,7 +2380,7 @@ public final class libecc {
      * @param public_key (output) the associated public key, size:ecc_opaque_ristretto255_sha512_Npk
      * @param seed pseudo-random byte sequence used as a seed, size:ecc_opaque_ristretto255_sha512_Nn
      */
-    public static native void ecc_opaque_ristretto255_sha512_DeriveAuthKeyPair(
+    public static native void ecc_opaque_ristretto255_sha512_DeriveDiffieHellmanKeyPair(
         byte[] private_key,
         byte[] public_key,
         byte[] seed
@@ -2763,18 +2776,16 @@ public final class libecc {
      * @param password_len the length of `password`
      * @param blind size:ecc_opaque_ristretto255_sha512_Ns
      * @param client_nonce size:ecc_opaque_ristretto255_sha512_Nn
-     * @param client_secret size:ecc_opaque_ristretto255_sha512_Nsk
-     * @param client_keyshare size:ecc_opaque_ristretto255_sha512_Npk
+     * @param seed size:ecc_opaque_ristretto255_sha512_Nn
      */
-    public static native void ecc_opaque_ristretto255_sha512_ClientInitWithSecrets(
+    public static native void ecc_opaque_ristretto255_sha512_GenerateKE1WithSeed(
         byte[] ke1,
         byte[] state,
         byte[] password,
         int password_len,
         byte[] blind,
         byte[] client_nonce,
-        byte[] client_secret,
-        byte[] client_keyshare
+        byte[] seed
     );
 
     /**
@@ -2785,7 +2796,7 @@ public final class libecc {
      * @param password an opaque byte string containing the client's password, size:password_len
      * @param password_len the length of `password`
      */
-    public static native void ecc_opaque_ristretto255_sha512_ClientInit(
+    public static native void ecc_opaque_ristretto255_sha512_GenerateKE1(
         byte[] ke1,
         byte[] state,
         byte[] password,
@@ -2813,7 +2824,7 @@ public final class libecc {
      * @param context_len the length of `context`
      * @return 0 if is able to recover credentials and authenticate with the server, else -1
      */
-    public static native int ecc_opaque_ristretto255_sha512_ClientFinish(
+    public static native int ecc_opaque_ristretto255_sha512_GenerateKE3(
         byte[] ke3_raw,
         byte[] session_key,
         byte[] export_key,
@@ -2837,16 +2848,14 @@ public final class libecc {
      * @param state (input, output) size:ecc_opaque_ristretto255_sha512_CLIENTSTATESIZE
      * @param credential_request size:ecc_opaque_ristretto255_sha512_CREDENTIALREQUESTSIZE
      * @param client_nonce size:ecc_opaque_ristretto255_sha512_Nn
-     * @param client_secret size:ecc_opaque_ristretto255_sha512_Nsk
-     * @param client_keyshare size:ecc_opaque_ristretto255_sha512_Npk
+     * @param seed size:ecc_opaque_ristretto255_sha512_Nn
      */
-    public static native void ecc_opaque_ristretto255_sha512_3DH_StartWithSecrets(
+    public static native void ecc_opaque_ristretto255_sha512_3DH_StartWithSeed(
         byte[] ke1,
         byte[] state,
         byte[] credential_request,
         byte[] client_nonce,
-        byte[] client_secret,
-        byte[] client_keyshare
+        byte[] seed
     );
 
     /**
@@ -2917,10 +2926,9 @@ public final class libecc {
      * @param context_len the length of `context`
      * @param masking_nonce size:ecc_opaque_ristretto255_sha512_Nn
      * @param server_nonce size:ecc_opaque_ristretto255_sha512_Nn
-     * @param server_secret size:ecc_opaque_ristretto255_sha512_Nsk
-     * @param server_keyshare size:ecc_opaque_ristretto255_sha512_Npk
+     * @param seed size:ecc_opaque_ristretto255_sha512_Nn
      */
-    public static native void ecc_opaque_ristretto255_sha512_ServerInitWithSecrets(
+    public static native void ecc_opaque_ristretto255_sha512_GenerateKE2WithSeed(
         byte[] ke2_raw,
         byte[] state_raw,
         byte[] server_identity,
@@ -2938,8 +2946,7 @@ public final class libecc {
         int context_len,
         byte[] masking_nonce,
         byte[] server_nonce,
-        byte[] server_secret,
-        byte[] server_keyshare
+        byte[] seed
     );
 
     /**
@@ -2964,7 +2971,7 @@ public final class libecc {
      * @param context the application specific context, size:context_len
      * @param context_len the length of `context`
      */
-    public static native void ecc_opaque_ristretto255_sha512_ServerInit(
+    public static native void ecc_opaque_ristretto255_sha512_GenerateKE2(
         byte[] ke2_raw,
         byte[] state_raw,
         byte[] server_identity,
@@ -3013,10 +3020,9 @@ public final class libecc {
      * @param context size:context_len
      * @param context_len the length of `context`
      * @param server_nonce size:ecc_opaque_ristretto255_sha512_Nn
-     * @param server_secret size:ecc_opaque_ristretto255_sha512_Nsk
-     * @param server_keyshare size:ecc_opaque_ristretto255_sha512_Npk
+     * @param seed size:ecc_opaque_ristretto255_sha512_Nn
      */
-    public static native void ecc_opaque_ristretto255_sha512_3DH_ResponseWithSecrets(
+    public static native void ecc_opaque_ristretto255_sha512_3DH_ResponseWithSeed(
         byte[] ke2_raw,
         byte[] state_raw,
         byte[] server_identity,
@@ -3031,8 +3037,7 @@ public final class libecc {
         byte[] context,
         int context_len,
         byte[] server_nonce,
-        byte[] server_secret,
-        byte[] server_keyshare
+        byte[] seed
     );
 
     /**

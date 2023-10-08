@@ -753,7 +753,7 @@ ffibuilder.cdef(
         unsigned char *client_public_key,
         unsigned char *masking_key,
         unsigned char *export_key,
-        unsigned char *randomized_pwd,
+        unsigned char *randomized_password,
         unsigned char *server_public_key,
         unsigned char *server_identity,
         int server_identity_len,
@@ -767,7 +767,7 @@ ffibuilder.cdef(
         unsigned char *client_public_key,
         unsigned char *masking_key,
         unsigned char *export_key,
-        unsigned char *randomized_pwd,
+        unsigned char *randomized_password,
         unsigned char *server_public_key,
         unsigned char *server_identity,
         int server_identity_len,
@@ -778,7 +778,7 @@ ffibuilder.cdef(
     int ecc_opaque_ristretto255_sha512_EnvelopeRecover(
         unsigned char *client_private_key,
         unsigned char *export_key,
-        unsigned char *randomized_pwd,
+        unsigned char *randomized_password,
         unsigned char *server_public_key,
         unsigned char *envelope_raw,
         unsigned char *server_identity,
@@ -792,12 +792,18 @@ ffibuilder.cdef(
         unsigned char *private_key
     );
 
+    void ecc_opaque_ristretto255_sha512_GenerateAuthKeyPairWithSeed(
+        unsigned char *private_key,
+        unsigned char *public_key,
+        unsigned char *seed
+    );
+
     void ecc_opaque_ristretto255_sha512_GenerateAuthKeyPair(
         unsigned char *private_key,
         unsigned char *public_key
     );
 
-    void ecc_opaque_ristretto255_sha512_DeriveAuthKeyPair(
+    void ecc_opaque_ristretto255_sha512_DeriveDiffieHellmanKeyPair(
         unsigned char *private_key,
         unsigned char *public_key,
         unsigned char *seed
@@ -965,25 +971,24 @@ ffibuilder.cdef(
         int preamble_len
     );
 
-    void ecc_opaque_ristretto255_sha512_ClientInitWithSecrets(
+    void ecc_opaque_ristretto255_sha512_GenerateKE1WithSeed(
         unsigned char *ke1,
         unsigned char *state,
         unsigned char *password,
         int password_len,
         unsigned char *blind,
         unsigned char *client_nonce,
-        unsigned char *client_secret,
-        unsigned char *client_keyshare
+        unsigned char *seed
     );
 
-    void ecc_opaque_ristretto255_sha512_ClientInit(
+    void ecc_opaque_ristretto255_sha512_GenerateKE1(
         unsigned char *ke1,
         unsigned char *state,
         unsigned char *password,
         int password_len
     );
 
-    int ecc_opaque_ristretto255_sha512_ClientFinish(
+    int ecc_opaque_ristretto255_sha512_GenerateKE3(
         unsigned char *ke3_raw,
         unsigned char *session_key,
         unsigned char *export_key,
@@ -1000,13 +1005,12 @@ ffibuilder.cdef(
         int context_len
     );
 
-    void ecc_opaque_ristretto255_sha512_3DH_StartWithSecrets(
+    void ecc_opaque_ristretto255_sha512_3DH_StartWithSeed(
         unsigned char *ke1,
         unsigned char *state,
         unsigned char *credential_request,
         unsigned char *client_nonce,
-        unsigned char *client_secret,
-        unsigned char *client_keyshare
+        unsigned char *seed
     );
 
     void ecc_opaque_ristretto255_sha512_3DH_Start(
@@ -1030,7 +1034,7 @@ ffibuilder.cdef(
         int context_len
     );
 
-    void ecc_opaque_ristretto255_sha512_ServerInitWithSecrets(
+    void ecc_opaque_ristretto255_sha512_GenerateKE2WithSeed(
         unsigned char *ke2_raw,
         unsigned char *state_raw,
         unsigned char *server_identity,
@@ -1048,11 +1052,10 @@ ffibuilder.cdef(
         int context_len,
         unsigned char *masking_nonce,
         unsigned char *server_nonce,
-        unsigned char *server_secret,
-        unsigned char *server_keyshare
+        unsigned char *seed
     );
 
-    void ecc_opaque_ristretto255_sha512_ServerInit(
+    void ecc_opaque_ristretto255_sha512_GenerateKE2(
         unsigned char *ke2_raw,
         unsigned char *state_raw,
         unsigned char *server_identity,
@@ -1076,7 +1079,7 @@ ffibuilder.cdef(
         unsigned char *ke3
     );
 
-    void ecc_opaque_ristretto255_sha512_3DH_ResponseWithSecrets(
+    void ecc_opaque_ristretto255_sha512_3DH_ResponseWithSeed(
         unsigned char *ke2_raw,
         unsigned char *state_raw,
         unsigned char *server_identity,
@@ -1091,8 +1094,7 @@ ffibuilder.cdef(
         unsigned char *context,
         int context_len,
         unsigned char *server_nonce,
-        unsigned char *server_secret,
-        unsigned char *server_keyshare
+        unsigned char *seed
     );
 
     void ecc_opaque_ristretto255_sha512_3DH_Response(

@@ -3072,7 +3072,7 @@ struct {
 } Envelope;
 </pre>
 
-nonce: A unique nonce of length Nn, used to protect this Envelope.
+nonce: A randomly-sampled nonce of length Nn, used to protect this Envelope.
 auth_tag: An authentication tag protecting the contents of the envelope, covering the envelope nonce and CleartextCredentials.
 """
 
@@ -3285,7 +3285,7 @@ def ecc_opaque_ristretto255_sha512_EnvelopeStoreWithNonce(
     client_public_key: bytearray,
     masking_key: bytearray,
     export_key: bytearray,
-    randomized_pwd: bytes,
+    randomized_password: bytes,
     server_public_key: bytes,
     server_identity: bytes,
     server_identity_len: int,
@@ -3301,7 +3301,7 @@ def ecc_opaque_ristretto255_sha512_EnvelopeStoreWithNonce(
     client_public_key -- (output) size:ecc_opaque_ristretto255_sha512_Npk
     masking_key -- (output) size:ecc_opaque_ristretto255_sha512_Nh
     export_key -- (output) size:ecc_opaque_ristretto255_sha512_Nh
-    randomized_pwd -- size:64
+    randomized_password -- a randomized password, size:64
     server_public_key -- size:ecc_opaque_ristretto255_sha512_Npk
     server_identity -- size:server_identity_len
     server_identity_len -- the length of `server_identity`
@@ -3313,7 +3313,7 @@ def ecc_opaque_ristretto255_sha512_EnvelopeStoreWithNonce(
     ptr_client_public_key = ffi.from_buffer(client_public_key)
     ptr_masking_key = ffi.from_buffer(masking_key)
     ptr_export_key = ffi.from_buffer(export_key)
-    ptr_randomized_pwd = ffi.from_buffer(randomized_pwd)
+    ptr_randomized_password = ffi.from_buffer(randomized_password)
     ptr_server_public_key = ffi.from_buffer(server_public_key)
     ptr_server_identity = ffi.from_buffer(server_identity)
     ptr_client_identity = ffi.from_buffer(client_identity)
@@ -3323,7 +3323,7 @@ def ecc_opaque_ristretto255_sha512_EnvelopeStoreWithNonce(
         ptr_client_public_key,
         ptr_masking_key,
         ptr_export_key,
-        ptr_randomized_pwd,
+        ptr_randomized_password,
         ptr_server_public_key,
         ptr_server_identity,
         server_identity_len,
@@ -3339,7 +3339,7 @@ def ecc_opaque_ristretto255_sha512_EnvelopeStore(
     client_public_key: bytearray,
     masking_key: bytearray,
     export_key: bytearray,
-    randomized_pwd: bytes,
+    randomized_password: bytes,
     server_public_key: bytes,
     server_identity: bytes,
     server_identity_len: int,
@@ -3357,7 +3357,7 @@ def ecc_opaque_ristretto255_sha512_EnvelopeStore(
     client_public_key -- (output) size:ecc_opaque_ristretto255_sha512_Npk
     masking_key -- (output) size:ecc_opaque_ristretto255_sha512_Nh
     export_key -- (output) size:ecc_opaque_ristretto255_sha512_Nh
-    randomized_pwd -- size:64
+    randomized_password -- a randomized password, size:64
     server_public_key -- size:ecc_opaque_ristretto255_sha512_Npk
     server_identity -- size:server_identity_len
     server_identity_len -- the length of `server_identity`
@@ -3368,7 +3368,7 @@ def ecc_opaque_ristretto255_sha512_EnvelopeStore(
     ptr_client_public_key = ffi.from_buffer(client_public_key)
     ptr_masking_key = ffi.from_buffer(masking_key)
     ptr_export_key = ffi.from_buffer(export_key)
-    ptr_randomized_pwd = ffi.from_buffer(randomized_pwd)
+    ptr_randomized_password = ffi.from_buffer(randomized_password)
     ptr_server_public_key = ffi.from_buffer(server_public_key)
     ptr_server_identity = ffi.from_buffer(server_identity)
     ptr_client_identity = ffi.from_buffer(client_identity)
@@ -3377,7 +3377,7 @@ def ecc_opaque_ristretto255_sha512_EnvelopeStore(
         ptr_client_public_key,
         ptr_masking_key,
         ptr_export_key,
-        ptr_randomized_pwd,
+        ptr_randomized_password,
         ptr_server_public_key,
         ptr_server_identity,
         server_identity_len,
@@ -3390,7 +3390,7 @@ def ecc_opaque_ristretto255_sha512_EnvelopeStore(
 def ecc_opaque_ristretto255_sha512_EnvelopeRecover(
     client_private_key: bytearray,
     export_key: bytearray,
-    randomized_pwd: bytes,
+    randomized_password: bytes,
     server_public_key: bytes,
     envelope_raw: bytes,
     server_identity: bytes,
@@ -3404,7 +3404,7 @@ def ecc_opaque_ristretto255_sha512_EnvelopeRecover(
     
     client_private_key -- (output) size:ecc_opaque_ristretto255_sha512_Nsk
     export_key -- (output) size:ecc_opaque_ristretto255_sha512_Nh
-    randomized_pwd -- size:64
+    randomized_password -- a randomized password, size:64
     server_public_key -- size:ecc_opaque_ristretto255_sha512_Npk
     envelope_raw -- size:ecc_opaque_ristretto255_sha512_Ne
     server_identity -- size:server_identity_len
@@ -3415,7 +3415,7 @@ def ecc_opaque_ristretto255_sha512_EnvelopeRecover(
     """
     ptr_client_private_key = ffi.from_buffer(client_private_key)
     ptr_export_key = ffi.from_buffer(export_key)
-    ptr_randomized_pwd = ffi.from_buffer(randomized_pwd)
+    ptr_randomized_password = ffi.from_buffer(randomized_password)
     ptr_server_public_key = ffi.from_buffer(server_public_key)
     ptr_envelope_raw = ffi.from_buffer(envelope_raw)
     ptr_server_identity = ffi.from_buffer(server_identity)
@@ -3423,7 +3423,7 @@ def ecc_opaque_ristretto255_sha512_EnvelopeRecover(
     fun_ret = lib.ecc_opaque_ristretto255_sha512_EnvelopeRecover(
         ptr_client_private_key,
         ptr_export_key,
-        ptr_randomized_pwd,
+        ptr_randomized_password,
         ptr_server_public_key,
         ptr_envelope_raw,
         ptr_server_identity,
@@ -3453,6 +3453,29 @@ def ecc_opaque_ristretto255_sha512_RecoverPublicKey(
     return None
 
 
+def ecc_opaque_ristretto255_sha512_GenerateAuthKeyPairWithSeed(
+    private_key: bytearray,
+    public_key: bytearray,
+    seed: bytes
+) -> None:
+    """
+    Returns a randomly generated private and public key pair.
+    
+    private_key -- (output) a private key, size:ecc_opaque_ristretto255_sha512_Nsk
+    public_key -- (output) the associated public key, size:ecc_opaque_ristretto255_sha512_Npk
+    seed -- size:ecc_opaque_ristretto255_sha512_Nn
+    """
+    ptr_private_key = ffi.from_buffer(private_key)
+    ptr_public_key = ffi.from_buffer(public_key)
+    ptr_seed = ffi.from_buffer(seed)
+    lib.ecc_opaque_ristretto255_sha512_GenerateAuthKeyPairWithSeed(
+        ptr_private_key,
+        ptr_public_key,
+        ptr_seed
+    )
+    return None
+
+
 def ecc_opaque_ristretto255_sha512_GenerateAuthKeyPair(
     private_key: bytearray,
     public_key: bytearray
@@ -3475,7 +3498,7 @@ def ecc_opaque_ristretto255_sha512_GenerateAuthKeyPair(
     return None
 
 
-def ecc_opaque_ristretto255_sha512_DeriveAuthKeyPair(
+def ecc_opaque_ristretto255_sha512_DeriveDiffieHellmanKeyPair(
     private_key: bytearray,
     public_key: bytearray,
     seed: bytes
@@ -3491,7 +3514,7 @@ def ecc_opaque_ristretto255_sha512_DeriveAuthKeyPair(
     ptr_private_key = ffi.from_buffer(private_key)
     ptr_public_key = ffi.from_buffer(public_key)
     ptr_seed = ffi.from_buffer(seed)
-    lib.ecc_opaque_ristretto255_sha512_DeriveAuthKeyPair(
+    lib.ecc_opaque_ristretto255_sha512_DeriveDiffieHellmanKeyPair(
         ptr_private_key,
         ptr_public_key,
         ptr_seed
@@ -4141,15 +4164,14 @@ def ecc_opaque_ristretto255_sha512_3DH_DeriveKeys(
     return None
 
 
-def ecc_opaque_ristretto255_sha512_ClientInitWithSecrets(
+def ecc_opaque_ristretto255_sha512_GenerateKE1WithSeed(
     ke1: bytearray,
     state: bytearray,
     password: bytes,
     password_len: int,
     blind: bytes,
     client_nonce: bytes,
-    client_secret: bytes,
-    client_keyshare: bytes
+    seed: bytes
 ) -> None:
     """
     
@@ -4160,30 +4182,27 @@ def ecc_opaque_ristretto255_sha512_ClientInitWithSecrets(
     password_len -- the length of `password`
     blind -- size:ecc_opaque_ristretto255_sha512_Ns
     client_nonce -- size:ecc_opaque_ristretto255_sha512_Nn
-    client_secret -- size:ecc_opaque_ristretto255_sha512_Nsk
-    client_keyshare -- size:ecc_opaque_ristretto255_sha512_Npk
+    seed -- size:ecc_opaque_ristretto255_sha512_Nn
     """
     ptr_ke1 = ffi.from_buffer(ke1)
     ptr_state = ffi.from_buffer(state)
     ptr_password = ffi.from_buffer(password)
     ptr_blind = ffi.from_buffer(blind)
     ptr_client_nonce = ffi.from_buffer(client_nonce)
-    ptr_client_secret = ffi.from_buffer(client_secret)
-    ptr_client_keyshare = ffi.from_buffer(client_keyshare)
-    lib.ecc_opaque_ristretto255_sha512_ClientInitWithSecrets(
+    ptr_seed = ffi.from_buffer(seed)
+    lib.ecc_opaque_ristretto255_sha512_GenerateKE1WithSeed(
         ptr_ke1,
         ptr_state,
         ptr_password,
         password_len,
         ptr_blind,
         ptr_client_nonce,
-        ptr_client_secret,
-        ptr_client_keyshare
+        ptr_seed
     )
     return None
 
 
-def ecc_opaque_ristretto255_sha512_ClientInit(
+def ecc_opaque_ristretto255_sha512_GenerateKE1(
     ke1: bytearray,
     state: bytearray,
     password: bytes,
@@ -4200,7 +4219,7 @@ def ecc_opaque_ristretto255_sha512_ClientInit(
     ptr_ke1 = ffi.from_buffer(ke1)
     ptr_state = ffi.from_buffer(state)
     ptr_password = ffi.from_buffer(password)
-    lib.ecc_opaque_ristretto255_sha512_ClientInit(
+    lib.ecc_opaque_ristretto255_sha512_GenerateKE1(
         ptr_ke1,
         ptr_state,
         ptr_password,
@@ -4209,7 +4228,7 @@ def ecc_opaque_ristretto255_sha512_ClientInit(
     return None
 
 
-def ecc_opaque_ristretto255_sha512_ClientFinish(
+def ecc_opaque_ristretto255_sha512_GenerateKE3(
     ke3_raw: bytearray,
     session_key: bytearray,
     export_key: bytearray,
@@ -4255,7 +4274,7 @@ def ecc_opaque_ristretto255_sha512_ClientFinish(
     ptr_ke2 = ffi.from_buffer(ke2)
     ptr_mhf_salt = ffi.from_buffer(mhf_salt)
     ptr_context = ffi.from_buffer(context)
-    fun_ret = lib.ecc_opaque_ristretto255_sha512_ClientFinish(
+    fun_ret = lib.ecc_opaque_ristretto255_sha512_GenerateKE3(
         ptr_ke3_raw,
         ptr_session_key,
         ptr_export_key,
@@ -4274,13 +4293,12 @@ def ecc_opaque_ristretto255_sha512_ClientFinish(
     return fun_ret
 
 
-def ecc_opaque_ristretto255_sha512_3DH_StartWithSecrets(
+def ecc_opaque_ristretto255_sha512_3DH_StartWithSeed(
     ke1: bytearray,
     state: bytearray,
     credential_request: bytes,
     client_nonce: bytes,
-    client_secret: bytes,
-    client_keyshare: bytes
+    seed: bytes
 ) -> None:
     """
     
@@ -4289,22 +4307,19 @@ def ecc_opaque_ristretto255_sha512_3DH_StartWithSecrets(
     state -- (input, output) size:ecc_opaque_ristretto255_sha512_CLIENTSTATESIZE
     credential_request -- size:ecc_opaque_ristretto255_sha512_CREDENTIALREQUESTSIZE
     client_nonce -- size:ecc_opaque_ristretto255_sha512_Nn
-    client_secret -- size:ecc_opaque_ristretto255_sha512_Nsk
-    client_keyshare -- size:ecc_opaque_ristretto255_sha512_Npk
+    seed -- size:ecc_opaque_ristretto255_sha512_Nn
     """
     ptr_ke1 = ffi.from_buffer(ke1)
     ptr_state = ffi.from_buffer(state)
     ptr_credential_request = ffi.from_buffer(credential_request)
     ptr_client_nonce = ffi.from_buffer(client_nonce)
-    ptr_client_secret = ffi.from_buffer(client_secret)
-    ptr_client_keyshare = ffi.from_buffer(client_keyshare)
-    lib.ecc_opaque_ristretto255_sha512_3DH_StartWithSecrets(
+    ptr_seed = ffi.from_buffer(seed)
+    lib.ecc_opaque_ristretto255_sha512_3DH_StartWithSeed(
         ptr_ke1,
         ptr_state,
         ptr_credential_request,
         ptr_client_nonce,
-        ptr_client_secret,
-        ptr_client_keyshare
+        ptr_seed
     )
     return None
 
@@ -4389,7 +4404,7 @@ def ecc_opaque_ristretto255_sha512_3DH_ClientFinalize(
     return fun_ret
 
 
-def ecc_opaque_ristretto255_sha512_ServerInitWithSecrets(
+def ecc_opaque_ristretto255_sha512_GenerateKE2WithSeed(
     ke2_raw: bytearray,
     state_raw: bytearray,
     server_identity: bytes,
@@ -4407,8 +4422,7 @@ def ecc_opaque_ristretto255_sha512_ServerInitWithSecrets(
     context_len: int,
     masking_nonce: bytes,
     server_nonce: bytes,
-    server_secret: bytes,
-    server_keyshare: bytes
+    seed: bytes
 ) -> None:
     """
     
@@ -4433,8 +4447,7 @@ def ecc_opaque_ristretto255_sha512_ServerInitWithSecrets(
     context_len -- the length of `context`
     masking_nonce -- size:ecc_opaque_ristretto255_sha512_Nn
     server_nonce -- size:ecc_opaque_ristretto255_sha512_Nn
-    server_secret -- size:ecc_opaque_ristretto255_sha512_Nsk
-    server_keyshare -- size:ecc_opaque_ristretto255_sha512_Npk
+    seed -- size:ecc_opaque_ristretto255_sha512_Nn
     """
     ptr_ke2_raw = ffi.from_buffer(ke2_raw)
     ptr_state_raw = ffi.from_buffer(state_raw)
@@ -4449,9 +4462,8 @@ def ecc_opaque_ristretto255_sha512_ServerInitWithSecrets(
     ptr_context = ffi.from_buffer(context)
     ptr_masking_nonce = ffi.from_buffer(masking_nonce)
     ptr_server_nonce = ffi.from_buffer(server_nonce)
-    ptr_server_secret = ffi.from_buffer(server_secret)
-    ptr_server_keyshare = ffi.from_buffer(server_keyshare)
-    lib.ecc_opaque_ristretto255_sha512_ServerInitWithSecrets(
+    ptr_seed = ffi.from_buffer(seed)
+    lib.ecc_opaque_ristretto255_sha512_GenerateKE2WithSeed(
         ptr_ke2_raw,
         ptr_state_raw,
         ptr_server_identity,
@@ -4469,13 +4481,12 @@ def ecc_opaque_ristretto255_sha512_ServerInitWithSecrets(
         context_len,
         ptr_masking_nonce,
         ptr_server_nonce,
-        ptr_server_secret,
-        ptr_server_keyshare
+        ptr_seed
     )
     return None
 
 
-def ecc_opaque_ristretto255_sha512_ServerInit(
+def ecc_opaque_ristretto255_sha512_GenerateKE2(
     ke2_raw: bytearray,
     state_raw: bytearray,
     server_identity: bytes,
@@ -4525,7 +4536,7 @@ def ecc_opaque_ristretto255_sha512_ServerInit(
     ptr_ke1_raw = ffi.from_buffer(ke1_raw)
     ptr_client_identity = ffi.from_buffer(client_identity)
     ptr_context = ffi.from_buffer(context)
-    lib.ecc_opaque_ristretto255_sha512_ServerInit(
+    lib.ecc_opaque_ristretto255_sha512_GenerateKE2(
         ptr_ke2_raw,
         ptr_state_raw,
         ptr_server_identity,
@@ -4569,7 +4580,7 @@ def ecc_opaque_ristretto255_sha512_ServerFinish(
     return fun_ret
 
 
-def ecc_opaque_ristretto255_sha512_3DH_ResponseWithSecrets(
+def ecc_opaque_ristretto255_sha512_3DH_ResponseWithSeed(
     ke2_raw: bytearray,
     state_raw: bytearray,
     server_identity: bytes,
@@ -4584,8 +4595,7 @@ def ecc_opaque_ristretto255_sha512_3DH_ResponseWithSecrets(
     context: bytes,
     context_len: int,
     server_nonce: bytes,
-    server_secret: bytes,
-    server_keyshare: bytes
+    seed: bytes
 ) -> None:
     """
     
@@ -4604,8 +4614,7 @@ def ecc_opaque_ristretto255_sha512_3DH_ResponseWithSecrets(
     context -- size:context_len
     context_len -- the length of `context`
     server_nonce -- size:ecc_opaque_ristretto255_sha512_Nn
-    server_secret -- size:ecc_opaque_ristretto255_sha512_Nsk
-    server_keyshare -- size:ecc_opaque_ristretto255_sha512_Npk
+    seed -- size:ecc_opaque_ristretto255_sha512_Nn
     """
     ptr_ke2_raw = ffi.from_buffer(ke2_raw)
     ptr_state_raw = ffi.from_buffer(state_raw)
@@ -4618,9 +4627,8 @@ def ecc_opaque_ristretto255_sha512_3DH_ResponseWithSecrets(
     ptr_credential_response_raw = ffi.from_buffer(credential_response_raw)
     ptr_context = ffi.from_buffer(context)
     ptr_server_nonce = ffi.from_buffer(server_nonce)
-    ptr_server_secret = ffi.from_buffer(server_secret)
-    ptr_server_keyshare = ffi.from_buffer(server_keyshare)
-    lib.ecc_opaque_ristretto255_sha512_3DH_ResponseWithSecrets(
+    ptr_seed = ffi.from_buffer(seed)
+    lib.ecc_opaque_ristretto255_sha512_3DH_ResponseWithSeed(
         ptr_ke2_raw,
         ptr_state_raw,
         ptr_server_identity,
@@ -4635,8 +4643,7 @@ def ecc_opaque_ristretto255_sha512_3DH_ResponseWithSecrets(
         ptr_context,
         context_len,
         ptr_server_nonce,
-        ptr_server_secret,
-        ptr_server_keyshare
+        ptr_seed
     )
     return None
 
