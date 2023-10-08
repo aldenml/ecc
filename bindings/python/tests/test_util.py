@@ -25,7 +25,7 @@ class TestUtil(unittest.TestCase):
         buf = bytearray(10)
         v_len = libecc.ecc_version(buf, len(buf))
         v = buf[0:v_len].decode()
-        self.assertEqual(v, "1.0.23")
+        self.assertEqual(v, "1.1.0")
 
 
 if __name__ == '__main__':
