@@ -10,7 +10,7 @@
 
 #include "export.h"
 
-// https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-10
+// https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-12
 // https://github.com/cfrg/draft-irtf-cfrg-opaque
 
 // const
@@ -79,7 +79,7 @@
  * } Envelope;
  * </pre>
  *
- * nonce: A unique nonce of length Nn, used to protect this Envelope.
+ * nonce: A randomly-sampled nonce of length Nn, used to protect this Envelope.
  * auth_tag: An authentication tag protecting the contents of the envelope, covering the envelope nonce and CleartextCredentials.
  */
 #define ecc_opaque_ristretto255_sha512_Ne 96
@@ -287,7 +287,7 @@ void ecc_opaque_ristretto255_sha512_CreateCleartextCredentials(
  * @param[out] client_public_key size:ecc_opaque_ristretto255_sha512_Npk
  * @param[out] masking_key size:ecc_opaque_ristretto255_sha512_Nh
  * @param[out] export_key size:ecc_opaque_ristretto255_sha512_Nh
- * @param randomized_pwd size:64
+ * @param randomized_password a randomized password, size:64
  * @param server_public_key size:ecc_opaque_ristretto255_sha512_Npk
  * @param server_identity size:server_identity_len
  * @param server_identity_len the length of `server_identity`
@@ -301,7 +301,7 @@ void ecc_opaque_ristretto255_sha512_EnvelopeStoreWithNonce(
     byte_t *client_public_key,
     byte_t *masking_key,
     byte_t *export_key,
-    const byte_t *randomized_pwd,
+    const byte_t *randomized_password,
     const byte_t *server_public_key,
     const byte_t *server_identity, int server_identity_len,
     const byte_t *client_identity, int client_identity_len,
@@ -319,7 +319,7 @@ void ecc_opaque_ristretto255_sha512_EnvelopeStoreWithNonce(
  * @param[out] client_public_key size:ecc_opaque_ristretto255_sha512_Npk
  * @param[out] masking_key size:ecc_opaque_ristretto255_sha512_Nh
  * @param[out] export_key size:ecc_opaque_ristretto255_sha512_Nh
- * @param randomized_pwd size:64
+ * @param randomized_password a randomized password, size:64
  * @param server_public_key size:ecc_opaque_ristretto255_sha512_Npk
  * @param server_identity size:server_identity_len
  * @param server_identity_len the length of `server_identity`
@@ -332,7 +332,7 @@ void ecc_opaque_ristretto255_sha512_EnvelopeStore(
     byte_t *client_public_key,
     byte_t *masking_key,
     byte_t *export_key,
-    const byte_t *randomized_pwd,
+    const byte_t *randomized_password,
     const byte_t *server_public_key,
     const byte_t *server_identity, int server_identity_len,
     const byte_t *client_identity, int client_identity_len
@@ -344,7 +344,7 @@ void ecc_opaque_ristretto255_sha512_EnvelopeStore(
  *
  * @param[out] client_private_key size:ecc_opaque_ristretto255_sha512_Nsk
  * @param[out] export_key size:ecc_opaque_ristretto255_sha512_Nh
- * @param randomized_pwd size:64
+ * @param randomized_password a randomized password, size:64
  * @param server_public_key size:ecc_opaque_ristretto255_sha512_Npk
  * @param envelope_raw size:ecc_opaque_ristretto255_sha512_Ne
  * @param server_identity size:server_identity_len
@@ -357,7 +357,7 @@ ECC_EXPORT
 int ecc_opaque_ristretto255_sha512_EnvelopeRecover(
     byte_t *client_private_key,
     byte_t *export_key,
-    const byte_t *randomized_pwd,
+    const byte_t *randomized_password,
     const byte_t *server_public_key,
     const byte_t *envelope_raw,
     const byte_t *server_identity, int server_identity_len,
@@ -374,6 +374,19 @@ ECC_EXPORT
 void ecc_opaque_ristretto255_sha512_RecoverPublicKey(
     byte_t *public_key,
     const byte_t *private_key
+);
+
+/**
+ * Returns a randomly generated private and public key pair.
+ *
+ * @param[out] private_key a private key, size:ecc_opaque_ristretto255_sha512_Nsk
+ * @param[out] public_key the associated public key, size:ecc_opaque_ristretto255_sha512_Npk
+ * @param seed size:ecc_opaque_ristretto255_sha512_Nn
+ */
+ECC_EXPORT
+void ecc_opaque_ristretto255_sha512_GenerateAuthKeyPairWithSeed(
+    byte_t *private_key, byte_t *public_key,
+    const byte_t *seed
 );
 
 /**
@@ -399,7 +412,7 @@ void ecc_opaque_ristretto255_sha512_GenerateAuthKeyPair(
  * @param seed pseudo-random byte sequence used as a seed, size:ecc_opaque_ristretto255_sha512_Nn
  */
 ECC_EXPORT
-void ecc_opaque_ristretto255_sha512_DeriveAuthKeyPair(
+void ecc_opaque_ristretto255_sha512_DeriveDiffieHellmanKeyPair(
     byte_t *private_key, byte_t *public_key,
     const byte_t *seed
 );
@@ -767,18 +780,16 @@ void ecc_opaque_ristretto255_sha512_3DH_DeriveKeys(
  * @param password_len the length of `password`
  * @param blind size:ecc_opaque_ristretto255_sha512_Ns
  * @param client_nonce size:ecc_opaque_ristretto255_sha512_Nn
- * @param client_secret size:ecc_opaque_ristretto255_sha512_Nsk
- * @param client_keyshare size:ecc_opaque_ristretto255_sha512_Npk
+ * @param seed size:ecc_opaque_ristretto255_sha512_Nn
  */
 ECC_EXPORT
-void ecc_opaque_ristretto255_sha512_ClientInitWithSecrets(
+void ecc_opaque_ristretto255_sha512_GenerateKE1WithSeed(
     byte_t *ke1,
     byte_t *state,
     const byte_t *password, int password_len,
     const byte_t *blind,
     const byte_t *client_nonce,
-    const byte_t *client_secret,
-    const byte_t *client_keyshare
+    const byte_t *seed
 );
 
 /**
@@ -789,7 +800,7 @@ void ecc_opaque_ristretto255_sha512_ClientInitWithSecrets(
  * @param password_len the length of `password`
  */
 ECC_EXPORT
-void ecc_opaque_ristretto255_sha512_ClientInit(
+void ecc_opaque_ristretto255_sha512_GenerateKE1(
     byte_t *ke1,
     byte_t *state,
     const byte_t *password, int password_len
@@ -816,7 +827,7 @@ void ecc_opaque_ristretto255_sha512_ClientInit(
  * @return 0 if is able to recover credentials and authenticate with the server, else -1
  */
 ECC_EXPORT
-int ecc_opaque_ristretto255_sha512_ClientFinish(
+int ecc_opaque_ristretto255_sha512_GenerateKE3(
     byte_t *ke3_raw,
     byte_t *session_key,
     byte_t *export_key,
@@ -835,17 +846,15 @@ int ecc_opaque_ristretto255_sha512_ClientFinish(
  * @param[in,out] state size:ecc_opaque_ristretto255_sha512_CLIENTSTATESIZE
  * @param credential_request size:ecc_opaque_ristretto255_sha512_CREDENTIALREQUESTSIZE
  * @param client_nonce size:ecc_opaque_ristretto255_sha512_Nn
- * @param client_secret size:ecc_opaque_ristretto255_sha512_Nsk
- * @param client_keyshare size:ecc_opaque_ristretto255_sha512_Npk
+ * @param seed size:ecc_opaque_ristretto255_sha512_Nn
  */
 ECC_EXPORT
-void ecc_opaque_ristretto255_sha512_3DH_StartWithSecrets(
+void ecc_opaque_ristretto255_sha512_3DH_StartWithSeed(
     byte_t *ke1,
     byte_t *state,
     const byte_t *credential_request,
     const byte_t *client_nonce,
-    const byte_t *client_secret,
-    const byte_t *client_keyshare
+    const byte_t *seed
 );
 
 /**
@@ -912,11 +921,10 @@ int ecc_opaque_ristretto255_sha512_3DH_ClientFinalize(
  * @param context_len the length of `context`
  * @param masking_nonce size:ecc_opaque_ristretto255_sha512_Nn
  * @param server_nonce size:ecc_opaque_ristretto255_sha512_Nn
- * @param server_secret size:ecc_opaque_ristretto255_sha512_Nsk
- * @param server_keyshare size:ecc_opaque_ristretto255_sha512_Npk
+ * @param seed size:ecc_opaque_ristretto255_sha512_Nn
  */
 ECC_EXPORT
-void ecc_opaque_ristretto255_sha512_ServerInitWithSecrets(
+void ecc_opaque_ristretto255_sha512_GenerateKE2WithSeed(
     byte_t *ke2_raw,
     byte_t *state_raw,
     const byte_t *server_identity, int server_identity_len,
@@ -930,8 +938,7 @@ void ecc_opaque_ristretto255_sha512_ServerInitWithSecrets(
     const byte_t *context, int context_len,
     const byte_t *masking_nonce,
     const byte_t *server_nonce,
-    const byte_t *server_secret,
-    const byte_t *server_keyshare
+    const byte_t *seed
 );
 
 /**
@@ -956,7 +963,7 @@ void ecc_opaque_ristretto255_sha512_ServerInitWithSecrets(
  * @param context_len the length of `context`
  */
 ECC_EXPORT
-void ecc_opaque_ristretto255_sha512_ServerInit(
+void ecc_opaque_ristretto255_sha512_GenerateKE2(
     byte_t *ke2_raw,
     byte_t *state_raw,
     const byte_t *server_identity, int server_identity_len,
@@ -1000,11 +1007,10 @@ int ecc_opaque_ristretto255_sha512_ServerFinish(
  * @param context size:context_len
  * @param context_len the length of `context`
  * @param server_nonce size:ecc_opaque_ristretto255_sha512_Nn
- * @param server_secret size:ecc_opaque_ristretto255_sha512_Nsk
- * @param server_keyshare size:ecc_opaque_ristretto255_sha512_Npk
+ * @param seed size:ecc_opaque_ristretto255_sha512_Nn
  */
 ECC_EXPORT
-void ecc_opaque_ristretto255_sha512_3DH_ResponseWithSecrets(
+void ecc_opaque_ristretto255_sha512_3DH_ResponseWithSeed(
     byte_t *ke2_raw,
     byte_t *state_raw,
     const byte_t *server_identity, int server_identity_len,
@@ -1016,8 +1022,7 @@ void ecc_opaque_ristretto255_sha512_3DH_ResponseWithSecrets(
     const byte_t *credential_response_raw,
     const byte_t *context, int context_len,
     const byte_t *server_nonce,
-    const byte_t *server_secret,
-    const byte_t *server_keyshare
+    const byte_t *seed
 );
 
 /**

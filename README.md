@@ -12,7 +12,6 @@
 [![Maintainability Rating](https://sonarcloud.io/api/project_badges/measure?project=aldenml_ecc&metric=sqale_rating)](https://sonarcloud.io/summary/new_code?id=aldenml_ecc)
 [![Security Rating](https://sonarcloud.io/api/project_badges/measure?project=aldenml_ecc&metric=security_rating)](https://sonarcloud.io/summary/new_code?id=aldenml_ecc)
 [![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=aldenml_ecc&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=aldenml_ecc)
-[![Sonatype Lift](https://lift.sonatype.com/api/badge/github.com/aldenml/ecc)](https://github.com/aldenml/ecc)
 
 Library to work with elliptic-curve cryptography based on [libsodium](https://github.com/jedisct1/libsodium)
 and [blst](https://github.com/supranational/blst).
@@ -73,7 +72,7 @@ For the advanced modes VOPRF and POPRF refer to the published draft.
 
 ### OPAQUE The OPAQUE Asymmetric PAKE Protocol
 
-This is an implementation of [draft-irtf-cfrg-opaque-10](https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-10)
+This is an implementation of [draft-irtf-cfrg-opaque-12](https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-12)
 using `libsodium`.
 
 OPAQUE consists of two stages: registration and authenticated key
