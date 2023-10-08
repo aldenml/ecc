@@ -207,33 +207,31 @@ public final class Opaque {
         );
     }
 
-    public static KE1 clientInitWithSecrets(
+    public static KE1 generateKE1WithSeed(
         ClientState state,
         Data password,
         R255Scalar blind,
         OpaqueSeed clientNonce,
-        OpaqueSk clientSecret,
-        OpaquePk clientKeyshare
+        OpaqueSeed seed
     ) {
         byte[] passwordBytes = password.toBytes();
 
         byte[] ke1 = new byte[ecc_opaque_ristretto255_sha512_KE1SIZE];
 
-        ecc_opaque_ristretto255_sha512_ClientInitWithSecrets(
+        ecc_opaque_ristretto255_sha512_GenerateKE1WithSeed(
             ke1,
             state.data(),
             passwordBytes,
             passwordBytes.length,
             blind.toBytes(),
             clientNonce.toBytes(),
-            clientSecret.toBytes(),
-            clientKeyshare.toBytes()
+            seed.toBytes()
         );
 
         return new KE1(new Data(ke1));
     }
 
-    public static KE1 clientInit(
+    public static KE1 generateKE1(
         ClientState state,
         Data password
     ) {
@@ -241,7 +239,7 @@ public final class Opaque {
 
         byte[] ke1 = new byte[ecc_opaque_ristretto255_sha512_KE1SIZE];
 
-        ecc_opaque_ristretto255_sha512_ClientInit(
+        ecc_opaque_ristretto255_sha512_GenerateKE1(
             ke1,
             state.data(),
             passwordBytes,
@@ -251,7 +249,7 @@ public final class Opaque {
         return new KE1(new Data(ke1));
     }
 
-    public static KE2 serverInitWithSecrets(
+    public static KE2 generateKE2WithSeed(
         ServerState state,
         Data serverIdentity,
         OpaqueSk serverPrivateKey,
@@ -264,8 +262,7 @@ public final class Opaque {
         Data context,
         OpaqueSeed maskingNonce,
         OpaqueSeed serverNonce,
-        OpaqueSk serverSecret,
-        OpaquePk serverKeyshare
+        OpaqueSeed seed
     ) {
         if (oprfSeed.size() != ecc_opaque_ristretto255_sha512_Nh)
             throw new IllegalArgumentException("oprf seed should be of size: " + ecc_opaque_ristretto255_sha512_Nh);
@@ -277,7 +274,7 @@ public final class Opaque {
 
         byte[] ke2 = new byte[ecc_opaque_ristretto255_sha512_KE2SIZE];
 
-        ecc_opaque_ristretto255_sha512_ServerInitWithSecrets(
+        ecc_opaque_ristretto255_sha512_GenerateKE2WithSeed(
             ke2,
             state.data(),
             serverIdentityBytes,
@@ -295,8 +292,7 @@ public final class Opaque {
             contextBytes.length,
             maskingNonce.toBytes(),
             serverNonce.toBytes(),
-            serverSecret.toBytes(),
-            serverKeyshare.toBytes()
+            seed.toBytes()
         );
 
         return new KE2(new Data(ke2));
@@ -324,7 +320,7 @@ public final class Opaque {
 
         byte[] ke2 = new byte[ecc_opaque_ristretto255_sha512_KE2SIZE];
 
-        ecc_opaque_ristretto255_sha512_ServerInit(
+        ecc_opaque_ristretto255_sha512_GenerateKE2(
             ke2,
             state.data(),
             serverIdentityBytes,
@@ -345,7 +341,7 @@ public final class Opaque {
         return new KE2(new Data(ke2));
     }
 
-    public static ClientFinishResult clientFinish(
+    public static ClientFinishResult generateKE3(
         ClientState state,
         Data clientIdentity,
         Data serverIdentity,
@@ -363,7 +359,7 @@ public final class Opaque {
         byte[] sessionKey = new byte[64];
         byte[] exportKey = new byte[64];
 
-        int result = ecc_opaque_ristretto255_sha512_ClientFinish(
+        int result = ecc_opaque_ristretto255_sha512_GenerateKE3(
             ke3,
             sessionKey,
             exportKey,

@@ -68,12 +68,12 @@ typedef struct {
 
 typedef struct {
     byte_t client_nonce[Nn];
-    byte_t client_keyshare[Npk];
+    byte_t client_public_keyshare[Npk];
 } AuthInit_t;
 
 typedef struct {
     byte_t server_nonce[Nn];
-    byte_t server_keyshare[Npk];
+    byte_t server_public_keyshare[Npk];
     byte_t server_mac[Nm];
 } AuthResponse_t;
 
@@ -264,7 +264,7 @@ void ecc_opaque_ristretto255_sha512_EnvelopeStoreWithNonce(
     byte_t *client_public_key,
     byte_t *masking_key,
     byte_t *export_key, // 64
-    const byte_t *randomized_pwd,
+    const byte_t *randomized_password,
     const byte_t *server_public_key,
     const byte_t *server_identity, const int server_identity_len,
     const byte_t *client_identity, const int client_identity_len,
@@ -289,31 +289,31 @@ void ecc_opaque_ristretto255_sha512_EnvelopeStoreWithNonce(
 
     // 2. masking_key = Expand(randomized_pwd, "MaskingKey", Nh)
     byte_t masking_key_info[10] = "MaskingKey";
-    ecc_kdf_hkdf_sha512_expand(masking_key, randomized_pwd, masking_key_info, sizeof masking_key_info, Nh);
+    ecc_kdf_hkdf_sha512_expand(masking_key, randomized_password, masking_key_info, sizeof masking_key_info, Nh);
 
     // 3. auth_key = Expand(randomized_pwd, concat(envelope_nonce, "AuthKey"), Nh)
     byte_t auth_key_label[7] = "AuthKey";
     byte_t auth_key_info[Nn + 7];
     ecc_concat2(auth_key_info, envelope_nonce, Nn, auth_key_label, sizeof auth_key_label);
     byte_t auth_key[Nh];
-    ecc_kdf_hkdf_sha512_expand(auth_key, randomized_pwd, auth_key_info, sizeof auth_key_info, Nh);
+    ecc_kdf_hkdf_sha512_expand(auth_key, randomized_password, auth_key_info, sizeof auth_key_info, Nh);
 
     // 4. export_key = Expand(randomized_pwd, concat(envelope_nonce, "ExportKey"), Nh)
     byte_t export_key_label[9] = "ExportKey";
     byte_t export_key_info[Nn + 9];
     ecc_concat2(export_key_info, envelope_nonce, Nn, export_key_label, sizeof export_key_label);
-    ecc_kdf_hkdf_sha512_expand(export_key, randomized_pwd, export_key_info, sizeof export_key_info, Nh);
+    ecc_kdf_hkdf_sha512_expand(export_key, randomized_password, export_key_info, sizeof export_key_info, Nh);
 
     // 5. seed = Expand(randomized_pwd, concat(envelope_nonce, "PrivateKey"), Nseed)
     byte_t seed_label[10] = "PrivateKey";
     byte_t seed_info[Nn + 10];
     ecc_concat2(seed_info, envelope_nonce, Nn, seed_label, sizeof seed_label);
     byte_t seed[Nseed];
-    ecc_kdf_hkdf_sha512_expand(seed, randomized_pwd, seed_info, sizeof seed_info, Nseed);
+    ecc_kdf_hkdf_sha512_expand(seed, randomized_password, seed_info, sizeof seed_info, Nseed);
 
     // 6. _, client_public_key = DeriveAuthKeyPair(seed)
     byte_t ignore[Nsk];
-    ecc_opaque_ristretto255_sha512_DeriveAuthKeyPair(ignore, client_public_key, seed);
+    ecc_opaque_ristretto255_sha512_DeriveDiffieHellmanKeyPair(ignore, client_public_key, seed);
 
     // 7. cleartext_creds = CreateCleartextCredentials(server_public_key, client_public_key, server_identity, client_identity)
     CleartextCredentials_t cleartext_creds;
@@ -344,7 +344,7 @@ void ecc_opaque_ristretto255_sha512_EnvelopeStoreWithNonce(
         sizeof auth_key
     );
 
-    // 9. Create Envelope envelope with (envelope_nonce, auth_tag)
+    // 9. Create Envelope_t envelope with (envelope_nonce, auth_tag)
     memcpy(envelope->nonce, envelope_nonce, Nn);
 #if ECC_LOG
     ecc_log("opaque:EnvelopeStoreWithNonce:server_identity", server_identity, server_identity_len);
@@ -370,7 +370,7 @@ void ecc_opaque_ristretto255_sha512_EnvelopeStore(
     byte_t *client_public_key,
     byte_t *masking_key,
     byte_t *export_key, // 64
-    const byte_t *randomized_pwd,
+    const byte_t *randomized_password,
     const byte_t *server_public_key,
     const byte_t *server_identity, const int server_identity_len,
     const byte_t *client_identity, const int client_identity_len
@@ -384,7 +384,7 @@ void ecc_opaque_ristretto255_sha512_EnvelopeStore(
         client_public_key,
         masking_key,
         export_key,
-        randomized_pwd,
+        randomized_password,
         server_public_key,
         server_identity, server_identity_len,
         client_identity, client_identity_len,
@@ -398,7 +398,7 @@ void ecc_opaque_ristretto255_sha512_EnvelopeStore(
 int ecc_opaque_ristretto255_sha512_EnvelopeRecover(
     byte_t *client_private_key,
     byte_t *export_key, // 64
-    const byte_t *randomized_pwd,
+    const byte_t *randomized_password,
     const byte_t *server_public_key,
     const byte_t *envelope_ptr,
     const byte_t *server_identity, const int server_identity_len,
@@ -409,7 +409,7 @@ int ecc_opaque_ristretto255_sha512_EnvelopeRecover(
     // 2. export_key = Expand(randomized_pwd, concat(envelope.nonce, "ExportKey", Nh)
     // 3. seed = Expand(randomized_pwd, concat(envelope.nonce, "PrivateKey"), Nseed)
     // 4. client_private_key, client_public_key = DeriveAuthKeyPair(seed)
-    // 5. cleartext_creds = CreateCleartextCredentials(server_public_key,
+    // 5. cleartext_credentials = CreateCleartextCredentials(server_public_key,
     //                       client_public_key, server_identity, client_identity)
     // 6. expected_tag = MAC(auth_key, concat(envelope.nonce, cleartext_creds))
     // 7. If !ct_equal(envelope.auth_tag, expected_tag),
@@ -423,7 +423,7 @@ int ecc_opaque_ristretto255_sha512_EnvelopeRecover(
     byte_t auth_key_info[Nn + 7];
     ecc_concat2(auth_key_info, envelope->nonce, Nn, auth_key_label, 7);
     byte_t auth_key[Nh];
-    ecc_kdf_hkdf_sha512_expand(auth_key, randomized_pwd, auth_key_info, sizeof auth_key_info, Nh);
+    ecc_kdf_hkdf_sha512_expand(auth_key, randomized_password, auth_key_info, sizeof auth_key_info, Nh);
 #if ECC_LOG
     ecc_log("opaque:EnvelopeRecover:envelope->nonce", envelope->nonce, Nn);
 #endif
@@ -432,28 +432,28 @@ int ecc_opaque_ristretto255_sha512_EnvelopeRecover(
     byte_t export_key_label[9] = "ExportKey";
     byte_t export_key_info[Nn + 9];
     ecc_concat2(export_key_info, envelope->nonce, Nn, export_key_label, 9);
-    ecc_kdf_hkdf_sha512_expand(export_key, randomized_pwd, export_key_info, sizeof export_key_info, Nh);
+    ecc_kdf_hkdf_sha512_expand(export_key, randomized_password, export_key_info, sizeof export_key_info, Nh);
 
     // 3. seed = Expand(randomized_pwd, concat(envelope.nonce, "PrivateKey"), Nseed)
     byte_t seed_label[10] = "PrivateKey";
     byte_t seed_info[Nn + 10];
     byte_t seed[Nseed];
     ecc_concat2(seed_info, envelope->nonce, Nn, seed_label, sizeof seed_label);
-    ecc_kdf_hkdf_sha512_expand(seed, randomized_pwd, seed_info, sizeof seed_info, Nseed);
+    ecc_kdf_hkdf_sha512_expand(seed, randomized_password, seed_info, sizeof seed_info, Nseed);
 
     // 4. client_private_key, client_public_key = DeriveAuthKeyPair(seed)
     byte_t client_public_key[Npk];
-    ecc_opaque_ristretto255_sha512_DeriveAuthKeyPair(
+    ecc_opaque_ristretto255_sha512_DeriveDiffieHellmanKeyPair(
         client_private_key,
         client_public_key,
         seed
     );
 
-    // 5. cleartext_creds = CreateCleartextCredentials(server_public_key,
+    // 5. cleartext_credentials = CreateCleartextCredentials(server_public_key,
     //                       client_public_key, server_identity, client_identity)
-    CleartextCredentials_t cleartext_creds;
+    CleartextCredentials_t cleartext_credentials;
     ecc_opaque_ristretto255_sha512_CreateCleartextCredentials(
-        (byte_t *) &cleartext_creds,
+        (byte_t *) &cleartext_credentials,
         server_public_key,
         client_public_key,
         server_identity, server_identity_len,
@@ -462,7 +462,7 @@ int ecc_opaque_ristretto255_sha512_EnvelopeRecover(
     byte_t cleartext_creds_buf[512];
     const int cleartext_creds_len = serializeCleartextCredentials(
         cleartext_creds_buf,
-        &cleartext_creds
+        &cleartext_credentials
     );
 
     // 6. expected_tag = MAC(auth_key, concat(envelope.nonce, cleartext_creds))
@@ -490,7 +490,7 @@ int ecc_opaque_ristretto255_sha512_EnvelopeRecover(
     ecc_memzero(auth_key, sizeof auth_key);
     ecc_memzero(export_key_info, sizeof export_key_info);
     ecc_memzero(client_public_key, sizeof client_public_key);
-    ecc_memzero((byte_t *) &cleartext_creds, sizeof cleartext_creds);
+    ecc_memzero((byte_t *) &cleartext_credentials, sizeof cleartext_credentials);
     ecc_memzero(expected_tag_mac_input, sizeof expected_tag_mac_input);
 
     // 7. If !ct_equal(envelope.auth_tag, expected_tag),
@@ -514,13 +514,23 @@ void ecc_opaque_ristretto255_sha512_RecoverPublicKey(
     ecc_ristretto255_scalarmult_base(public_key, private_key);
 }
 
+void ecc_opaque_ristretto255_sha512_GenerateAuthKeyPairWithSeed(
+    byte_t *private_key, byte_t *public_key,
+    const byte_t *seed
+) {
+    ecc_opaque_ristretto255_sha512_DeriveDiffieHellmanKeyPair(
+        private_key, public_key,
+        seed
+    );
+}
+
 void ecc_opaque_ristretto255_sha512_GenerateAuthKeyPair(
     byte_t *private_key, byte_t *public_key
 ) {
     byte_t seed[Nseed];
     ecc_randombytes(seed, sizeof seed);
 
-    ecc_opaque_ristretto255_sha512_DeriveAuthKeyPair(
+    ecc_opaque_ristretto255_sha512_DeriveDiffieHellmanKeyPair(
         private_key, public_key,
         seed
     );
@@ -529,11 +539,11 @@ void ecc_opaque_ristretto255_sha512_GenerateAuthKeyPair(
     ecc_memzero(seed, sizeof seed);
 }
 
-void ecc_opaque_ristretto255_sha512_DeriveAuthKeyPair(
+void ecc_opaque_ristretto255_sha512_DeriveDiffieHellmanKeyPair(
     byte_t *private_key, byte_t *public_key,
     const byte_t *seed
 ) {
-    byte_t info[24] = "OPAQUE-DeriveAuthKeyPair";
+    byte_t info[33] = "OPAQUE-DeriveDiffieHellmanKeyPair";
     ecc_voprf_ristretto255_sha512_DeriveKeyPair(
         private_key,
         public_key,
@@ -1089,7 +1099,7 @@ int ecc_opaque_ristretto255_sha512_3DH_Preamble(
 ) {
     ECC_UNUSED(preamble_len);
     // Steps:
-    // 1. preamble = concat("RFCXXXX",
+    // 1. preamble = concat("OPAQUEv1-",
     //                      I2OSP(len(context), 2), context,
     //                      I2OSP(len(client_identity), 2), client_identity,
     //                      ke1,
@@ -1101,7 +1111,7 @@ int ecc_opaque_ristretto255_sha512_3DH_Preamble(
     ECC_UNUSED(ke1);
     const KE2_t *ke2 = (const KE2_t *) ke2_ptr;
 
-    byte_t preamble_label[7] = "RFCXXXX"; // TODO: replace X with actual value
+    byte_t preamble_label[9] = "OPAQUEv1-";
 
     byte_t *p = preamble;
     int n = 0;
@@ -1140,7 +1150,7 @@ int ecc_opaque_ristretto255_sha512_3DH_Preamble(
     n += ecc_opaque_ristretto255_sha512_CREDENTIALRESPONSESIZE;
     ecc_concat2(p + n, ke2->auth_response.server_nonce, Nn, NULL, 0);
     n += Nn;
-    ecc_concat2(p + n, ke2->auth_response.server_keyshare, Npk, NULL, 0);
+    ecc_concat2(p + n, ke2->auth_response.server_public_keyshare, Npk, NULL, 0);
     n += Npk;
 
     return n;
@@ -1245,14 +1255,13 @@ void ecc_opaque_ristretto255_sha512_3DH_DeriveKeys(
     ecc_memzero(handshake_secret, sizeof handshake_secret);
 }
 
-void ecc_opaque_ristretto255_sha512_ClientInitWithSecrets(
+void ecc_opaque_ristretto255_sha512_GenerateKE1WithSeed(
     byte_t *ke1,
     byte_t *state_ptr,
     const byte_t *password, const int password_len,
     const byte_t *blind,
     const byte_t *client_nonce,
-    const byte_t *client_secret,
-    const byte_t *client_keyshare
+    const byte_t *seed
 ) {
     // Steps:
     // 1. request, blind = CreateCredentialRequest(password)
@@ -1277,15 +1286,14 @@ void ecc_opaque_ristretto255_sha512_ClientInitWithSecrets(
 
     // 3. ke1 = Start(request)
     // 4. Output ke1
-    ecc_opaque_ristretto255_sha512_3DH_StartWithSecrets(
+    ecc_opaque_ristretto255_sha512_3DH_StartWithSeed(
         ke1, state_ptr, (byte_t *) &request,
         client_nonce,
-        client_secret,
-        client_keyshare
+        seed
     );
 }
 
-void ecc_opaque_ristretto255_sha512_ClientInit(
+void ecc_opaque_ristretto255_sha512_GenerateKE1(
     byte_t *ke1,
     byte_t *state_ptr,
     const byte_t *password, const int password_len
@@ -1317,7 +1325,7 @@ void ecc_opaque_ristretto255_sha512_ClientInit(
     );
 }
 
-int ecc_opaque_ristretto255_sha512_ClientFinish(
+int ecc_opaque_ristretto255_sha512_GenerateKE3(
     byte_t *ke3_raw,
     byte_t *session_key,
     byte_t *export_key, // 64
@@ -1393,13 +1401,12 @@ int ecc_opaque_ristretto255_sha512_ClientFinish(
         return -1;
 }
 
-void ecc_opaque_ristretto255_sha512_3DH_StartWithSecrets(
+void ecc_opaque_ristretto255_sha512_3DH_StartWithSeed(
     byte_t *ke1_ptr,
     byte_t *state_ptr,
     const byte_t *credential_request_ptr,
     const byte_t *client_nonce,
-    const byte_t *client_secret,
-    const byte_t *client_keyshare
+    const byte_t *seed
 ) {
     // Steps:
     // 1. client_nonce = random(Nn)
@@ -1409,13 +1416,19 @@ void ecc_opaque_ristretto255_sha512_3DH_StartWithSecrets(
     // 5. Output (ke1, client_secret)
 
     ClientState_t *state = (ClientState_t *) state_ptr;
+
+    // 2. client_secret, client_keyshare = GenerateAuthKeyPair()
+    byte_t client_secret[Nsk];
+    byte_t client_keyshare[Npk];
+    ecc_opaque_ristretto255_sha512_GenerateAuthKeyPairWithSeed(client_secret, client_keyshare, seed);
+
     const CredentialRequest_t *credential_request = (const CredentialRequest_t *) credential_request_ptr;
 
-    // 3. Create KE1 ke1 with (credential_request, client_nonce, client_keyshare)
+    // 3. Create KE1_t ke1 with (credential_request, client_nonce, client_keyshare)
     KE1_t *ke1 = (KE1_t *) ke1_ptr;
     memcpy(ke1->credential_request.data, credential_request->data, Noe);
     memcpy(ke1->auth_init.client_nonce, client_nonce, 32);
-    memcpy(ke1->auth_init.client_keyshare, client_keyshare, 32);
+    memcpy(ke1->auth_init.client_public_keyshare, client_keyshare, 32);
 
     // 4. state.client_secret = client_secret
     // 5. Output (ke1, client_secret)
@@ -1447,11 +1460,11 @@ void ecc_opaque_ristretto255_sha512_3DH_Start(
     byte_t client_keyshare[Npk];
     ecc_opaque_ristretto255_sha512_GenerateAuthKeyPair(client_secret, client_keyshare);
 
-    // 3. Create KE1 ke1 with (credential_request, client_nonce, client_keyshare)
+    // 3. Create KE1_t ke1 with (credential_request, client_nonce, client_keyshare)
     KE1_t *ke1 = (KE1_t *) ke1_ptr;
     memcpy(ke1->credential_request.data, credential_request, 32);
     memcpy(ke1->auth_init.client_nonce, client_nonce, 32);
-    memcpy(ke1->auth_init.client_keyshare, client_keyshare, 32);
+    memcpy(ke1->auth_init.client_public_keyshare, client_keyshare, 32);
 
     // 4. state.client_secret = client_secret
     // 5. Output (ke1, client_secret)
@@ -1496,9 +1509,9 @@ int ecc_opaque_ristretto255_sha512_3DH_ClientFinalize(
     byte_t ikm[96];
     ecc_opaque_ristretto255_sha512_3DH_TripleDHIKM(
         ikm,
-        state->client_ake_state.client_secret, ke2->auth_response.server_keyshare,
+        state->client_ake_state.client_secret, ke2->auth_response.server_public_keyshare,
         state->client_ake_state.client_secret, server_public_key,
-        client_private_key, ke2->auth_response.server_keyshare
+        client_private_key, ke2->auth_response.server_public_keyshare
     );
 
     byte_t client_public_key[Npk];
@@ -1584,7 +1597,7 @@ int ecc_opaque_ristretto255_sha512_3DH_ClientFinalize(
     return 0;
 }
 
-void ecc_opaque_ristretto255_sha512_ServerInitWithSecrets(
+void ecc_opaque_ristretto255_sha512_GenerateKE2WithSeed(
     byte_t *ke2_raw,
     byte_t *state_raw,
     const byte_t *server_identity, const int server_identity_len,
@@ -1598,8 +1611,7 @@ void ecc_opaque_ristretto255_sha512_ServerInitWithSecrets(
     const byte_t *context, const int context_len,
     const byte_t *masking_nonce,
     const byte_t *server_nonce,
-    const byte_t *server_secret,
-    const byte_t *server_keyshare
+    const byte_t *seed
 ) {
     // Steps:
     // 1. response = CreateCredentialResponse(ke1.request, server_public_key, record,
@@ -1622,7 +1634,7 @@ void ecc_opaque_ristretto255_sha512_ServerInitWithSecrets(
         masking_nonce
     );
 
-    ecc_opaque_ristretto255_sha512_3DH_ResponseWithSecrets(
+    ecc_opaque_ristretto255_sha512_3DH_ResponseWithSeed(
         ke2_raw,
         state_raw,
         server_identity, server_identity_len,
@@ -1634,12 +1646,11 @@ void ecc_opaque_ristretto255_sha512_ServerInitWithSecrets(
         (byte_t *) &response,
         context, context_len,
         server_nonce,
-        server_secret,
-        server_keyshare
+        seed
     );
 }
 
-void ecc_opaque_ristretto255_sha512_ServerInit(
+void ecc_opaque_ristretto255_sha512_GenerateKE2(
     byte_t *ke2_raw,
     byte_t *state_raw,
     const byte_t *server_identity, const int server_identity_len,
@@ -1707,7 +1718,7 @@ int ecc_opaque_ristretto255_sha512_ServerFinish(
     return 0;
 }
 
-void ecc_opaque_ristretto255_sha512_3DH_ResponseWithSecrets(
+void ecc_opaque_ristretto255_sha512_3DH_ResponseWithSeed(
     byte_t *ke2_raw,
     byte_t *state_raw,
     const byte_t *server_identity, const int server_identity_len,
@@ -1719,8 +1730,7 @@ void ecc_opaque_ristretto255_sha512_3DH_ResponseWithSecrets(
     const byte_t *credential_response_raw,
     const byte_t *context, const int context_len,
     const byte_t *server_nonce,
-    const byte_t *server_secret,
-    const byte_t *server_keyshare
+    const byte_t *seed
 ) {
     // Steps:
     // 1. server_nonce = random(Nn)
@@ -1732,14 +1742,19 @@ void ecc_opaque_ristretto255_sha512_3DH_ResponseWithSecrets(
     // 7. server_mac = MAC(Km2, Hash(preamble))
     // 8. expected_client_mac = MAC(Km3, Hash(concat(preamble, server_mac))
     // 9. Populate state with ServerState(expected_client_mac, session_key)
-    // 10. Create KE2 ke2 with (ike2, server_mac)
+    // 10. Create KE2_t ke2 with (ike2, server_mac)
     // 11. Output ke2
+
+    // 2. server_secret, server_keyshare = GenerateAuthKeyPair()
+    byte_t server_secret[32];
+    byte_t server_keyshare[32];
+    ecc_opaque_ristretto255_sha512_GenerateAuthKeyPairWithSeed(server_secret, server_keyshare, seed);
 
     // 3. Create inner_ke2 ike2 with (credential_response, server_nonce, server_keyshare)
     KE2_t *ke2 = (KE2_t *) ke2_raw;
     memcpy(&ke2->credential_response, credential_response_raw, sizeof(CredentialResponse_t));
     memcpy(ke2->auth_response.server_nonce, server_nonce, 32);
-    memcpy(ke2->auth_response.server_keyshare, server_keyshare, 32);
+    memcpy(ke2->auth_response.server_public_keyshare, server_keyshare, 32);
 
     // 4. preamble = Preamble(client_identity, ke1, server_identity, ike2)
     byte_t preamble[512];
@@ -1760,8 +1775,8 @@ void ecc_opaque_ristretto255_sha512_3DH_ResponseWithSecrets(
     byte_t ikm[96];
     ecc_opaque_ristretto255_sha512_3DH_TripleDHIKM(
         ikm,
-        server_secret, ke1->auth_init.client_keyshare,
-        server_private_key, ke1->auth_init.client_keyshare,
+        server_secret, ke1->auth_init.client_public_keyshare,
+        server_private_key, ke1->auth_init.client_public_keyshare,
         server_secret, client_public_key
     );
 
@@ -1810,7 +1825,7 @@ void ecc_opaque_ristretto255_sha512_3DH_ResponseWithSecrets(
     memcpy(state->expected_client_mac, expected_client_mac, sizeof expected_client_mac);
     memcpy(state->session_key, session_key, sizeof session_key);
 
-    // 10. Create KE2 ke2 with (ike2, server_mac)
+    // 10. Create KE2_t ke2 with (ike2, server_mac)
     // 11. Output ke2
     memcpy(ke2->auth_response.server_mac, server_mac, sizeof server_mac);
 
@@ -1849,19 +1864,17 @@ void ecc_opaque_ristretto255_sha512_3DH_Response(
     // 7. server_mac = MAC(Km2, Hash(preamble))
     // 8. expected_client_mac = MAC(Km3, Hash(concat(preamble, server_mac))
     // 9. Populate state with ServerState(expected_client_mac, session_key)
-    // 10. Create KE2 ke2 with (ike2, server_mac)
+    // 10. Create KE2_t ke2 with (ike2, server_mac)
     // 11. Output ke2
 
     // 1. server_nonce = random(Nn)
     byte_t server_nonce[Nn];
     ecc_randombytes(server_nonce, Nn);
 
-    // 2. server_secret, server_keyshare = GenerateAuthKeyPair()
-    byte_t server_secret[32];
-    byte_t server_keyshare[32];
-    ecc_opaque_ristretto255_sha512_GenerateAuthKeyPair(server_secret, server_keyshare);
+    byte_t seed[Nseed];
+    ecc_randombytes(seed, sizeof seed);
 
-    ecc_opaque_ristretto255_sha512_3DH_ResponseWithSecrets(
+    ecc_opaque_ristretto255_sha512_3DH_ResponseWithSeed(
         ke2_raw,
         state_raw,
         server_identity, server_identity_len,
@@ -1873,12 +1886,10 @@ void ecc_opaque_ristretto255_sha512_3DH_Response(
         credential_response_raw,
         context, context_len,
         server_nonce,
-        server_secret,
-        server_keyshare
+        seed
     );
 
     // cleanup stack memory
     ecc_memzero(server_nonce, sizeof server_nonce);
-    ecc_memzero(server_secret, sizeof server_secret);
-    ecc_memzero(server_keyshare, sizeof server_keyshare);
+    ecc_memzero(seed, sizeof seed);
 }

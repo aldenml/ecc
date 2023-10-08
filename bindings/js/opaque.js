@@ -230,28 +230,25 @@ export function opaque_FinalizeRegistrationRequest(
  * @param {Uint8Array} password an opaque byte string containing the client's password
  * @param {Uint8Array} blind
  * @param {Uint8Array} clientNonce
- * @param {Uint8Array} clientSecret
- * @param {Uint8Array} clientKeyshare
+ * @param {Uint8Array} seed
  * @return {Uint8Array} a KE1 message structure
  */
-export function opaque_ClientInitWithSecrets(
+export function opaque_GenerateKE1WithSeed(
     state,
     password,
     blind,
     clientNonce,
-    clientSecret,
-    clientKeyshare
+    seed,
 ) {
     let ke1 = new Uint8Array(libecc.ecc_opaque_ristretto255_sha512_KE1SIZE);
 
-    libecc.ecc_opaque_ristretto255_sha512_ClientInitWithSecrets(
+    libecc.ecc_opaque_ristretto255_sha512_GenerateKE1WithSeed(
         ke1,
         state,
         password, password.length,
         blind,
         clientNonce,
-        clientSecret,
-        clientKeyshare,
+        seed,
     );
 
     return ke1;
@@ -263,13 +260,13 @@ export function opaque_ClientInitWithSecrets(
  * @param {Uint8Array} password an opaque byte string containing the client's password
  * @return {Uint8Array} a KE1 message structure
  */
-export function opaque_ClientInit(
+export function opaque_GenerateKE1(
     state,
     password,
 ) {
     let ke1 = new Uint8Array(libecc.ecc_opaque_ristretto255_sha512_KE1SIZE);
 
-    libecc.ecc_opaque_ristretto255_sha512_ClientInit(
+    libecc.ecc_opaque_ristretto255_sha512_GenerateKE1(
         ke1,
         state,
         password, password.length,
@@ -291,7 +288,7 @@ export function opaque_ClientInit(
  * @param {Uint8Array} context
  * @return object {ke3, sessionKey, exportKey, finishRet}
  */
-export function opaque_ClientFinish(
+export function opaque_GenerateKE3(
     state_raw,
     client_identity,
     server_identity,
@@ -308,7 +305,7 @@ export function opaque_ClientFinish(
     let session_key = new Uint8Array(64);
     let export_key = new Uint8Array(64);
 
-    const ret = libecc.ecc_opaque_ristretto255_sha512_ClientFinish(
+    const ret = libecc.ecc_opaque_ristretto255_sha512_GenerateKE3(
         ke3_raw,
         session_key,
         export_key,
@@ -345,11 +342,10 @@ export function opaque_ClientFinish(
  * @param {Uint8Array} context the application specific context
  * @param {Uint8Array} maskingNonce
  * @param {Uint8Array} serverNonce
- * @param {Uint8Array} serverSecret
- * @param {Uint8Array} serverKeyshare
+ * @param {Uint8Array} seed
  * @return {Uint8Array} a KE2 structure
  */
-export function opaque_ServerInitWithSecrets(
+export function opaque_GenerateKE2WithSeed(
     state_raw,
     server_identity,
     server_private_key,
@@ -362,8 +358,7 @@ export function opaque_ServerInitWithSecrets(
     context,
     maskingNonce,
     serverNonce,
-    serverSecret,
-    serverKeyshare,
+    seed,
 ) {
     server_identity = server_identity || new Uint8Array(0);
     client_identity = client_identity || new Uint8Array(0);
@@ -371,7 +366,7 @@ export function opaque_ServerInitWithSecrets(
 
     let ke2_raw = new Uint8Array(libecc.ecc_opaque_ristretto255_sha512_KE2SIZE);
 
-    libecc.ecc_opaque_ristretto255_sha512_ServerInitWithSecrets(
+    libecc.ecc_opaque_ristretto255_sha512_GenerateKE2WithSeed(
         ke2_raw,
         state_raw,
         server_identity, server_identity.length,
@@ -385,8 +380,7 @@ export function opaque_ServerInitWithSecrets(
         context, context.length,
         maskingNonce,
         serverNonce,
-        serverSecret,
-        serverKeyshare,
+        seed,
     );
 
     return ke2_raw;
@@ -408,7 +402,7 @@ export function opaque_ServerInitWithSecrets(
  * @param {Uint8Array} context the application specific context
  * @return {Uint8Array} a KE2 structure
  */
-export function opaque_ServerInit(
+export function opaque_GenerateKE2(
     state_raw,
     server_identity,
     server_private_key,
@@ -426,7 +420,7 @@ export function opaque_ServerInit(
 
     let ke2_raw = new Uint8Array(libecc.ecc_opaque_ristretto255_sha512_KE2SIZE);
 
-    libecc.ecc_opaque_ristretto255_sha512_ServerInit(
+    libecc.ecc_opaque_ristretto255_sha512_GenerateKE2(
         ke2_raw,
         state_raw,
         server_identity, server_identity.length,

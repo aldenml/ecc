@@ -58,7 +58,7 @@ For the advanced modes VOPRF and POPRF refer to the published draft.
 
 ### OPAQUE The OPAQUE Asymmetric PAKE Protocol
 
-This is an implementation of [draft-irtf-cfrg-opaque-10](https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-10)
+This is an implementation of [draft-irtf-cfrg-opaque-12](https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-12)
 using `libsodium`.
 
 OPAQUE consists of two stages: registration and authenticated key

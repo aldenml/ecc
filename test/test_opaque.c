@@ -7,7 +7,7 @@
 
 #include "ecc_test.h"
 
-// https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-10#appendix-D.1
+// https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-opaque-12#appendix-D.1
 static void test_opaque_ristretto255_sha512(void **state) {
     ECC_UNUSED(state);
 
@@ -38,20 +38,15 @@ static void test_opaque_ristretto255_sha512(void **state) {
         ecc_json_hex(client_identity, &client_identity_len, item, "inputs.client_identity");
         ecc_log("client_identity", client_identity, client_identity_len);
 
-        byte_t client_keyshare[32];
-        int client_keyshare_len;
-        ecc_json_hex(client_keyshare, &client_keyshare_len, item, "inputs.client_keyshare");
-        ecc_log("client_keyshare", client_keyshare, client_keyshare_len);
+        byte_t client_keyshare_seed[32];
+        int client_keyshare_seed_len;
+        ecc_json_hex(client_keyshare_seed, &client_keyshare_seed_len, item, "inputs.client_keyshare_seed");
+        ecc_log("client_keyshare_seed", client_keyshare_seed, client_keyshare_seed_len);
 
         byte_t client_nonce[32];
         int client_nonce_len;
         ecc_json_hex(client_nonce, &client_nonce_len, item, "inputs.client_nonce");
         ecc_log("client_nonce", client_nonce, client_nonce_len);
-
-        byte_t client_private_keyshare[32];
-        int client_private_keyshare_len;
-        ecc_json_hex(client_private_keyshare, &client_private_keyshare_len, item, "inputs.client_private_keyshare");
-        ecc_log("client_private_keyshare", client_private_keyshare, client_private_keyshare_len);
 
         byte_t credential_identifier[1024];
         int credential_identifier_len;
@@ -83,10 +78,10 @@ static void test_opaque_ristretto255_sha512(void **state) {
         ecc_json_hex(server_identity, &server_identity_len, item, "inputs.server_identity");
         ecc_log("server_identity", server_identity, server_identity_len);
 
-        byte_t server_keyshare[32];
-        int server_keyshare_len;
-        ecc_json_hex(server_keyshare, &server_keyshare_len, item, "inputs.server_keyshare");
-        ecc_log("server_keyshare", server_keyshare, server_keyshare_len);
+        byte_t server_keyshare_seed[32];
+        int server_keyshare_seed_len;
+        ecc_json_hex(server_keyshare_seed, &server_keyshare_seed_len, item, "inputs.server_keyshare_seed");
+        ecc_log("server_keyshare_seed", server_keyshare_seed, server_keyshare_seed_len);
 
         byte_t server_nonce[32];
         int server_nonce_len;
@@ -97,11 +92,6 @@ static void test_opaque_ristretto255_sha512(void **state) {
         int server_private_key_len;
         ecc_json_hex(server_private_key, &server_private_key_len, item, "inputs.server_private_key");
         ecc_log("server_private_key", server_private_key, server_private_key_len);
-
-        byte_t server_private_keyshare[32];
-        int server_private_keyshare_len;
-        ecc_json_hex(server_private_keyshare, &server_private_keyshare_len, item, "inputs.server_private_keyshare");
-        ecc_log("server_private_keyshare", server_private_keyshare, server_private_keyshare_len);
 
         byte_t server_public_key[32];
         int server_public_key_len;
@@ -184,20 +174,19 @@ static void test_opaque_ristretto255_sha512(void **state) {
 
         byte_t client_state[ecc_opaque_ristretto255_sha512_CLIENTSTATESIZE] = {0};
         byte_t ke1[ecc_opaque_ristretto255_sha512_KE1SIZE];
-        ecc_opaque_ristretto255_sha512_ClientInitWithSecrets(
+        ecc_opaque_ristretto255_sha512_GenerateKE1WithSeed(
             ke1,
             client_state,
             password, password_len,
             blind_login,
             client_nonce,
-            client_private_keyshare,
-            client_keyshare
+            client_keyshare_seed
         );
         assert_memory_equal(ke1, outputs_KE1, sizeof outputs_KE1);
 
         byte_t server_state[ecc_opaque_ristretto255_sha512_SERVERSTATESIZE] = {0};
         byte_t ke2[ecc_opaque_ristretto255_sha512_KE2SIZE];
-        ecc_opaque_ristretto255_sha512_ServerInitWithSecrets(
+        ecc_opaque_ristretto255_sha512_GenerateKE2WithSeed(
             ke2,
             server_state,
             server_identity, server_identity_len,
@@ -211,15 +200,14 @@ static void test_opaque_ristretto255_sha512(void **state) {
             Context, ContextLen,
             masking_nonce,
             server_nonce,
-            server_private_keyshare,
-            server_keyshare
+            server_keyshare_seed
         );
         assert_memory_equal(ke2, outputs_KE2, sizeof outputs_KE2);
 
         byte_t ke3[ecc_opaque_ristretto255_sha512_KE3SIZE];
         byte_t client_session_key[64];
         byte_t export_key2[64];
-        int client_finish_ret = ecc_opaque_ristretto255_sha512_ClientFinish(
+        int client_finish_ret = ecc_opaque_ristretto255_sha512_GenerateKE3(
             ke3,
             client_session_key,
             export_key2,
@@ -305,7 +293,7 @@ static void opaque_ristretto255_sha512_random(
 
     byte_t client_state[ecc_opaque_ristretto255_sha512_CLIENTSTATESIZE] = {0};
     byte_t ke1[ecc_opaque_ristretto255_sha512_KE1SIZE];
-    ecc_opaque_ristretto255_sha512_ClientInit(
+    ecc_opaque_ristretto255_sha512_GenerateKE1(
         ke1,
         client_state,
         password, sizeof password
@@ -313,7 +301,7 @@ static void opaque_ristretto255_sha512_random(
 
     byte_t server_state[ecc_opaque_ristretto255_sha512_SERVERSTATESIZE] = {0};
     byte_t ke2[ecc_opaque_ristretto255_sha512_KE2SIZE];
-    ecc_opaque_ristretto255_sha512_ServerInit(
+    ecc_opaque_ristretto255_sha512_GenerateKE2(
         ke2,
         server_state,
         NULL, 0,
@@ -331,7 +319,7 @@ static void opaque_ristretto255_sha512_random(
     byte_t ke3[ecc_opaque_ristretto255_sha512_KE3SIZE];
     byte_t client_session_key[64];
     byte_t export_key2[64];
-    int client_finish_ret = ecc_opaque_ristretto255_sha512_ClientFinish(
+    int client_finish_ret = ecc_opaque_ristretto255_sha512_GenerateKE3(
         ke3,
         client_session_key,
         export_key2,

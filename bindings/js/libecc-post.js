@@ -3569,7 +3569,7 @@ const ecc_opaque_ristretto255_sha512_Ne = 96;
  * } Envelope;
  * </pre>
  *
- * nonce: A unique nonce of length Nn, used to protect this Envelope.
+ * nonce: A randomly-sampled nonce of length Nn, used to protect this Envelope.
  * auth_tag: An authentication tag protecting the contents of the envelope, covering the envelope nonce and CleartextCredentials.
  *
  * @type {number}
@@ -3848,7 +3848,7 @@ Module.ecc_opaque_ristretto255_sha512_CreateCleartextCredentials = (
  * @param {Uint8Array} client_public_key (output) size:ecc_opaque_ristretto255_sha512_Npk
  * @param {Uint8Array} masking_key (output) size:ecc_opaque_ristretto255_sha512_Nh
  * @param {Uint8Array} export_key (output) size:ecc_opaque_ristretto255_sha512_Nh
- * @param {Uint8Array} randomized_pwd size:64
+ * @param {Uint8Array} randomized_password a randomized password, size:64
  * @param {Uint8Array} server_public_key size:ecc_opaque_ristretto255_sha512_Npk
  * @param {Uint8Array} server_identity size:server_identity_len
  * @param {number} server_identity_len the length of `server_identity`
@@ -3861,7 +3861,7 @@ Module.ecc_opaque_ristretto255_sha512_EnvelopeStoreWithNonce = (
     client_public_key,
     masking_key,
     export_key,
-    randomized_pwd,
+    randomized_password,
     server_public_key,
     server_identity,
     server_identity_len,
@@ -3873,7 +3873,7 @@ Module.ecc_opaque_ristretto255_sha512_EnvelopeStoreWithNonce = (
     const ptr_client_public_key = mput(client_public_key, ecc_opaque_ristretto255_sha512_Npk);
     const ptr_masking_key = mput(masking_key, ecc_opaque_ristretto255_sha512_Nh);
     const ptr_export_key = mput(export_key, ecc_opaque_ristretto255_sha512_Nh);
-    const ptr_randomized_pwd = mput(randomized_pwd, 64);
+    const ptr_randomized_password = mput(randomized_password, 64);
     const ptr_server_public_key = mput(server_public_key, ecc_opaque_ristretto255_sha512_Npk);
     const ptr_server_identity = mput(server_identity, server_identity_len);
     const ptr_client_identity = mput(client_identity, client_identity_len);
@@ -3883,7 +3883,7 @@ Module.ecc_opaque_ristretto255_sha512_EnvelopeStoreWithNonce = (
         ptr_client_public_key,
         ptr_masking_key,
         ptr_export_key,
-        ptr_randomized_pwd,
+        ptr_randomized_password,
         ptr_server_public_key,
         ptr_server_identity,
         server_identity_len,
@@ -3899,7 +3899,7 @@ Module.ecc_opaque_ristretto255_sha512_EnvelopeStoreWithNonce = (
     mfree(ptr_client_public_key, ecc_opaque_ristretto255_sha512_Npk);
     mfree(ptr_masking_key, ecc_opaque_ristretto255_sha512_Nh);
     mfree(ptr_export_key, ecc_opaque_ristretto255_sha512_Nh);
-    mfree(ptr_randomized_pwd, 64);
+    mfree(ptr_randomized_password, 64);
     mfree(ptr_server_public_key, ecc_opaque_ristretto255_sha512_Npk);
     mfree(ptr_server_identity, server_identity_len);
     mfree(ptr_client_identity, client_identity_len);
@@ -3917,7 +3917,7 @@ Module.ecc_opaque_ristretto255_sha512_EnvelopeStoreWithNonce = (
  * @param {Uint8Array} client_public_key (output) size:ecc_opaque_ristretto255_sha512_Npk
  * @param {Uint8Array} masking_key (output) size:ecc_opaque_ristretto255_sha512_Nh
  * @param {Uint8Array} export_key (output) size:ecc_opaque_ristretto255_sha512_Nh
- * @param {Uint8Array} randomized_pwd size:64
+ * @param {Uint8Array} randomized_password a randomized password, size:64
  * @param {Uint8Array} server_public_key size:ecc_opaque_ristretto255_sha512_Npk
  * @param {Uint8Array} server_identity size:server_identity_len
  * @param {number} server_identity_len the length of `server_identity`
@@ -3929,7 +3929,7 @@ Module.ecc_opaque_ristretto255_sha512_EnvelopeStore = (
     client_public_key,
     masking_key,
     export_key,
-    randomized_pwd,
+    randomized_password,
     server_public_key,
     server_identity,
     server_identity_len,
@@ -3940,7 +3940,7 @@ Module.ecc_opaque_ristretto255_sha512_EnvelopeStore = (
     const ptr_client_public_key = mput(client_public_key, ecc_opaque_ristretto255_sha512_Npk);
     const ptr_masking_key = mput(masking_key, ecc_opaque_ristretto255_sha512_Nh);
     const ptr_export_key = mput(export_key, ecc_opaque_ristretto255_sha512_Nh);
-    const ptr_randomized_pwd = mput(randomized_pwd, 64);
+    const ptr_randomized_password = mput(randomized_password, 64);
     const ptr_server_public_key = mput(server_public_key, ecc_opaque_ristretto255_sha512_Npk);
     const ptr_server_identity = mput(server_identity, server_identity_len);
     const ptr_client_identity = mput(client_identity, client_identity_len);
@@ -3949,7 +3949,7 @@ Module.ecc_opaque_ristretto255_sha512_EnvelopeStore = (
         ptr_client_public_key,
         ptr_masking_key,
         ptr_export_key,
-        ptr_randomized_pwd,
+        ptr_randomized_password,
         ptr_server_public_key,
         ptr_server_identity,
         server_identity_len,
@@ -3964,7 +3964,7 @@ Module.ecc_opaque_ristretto255_sha512_EnvelopeStore = (
     mfree(ptr_client_public_key, ecc_opaque_ristretto255_sha512_Npk);
     mfree(ptr_masking_key, ecc_opaque_ristretto255_sha512_Nh);
     mfree(ptr_export_key, ecc_opaque_ristretto255_sha512_Nh);
-    mfree(ptr_randomized_pwd, 64);
+    mfree(ptr_randomized_password, 64);
     mfree(ptr_server_public_key, ecc_opaque_ristretto255_sha512_Npk);
     mfree(ptr_server_identity, server_identity_len);
     mfree(ptr_client_identity, client_identity_len);
@@ -3976,7 +3976,7 @@ Module.ecc_opaque_ristretto255_sha512_EnvelopeStore = (
  *
  * @param {Uint8Array} client_private_key (output) size:ecc_opaque_ristretto255_sha512_Nsk
  * @param {Uint8Array} export_key (output) size:ecc_opaque_ristretto255_sha512_Nh
- * @param {Uint8Array} randomized_pwd size:64
+ * @param {Uint8Array} randomized_password a randomized password, size:64
  * @param {Uint8Array} server_public_key size:ecc_opaque_ristretto255_sha512_Npk
  * @param {Uint8Array} envelope_raw size:ecc_opaque_ristretto255_sha512_Ne
  * @param {Uint8Array} server_identity size:server_identity_len
@@ -3988,7 +3988,7 @@ Module.ecc_opaque_ristretto255_sha512_EnvelopeStore = (
 Module.ecc_opaque_ristretto255_sha512_EnvelopeRecover = (
     client_private_key,
     export_key,
-    randomized_pwd,
+    randomized_password,
     server_public_key,
     envelope_raw,
     server_identity,
@@ -3998,7 +3998,7 @@ Module.ecc_opaque_ristretto255_sha512_EnvelopeRecover = (
 ) => {
     const ptr_client_private_key = mput(client_private_key, ecc_opaque_ristretto255_sha512_Nsk);
     const ptr_export_key = mput(export_key, ecc_opaque_ristretto255_sha512_Nh);
-    const ptr_randomized_pwd = mput(randomized_pwd, 64);
+    const ptr_randomized_password = mput(randomized_password, 64);
     const ptr_server_public_key = mput(server_public_key, ecc_opaque_ristretto255_sha512_Npk);
     const ptr_envelope_raw = mput(envelope_raw, ecc_opaque_ristretto255_sha512_Ne);
     const ptr_server_identity = mput(server_identity, server_identity_len);
@@ -4006,7 +4006,7 @@ Module.ecc_opaque_ristretto255_sha512_EnvelopeRecover = (
     const fun_ret = _ecc_opaque_ristretto255_sha512_EnvelopeRecover(
         ptr_client_private_key,
         ptr_export_key,
-        ptr_randomized_pwd,
+        ptr_randomized_password,
         ptr_server_public_key,
         ptr_envelope_raw,
         ptr_server_identity,
@@ -4018,7 +4018,7 @@ Module.ecc_opaque_ristretto255_sha512_EnvelopeRecover = (
     mget(export_key, ptr_export_key, ecc_opaque_ristretto255_sha512_Nh);
     mfree(ptr_client_private_key, ecc_opaque_ristretto255_sha512_Nsk);
     mfree(ptr_export_key, ecc_opaque_ristretto255_sha512_Nh);
-    mfree(ptr_randomized_pwd, 64);
+    mfree(ptr_randomized_password, 64);
     mfree(ptr_server_public_key, ecc_opaque_ristretto255_sha512_Npk);
     mfree(ptr_envelope_raw, ecc_opaque_ristretto255_sha512_Ne);
     mfree(ptr_server_identity, server_identity_len);
@@ -4045,6 +4045,33 @@ Module.ecc_opaque_ristretto255_sha512_RecoverPublicKey = (
     mget(public_key, ptr_public_key, ecc_opaque_ristretto255_sha512_Npk);
     mfree(ptr_public_key, ecc_opaque_ristretto255_sha512_Npk);
     mfree(ptr_private_key, ecc_opaque_ristretto255_sha512_Nsk);
+}
+
+/**
+ * Returns a randomly generated private and public key pair.
+ *
+ * @param {Uint8Array} private_key (output) a private key, size:ecc_opaque_ristretto255_sha512_Nsk
+ * @param {Uint8Array} public_key (output) the associated public key, size:ecc_opaque_ristretto255_sha512_Npk
+ * @param {Uint8Array} seed size:ecc_opaque_ristretto255_sha512_Nn
+ */
+Module.ecc_opaque_ristretto255_sha512_GenerateAuthKeyPairWithSeed = (
+    private_key,
+    public_key,
+    seed,
+) => {
+    const ptr_private_key = mput(private_key, ecc_opaque_ristretto255_sha512_Nsk);
+    const ptr_public_key = mput(public_key, ecc_opaque_ristretto255_sha512_Npk);
+    const ptr_seed = mput(seed, ecc_opaque_ristretto255_sha512_Nn);
+    _ecc_opaque_ristretto255_sha512_GenerateAuthKeyPairWithSeed(
+        ptr_private_key,
+        ptr_public_key,
+        ptr_seed,
+    );
+    mget(private_key, ptr_private_key, ecc_opaque_ristretto255_sha512_Nsk);
+    mget(public_key, ptr_public_key, ecc_opaque_ristretto255_sha512_Npk);
+    mfree(ptr_private_key, ecc_opaque_ristretto255_sha512_Nsk);
+    mfree(ptr_public_key, ecc_opaque_ristretto255_sha512_Npk);
+    mfree(ptr_seed, ecc_opaque_ristretto255_sha512_Nn);
 }
 
 /**
@@ -4080,7 +4107,7 @@ Module.ecc_opaque_ristretto255_sha512_GenerateAuthKeyPair = (
  * @param {Uint8Array} public_key (output) the associated public key, size:ecc_opaque_ristretto255_sha512_Npk
  * @param {Uint8Array} seed pseudo-random byte sequence used as a seed, size:ecc_opaque_ristretto255_sha512_Nn
  */
-Module.ecc_opaque_ristretto255_sha512_DeriveAuthKeyPair = (
+Module.ecc_opaque_ristretto255_sha512_DeriveDiffieHellmanKeyPair = (
     private_key,
     public_key,
     seed,
@@ -4088,7 +4115,7 @@ Module.ecc_opaque_ristretto255_sha512_DeriveAuthKeyPair = (
     const ptr_private_key = mput(private_key, ecc_opaque_ristretto255_sha512_Nsk);
     const ptr_public_key = mput(public_key, ecc_opaque_ristretto255_sha512_Npk);
     const ptr_seed = mput(seed, ecc_opaque_ristretto255_sha512_Nn);
-    _ecc_opaque_ristretto255_sha512_DeriveAuthKeyPair(
+    _ecc_opaque_ristretto255_sha512_DeriveDiffieHellmanKeyPair(
         ptr_private_key,
         ptr_public_key,
         ptr_seed,
@@ -4845,35 +4872,31 @@ Module.ecc_opaque_ristretto255_sha512_3DH_DeriveKeys = (
  * @param {number} password_len the length of `password`
  * @param {Uint8Array} blind size:ecc_opaque_ristretto255_sha512_Ns
  * @param {Uint8Array} client_nonce size:ecc_opaque_ristretto255_sha512_Nn
- * @param {Uint8Array} client_secret size:ecc_opaque_ristretto255_sha512_Nsk
- * @param {Uint8Array} client_keyshare size:ecc_opaque_ristretto255_sha512_Npk
+ * @param {Uint8Array} seed size:ecc_opaque_ristretto255_sha512_Nn
  */
-Module.ecc_opaque_ristretto255_sha512_ClientInitWithSecrets = (
+Module.ecc_opaque_ristretto255_sha512_GenerateKE1WithSeed = (
     ke1,
     state,
     password,
     password_len,
     blind,
     client_nonce,
-    client_secret,
-    client_keyshare,
+    seed,
 ) => {
     const ptr_ke1 = mput(ke1, ecc_opaque_ristretto255_sha512_KE1SIZE);
     const ptr_state = mput(state, ecc_opaque_ristretto255_sha512_CLIENTSTATESIZE);
     const ptr_password = mput(password, password_len);
     const ptr_blind = mput(blind, ecc_opaque_ristretto255_sha512_Ns);
     const ptr_client_nonce = mput(client_nonce, ecc_opaque_ristretto255_sha512_Nn);
-    const ptr_client_secret = mput(client_secret, ecc_opaque_ristretto255_sha512_Nsk);
-    const ptr_client_keyshare = mput(client_keyshare, ecc_opaque_ristretto255_sha512_Npk);
-    _ecc_opaque_ristretto255_sha512_ClientInitWithSecrets(
+    const ptr_seed = mput(seed, ecc_opaque_ristretto255_sha512_Nn);
+    _ecc_opaque_ristretto255_sha512_GenerateKE1WithSeed(
         ptr_ke1,
         ptr_state,
         ptr_password,
         password_len,
         ptr_blind,
         ptr_client_nonce,
-        ptr_client_secret,
-        ptr_client_keyshare,
+        ptr_seed,
     );
     mget(ke1, ptr_ke1, ecc_opaque_ristretto255_sha512_KE1SIZE);
     mget(state, ptr_state, ecc_opaque_ristretto255_sha512_CLIENTSTATESIZE);
@@ -4882,8 +4905,7 @@ Module.ecc_opaque_ristretto255_sha512_ClientInitWithSecrets = (
     mfree(ptr_password, password_len);
     mfree(ptr_blind, ecc_opaque_ristretto255_sha512_Ns);
     mfree(ptr_client_nonce, ecc_opaque_ristretto255_sha512_Nn);
-    mfree(ptr_client_secret, ecc_opaque_ristretto255_sha512_Nsk);
-    mfree(ptr_client_keyshare, ecc_opaque_ristretto255_sha512_Npk);
+    mfree(ptr_seed, ecc_opaque_ristretto255_sha512_Nn);
 }
 
 /**
@@ -4894,7 +4916,7 @@ Module.ecc_opaque_ristretto255_sha512_ClientInitWithSecrets = (
  * @param {Uint8Array} password an opaque byte string containing the client's password, size:password_len
  * @param {number} password_len the length of `password`
  */
-Module.ecc_opaque_ristretto255_sha512_ClientInit = (
+Module.ecc_opaque_ristretto255_sha512_GenerateKE1 = (
     ke1,
     state,
     password,
@@ -4903,7 +4925,7 @@ Module.ecc_opaque_ristretto255_sha512_ClientInit = (
     const ptr_ke1 = mput(ke1, ecc_opaque_ristretto255_sha512_KE1SIZE);
     const ptr_state = mput(state, ecc_opaque_ristretto255_sha512_CLIENTSTATESIZE);
     const ptr_password = mput(password, password_len);
-    _ecc_opaque_ristretto255_sha512_ClientInit(
+    _ecc_opaque_ristretto255_sha512_GenerateKE1(
         ptr_ke1,
         ptr_state,
         ptr_password,
@@ -4937,7 +4959,7 @@ Module.ecc_opaque_ristretto255_sha512_ClientInit = (
  * @param {number} context_len the length of `context`
  * @return {number} 0 if is able to recover credentials and authenticate with the server, else -1
  */
-Module.ecc_opaque_ristretto255_sha512_ClientFinish = (
+Module.ecc_opaque_ristretto255_sha512_GenerateKE3 = (
     ke3_raw,
     session_key,
     export_key,
@@ -4962,7 +4984,7 @@ Module.ecc_opaque_ristretto255_sha512_ClientFinish = (
     const ptr_ke2 = mput(ke2, ecc_opaque_ristretto255_sha512_KE2SIZE);
     const ptr_mhf_salt = mput(mhf_salt, mhf_salt_len);
     const ptr_context = mput(context, context_len);
-    const fun_ret = _ecc_opaque_ristretto255_sha512_ClientFinish(
+    const fun_ret = _ecc_opaque_ristretto255_sha512_GenerateKE3(
         ptr_ke3_raw,
         ptr_session_key,
         ptr_export_key,
@@ -5001,30 +5023,26 @@ Module.ecc_opaque_ristretto255_sha512_ClientFinish = (
  * @param {Uint8Array} state (input, output) size:ecc_opaque_ristretto255_sha512_CLIENTSTATESIZE
  * @param {Uint8Array} credential_request size:ecc_opaque_ristretto255_sha512_CREDENTIALREQUESTSIZE
  * @param {Uint8Array} client_nonce size:ecc_opaque_ristretto255_sha512_Nn
- * @param {Uint8Array} client_secret size:ecc_opaque_ristretto255_sha512_Nsk
- * @param {Uint8Array} client_keyshare size:ecc_opaque_ristretto255_sha512_Npk
+ * @param {Uint8Array} seed size:ecc_opaque_ristretto255_sha512_Nn
  */
-Module.ecc_opaque_ristretto255_sha512_3DH_StartWithSecrets = (
+Module.ecc_opaque_ristretto255_sha512_3DH_StartWithSeed = (
     ke1,
     state,
     credential_request,
     client_nonce,
-    client_secret,
-    client_keyshare,
+    seed,
 ) => {
     const ptr_ke1 = mput(ke1, ecc_opaque_ristretto255_sha512_KE1SIZE);
     const ptr_state = mput(state, ecc_opaque_ristretto255_sha512_CLIENTSTATESIZE);
     const ptr_credential_request = mput(credential_request, ecc_opaque_ristretto255_sha512_CREDENTIALREQUESTSIZE);
     const ptr_client_nonce = mput(client_nonce, ecc_opaque_ristretto255_sha512_Nn);
-    const ptr_client_secret = mput(client_secret, ecc_opaque_ristretto255_sha512_Nsk);
-    const ptr_client_keyshare = mput(client_keyshare, ecc_opaque_ristretto255_sha512_Npk);
-    _ecc_opaque_ristretto255_sha512_3DH_StartWithSecrets(
+    const ptr_seed = mput(seed, ecc_opaque_ristretto255_sha512_Nn);
+    _ecc_opaque_ristretto255_sha512_3DH_StartWithSeed(
         ptr_ke1,
         ptr_state,
         ptr_credential_request,
         ptr_client_nonce,
-        ptr_client_secret,
-        ptr_client_keyshare,
+        ptr_seed,
     );
     mget(ke1, ptr_ke1, ecc_opaque_ristretto255_sha512_KE1SIZE);
     mget(state, ptr_state, ecc_opaque_ristretto255_sha512_CLIENTSTATESIZE);
@@ -5032,8 +5050,7 @@ Module.ecc_opaque_ristretto255_sha512_3DH_StartWithSecrets = (
     mfree(ptr_state, ecc_opaque_ristretto255_sha512_CLIENTSTATESIZE);
     mfree(ptr_credential_request, ecc_opaque_ristretto255_sha512_CREDENTIALREQUESTSIZE);
     mfree(ptr_client_nonce, ecc_opaque_ristretto255_sha512_Nn);
-    mfree(ptr_client_secret, ecc_opaque_ristretto255_sha512_Nsk);
-    mfree(ptr_client_keyshare, ecc_opaque_ristretto255_sha512_Npk);
+    mfree(ptr_seed, ecc_opaque_ristretto255_sha512_Nn);
 }
 
 /**
@@ -5155,10 +5172,9 @@ Module.ecc_opaque_ristretto255_sha512_3DH_ClientFinalize = (
  * @param {number} context_len the length of `context`
  * @param {Uint8Array} masking_nonce size:ecc_opaque_ristretto255_sha512_Nn
  * @param {Uint8Array} server_nonce size:ecc_opaque_ristretto255_sha512_Nn
- * @param {Uint8Array} server_secret size:ecc_opaque_ristretto255_sha512_Nsk
- * @param {Uint8Array} server_keyshare size:ecc_opaque_ristretto255_sha512_Npk
+ * @param {Uint8Array} seed size:ecc_opaque_ristretto255_sha512_Nn
  */
-Module.ecc_opaque_ristretto255_sha512_ServerInitWithSecrets = (
+Module.ecc_opaque_ristretto255_sha512_GenerateKE2WithSeed = (
     ke2_raw,
     state_raw,
     server_identity,
@@ -5176,8 +5192,7 @@ Module.ecc_opaque_ristretto255_sha512_ServerInitWithSecrets = (
     context_len,
     masking_nonce,
     server_nonce,
-    server_secret,
-    server_keyshare,
+    seed,
 ) => {
     const ptr_ke2_raw = mput(ke2_raw, ecc_opaque_ristretto255_sha512_KE2SIZE);
     const ptr_state_raw = mput(state_raw, ecc_opaque_ristretto255_sha512_SERVERSTATESIZE);
@@ -5192,9 +5207,8 @@ Module.ecc_opaque_ristretto255_sha512_ServerInitWithSecrets = (
     const ptr_context = mput(context, context_len);
     const ptr_masking_nonce = mput(masking_nonce, ecc_opaque_ristretto255_sha512_Nn);
     const ptr_server_nonce = mput(server_nonce, ecc_opaque_ristretto255_sha512_Nn);
-    const ptr_server_secret = mput(server_secret, ecc_opaque_ristretto255_sha512_Nsk);
-    const ptr_server_keyshare = mput(server_keyshare, ecc_opaque_ristretto255_sha512_Npk);
-    _ecc_opaque_ristretto255_sha512_ServerInitWithSecrets(
+    const ptr_seed = mput(seed, ecc_opaque_ristretto255_sha512_Nn);
+    _ecc_opaque_ristretto255_sha512_GenerateKE2WithSeed(
         ptr_ke2_raw,
         ptr_state_raw,
         ptr_server_identity,
@@ -5212,8 +5226,7 @@ Module.ecc_opaque_ristretto255_sha512_ServerInitWithSecrets = (
         context_len,
         ptr_masking_nonce,
         ptr_server_nonce,
-        ptr_server_secret,
-        ptr_server_keyshare,
+        ptr_seed,
     );
     mget(ke2_raw, ptr_ke2_raw, ecc_opaque_ristretto255_sha512_KE2SIZE);
     mget(state_raw, ptr_state_raw, ecc_opaque_ristretto255_sha512_SERVERSTATESIZE);
@@ -5230,8 +5243,7 @@ Module.ecc_opaque_ristretto255_sha512_ServerInitWithSecrets = (
     mfree(ptr_context, context_len);
     mfree(ptr_masking_nonce, ecc_opaque_ristretto255_sha512_Nn);
     mfree(ptr_server_nonce, ecc_opaque_ristretto255_sha512_Nn);
-    mfree(ptr_server_secret, ecc_opaque_ristretto255_sha512_Nsk);
-    mfree(ptr_server_keyshare, ecc_opaque_ristretto255_sha512_Npk);
+    mfree(ptr_seed, ecc_opaque_ristretto255_sha512_Nn);
 }
 
 /**
@@ -5256,7 +5268,7 @@ Module.ecc_opaque_ristretto255_sha512_ServerInitWithSecrets = (
  * @param {Uint8Array} context the application specific context, size:context_len
  * @param {number} context_len the length of `context`
  */
-Module.ecc_opaque_ristretto255_sha512_ServerInit = (
+Module.ecc_opaque_ristretto255_sha512_GenerateKE2 = (
     ke2_raw,
     state_raw,
     server_identity,
@@ -5284,7 +5296,7 @@ Module.ecc_opaque_ristretto255_sha512_ServerInit = (
     const ptr_ke1_raw = mput(ke1_raw, ecc_opaque_ristretto255_sha512_KE1SIZE);
     const ptr_client_identity = mput(client_identity, client_identity_len);
     const ptr_context = mput(context, context_len);
-    _ecc_opaque_ristretto255_sha512_ServerInit(
+    _ecc_opaque_ristretto255_sha512_GenerateKE2(
         ptr_ke2_raw,
         ptr_state_raw,
         ptr_server_identity,
@@ -5362,10 +5374,9 @@ Module.ecc_opaque_ristretto255_sha512_ServerFinish = (
  * @param {Uint8Array} context size:context_len
  * @param {number} context_len the length of `context`
  * @param {Uint8Array} server_nonce size:ecc_opaque_ristretto255_sha512_Nn
- * @param {Uint8Array} server_secret size:ecc_opaque_ristretto255_sha512_Nsk
- * @param {Uint8Array} server_keyshare size:ecc_opaque_ristretto255_sha512_Npk
+ * @param {Uint8Array} seed size:ecc_opaque_ristretto255_sha512_Nn
  */
-Module.ecc_opaque_ristretto255_sha512_3DH_ResponseWithSecrets = (
+Module.ecc_opaque_ristretto255_sha512_3DH_ResponseWithSeed = (
     ke2_raw,
     state_raw,
     server_identity,
@@ -5380,8 +5391,7 @@ Module.ecc_opaque_ristretto255_sha512_3DH_ResponseWithSecrets = (
     context,
     context_len,
     server_nonce,
-    server_secret,
-    server_keyshare,
+    seed,
 ) => {
     const ptr_ke2_raw = mput(ke2_raw, ecc_opaque_ristretto255_sha512_KE2SIZE);
     const ptr_state_raw = mput(state_raw, ecc_opaque_ristretto255_sha512_SERVERSTATESIZE);
@@ -5394,9 +5404,8 @@ Module.ecc_opaque_ristretto255_sha512_3DH_ResponseWithSecrets = (
     const ptr_credential_response_raw = mput(credential_response_raw, ecc_opaque_ristretto255_sha512_CREDENTIALRESPONSESIZE);
     const ptr_context = mput(context, context_len);
     const ptr_server_nonce = mput(server_nonce, ecc_opaque_ristretto255_sha512_Nn);
-    const ptr_server_secret = mput(server_secret, ecc_opaque_ristretto255_sha512_Nsk);
-    const ptr_server_keyshare = mput(server_keyshare, ecc_opaque_ristretto255_sha512_Npk);
-    _ecc_opaque_ristretto255_sha512_3DH_ResponseWithSecrets(
+    const ptr_seed = mput(seed, ecc_opaque_ristretto255_sha512_Nn);
+    _ecc_opaque_ristretto255_sha512_3DH_ResponseWithSeed(
         ptr_ke2_raw,
         ptr_state_raw,
         ptr_server_identity,
@@ -5411,8 +5420,7 @@ Module.ecc_opaque_ristretto255_sha512_3DH_ResponseWithSecrets = (
         ptr_context,
         context_len,
         ptr_server_nonce,
-        ptr_server_secret,
-        ptr_server_keyshare,
+        ptr_seed,
     );
     mget(ke2_raw, ptr_ke2_raw, ecc_opaque_ristretto255_sha512_KE2SIZE);
     mget(state_raw, ptr_state_raw, ecc_opaque_ristretto255_sha512_SERVERSTATESIZE);
@@ -5427,8 +5435,7 @@ Module.ecc_opaque_ristretto255_sha512_3DH_ResponseWithSecrets = (
     mfree(ptr_credential_response_raw, ecc_opaque_ristretto255_sha512_CREDENTIALRESPONSESIZE);
     mfree(ptr_context, context_len);
     mfree(ptr_server_nonce, ecc_opaque_ristretto255_sha512_Nn);
-    mfree(ptr_server_secret, ecc_opaque_ristretto255_sha512_Nsk);
-    mfree(ptr_server_keyshare, ecc_opaque_ristretto255_sha512_Npk);
+    mfree(ptr_seed, ecc_opaque_ristretto255_sha512_Nn);
 }
 
 /**
