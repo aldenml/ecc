@@ -73,30 +73,27 @@ public class OpaqueTest {
         RegistrationRecord registrationRecord = finalizeRequest.getRegistrationRecord();
         Data exportKey = finalizeRequest.getExportKey();
 
-        assertEquals("2ec892bdbf9b3e2ea834be9eb11f5d187e64ba661ec041c0a3b66db8b7d6cc301ac5844383c7708077dea41cbefe2fa15724f449e535dd7dd562e66f5ecfb95864eadddec9db5874959905117dad40a4524111849799281fefe3c51fa82785c5ac13171b2f17bc2c74997f0fce1e1f35bec6b91fe2e12dbd323d23ba7a38dfecb9dbe7d48cf714fc3533becab6faf60b783c94d258477eb74ecc453413bf61c53fd58f0fb3c1175410b674c02e1b59b2d729a865b709db3dc4ee2bb45703d5a8", registrationRecord.toHex());
+        assertEquals("76a845464c68a5d2f7e442436bb1424953b17d3e2e289ccbaccafb57ac5c36751ac5844383c7708077dea41cbefe2fa15724f449e535dd7dd562e66f5ecfb95864eadddec9db5874959905117dad40a4524111849799281fefe3c51fa82785c5ac13171b2f17bc2c74997f0fce1e1f35bec6b91fe2e12dbd323d23ba7a38dfec634b0f5b96109c198a8027da51854c35bee90d1e1c781806d07d49b76de6a28b8d9e9b6c93b9f8b64d16dddd9c5bfb5fea48ee8fd2f75012a8b308605cdd8ba5", registrationRecord.toHex());
 
         ClientState clientState = new ClientState();
         R255Scalar blindLogin = R255Scalar.fromHex("6ecc102d2e7a7cf49617aad7bbe188556792d4acd60a1a8a8d2b65d4b0790308");
         OpaqueSeed clientNonce = OpaqueSeed.fromHex("da7e07376d6d6f034cfa9bb537d11b8c6b4238c334333d1f0aebb380cae6a6cc");
-        OpaqueSk clientPrivateKeyshare = OpaqueSk.fromHex("22c919134c9bdd9dc0c5ef3450f18b54820f43f646a95223bf4a85b2018c2001");
-        OpaquePk clientKeyshare = OpaquePk.fromHex("0c3a00c961fead8a16f818929cc976f0475e4f723519318b96f4947a7a5f9663");
-        KE1 ke1 = Opaque.clientInitWithSecrets(
+        OpaqueSeed clientKeyshareSeed = OpaqueSeed.fromHex("82850a697b42a505f5b68fcdafce8c31f0af2b581f063cf1091933541936304b");
+        KE1 ke1 = Opaque.generateKE1WithSeed(
             clientState,
             clientInputs.getPassword(),
             blindLogin,
             clientNonce,
-            clientPrivateKeyshare,
-            clientKeyshare
+            clientKeyshareSeed
         );
 
-        assertEquals("c4dedb0ba6ed5d965d6f250fbe554cd45cba5dfcce3ce836e4aee778aa3cd44dda7e07376d6d6f034cfa9bb537d11b8c6b4238c334333d1f0aebb380cae6a6cc0c3a00c961fead8a16f818929cc976f0475e4f723519318b96f4947a7a5f9663", ke1.toHex());
+        assertEquals("c4dedb0ba6ed5d965d6f250fbe554cd45cba5dfcce3ce836e4aee778aa3cd44dda7e07376d6d6f034cfa9bb537d11b8c6b4238c334333d1f0aebb380cae6a6cc6e29bee50701498605b2c085d7b241ca15ba5c32027dd21ba420b94ce60da326", ke1.toHex());
 
         ServerState serverState = new ServerState();
         OpaqueSeed maskingNonce = OpaqueSeed.fromHex("38fe59af0df2c79f57b8780278f5ae47355fe1f817119041951c80f612fdfc6d");
         OpaqueSeed serverNonce = OpaqueSeed.fromHex("71cd9960ecef2fe0d0f7494986fa3d8b2bb01963537e60efb13981e138e3d4a1");
-        OpaqueSk serverPrivateKeyshare = OpaqueSk.fromHex("2e842960258a95e28bcfef489cffd19d8ec99cc1375d840f96936da7dbb0b40d");
-        OpaquePk serverKeyshare = OpaquePk.fromHex("c8c39f573135474c51660b02425bca633e339cec4e1acc69c94dd48497fe4028");
-        KE2 ke2 = Opaque.serverInitWithSecrets(
+        OpaqueSeed serverKeyshareSeed = OpaqueSeed.fromHex("05a4f54206eef1ba2f615bc0aa285cb22f26d1153b5b40a1e85ff80da12f982f");
+        KE2 ke2 = Opaque.generateKE2WithSeed(
             serverState,
             serverInputs.getServerIdentity(),
             serverInputs.getServerPrivateKey(),
@@ -109,13 +106,12 @@ public class OpaqueTest {
             context,
             maskingNonce,
             serverNonce,
-            serverPrivateKeyshare,
-            serverKeyshare
+            serverKeyshareSeed
         );
 
-        assertEquals("7e308140890bcde30cbcea28b01ea1ecfbd077cff62c4def8efa075aabcbb47138fe59af0df2c79f57b8780278f5ae47355fe1f817119041951c80f612fdfc6dd6ec60bcdb26dc455ddf3e718f1020490c192d70dfc7e403981179d8073d1146a4f9aa1ced4e4cd984c657eb3b54ced3848326f70331953d91b02535af44d9fe0610f003be80cb2098357928c8ea17bb065af33095f39d4e0b53b1687f02d522d96bad4ca354293d5c401177ccbd302cf565b96c327f71bc9eaf2890675d2fbb71cd9960ecef2fe0d0f7494986fa3d8b2bb01963537e60efb13981e138e3d4a1c8c39f573135474c51660b02425bca633e339cec4e1acc69c94dd48497fe40287f33611c2cf0eef57adbf48942737d9421e6b20e4b9d6e391d4168bf4bf96ea57aa42ad41c977605e027a9ef706a349f4b2919fe3562c8e86c4eeecf2f9457d4", ke2.toHex());
+        assertEquals("7e308140890bcde30cbcea28b01ea1ecfbd077cff62c4def8efa075aabcbb47138fe59af0df2c79f57b8780278f5ae47355fe1f817119041951c80f612fdfc6dd6ec60bcdb26dc455ddf3e718f1020490c192d70dfc7e403981179d8073d1146a4f9aa1ced4e4cd984c657eb3b54ced3848326f70331953d91b02535af44d9fedc80188ca46743c52786e0382f95ad85c08f6afcd1ccfbff95e2bdeb015b166c6b20b92f832cc6df01e0b86a7efd92c1c804ff865781fa93f2f20b446c8371b671cd9960ecef2fe0d0f7494986fa3d8b2bb01963537e60efb13981e138e3d4a1c4f62198a9d6fa9170c42c3c71f1971b29eb1d5d0bd733e40816c91f7912cc4a660c48dae03e57aaa38f3d0cffcfc21852ebc8b405d15bd6744945ba1a93438a162b6111699d98a16bb55b7bdddfe0fc5608b23da246e7bd73b47369169c5c90", ke2.toHex());
 
-        ClientFinishResult clientFinishResult = Opaque.clientFinish(
+        ClientFinishResult clientFinishResult = Opaque.generateKE3(
             clientState,
             clientInputs.getClientIdentity(),
             clientInputs.getServerIdentity(),
@@ -129,7 +125,7 @@ public class OpaqueTest {
 
         assertEquals(0, clientFinishResult.getResult());
         assertEquals(exportKey, clientFinishResult.getExportKey());
-        assertEquals("df9a13cd256091f90f0fcb2ef6b3411e4aebff07bb0813299c0ec7f5dedd33a7681231a001a82f1dece1777921f42abfeee551ee34392e1c9743c5cc1dc1ef8c", ke3.toHex());
+        assertEquals("4455df4f810ac31a6748835888564b536e6da5d9944dfea9e34defb9575fe5e2661ef61d2ae3929bcf57e53d464113d364365eb7d1a57b629707ca48da18e442", ke3.toHex());
 
         ServerFinishResult serverFinishResult = Opaque.serverFinish(serverState, ke3);
 
@@ -196,7 +192,7 @@ public class OpaqueTest {
         RegistrationRecord registrationRecord = finalizeRequest.getRegistrationRecord();
 
         ClientState clientState = new ClientState();
-        KE1 ke1 = Opaque.clientInit(
+        KE1 ke1 = Opaque.generateKE1(
             clientState,
             clientInputs.getPassword()
         );
@@ -215,7 +211,7 @@ public class OpaqueTest {
             context
         );
 
-        ClientFinishResult clientFinishResult = Opaque.clientFinish(
+        ClientFinishResult clientFinishResult = Opaque.generateKE3(
             clientState,
             clientInputs.getClientIdentity(),
             clientInputs.getServerIdentity(),
@@ -291,7 +287,7 @@ public class OpaqueTest {
         RegistrationRecord registrationRecord = finalizeRequest.getRegistrationRecord();
 
         ClientState clientState = new ClientState();
-        KE1 ke1 = Opaque.clientInit(
+        KE1 ke1 = Opaque.generateKE1(
             clientState,
             Util.randomData(21)
         );
@@ -310,7 +306,7 @@ public class OpaqueTest {
             context
         );
 
-        ClientFinishResult clientFinishResult = Opaque.clientFinish(
+        ClientFinishResult clientFinishResult = Opaque.generateKE3(
             clientState,
             clientInputs.getClientIdentity(),
             clientInputs.getServerIdentity(),
