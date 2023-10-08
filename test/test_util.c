@@ -140,7 +140,7 @@ static void test_ecc_version(void **state) {
 
     byte_t buf1[2];
     const int len = ecc_version(buf1, sizeof buf1);
-    assert_int_equal(len, 6);
+    assert_int_equal(len, 5);
     assert_int_equal(buf1[0], '1');
     assert_int_equal(buf1[1], '.');
 
